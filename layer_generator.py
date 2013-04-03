@@ -22,10 +22,12 @@ class LayerGenerator():
 if __name__ == "__main__":
     import api_stub
     import external_citations
+    import internal_citations
     import json
 
     reg_json = api_stub.get_regulation_as_json('regulations/rege.json')
     ext_citation_parser = external_citations.ExternalCitationParser()
-    layer_generator = LayerGenerator(reg_json, ext_citation_parser)
+    int_citation_parser = internal_citations.InternalCitationParser()
+    layer_generator = LayerGenerator(reg_json, int_citation_parser)
     layer = layer_generator.generate_layer()
     print json.dumps(layer)

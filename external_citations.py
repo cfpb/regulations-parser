@@ -4,15 +4,12 @@ import urllib
 from collections import defaultdict
 from pyparsing import *
 
-class ExternalCitationParser():
+class ExternalCitationParser(object):
     #The different types of citations
     CODE_OF_FEDERAL_REGULATIONS = 'CFR'
     UNITED_STATES_CODE = 'USC'
 
-    def get_description(self):
-        return ExternalCitationParser.DESCRIPTION
-
-    def get_external_link_parser(self):
+    def get_parser(self):
         """ Construct a grammar that parses references/citations to the 
         United States Code and the Code of Federal Regulations. """
         uscode_exp = Word(string.digits) + "U.S.C." + Word(string.digits)
@@ -38,7 +35,7 @@ class ExternalCitationParser():
 
     def parse(self, text):
         """ Parse the provided text, pulling out all the citations. """
-        parser  = self.get_external_link_parser()
+        parser  = self.get_parser()
 
         cm = defaultdict(list)
         citation_strings = {}
