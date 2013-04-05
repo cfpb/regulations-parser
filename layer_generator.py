@@ -11,7 +11,7 @@ class LayerGenerator():
         return self.layer 
 
     def process_node(self, node):
-        citations_list = self.layer_generator.parse(node['text'])
+        citations_list = self.layer_generator.parse(node['text'], node['label']['parts'])
         if citations_list:
             part_index = '-'.join(node['label']['parts'])
             self.layer[part_index] = citations_list
@@ -28,6 +28,7 @@ if __name__ == "__main__":
     reg_json = api_stub.get_regulation_as_json('regulations/rege.json')
     ext_citation_parser = external_citations.ExternalCitationParser()
     int_citation_parser = internal_citations.InternalCitationParser()
+    #layer_generator = LayerGenerator(reg_json, ext_citation_parser)
     layer_generator = LayerGenerator(reg_json, int_citation_parser)
     layer = layer_generator.generate_layer()
     print json.dumps(layer)
