@@ -78,24 +78,21 @@ class InternalCitationParser(object):
         c = originalTextFor(parser)
         all_citations = []
 
-        for citation, start, end in parser.scanString(text):
-            for t,s,e in c.scanString(text):
-                if s == start and e == end:
-                    original_text = t[0]
+        def build_layer_element(token, start, end, prefix=[]):
+            return {
+                'offsets': [[start, end]],
+                'citation': prefix + token.asList()
+            }
 
+        for citation, start, end in parser.scanString(text):
             if citation[0] == 'paragraphs' or citation[0] == 'paragraph':
                 paragraph_citation_prefix = parts[0:2]
                 for t, s, e in sub_sub_paragraph.scanString(text):
-                    layer_element = {'offsets': [[s, e]],
-                        'citation': paragraph_citation_prefix + t.asList()
-                    }
-                    all_citations.append(layer_element)
+                    all_citations.append(build_layer_element(t, s, e, paragraph_citation_prefix))
             elif citation[0] == u"§§":  
                 single_section_parser =  self.citation_grammar.get_single_section_grammar()
                 for t, s, e in single_section_parser.scanString(text):
-                    layer_element = {
-                        'offsets': [[s, e]],
-                        'citation':t.asList()
-                    }
-                    all_citations.append(layer_element)
+                    all_citations.append(build_layer_element(t, s, e))
+            else:
+                all_citations.append(build_layer_element(citation, start, end))
         return all_citations

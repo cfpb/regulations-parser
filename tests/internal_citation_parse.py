@@ -45,3 +45,11 @@ class ParseTest(TestCase):
                 occurrences += 1
                 self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1] - 1], u'1005.11 (b)(1)(i)')
         self.assertEquals(occurrences, 2)
+
+    def test_single_section_citation(self):
+        """ Ensure that offsets work correctly in a simple single section citation case. """
+        parser = internal_citations.InternalCitationParser()
+        text = u"date in § 1005.20(h)(1) must disclose"
+        citations = parser.parse(text, parts = ['1005', '6'])
+        c =  citations[0]
+        self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1] - 1], u'1005.20(h)(1)')
