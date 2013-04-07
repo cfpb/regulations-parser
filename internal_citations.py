@@ -76,23 +76,35 @@ class InternalCitationParser(object):
         parser = self.citation_grammar.any_citation_grammar()
         sub_sub_paragraph = self.citation_grammar.get_sub_sub_paragraph_grammar()
         c = originalTextFor(parser)
+        all_citations = []
 
         for citation, start, end in parser.scanString(text):
-            original_match = c.searchString(text)
-            original_text = original_match[0][0]
+            for t,s,e in c.scanString(text):
+                if s == start and e == end:
+                    original_text = t[0]
 
             if citation[0] == 'paragraphs' or citation[0] == 'paragraph':
+                #print '++++++++++'
                 paragraph_citation_prefix = parts[0:2]
-                for t, s, e in sub_sub_paragraph.scanString(original_text):
+                #print text.encode('utf-8', 'ignore')
+                #print original_text
+                #print (start, end)
+                for t, s, e in sub_sub_paragraph.scanString(text):
                     layer_element = {'offsets': [[s, e]],
                         'citation': paragraph_citation_prefix + t.asList()
                     }
-            elif citation[0] == u"§§":
-                print citation
-                single_section_parser =  self.citation_grammar.get_single_section_grammar()
-                for t, s, e in single_section_parser.scanString(original_text):
-                    print t
-                    layer_element = {
-                        'offsets': [[s, e]],
-                    }
-                    print layer_element
+                    all_citations.append(layer_element)
+                    #print layer_element
+                #print '-----------'
+            return all_citations
+            #elif citation[0] == u"§§":  
+            #    single_section_parser =  self.citation_grammar.get_single_section_grammar()
+            #    for t, s, e in single_section_parser.scanString(original_text):
+            #        print text
+            #        print original_text
+            #        print (start, end)
+            #        layer_element = {
+            #            'offsets': [[s, e]],
+            #            'citation':t.asList()
+            #        }
+            #        print layer_element
