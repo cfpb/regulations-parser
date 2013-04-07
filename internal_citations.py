@@ -24,7 +24,7 @@ class InternalCitationGrammar(object):
     def get_single_section_grammar(self):
         sub_sub_paragraph = self.get_sub_sub_paragraph_grammar()
 
-        single_section = (Word(string.digits) + "." + Word(string.digits) +
+        single_section = (Word(string.digits) + Suppress(".") + Word(string.digits) +
             Optional(sub_sub_paragraph) + Optional(Regex(",|and") + OneOrMore(
             self.lower_alpha_sub | self.upper_alpha_sub | self.roman_sub | self.digit_sub)))
 
@@ -84,27 +84,18 @@ class InternalCitationParser(object):
                     original_text = t[0]
 
             if citation[0] == 'paragraphs' or citation[0] == 'paragraph':
-                #print '++++++++++'
                 paragraph_citation_prefix = parts[0:2]
-                #print text.encode('utf-8', 'ignore')
-                #print original_text
-                #print (start, end)
                 for t, s, e in sub_sub_paragraph.scanString(text):
                     layer_element = {'offsets': [[s, e]],
                         'citation': paragraph_citation_prefix + t.asList()
                     }
                     all_citations.append(layer_element)
-                    #print layer_element
-                #print '-----------'
-            return all_citations
-            #elif citation[0] == u"§§":  
-            #    single_section_parser =  self.citation_grammar.get_single_section_grammar()
-            #    for t, s, e in single_section_parser.scanString(original_text):
-            #        print text
-            #        print original_text
-            #        print (start, end)
-            #        layer_element = {
-            #            'offsets': [[s, e]],
-            #            'citation':t.asList()
-            #        }
-            #        print layer_element
+            elif citation[0] == u"§§":  
+                single_section_parser =  self.citation_grammar.get_single_section_grammar()
+                for t, s, e in single_section_parser.scanString(text):
+                    layer_element = {
+                        'offsets': [[s, e]],
+                        'citation':t.asList()
+                    }
+                    all_citations.append(layer_element)
+        return all_citations
