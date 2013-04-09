@@ -48,7 +48,7 @@ class InternalCitationGrammar(object):
                 "paragraphs" + 
                 sub_sub_paragraph.setResultsName("car") + 
                 OneOrMore(
-                    Regex(",|and") + Optional("and") + 
+                    Regex(",|and|or") + Optional("and") + 
                     sub_sub_paragraph.setResultsName("cdr", listAllMatches=True)
                 )
             )
@@ -88,7 +88,8 @@ class InternalCitationParser(object):
             if citation[0] == 'paragraphs' or citation[0] == 'paragraph':
                 paragraph_citation_prefix = parts[0:2]
                 for t, s, e in sub_sub_paragraph.scanString(text):
-                    all_citations.append(build_layer_element(t, s, e, paragraph_citation_prefix))
+                    if s >= start and e <= end:
+                        all_citations.append(build_layer_element(t, s, e, paragraph_citation_prefix))
             elif citation[0] == u"§§":  
                 single_section_parser =  self.citation_grammar.get_single_section_grammar()
                 for t, s, e in single_section_parser.scanString(text):

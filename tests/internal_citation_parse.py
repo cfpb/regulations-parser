@@ -21,6 +21,13 @@ class ParseTest(TestCase):
             if c['citation'] == ['1005', '6', u'd', u'2']:
                 self.assertEquals(text[c['offsets'][0][0] + 1], 'd')
 
+    def test_multiple_paragraph_or(self):
+        """ Ensure that an 'or' between internal citations is matched correctly. """
+        parser = internal_citations.InternalCitationParser()
+        text = u"set forth in paragraphs (b)(1) or (b)(2)" 
+        citations = parser.parse(text, parts = ['1005', '6'])
+        self.assertEquals(2, len(citations))
+
     def test_single_paragraph(self):
         """ Ensure that offsets work correctly in a simple single paragraph citation. """
         parser = internal_citations.InternalCitationParser()
@@ -28,6 +35,14 @@ class ParseTest(TestCase):
         citations = parser.parse(text, parts = ['1005', '6'])
         c = citations[0]
         self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1] - 1], u'(a)(4)(iii)')
+
+    def test_single_labeled_paragraph(self):
+        """ Ensure the parser doesn't pick up unecessary elements, such as the 
+        (a) in the text below. """
+        parser = internal_citations.InternalCitationParser()
+        text = '(a) Solicited issuance. Except as provided in paragraph (b) of this section'
+        citations = parser.parse(text, parts = ['1005', '6'])
+        self.assertEqual(1, len(citations))
 
     def test_multiple_section_citation(self):
         """ Ensure that offsets work correctly in a simple multiple section citation case. """
