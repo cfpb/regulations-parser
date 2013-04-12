@@ -33,7 +33,7 @@ class ExternalCitationParser(object):
         the various types of citations are presented consistently. """
         return [c for c in citation if c not in ['U.S.C.', 'CFR', 'part', '.']]
 
-    def parse(self, text):
+    def parse(self, text, parts=None):
         """ Parse the provided text, pulling out all the citations. """
         parser  = self.get_parser()
 

@@ -25,7 +25,7 @@ if __name__ == "__main__":
     import internal_citations
     import json
 
-    reg_json = api_stub.get_regulation_as_json('regulations/rege.json')
+    reg_json = api_stub.get_regulation_as_json('/vagrant/data/regulations/rege/rege.json')
     ext_citation_parser = external_citations.ExternalCitationParser()
     int_citation_parser = internal_citations.InternalCitationParser()
     #layer_generator = LayerGenerator(reg_json, ext_citation_parser)

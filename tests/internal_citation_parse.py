@@ -68,3 +68,7 @@ class ParseTest(TestCase):
         citations = parser.parse(text, parts = ['1005', '6'])
         c =  citations[0]
         self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1] - 1], u'1005.20(h)(1)')
+
+
+    def test_abc(self):
+        text = "(d) Procedures in paragraph (c) of this section, the financial in this paragraph (d) if it"
