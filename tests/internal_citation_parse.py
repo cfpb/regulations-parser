@@ -34,7 +34,7 @@ class ParseTest(TestCase):
         text = 'The requirements in paragraph (a)(4)(iii) of'
         citations = parser.parse(text, parts = ['1005', '6'])
         c = citations[0]
-        self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1] - 1], u'(a)(4)(iii)')
+        self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1]], u'(a)(4)(iii)')
 
     def test_single_labeled_paragraph(self):
         """ Ensure the parser doesn't pick up unecessary elements, such as the 
@@ -55,10 +55,10 @@ class ParseTest(TestCase):
         for c in citations:
             if c['citation'] == [u'1005', u'6', u'b', u'3']:
                 occurrences += 1
-                self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1] - 1], u'1005.6(b)(3)')
+                self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1]], u'1005.6(b)(3)')
             if c['citation'] == [u'1005', u'11', u'b', u'1', u'i']:
                 occurrences += 1
-                self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1] - 1], u'1005.11 (b)(1)(i)')
+                self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1]], u'1005.11 (b)(1)(i)')
         self.assertEquals(occurrences, 2)
 
     def test_single_section_citation(self):
@@ -67,8 +67,19 @@ class ParseTest(TestCase):
         text = u"date in § 1005.20(h)(1) must disclose"
         citations = parser.parse(text, parts = ['1005', '6'])
         c =  citations[0]
-        self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1] - 1], u'1005.20(h)(1)')
+        self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1]], u'1005.20(h)(1)')
 
+    def test_multiple_paragraph_single_section(self):
+        text = u'§ 1005.10(a) and (d)'
+        parser = internal_citations.InternalCitationParser()
+        result = parser.parse(text, parts = ['1005', '6'])
+        self.assertEqual(2, len(result))
+        self.assertEqual(['1005', '10', 'a'], result[0]['citation'])
+        self.assertEqual(['1005', '10', 'd'], result[1]['citation'])
+        start, end = result[0]['offsets'][0]
+        self.assertEqual(u'1005.10(a)', text[start:end])
+        start, end = result[1]['offsets'][0]
+        self.assertEqual(u'(d)', text[start:end])
 
     def test_abc(self):
         text = "(d) Procedures in paragraph (c) of this section, the financial in this paragraph (d) if it"
