@@ -12,26 +12,25 @@ class InternalCitationParser(object):
         c = originalTextFor(grammar.any_citation)
         all_citations = []
 
-        def build_layer_element(token, start, end, prefix=[]):
-            return {
-                'offsets': [[start, end]],
-                'citation': prefix + token.asList()
-            }
-
         for citation, start, end in grammar.any_citation.scanString(text):
             if citation.single_paragraph or citation.multiple_paragraphs:
-                paragraph_citation_prefix = parts[0:2]
-                for t, s, e in grammar.depth1_p.scanString(text):
-                    if s >= start and e <= end:
-                        all_citations.append(build_layer_element(t, s, e, paragraph_citation_prefix))
+                if citation.single_paragraph:
+                    citation = citation.single_paragraph
+                else:
+                    citation = citation.multiple_paragraphs
+                all_citations.extend(self.paragraph_list(citation, 
+                    citation.p_head.pos[0], end, parts[0], parts[1]))
             elif citation.multiple_sections:
                 sections = [citation.s_head] + list(citation.s_tail)
                 for section in sections:
-                    all_citations.extend(self.single_section(section,
-                        section.pos[0], section.pos[1]))
+                    all_citations.extend(self.paragraph_list(section,
+                        section.pos[0], section.pos[1], section.part, 
+                        section.section))
             else:
-                all_citations.extend(self.single_section(
-                    citation.without_marker, start, end))
+                citation = citation.without_marker
+                all_citations.extend(self.paragraph_list(citation, 
+                    citation.pos[0], end, citation.part, 
+                    citation.section))
         return self.strip_whitespace(text, all_citations)
 
     def strip_whitespace(self, text, citations):
@@ -49,12 +48,11 @@ class InternalCitationParser(object):
         return citations
 
 
-
-    def single_section(self, match, start, end):
-        """Return the layer elements associated with a single section
-        reference."""
+    def paragraph_list(self, match, start, end, part, section):
+        """Return the layer elements associated with a list of paragraphs.
+        Use the part/section as the prefix for the citation's list."""
         citations = []
-        label = [match.part, match.section]
+        label = [part, section]
         if match.p_head:
             label.append(match.p_head.level1)
             label.append(match.p_head.level2)
@@ -64,7 +62,7 @@ class InternalCitationParser(object):
         else:
             label.extend([None, None, None, None])
         citations.append({
-            'offsets': [(match.pos[0] ,end)], 
+            'offsets': [(start,end)], 
             'citation': filter(bool, label)
             })
         for p in match.p_tail:

@@ -38,7 +38,11 @@ depth3_p = roman_p + Optional(upper_p)
 depth2_p = digit_p + Optional(depth3_p)
 depth1_p = lower_p + Optional(depth2_p)
 
-any_depth_p = (depth1_p | depth2_p | depth3_p | upper_p)
+any_depth_p = (
+        depth1_p.setResultsName("depth1_p") 
+        | depth2_p.setResultsName("depth2_p") 
+        | depth3_p.setResultsName("depth3_p") 
+        | upper_p.setResultsName("depth4_p"))
 
 and_phrases = Suppress(Regex(",|and|or") + Optional("and"))
 
@@ -55,7 +59,9 @@ single_section = (
             + Optional(paragraph_tail))
         ).setParseAction(keep_pos)
 
-single_section_with_marker = Suppress(u"§") + single_section.setResultsName("without_marker")
+single_section_with_marker = (
+        Suppress(u"§") 
+        + single_section.setResultsName("without_marker"))
 
 multiple_sections = (
         Suppress(u"§§")
@@ -63,7 +69,10 @@ multiple_sections = (
         + OneOrMore(and_phrases 
             + single_section.setResultsName("s_tail", listAllMatches=True)))
 
-single_paragraph = Suppress("paragraph") + any_depth_p
+single_paragraph = (
+        Suppress("paragraph") 
+        + any_depth_p.setResultsName("p_head")
+        )
 
 multiple_paragraphs = (
         Suppress("paragraphs") 

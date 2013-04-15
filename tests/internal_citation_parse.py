@@ -16,7 +16,7 @@ class ParseTest(TestCase):
         for c in citations:
             if c['citation'] == ['1005', '6', u'c', u'3']:
                 self.assertEqual(text[c['offsets'][0][0]], '(')
-                self.assertEquals(c['offsets'], [[31, 37]])
+                self.assertEquals(c['offsets'], [(31, 37)])
                 self.assertEquals(text[c['offsets'][0][0] + 1], 'c')
             if c['citation'] == ['1005', '6', u'd', u'2']:
                 self.assertEquals(text[c['offsets'][0][0] + 1], 'd')
@@ -34,7 +34,9 @@ class ParseTest(TestCase):
         text = 'The requirements in paragraph (a)(4)(iii) of'
         citations = parser.parse(text, parts = ['1005', '6'])
         c = citations[0]
-        self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1]], u'(a)(4)(iii)')
+        self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1]], 
+                u'(a)(4)(iii)')
+        self.assertEquals(['1005', '6', 'a', '4', 'iii'], c['citation'])
 
     def test_single_labeled_paragraph(self):
         """ Ensure the parser doesn't pick up unecessary elements, such as the 
@@ -95,7 +97,18 @@ class ParseTest(TestCase):
         self.assertEqual(u'(2)', text[start:end])
         start, end = result[2]['offsets'][0]
         self.assertEqual(u'(3)', text[start:end])
-        
+
+    def test_multiple_paragraphs_this_section(self):
+        text = u'paragraphs (c)(1) and (2) of this section'
+        parser = internal_citations.InternalCitationParser()
+        result = parser.parse(text, parts = ['1005', '6'])
+        self.assertEqual(2, len(result))
+        self.assertEqual(['1005', '6', 'c', '1'], result[0]['citation'])
+        self.assertEqual(['1005', '6', 'c', '2'], result[1]['citation'])
+        start, end = result[0]['offsets'][0]
+        self.assertEqual(u'(c)(1)', text[start:end])
+        start, end = result[1]['offsets'][0]
+        self.assertEqual(u'(2)', text[start:end])
 
     def test_abc(self):
         text = "(d) Procedures in paragraph (c) of this section, the financial in this paragraph (d) if it"
