@@ -38,14 +38,14 @@ depth3_p = roman_p + Optional(upper_p)
 depth2_p = digit_p + Optional(depth3_p)
 depth1_p = lower_p + Optional(depth2_p)
 
-any_depth_p = (depth1_p | depth2_p | depth3_p |
-        upper_p)
+any_depth_p = (depth1_p | depth2_p | depth3_p | upper_p)
 
 and_phrases = Suppress(Regex(",|and|or") + Optional("and"))
 
 paragraph_tail = OneOrMore(and_phrases +
-        any_depth_p.setParseAction(keep_pos).setResultsName("p")
-        ).setResultsName("p_tail", listAllMatches=True)
+        any_depth_p.setParseAction(keep_pos).setResultsName("p_tail",
+            listAllMatches=True)
+        )
 
 single_section = (
         Word(string.digits).setResultsName("part")

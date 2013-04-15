@@ -67,8 +67,7 @@ class InternalCitationParser(object):
             'offsets': [(match.pos[0] ,end)], 
             'citation': filter(bool, label)
             })
-        for el in match.p_tail:
-            p = el.p
+        for p in match.p_tail:
             if p.level1:
                 label[2:6] = [p.level1, p.level2, p.level3, p.level4]
             elif p.level2:

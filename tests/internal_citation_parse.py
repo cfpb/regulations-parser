@@ -81,5 +81,21 @@ class ParseTest(TestCase):
         start, end = result[1]['offsets'][0]
         self.assertEqual(u'(d)', text[start:end])
 
+    def test_multiple_paragraph_single_section2(self):
+        text = u'§ 1005.7(b)(1), (2) and (3)'
+        parser = internal_citations.InternalCitationParser()
+        result = parser.parse(text, parts = ['1005', '6'])
+        self.assertEqual(3, len(result))
+        self.assertEqual(['1005', '7', 'b', '1'], result[0]['citation'])
+        self.assertEqual(['1005', '7', 'b', '2'], result[1]['citation'])
+        self.assertEqual(['1005', '7', 'b', '3'], result[2]['citation'])
+        start, end = result[0]['offsets'][0]
+        self.assertEqual(u'1005.7(b)(1)', text[start:end])
+        start, end = result[1]['offsets'][0]
+        self.assertEqual(u'(2)', text[start:end])
+        start, end = result[2]['offsets'][0]
+        self.assertEqual(u'(3)', text[start:end])
+        
+
     def test_abc(self):
         text = "(d) Procedures in paragraph (c) of this section, the financial in this paragraph (d) if it"
