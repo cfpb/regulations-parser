@@ -8,6 +8,7 @@ class ExternalCitationParser(object):
     #The different types of citations
     CODE_OF_FEDERAL_REGULATIONS = 'CFR'
     UNITED_STATES_CODE = 'USC'
+    THE_ACT = 'ACT'
 
     def get_parser(self):
         """ Construct a grammar that parses references/citations to the 
@@ -17,8 +18,10 @@ class ExternalCitationParser(object):
         cfr_exp_v1 = Word(string.digits) + "CFR" + "part" + Word(string.digits)
         cfr_exp_v2 = Word(string.digits) + "CFR" + Word(string.digits) + "." + Word(string.digits)
         cfr_exp = cfr_exp_v1.setResultsName('V1') ^ cfr_exp_v2.setResultsName('V2')
+        #the_act_exp = "section" + Word(string.digits) + "of" + "the" + "Act"
+        the_act_exp = Literal("the") + Literal("Act")
 
-        parse_all =  uscode_exp.setResultsName('USC') | cfr_exp
+        parse_all =  uscode_exp.setResultsName('USC') | cfr_exp | the_act_exp
         return parse_all
 
     def citation_type(self, citation):
@@ -27,6 +30,8 @@ class ExternalCitationParser(object):
             return ExternalCitationParser.CODE_OF_FEDERAL_REGULATIONS
         elif citation[1] == 'U.S.C.':
             return ExternalCitationParser.UNITED_STATES_CODE
+        elif 'Act' in citation:
+            return ExternalCitationParser.THE_ACT
 
     def reformat_citation(self, citation):
         """ Strip out unnecessary elements from the citation reference, so that 
