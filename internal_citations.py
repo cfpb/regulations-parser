@@ -1,99 +1,81 @@
 #vim: set encoding=utf-8
 import string
+from grammar import internal_citations as grammar
 from pyparsing import Word, Optional, oneOf, OneOrMore, Regex, originalTextFor, Suppress
 
-class InternalCitationGrammar(object):
-    """ Define the grammar to parse internal citations in the text of a United
-    States regulation. """
-
-    def __init__(self):
-        self.lower_alpha_sub = Suppress("(") + Word(string.ascii_lowercase).setResultsName("id") + Suppress(")")
-        self.upper_alpha_sub = Suppress("(") + Word(string.ascii_uppercase).setResultsName("id") + Suppress(")")
-        self.roman_sub = Suppress("(") + Word("ivxlcdm").setResultsName("id") + Suppress(")")
-        self.digit_sub = Suppress("(") + Word(string.digits).setResultsName("id") + Suppress(")")
-
-    def get_sub_sub_paragraph_grammar(self):
-        sub_sub_paragraph = (
-                self.lower_alpha_sub.setResultsName("level1") + 
-                Optional(self.digit_sub.setResultsName("level2") +
-                Optional(self.roman_sub.setResultsName("level3") + 
-                Optional(self.upper_alpha_sub.setResultsName("level4"))))
-        )
-        return sub_sub_paragraph
-
-    def get_single_section_grammar(self):
-        sub_sub_paragraph = self.get_sub_sub_paragraph_grammar()
-
-        single_section = (Word(string.digits) + Suppress(".") + Word(string.digits) +
-            Optional(sub_sub_paragraph) + Optional(Regex(",|and") + OneOrMore(
-            self.lower_alpha_sub | self.upper_alpha_sub | self.roman_sub | self.digit_sub)))
-
-        return single_section
-
-    def get_multiple_section_citation_grammar(self):
-        single_section = self.get_single_section_grammar()
-
-        multiple_section_citation = (u"§§" + single_section + OneOrMore(
-            Regex(",|and") + Optional("and") + single_section))
-        return multiple_section_citation
-
-    def single_paragraph_grammar(self):
-        sub_sub_paragraph = self.get_sub_sub_paragraph_grammar()
-        single_paragraph = "paragraph" + sub_sub_paragraph
-        return single_paragraph
-
-    def multiple_paragraph_grammar(self):
-        sub_sub_paragraph = self.get_sub_sub_paragraph_grammar()
-        multiple_paragraphs = (
-                "paragraphs" + 
-                sub_sub_paragraph.setResultsName("car") + 
-                OneOrMore(
-                    Regex(",|and|or") + Optional("and") + 
-                    sub_sub_paragraph.setResultsName("cdr", listAllMatches=True)
-                )
-            )
-        return multiple_paragraphs
-
-    def any_citation_grammar(self):
-        multiple_section_citation = self.get_multiple_section_citation_grammar()
-        single_section_citation =  self.get_single_section_grammar()
-        single_paragraph = self.single_paragraph_grammar()
-        multiple_paragraphs =  self.multiple_paragraph_grammar()
-
-        any_citation = (multiple_section_citation | single_section_citation
-                | single_paragraph | multiple_paragraphs)
-        return any_citation
-
 class InternalCitationParser(object):
-
-    def __init__(self):
-        self.citation_grammar = InternalCitationGrammar()
 
     def parse(self, text, parts=None):
         """ Parse the provided text, pulling out all the internal (self-referential) 
         citations. """
 
-        parser = self.citation_grammar.any_citation_grammar()
-        sub_sub_paragraph = self.citation_grammar.get_sub_sub_paragraph_grammar()
-        c = originalTextFor(parser)
+        c = originalTextFor(grammar.any_citation)
         all_citations = []
 
-        def build_layer_element(token, start, end, prefix=[]):
-            return {
-                'offsets': [[start, end]],
-                'citation': prefix + token.asList()
-            }
-
-        for citation, start, end in parser.scanString(text):
-            if citation[0] == 'paragraphs' or citation[0] == 'paragraph':
-                paragraph_citation_prefix = parts[0:2]
-                for t, s, e in sub_sub_paragraph.scanString(text):
-                    if s >= start and e <= end:
-                        all_citations.append(build_layer_element(t, s, e, paragraph_citation_prefix))
-            elif citation[0] == u"§§":  
-                single_section_parser =  self.citation_grammar.get_single_section_grammar()
-                for t, s, e in single_section_parser.scanString(text):
-                    all_citations.append(build_layer_element(t, s, e))
+        for citation, start, end in grammar.any_citation.scanString(text):
+            if citation.single_paragraph or citation.multiple_paragraphs:
+                if citation.single_paragraph:
+                    citation = citation.single_paragraph
+                else:
+                    citation = citation.multiple_paragraphs
+                all_citations.extend(self.paragraph_list(citation, 
+                    citation.p_head.pos[0], end, parts[0], parts[1]))
+            elif citation.multiple_sections:
+                sections = [citation.s_head] + list(citation.s_tail)
+                for section in sections:
+                    all_citations.extend(self.paragraph_list(section,
+                        section.pos[0], section.pos[1], section.part, 
+                        section.section))
             else:
-                all_citations.append(build_layer_element(citation, start, end))
-        return all_citations
+                citation = citation.without_marker
+                all_citations.extend(self.paragraph_list(citation, 
+                    citation.pos[0], end, citation.part, 
+                    citation.section))
+        return self.strip_whitespace(text, all_citations)
+
+    def strip_whitespace(self, text, citations):
+        """Modifies the offsets to exclude any trailing whitespace. Modifies
+        the offsets in place."""
+        for citation in citations:
+            for i in range(len(citation['offsets'])):
+                start, end = citation['offsets'][i]
+                string = text[start:end]
+                lstring = string.lstrip()
+                rstring = string.rstrip()
+                new_start = start + (len(string) - len(lstring))
+                new_end = end - (len(string) - len(rstring))
+                citation['offsets'][i] = (new_start, new_end)
+        return citations
+
+
+    def paragraph_list(self, match, start, end, part, section):
+        """Return the layer elements associated with a list of paragraphs.
+        Use the part/section as the prefix for the citation's list."""
+        citations = []
+        label = [part, section]
+        if match.p_head:
+            label.append(match.p_head.level1)
+            label.append(match.p_head.level2)
+            label.append(match.p_head.level3)
+            label.append(match.p_head.level4)
+            end = match.p_head.pos[1]
+        else:
+            label.extend([None, None, None, None])
+        citations.append({
+            'offsets': [(start,end)], 
+            'citation': filter(bool, label)
+            })
+        for p in match.p_tail:
+            if p.level1:
+                label[2:6] = [p.level1, p.level2, p.level3, p.level4]
+            elif p.level2:
+                label[3:6] = [p.level2, p.level3, p.level4]
+            elif p.level3:
+                label[4:6] = [p.level3, p.level4]
+            else:
+                label[5] = p.level5
+            citations.append({
+                'offsets': [p.pos], 
+                'citation': filter(bool, label)
+                })
+        return citations
