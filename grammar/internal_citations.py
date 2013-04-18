@@ -79,8 +79,20 @@ multiple_paragraphs = (
         + any_depth_p.setResultsName("p_head")
         + paragraph_tail)
 
-any_citation = (
+regtext_citation = (
     multiple_sections.setResultsName("multiple_sections") 
     | single_section_with_marker.setResultsName("single_section")
     | single_paragraph.setResultsName("single_paragraph") 
     | multiple_paragraphs.setResultsName("multiple_paragraphs"))
+
+upper_dec = "." + Word(string.ascii_uppercase)
+roman_dec = "." + Word("ivxlcdm")
+
+comment_citation = (
+    "comment" 
+    + (Word(string.digits) + depth1_p)
+    + "-" 
+    + (Word(string.digits)
+        + Optional(roman_dec + Optional(upper_dec))
+        ).leaveWhitespace() # Exclude any period + space (end of sentence)
+    )

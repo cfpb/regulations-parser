@@ -4,7 +4,7 @@ from pyparsing import ParseException
 from unittest import TestCase
 
 class GrammerInternalCitationsTest(TestCase):
-    def test_any_citation_positive(self):
+    def test_regtext_citation_positive(self):
         citations = [
             u"§§ 205.7, 205.8, and 205.9",
             u"§ 205.9(b)",
@@ -16,11 +16,11 @@ class GrammerInternalCitationsTest(TestCase):
             u"§ 205.9(b)(1)(i)(C)"
         ]
         for citation in citations:
-            any_citation.parseString(citation)
-    def test_any_citation_negative(self):
+            regtext_citation.parseString(citation)
+    def test_regtext_citation_negative(self):
         citations = [u"§§ abc.tt", u"§ bbb.qq", u"205.9(a)", u"§§  205.9(1)"]
         for citation in citations:
-            self.assertRaises(ParseException, any_citation.parseString, 
+            self.assertRaises(ParseException, regtext_citation.parseString, 
                     citation)
     def test_multiple_paragraph_pieces(self):
         """Check that we can pull out paragraph pieces from
@@ -35,3 +35,38 @@ class GrammerInternalCitationsTest(TestCase):
         self.assertEqual('2', paragraphs[1].level2)
         self.assertEqual('c', paragraphs[2].level1)
         self.assertEqual('3', paragraphs[2].level2)
+    def test_comment_positive(self):
+        citations = [
+            "comment 10(b)-5",
+            "comment 10(b)-7.vi",
+            "comment 10(b)-7.vi.Q",
+            "comment 8(b)(1)-1",
+            "comment 13(x)(5)(iv)-2",
+            "comment 10000(z)(9)(x)(Y)-33",
+            "comment 10000(z)(9)(x)(Y)-25",
+            "comment 10000(z)(9)(x)(Y)-25.xc",
+            "comment 10000(z)(9)(x)(Y)-25.xc.Z"
+        ]
+        for citation in citations:
+            self.assertEqual(1, 
+                    len(list(comment_citation.scanString(citation))))
+            _, _, end = comment_citation.scanString(citation).next()
+            self.assertEqual(len(citation), end)
+    def test_comment_negative(self):
+        citations = [
+            "comment 10(5)-5",
+            "comment 10(b)"
+            "comment 10"
+            "comment 8-b(1)"
+        ]
+        for citation in citations:
+            self.assertRaises(ParseException, comment_citation.parseString, 
+                    citation)
+    def test_comment_whitepace(self):
+        """Confirm that whitespace is not allowed between period-separated
+        piece"""
+        text = "comment 10(x)-3.\nii. Some new content"
+        comments = list(comment_citation.scanString(text))
+        self.assertEqual(1,len(comments))
+        comment_text = text[comments[0][1]:comments[0][2]]
+        self.assertFalse("ii." in comment_text)
