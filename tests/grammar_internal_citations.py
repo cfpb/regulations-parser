@@ -1,5 +1,5 @@
 #vim: set encoding=utf-8
-from grammar.internal_citations import *
+from parser.grammar.internal_citations import *
 from pyparsing import ParseException
 from unittest import TestCase
 

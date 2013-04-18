@@ -1,6 +1,6 @@
-import api_stub
-import table_of_contents
-from whole_layer_generator import WholeTreeLayerGenerator
+import parser.api_stub
+import parser.layer.table_of_contents
+from parser.layer.whole_layer_generator import WholeTreeLayerGenerator
 import json
 
 

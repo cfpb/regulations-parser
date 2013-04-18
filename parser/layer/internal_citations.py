@@ -1,6 +1,6 @@
 #vim: set encoding=utf-8
 import string
-from grammar import internal_citations as grammar
+from parser.grammar import internal_citations as grammar
 from pyparsing import Word, Optional, oneOf, OneOrMore, Regex, originalTextFor, Suppress
 
 class InternalCitationParser(object):
