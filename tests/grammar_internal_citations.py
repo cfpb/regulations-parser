@@ -22,6 +22,18 @@ class GrammerInternalCitationsTest(TestCase):
         for citation in citations:
             self.assertRaises(ParseException, regtext_citation.parseString, 
                     citation)
+    def test_regtext_in_context(self):
+        seg1 = u"This text will be checked for "
+        seg2 = u"§ 105.22(b)(1)"
+        seg3 = u" sections within it. For example § this is not a section\n"
+        seg4 = u"§§ 22.32(a) and 39.21(c)(4)(iv)(Q)"
+        seg5 = u" § not a section."
+        offsets = [(start, end) for _,start,end in 
+                regtext_citation.scanString(seg1+seg2+seg3+seg4+seg5)]
+        self.assertEqual(offsets,
+                #   Trailing space is included
+                [   (len(seg1), len(seg1+seg2) + 1),
+                    (len(seg1+seg2+seg3), len(seg1+seg2+seg3+seg4) + 1)])
     def test_multiple_paragraph_pieces(self):
         """Check that we can pull out paragraph pieces from
         multiple_paragraphs parser."""
@@ -70,3 +82,14 @@ class GrammerInternalCitationsTest(TestCase):
         self.assertEqual(1,len(comments))
         comment_text = text[comments[0][1]:comments[0][2]]
         self.assertFalse("ii." in comment_text)
+    def test_comment_in_context(self):
+        text = "This has (a)(1) no paragraph (b) commentary citations"
+        self.assertEqual([], list(comment_citation.scanString(text)))
+        text = "This has one comment 17(b)-7"
+        offsets = [(s,e) for _,s,e in comment_citation.scanString(text)]
+        self.assertEqual([(13, len(text))], offsets)
+        text = "Multiple: comment 17(b)-7 and comment 20(a)(3)-2 and then "
+        text += "comment\n20(b)(2)-4.ii."
+        #   does not include the trailing space
+        offsets = [(s,e) for _,s,e in comment_citation.scanString(text)]
+        self.assertEqual([(10, 25), (30, 48), (58, len(text)-1)], offsets)
