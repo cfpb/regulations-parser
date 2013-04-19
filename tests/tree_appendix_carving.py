@@ -22,14 +22,14 @@ class DepthAppendixCarvingTest(TestCase):
         self.assertEqual((0, len(appa)),
                 find_next_appendix_offsets(appa+supp))
 
-    def test_appendicies(self):
+    def test_appendices(self):
         sect1 = "Some \n"
         appa = "Appendix A Title\nContent\ncontent\n\n"
         appb = "Appendix Q More Info\n\nContent content\n"
         supp = "Supplement I The Interpretations\n\nAppendix Q\n"
         supp += "Interpretations about appendix Q"
 
-        apps = appendicies(sect1 + appa + appb + supp)
+        apps = appendices(sect1 + appa + appb + supp)
         self.assertEqual(2, len(apps))
         self.assertEqual((len(sect1), len(sect1+appa)), apps[0])
         self.assertEqual((len(sect1+appa), len(sect1+appa+appb)), apps[1])

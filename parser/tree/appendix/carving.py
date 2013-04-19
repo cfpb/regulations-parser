@@ -23,7 +23,7 @@ def find_next_appendix_offsets(text):
     return (start, end)
 
 
-def appendicies(text):
+def appendices(text):
     """Carve out a list of all the appendix offsets."""
     def offsets_fn(remaining_text, idx, excludes):
         return find_next_appendix_offsets(remaining_text)

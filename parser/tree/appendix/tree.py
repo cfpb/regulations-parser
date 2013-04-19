@@ -11,7 +11,7 @@ def trees_from(text, part, parent_label):
     appendix. Text is the text of the entire regulation, while part is the
     regulation's part (e.g. 1520.)"""
     children = []
-    for begin, end in carving.appendicies(text):
+    for begin, end in carving.appendices(text):
         title, appendix = utils.title_body(text[begin:end])
         appendix_letter = carving.get_appendix_letter(title, part)
         label = struct.extend_label(parent_label, "-" + appendix_letter,
