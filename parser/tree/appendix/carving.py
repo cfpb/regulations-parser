@@ -9,7 +9,7 @@ def find_appendix_start(text):
 def find_next_appendix_offsets(text):
     """Find the start/end of the next appendix. Accounts for supplements"""
     offsets = search.find_offsets(text, find_appendix_start)
-    if offsets == None:
+    if offsets is None:
         return None
 
     start, end = offsets

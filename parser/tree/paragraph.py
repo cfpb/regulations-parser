@@ -81,13 +81,13 @@ class ParagraphParser():
         does not just up a p_level -- see build_paragraph_tree below."""
         start = self.find_paragraph_start_match(text, p_level, paragraph, 
                 exclude)
-        if start == None:
+        if start is None:
             return None
         id_start, id_end = start
         end = self.find_paragraph_start_match(text[id_end:], p_level, 
                 paragraph + 1, [(e_start - id_end, e_end - id_end) 
                     for e_start, e_end in exclude])
-        if end == None:
+        if end is None:
             end = len(text)
         else:
             end = end[0] + id_end

@@ -8,7 +8,7 @@ def find_start(text, heading, index):
 def find_offsets(text, search_fn):
     """Find the start and end of an appendix, supplement, etc."""
     start = search_fn(text)
-    if start == None or start == -1:
+    if start is None or start == -1:
         return None
 
     post_start_text = text[start+1:]

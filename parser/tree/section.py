@@ -20,7 +20,7 @@ def find_next_section_start(text, part):
 def next_section_offsets(text, part):
     """Find the start/end of the next section"""
     offsets = find_offsets(text, lambda t: find_next_section_start(t, part))
-    if offsets == None:
+    if offsets is None:
         return None
 
     start, end = offsets
