@@ -1,5 +1,6 @@
 
 class LayerGenerator():
+
     def __init__(self, regulation_tree, generator):
         self.tree = regulation_tree
         self.layer_generator = generator
@@ -19,10 +20,11 @@ class LayerGenerator():
         for c in node['children']:
             self.process_node(c)
 
+
 if __name__ == "__main__":
-    import api_stub
-    import external_citations
-    import internal_citations
+    import parsing.api_stub
+    import parsing.layer.external_citations
+    import parsing.layer.internal_citations
     import json
 
     reg_json = api_stub.get_regulation_as_json('/vagrant/data/regulations/rege/rege.json')

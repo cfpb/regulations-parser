@@ -8,6 +8,7 @@ def keep_pos(source, location, tokens):
     location."""
     return (WrappedResult(tokens, location, getTokensEndLoc()),)
 
+
 class WrappedResult():
     """Keep track of matches along with their position. This is a bit of a
     hack to get around PyParsing's tendency to drop that info."""
@@ -16,6 +17,7 @@ class WrappedResult():
         self.pos = (start, end)
     def __getattr__(self, attr):
         return getattr(self.tokens, attr)
+
 
 lower_p = (
         Suppress("(") 
@@ -34,9 +36,11 @@ upper_p = (
         + Word(string.ascii_uppercase).setResultsName("level4") 
         + Suppress(")"))
 
+
 depth3_p = roman_p + Optional(upper_p)
 depth2_p = digit_p + Optional(depth3_p)
 depth1_p = lower_p + Optional(depth2_p)
+
 
 any_depth_p = (
         depth1_p.setResultsName("depth1_p") 
@@ -44,12 +48,15 @@ any_depth_p = (
         | depth3_p.setResultsName("depth3_p") 
         | upper_p.setResultsName("depth4_p"))
 
+
 and_phrases = Suppress(Regex(",|and|or") + Optional("and"))
+
 
 paragraph_tail = OneOrMore(and_phrases +
         any_depth_p.setParseAction(keep_pos).setResultsName("p_tail",
             listAllMatches=True)
         )
+
 
 single_section = (
         Word(string.digits).setResultsName("part")
@@ -59,9 +66,11 @@ single_section = (
             + Optional(paragraph_tail))
         ).setParseAction(keep_pos)
 
+
 single_section_with_marker = (
         Suppress(u"§") 
         + single_section.setResultsName("without_marker"))
+
 
 multiple_sections = (
         Suppress(u"§§")
@@ -69,18 +78,35 @@ multiple_sections = (
         + OneOrMore(and_phrases 
             + single_section.setResultsName("s_tail", listAllMatches=True)))
 
+
 single_paragraph = (
         Suppress("paragraph") 
         + any_depth_p.setResultsName("p_head")
         )
+
 
 multiple_paragraphs = (
         Suppress("paragraphs") 
         + any_depth_p.setResultsName("p_head")
         + paragraph_tail)
 
-any_citation = (
+
+regtext_citation = (
     multiple_sections.setResultsName("multiple_sections") 
     | single_section_with_marker.setResultsName("single_section")
     | single_paragraph.setResultsName("single_paragraph") 
     | multiple_paragraphs.setResultsName("multiple_paragraphs"))
+
+
+upper_dec = "." + Word(string.ascii_uppercase)
+roman_dec = "." + Word("ivxlcdm")
+
+
+comment_citation = (
+    "comment" 
+    + (Word(string.digits) + depth1_p)
+    + "-" 
+    + (Word(string.digits)
+        + Optional(roman_dec + Optional(upper_dec))
+        ).leaveWhitespace() # Exclude any period + space (end of sentence)
+    )

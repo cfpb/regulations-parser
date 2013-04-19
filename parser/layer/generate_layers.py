@@ -1,6 +1,6 @@
-import api_stub
-import table_of_contents
-from whole_layer_generator import WholeTreeLayerGenerator
+import parser.api_stub
+import parser.layer.table_of_contents
+from parser.layer.whole_layer_generator import WholeTreeLayerGenerator
 import json
 
 
@@ -14,6 +14,7 @@ def generate_table_of_contents(reg_json):
     contents_layer.update(toc)
 
     print json.dumps(contents_layer)
+
 
 if __name__ == "__main__":
     reg_json = api_stub.get_regulation_as_json('/vagrant/data/regulations/rege/rege.json')
