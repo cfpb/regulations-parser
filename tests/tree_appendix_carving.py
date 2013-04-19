@@ -2,11 +2,13 @@ from parser.tree.appendix.carving import *
 from unittest import TestCase
 
 class DepthAppendixCarvingTest(TestCase):
+
     def test_find_appendix_start(self):
         text = "Some \nAppendix C Other\n\n Thing Appendix A\nAppendix B"
         self.assertEqual(6, find_appendix_start(text))
         self.assertEqual(35, find_appendix_start(text[7:]))
         self.assertEqual(None, find_appendix_start(text[7 + 36:]))
+
     def test_find_next_appendix_offsets(self):
         sect1 = "Some \n"
         appa = "Appendix A Title\nContent\ncontent\n\n"
@@ -19,6 +21,7 @@ class DepthAppendixCarvingTest(TestCase):
                 find_next_appendix_offsets(sect1+appa+appb))
         self.assertEqual((0, len(appa)),
                 find_next_appendix_offsets(appa+supp))
+
     def test_appendicies(self):
         sect1 = "Some \n"
         appa = "Appendix A Title\nContent\ncontent\n\n"
@@ -36,6 +39,7 @@ class DepthAppendixCarvingTest(TestCase):
         self.assertEqual(6, find_appendix_section_start(text, 'A'))
         self.assertEqual(24, find_appendix_section_start(text, 'B'))
         self.assertEqual(None, find_appendix_section_start(text, 'C'))
+
     def test_find_next_appendix_section_offsets(self):
         head = "More\n"
         a5 = "A-5--Some Title\nContent\ncontent\n"
@@ -44,6 +48,7 @@ class DepthAppendixCarvingTest(TestCase):
                 find_next_appendix_section_offsets(head+a5+a8, 'A'))
         self.assertEqual((0, len(a8)),
                 find_next_appendix_section_offsets(a8, 'A'))
+
     def test_appendix_sections(self):
         head = "More\n"
         a5 = "A-5--Some Title\nContent\ncontent\n"
@@ -61,6 +66,7 @@ class DepthAppendixCarvingTest(TestCase):
                 get_appendix_letter("Appendix A to Part 511", 511))
         self.assertEqual("ZQR", 
                 get_appendix_letter("Appendix ZQR to Part 10101", 10101))
+
     def test_get_appendix_section_number(self):
         self.assertEqual("2", 
                 get_appendix_section_number("A-2--Title Stuff", 'A'))

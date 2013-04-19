@@ -3,7 +3,9 @@ from unittest import TestCase
 
 class EmptyClass: pass
 
+
 class DepthInterpretationCarvingTest(TestCase):
+
     def header(self, p1):
         h = EmptyClass()
         h.keyterm = ""
@@ -24,6 +26,7 @@ class DepthInterpretationCarvingTest(TestCase):
 
         begin,end = find_next_section_offsets(text, 201)
         self.assertEqual(section_5, text[begin:end])
+
     def test_sections(self):
         section_5 = "Section 201.5\nSection 202.3\nother body\n\n"
         section_65 = "Section 201.65\n body body\n\nSection Other"
@@ -36,14 +39,17 @@ class DepthInterpretationCarvingTest(TestCase):
         self.assertEqual(section_5, text[begin:end])
         begin, end = interps[1]
         self.assertEqual(section_65, text[begin:end])
+
     def test_get_section_number(self):
         self.assertEqual("101", 
                 get_section_number("Section 55.101 Something Here", 55))
+
     def test_find_next_appendix_offsets(self):
         part1 = "This is \nAppendix Q - Some title\nBody body\n"
         part2 = "Appendix B - Another\nThe reckoning."
         self.assertEqual((9, len(part1)), 
                 find_next_appendix_offsets(part1 + part2))
+
     def test_appendices(self):
         part0 = "Something something\n"
         app1 = "Appendix R - Some title\nThen some\nbody content here\n"
@@ -54,8 +60,10 @@ class DepthInterpretationCarvingTest(TestCase):
             (len(part0+app1), len(part0+app1+app2)),
             (len(part0+app1+app2), len(part0+app1+app2+app3))
             ], appendices(part0 + app1 + app2 + app3))
+
     def test_get_appendix_letter(self):
         self.assertEqual("M", get_appendix_letter("Appendix M - More Info"))
+
     def test_applicable_offsets_paragraphs(self):
         p4_text = "Paragraph 4(z)\nParagraph Invalid\n"
         text = "Paragraph 3(b)(c)\n\n\n" + p4_text
@@ -70,6 +78,7 @@ class DepthInterpretationCarvingTest(TestCase):
         self.assertEqual(1, len(four))
         start, end = four[0]
         self.assertEqual(p4_text, text[start:end])
+
     def test_applicable_offsets_keywords(self):
         p3_kw1_text = "3(b)(1)(iv)(Z) Some Definition\n"
         p3_kw2_text = "3(i) Another\n3 none\n"
@@ -82,6 +91,7 @@ class DepthInterpretationCarvingTest(TestCase):
         self.assertEqual(p3_kw1_text, text[start:end])
         start, end = three[1]
         self.assertEqual(p3_kw2_text, text[start:end])
+
     def test_applicable_offsets_mix(self):
         p1_text = "Paragraph 3(b)(1)\n\n"
         p2_text = "3(b)(1)(iv)(Z) Some Definition\n"
@@ -94,10 +104,12 @@ class DepthInterpretationCarvingTest(TestCase):
 
         self.assertEqual([p1_text, p2_text, p3_text], 
                 [text[start:end] for start, end in three])
+
     def test_build_label_immutable(self):
         label = "Some label"
         build_label(label, self.header('a'))
         self.assertEqual("Some label", label)
+
     def test_build_label_p_depth(self):
         prefix = "104.22"
         self.assertEqual(prefix + "(a)", 
@@ -113,9 +125,11 @@ class DepthInterpretationCarvingTest(TestCase):
         match.paragraph4 = EmptyClass()
         match.paragraph4.id = 'E'
         self.assertEqual(prefix + "(b)(3)(iv)(E)", build_label(prefix, match))
+
     def test_applicable_paragraph_none(self):
         text = "No paragraph here\n"
         self.assertEqual(None, applicable_paragraph(text, 101))
+
     def test_applicable_paragraph_paragraphs(self):
         text = "Paragraph 3(b)\n"
         self.assertEqual(None, applicable_paragraph(text, 1))
@@ -125,6 +139,7 @@ class DepthInterpretationCarvingTest(TestCase):
         self.assertNotEqual('', three.whole)
         self.assertEqual('b', three.paragraph1.id)
         self.assertEqual('', three.paragraph2)
+
     def test_applicable_paragraph_keywords(self):
         text = "3(b)(1)(iv)(Z) Some Definition\n"
 
@@ -137,6 +152,7 @@ class DepthInterpretationCarvingTest(TestCase):
         self.assertEqual('1', three.paragraph2.id)
         self.assertEqual('iv', three.paragraph3.id)
         self.assertEqual('Z', three.paragraph4.id)
+
     def test_applicable_paragraph_nonewline(self):
         text = "Paragraph 4(b)(3)(i)"
         self.assertEqual(str(applicable_paragraph(text + "\n", 4)), 

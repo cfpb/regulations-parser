@@ -11,11 +11,14 @@ from parser.tree import struct
 def _mk_label(old_label, next_part):
     return struct.extend_label(old_label, '-' + next_part, next_part)
 
+
 regParser = ParagraphParser(r"\(%s\)", _mk_label)
+
 
 def find_next_section_start(text, part):
     """Find the start of the next section (e.g. 205.14)"""
     return find_start(text, u"§", str(part) + r"\.\d+")
+
 
 def next_section_offsets(text, part):
     """Find the start/end of the next section"""
@@ -32,11 +35,13 @@ def next_section_offsets(text, part):
         return (start, supplement_start)
     return (start, end)
 
+
 def sections(text, part):
     """Return a list of section offsets. Does not include appendices."""
     def offsets_fn(remaining_text, idx, excludes):
         return next_section_offsets(remaining_text, part)
     return segments(text, offsets_fn)
+
 
 def build_section_tree(text, part):
     """Construct the tree for a whole section. Assumes the section starts

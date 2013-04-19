@@ -15,6 +15,7 @@ def generate_table_of_contents(reg_json):
 
     print json.dumps(contents_layer)
 
+
 if __name__ == "__main__":
     reg_json = api_stub.get_regulation_as_json('/vagrant/data/regulations/rege/rege.json')
     generate_table_of_contents(reg_json)

@@ -2,6 +2,7 @@ from parser.tree.supplement import *
 from unittest import TestCase
 
 class DepthSupplementTest(TestCase):
+
     def test_find_supplement_start(self):
         text = "Supplement A S\nOther\nSupplement I Thing\nXX Supplement C Q"
         self.assertEqual(21, find_supplement_start(text))

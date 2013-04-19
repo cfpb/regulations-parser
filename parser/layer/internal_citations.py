@@ -47,7 +47,6 @@ class InternalCitationParser(object):
                 citation['offsets'][i] = (new_start, new_end)
         return citations
 
-
     def paragraph_list(self, match, start, end, part, section):
         """Return the layer elements associated with a list of paragraphs.
         Use the part/section as the prefix for the citation's list."""

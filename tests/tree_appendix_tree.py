@@ -3,11 +3,13 @@ from parser.tree.appendix.tree import *
 from unittest import TestCase
 
 class DepthAppendixTreeTest(TestCase):
+
     def test_generic_tree_no_children(self):
         text = "Non title text"
         l = struct.label('Some label')
         node = generic_tree(text, l)
         self.assertEqual(struct.node(text, label=l), node)
+
     def test_generic_tree_with_children(self):
         start = "some text\n"
         t1 = "Title Text One"
@@ -32,11 +34,13 @@ class DepthAppendixTreeTest(TestCase):
         self.assertEqual(struct.label('sl-b', ['s', 'l', 'b'], t2),
             node['label'])
         self.assertEqual(0, len(node['children']))
+
     def test_paragraph_tree_no_children(self):
         text = "Non title text"
         l = struct.label('Some label')
         node = paragraph_tree('A', [], text, l)
         self.assertEqual(struct.node(text, label=l), node)
+
     def test_paragraph_tree_with_children(self):
         fill = "dsfdffsfs\n"
         t1 = 'Q-3 This is the title'
@@ -69,6 +73,7 @@ class DepthAppendixTreeTest(TestCase):
         self.assertEqual(p3, node['text'])
         self.assertEqual(struct.label('L-44', ['l','44'], t3), node['label'])
         self.assertEqual(0, len(node['children']))
+
     def test_trees_from(self):
         reg_text = "Some reg text\nOther reg text\nSection 55. etc.\n"
         titleC = "Appendix C to Part 22 The Reckoning"

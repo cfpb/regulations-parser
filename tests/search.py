@@ -2,6 +2,7 @@ from parser.search import *
 from unittest import TestCase
 
 class SearchTest(TestCase):
+
     def test_find_start(self):
         text = "Here is \n Some text\nWith Some\nHeader Info Here"
         text += "\nthen nonsense"
@@ -10,6 +11,7 @@ class SearchTest(TestCase):
         self.assertEqual(47, find_start(text, "then", "nonsense"))
         self.assertEqual(None, find_start(text, "doesn't", "exist"))
         self.assertEqual(None, find_start(text, "Here", "text"))
+
     def test_find_offsets(self):
         text = "Trying to find the start of this section and the other "
         text += "start here"
@@ -19,6 +21,7 @@ class SearchTest(TestCase):
         self.assertEqual((0,len(text)), 
                 find_offsets(text, lambda t:t.find("Trying")))
         self.assertEqual(None, find_offsets(text, lambda t:t.find("xxxx")))
+
     def test_find_segments_offsets(self):
         def offsets(text, seg_id, exclude):
             if text:
@@ -31,6 +34,7 @@ class SearchTest(TestCase):
         self.assertEqual((22,27), segs[2])
         self.assertEqual((31,36), segs[3])
         self.assertEqual((40,45), segs[4])
+
     def test_find_segments_seg_ids(self):
         seg_ids = []
         def offsets(text, seg_id, exclude):
@@ -40,6 +44,7 @@ class SearchTest(TestCase):
         text = "This is some text, lalalala text text song."
         segments(text, offsets)
         self.assertEqual([0,1,2,3,4], seg_ids)
+
     def test_find_segments_excludes(self):
         excludes = []
         def offsets(text, seg_id, exclude):

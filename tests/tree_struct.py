@@ -2,6 +2,7 @@ from parser.tree.struct import *
 from unittest import TestCase
 
 class DepthTreeTest(TestCase):
+
     def test_walk(self):
         n1 = node("1")
         n2 = node("2")
@@ -19,6 +20,7 @@ class DepthTreeTest(TestCase):
         ret_val = walk(n1, add_node)
         self.assertEqual([n1, n2, n4, n3], order)
         self.assertEqual(["1", "4", "3"], ret_val)
+
     def test_find(self):
         n1 = node('n1', label=label('n1'))
         n2 = node('n2', label=label('n2'))

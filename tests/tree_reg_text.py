@@ -5,10 +5,12 @@ from parser.tree.struct import label, node
 from unittest import TestCase
 
 class DepthRegTextTest(TestCase):
+
     def test_build_reg_text_tree_no_sections(self):
         text = "Regulation Title\nThen some more content"
         self.assertEqual(node(text, label=label("201", ["201"], 
             "Regulation Title")), build_reg_text_tree(text, 201))
+
     def test_build_reg_text_tree_sections(self):
         title = u"Regulation Title"
         sect1_title = u"§ 204.1 Best Section"

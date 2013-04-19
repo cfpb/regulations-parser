@@ -4,6 +4,7 @@ from pyparsing import ParseException
 from unittest import TestCase
 
 class GrammerInternalCitationsTest(TestCase):
+
     def test_regtext_citation_positive(self):
         citations = [
             u"§§ 205.7, 205.8, and 205.9",
@@ -17,11 +18,13 @@ class GrammerInternalCitationsTest(TestCase):
         ]
         for citation in citations:
             regtext_citation.parseString(citation)
+
     def test_regtext_citation_negative(self):
         citations = [u"§§ abc.tt", u"§ bbb.qq", u"205.9(a)", u"§§  205.9(1)"]
         for citation in citations:
             self.assertRaises(ParseException, regtext_citation.parseString, 
                     citation)
+
     def test_regtext_in_context(self):
         seg1 = u"This text will be checked for "
         seg2 = u"§ 105.22(b)(1)"
@@ -34,6 +37,7 @@ class GrammerInternalCitationsTest(TestCase):
                 #   Trailing space is included
                 [   (len(seg1), len(seg1+seg2) + 1),
                     (len(seg1+seg2+seg3), len(seg1+seg2+seg3+seg4) + 1)])
+
     def test_multiple_paragraph_pieces(self):
         """Check that we can pull out paragraph pieces from
         multiple_paragraphs parser."""
@@ -47,6 +51,7 @@ class GrammerInternalCitationsTest(TestCase):
         self.assertEqual('2', paragraphs[1].level2)
         self.assertEqual('c', paragraphs[2].level1)
         self.assertEqual('3', paragraphs[2].level2)
+
     def test_comment_positive(self):
         citations = [
             "comment 10(b)-5",
@@ -64,6 +69,7 @@ class GrammerInternalCitationsTest(TestCase):
                     len(list(comment_citation.scanString(citation))))
             _, _, end = comment_citation.scanString(citation).next()
             self.assertEqual(len(citation), end)
+
     def test_comment_negative(self):
         citations = [
             "comment 10(5)-5",
@@ -74,6 +80,7 @@ class GrammerInternalCitationsTest(TestCase):
         for citation in citations:
             self.assertRaises(ParseException, comment_citation.parseString, 
                     citation)
+
     def test_comment_whitepace(self):
         """Confirm that whitespace is not allowed between period-separated
         piece"""
@@ -82,6 +89,7 @@ class GrammerInternalCitationsTest(TestCase):
         self.assertEqual(1,len(comments))
         comment_text = text[comments[0][1]:comments[0][2]]
         self.assertFalse("ii." in comment_text)
+
     def test_comment_in_context(self):
         text = "This has (a)(1) no paragraph (b) commentary citations"
         self.assertEqual([], list(comment_citation.scanString(text)))

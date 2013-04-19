@@ -10,6 +10,7 @@ class DepthParagraphTest(TestCase):
                     next_part)
 
         self.regParser = ParagraphParser(r"\(%s\)", _mk_label)
+
     def test_matching_subparagraph_ids(self):
         matches = self.regParser.matching_subparagraph_ids(0,8)    #   'i'
         self.assertEqual(1, len(matches))
@@ -17,6 +18,7 @@ class DepthParagraphTest(TestCase):
         self.assertEqual(0, matches[0][1])
         matches = self.regParser.matching_subparagraph_ids(1,3)    #   '4'
         self.assertEqual(0, len(matches))
+
     def test_best_start(self):
         text = "This is my (ii) awesome text with a subparagraph in it."
         begin_match = (0,0)
@@ -26,6 +28,7 @@ class DepthParagraphTest(TestCase):
                 self.regParser.best_start(text, 0, 8, starts))
         self.assertEqual(begin_match, 
                 self.regParser.best_start(text, 0, 9, starts))
+
     def test_find_paragraph_start_match_success(self):
         """Simple label checks."""
         text = "This (a) is (Z) the first (1) section for (2) something\n"
@@ -54,6 +57,7 @@ class DepthParagraphTest(TestCase):
                 self.regParser.find_paragraph_start_match(text, 3, 25))
         self.assertEqual(None, 
                 self.regParser.find_paragraph_start_match(text, 3, 26))
+
     def test_find_paragraph_start_match_excludes(self):
         """Excluded ranges should not be included in results."""
         text = "This (a) is (a) a test (a) section for (a) testing."
@@ -82,6 +86,7 @@ class DepthParagraphTest(TestCase):
         self.assertEqual(None, 
                 self.regParser.find_paragraph_start_match(text, 0, 0, 
                 [(0,len(text))]))
+
     def test_find_paragraph_start_match_is(self):
         """Test the case where we are looking for paragraph (i) (the
         letter,) but we run into (i) (the roman numeral.)"""
@@ -89,6 +94,7 @@ class DepthParagraphTest(TestCase):
         text2 = "(i) this paragraph does not."
         self.assertEqual((len(text1), len(text1)+3), 
                 self.regParser.find_paragraph_start_match(text1+text2, 0, 8))
+
     def test_paragraph_offsets_present(self):
         """Test that section_offsets works as expected for good input."""
         text = "This (a) is a good (b) test for (c) something like this."""
@@ -96,12 +102,14 @@ class DepthParagraphTest(TestCase):
         self.assertEqual((19,32), self.regParser.paragraph_offsets(text, 0, 1))
         self.assertEqual((32,len(text)), 
                 self.regParser.paragraph_offsets(text, 0, 2))
+
     def test_paragraph_offsets_not_present(self):
         """Verify we get None when the searched for text isn't there."""
         text = "This (a) is a good (b) test for (c) something like this."""
         self.assertEqual(None, self.regParser.paragraph_offsets(text, 0, 3))
         self.assertEqual(None, self.regParser.paragraph_offsets(text, 1, 0))
         self.assertEqual(None, self.regParser.paragraph_offsets(text, 2, 0))
+
     def test_paragraphs(self):
         """This method should pull out the relevant paragraphs, as a list"""
         text = "This (a) is a good (1) test (2) of (3) some (b) body."
@@ -120,6 +128,7 @@ class DepthParagraphTest(TestCase):
         ps = self.regParser.paragraphs(text,2)
         paragraph_strings = [text[s[0]:s[1]] for s in ps]
         self.assertEqual(paragraph_strings, [])
+
     def test_build_paragraph_tree(self):
         """Verify several paragraph trees."""
         text = "This (a) is a good (1) test (2) of (3) some (b) body."
@@ -162,6 +171,7 @@ class DepthParagraphTest(TestCase):
                         }
                     ]
                 })
+
     def test_build_paragraph_tree_exclude(self):
         """Paragraph tree should not split on exclude areas."""
         ref = "Ref (b)(2)"
@@ -196,6 +206,7 @@ class DepthParagraphTest(TestCase):
                         }
                     ]
                 })
+
     def test_build_paragraph_tree_label_preamble(self):
         """Paragraph tree's labels can be prepended."""
         text = "This (a) is a good (1) test (2) of (3) some (b) body."

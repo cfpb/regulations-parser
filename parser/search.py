@@ -1,9 +1,11 @@
 import re
+
 def find_start(text, heading, index):
     """Find the start of an appendix, supplement, etc."""
     match = re.search(r'^%s %s' % (heading, index), text, re.MULTILINE)
     if match:
         return match.start()
+
 
 def find_offsets(text, search_fn):
     """Find the start and end of an appendix, supplement, etc."""
@@ -17,6 +19,7 @@ def find_offsets(text, search_fn):
         return (start, start + end + 1)
     else:
         return (start, len(text))
+
 
 def segments(text, offsets_fn, exclude=[]):
     """Split a block of text into a list of its sub parts. Often this means

@@ -4,10 +4,14 @@ from parser.tree import struct
 from parser.tree.paragraph import ParagraphParser
 from parser.tree.interpretation import carving
 
+
 def _mk_label(old_label, next_part):
     return struct.extend_label(old_label, '-' + next_part, next_part)
 #   Can only be preceded by white space or a start of line
+
+
 interpParser = ParagraphParser(r"(?<![^\s])%s\.", _mk_label)
+
 
 def appendix_tree(text, label):
     """Build a tree representing an appendix interpretation (as opposed to
@@ -21,6 +25,7 @@ def appendix_tree(text, label):
             label=struct.extend_label(label, '-' + label_text, label_text, 
                 title)
             )
+
 
 def build(text, part):
     """Create a tree representing the whole interpretation."""
@@ -46,6 +51,7 @@ def build(text, part):
     else:
         return struct.node(body, appendices, label)
 
+
 def section_tree(text, part, parent_label):
     """Tree representing a single section within the interpretation."""
     title, body = utils.title_body(text)
@@ -60,6 +66,7 @@ def section_tree(text, part, parent_label):
         return struct.node(body[:offsets[0][0]], children, label)
     else:
         return struct.node(body, label=label)
+
 
 def applicable_tree(text, section, parent_label):
     """Tree representing all of the text applicable to a single paragraph."""

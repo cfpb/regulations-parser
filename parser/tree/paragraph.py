@@ -13,7 +13,10 @@ p_levels = [
     #   Technically, there's italics (alpha) and (roman), but we aren't
     #   handling that yet
 ]
+
+
 class ParagraphParser():
+
     def __init__(self, p_regex, inner_label_fn):
         """p_regex is the regular expression used when searching through
         paragraphs. It should contain a %s for the next paragraph 'part'
@@ -99,7 +102,6 @@ class ParagraphParser():
             return self.paragraph_offsets(remaining_text, p_level, p_idx, 
                     exclude)
         return segments(text, offsets_fn, exclude)
-
 
     def build_paragraph_tree(self, text, p_level = 0, exclude = [], 
             label = struct.label("", [])):

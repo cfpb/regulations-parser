@@ -5,6 +5,7 @@ from parser.tree.appendix import carving, generic
 from parser.tree.section import regParser
 import string
 
+
 def trees_from(text, part, parent_label):
     """Build a tree for the appendix section. It will have children for each
     appendix. Text is the text of the entire regulation, while part is the
@@ -23,6 +24,7 @@ def trees_from(text, part, parent_label):
         children.append(child)
     return children
 
+
 def generic_tree(text, label):
     """Use the "generic" parser to build a tree. The "generic" parser simply
     splits on Title Case and treats body text as the node content."""
@@ -38,6 +40,7 @@ def generic_tree(text, label):
         children.append(struct.node(body, label=struct.extend_label(label,
             "-" + label_character, label_character, seg_title)))
     return struct.node(text[:segments[0][0]], children, label)
+
 
 def paragraph_tree(appendix_letter, sections, text, label):
     """Use the paragraph parser to parse through each section in this

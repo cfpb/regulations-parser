@@ -2,6 +2,7 @@ from parser.tree.appendix.generic import *
 from unittest import TestCase
 
 class DepthAppendixGenericTest(TestCase):
+
     def test_find_next_segment(self):
         long_text = "This Is All I Capital Case But Is Really, Really "
         long_text += "Long. So Long That It Should Not Be A Title Sentence"
@@ -21,6 +22,7 @@ class DepthAppendixGenericTest(TestCase):
         white_space = "   \n\t\n"
         self.assertEqual((len(white_space), len(white_space + title)),
                 find_next_segment(white_space + title))
+
     def test_is_title_case(self):
         self.assertTrue(is_title_case("This Is In Title Case"))
         self.assertTrue(is_title_case("This is in Title Case"))
@@ -28,6 +30,7 @@ class DepthAppendixGenericTest(TestCase):
         self.assertTrue(is_title_case("        Title\n"))
         self.assertFalse(is_title_case("lowercase"))
         self.assertFalse(is_title_case("This Is Mostly in title case"))
+
     def test_segments(self):
         lines = [
                 "nonsection here",

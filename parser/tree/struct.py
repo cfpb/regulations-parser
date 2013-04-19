@@ -4,12 +4,16 @@ def label(text="", parts=[], title=None):
     return {'text': text, 'parts': parts}
 _label = label
 
+
 def extend_label(existing, text, part, title=None):
     return label(existing['text'] + text, existing['parts'] + [part], title)
+
+
 def node(text='', children=[], label=None):
     if not label:
         label = _label('',[])
     return {'text': text, 'children': children, 'label': label}
+
 
 def walk(node, fn):
     """Perform fn for every node in the tree. Pre-order traversal. fn must
@@ -23,6 +27,7 @@ def walk(node, fn):
         results += walk(child, fn)
     return results
 
+
 def find(root, label):
     """Search through the tree to find the node with this label."""
     def check(node):
@@ -31,6 +36,7 @@ def find(root, label):
     response = walk(root, check)
     if response:
         return response[0]
+
 
 def join_text(node):
     """Join the text of this node and all children"""

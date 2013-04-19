@@ -1,5 +1,6 @@
 
 class LayerGenerator():
+
     def __init__(self, regulation_tree, generator):
         self.tree = regulation_tree
         self.layer_generator = generator
@@ -18,6 +19,7 @@ class LayerGenerator():
 
         for c in node['children']:
             self.process_node(c)
+
 
 if __name__ == "__main__":
     import parsing.api_stub
