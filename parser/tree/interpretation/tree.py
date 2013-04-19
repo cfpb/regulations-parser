@@ -28,11 +28,11 @@ def build(text, part):
     label = struct.label("%d-Interpretations" % part, [str(part), 
         "Interpretations"],
             title)
-    appendix_offsets = carving.appendicies(body)
-    appendicies = []
+    appendix_offsets = carving.appendices(body)
+    appendices = []
     if appendix_offsets:
         for start, end in appendix_offsets:
-            appendicies.append(appendix_tree(body[start:end], label))
+            appendices.append(appendix_tree(body[start:end], label))
         body = body[:appendix_offsets[0][0]]
 
     sections = carving.sections(body, part)
@@ -41,10 +41,10 @@ def build(text, part):
         for start, end in sections:
             section_text = body[start:end]
             children.append(section_tree(section_text, part, label))
-        return struct.node(body[:sections[0][0]], children + appendicies, 
+        return struct.node(body[:sections[0][0]], children + appendices, 
                 label)
     else:
-        return struct.node(body, appendicies, label)
+        return struct.node(body, appendices, label)
 
 def section_tree(text, part, parent_label):
     """Tree representing a single section within the interpretation."""

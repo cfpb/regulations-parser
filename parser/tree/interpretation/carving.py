@@ -22,7 +22,7 @@ def find_next_appendix_offsets(text):
     def find_start(text):
         return search.find_start(text, u"Appendix", ur"[A-Z]")
     return search.find_offsets(text, find_start)
-def appendicies(text):
+def appendices(text):
     """Return a list of appendix offsets."""
     def offsets_fn(remaining_text, idx, excludes):
         return find_next_appendix_offsets(remaining_text)

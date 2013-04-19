@@ -53,7 +53,7 @@ class DepthInterpretationCarvingTest(TestCase):
             (len(part0), len(part0+app1)), 
             (len(part0+app1), len(part0+app1+app2)),
             (len(part0+app1+app2), len(part0+app1+app2+app3))
-            ], appendicies(part0 + app1 + app2 + app3))
+            ], appendices(part0 + app1 + app2 + app3))
     def test_get_appendix_letter(self):
         self.assertEqual("M", get_appendix_letter("Appendix M - More Info"))
     def test_applicable_offsets_paragraphs(self):
