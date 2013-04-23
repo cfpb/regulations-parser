@@ -1,6 +1,6 @@
 #vim: set encoding=utf-8
 import string
-from grammar import internal_citations as grammar
+from parser.grammar import internal_citations as grammar
 from pyparsing import Word, Optional, oneOf, OneOrMore, Regex, originalTextFor, Suppress
 
 class InternalCitationParser(object):
@@ -9,10 +9,10 @@ class InternalCitationParser(object):
         """ Parse the provided text, pulling out all the internal (self-referential) 
         citations. """
 
-        c = originalTextFor(grammar.any_citation)
+        c = originalTextFor(grammar.regtext_citation)
         all_citations = []
 
-        for citation, start, end in grammar.any_citation.scanString(text):
+        for citation, start, end in grammar.regtext_citation.scanString(text):
             if citation.single_paragraph or citation.multiple_paragraphs:
                 if citation.single_paragraph:
                     citation = citation.single_paragraph
@@ -46,7 +46,6 @@ class InternalCitationParser(object):
                 new_end = end - (len(string) - len(rstring))
                 citation['offsets'][i] = (new_start, new_end)
         return citations
-
 
     def paragraph_list(self, match, start, end, part, section):
         """Return the layer elements associated with a list of paragraphs.

@@ -1,4 +1,5 @@
 class WholeTreeLayerGenerator():
+
     def __init__(self, regulation_tree, generator):
         self.tree = regulation_tree
         self.layer_generator = generator
