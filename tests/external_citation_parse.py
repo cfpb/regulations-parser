@@ -12,6 +12,20 @@ class ParseTest(TestCase):
         parser = external_citations.ExternalCitationParser()
         citations = parser.parse(text, parts=None)
 
-        for c in citations:
-            print c
-        self.assertEqual(True, False)
+        self.assertEqual(len(citations), 1)
+
+        citation = citations[0]
+        self.assertEqual(citation['citation'], ['the', 'Act'])
+        self.assertEqual(citation['offsets'][0][0], 15)
+
+    def test_public_law(self):
+        """
+            Ensure that we successfully parse Public Law citations that look like 
+            the following: Public Law 111-203
+        """
+        text = u"Public Law 111-203"
+        parser = external_citations.ExternalCitationParser()
+        citations = parser.parse(text, parts=None)
+
+        self.assertEqual(len(citations), 1)
+        print citations

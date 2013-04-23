@@ -21,7 +21,10 @@ class ExternalCitationParser(object):
         #the_act_exp = "section" + Word(string.digits) + "of" + "the" + "Act"
         the_act_exp = Literal("the") + Literal("Act")
 
-        parse_all =  uscode_exp.setResultsName('USC') | cfr_exp | the_act_exp
+        public_law_exp = "Public" + "Law" + Word(string.digits) + '-' + Word(string.digits)
+        stat_at_large_exp = Word(string.digits) + Literal("Stat.") + Word(string.digits)
+
+        parse_all =  uscode_exp.setResultsName('USC') | cfr_exp | the_act_exp | public_law_exp
         return parse_all
 
     def citation_type(self, citation):
