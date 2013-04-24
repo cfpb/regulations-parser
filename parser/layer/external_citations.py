@@ -2,30 +2,16 @@
 import string
 import urllib
 from collections import defaultdict
-from pyparsing import *
+from parser.grammar import external_citations as grammar
 
-class ExternalCitationParser(object):
+from layer import Layer
+
+class ExternalCitationParser(Layer):
     #The different types of citations
     CODE_OF_FEDERAL_REGULATIONS = 'CFR'
     UNITED_STATES_CODE = 'USC'
     THE_ACT = 'ACT'
-
-    def get_parser(self):
-        """ Construct a grammar that parses references/citations to the 
-        United States Code and the Code of Federal Regulations. """
-        uscode_exp = Word(string.digits) + "U.S.C." + Word(string.digits)
-
-        cfr_exp_v1 = Word(string.digits) + "CFR" + "part" + Word(string.digits)
-        cfr_exp_v2 = Word(string.digits) + "CFR" + Word(string.digits) + "." + Word(string.digits)
-        cfr_exp = cfr_exp_v1.setResultsName('V1') ^ cfr_exp_v2.setResultsName('V2')
-        #the_act_exp = "section" + Word(string.digits) + "of" + "the" + "Act"
-        the_act_exp = Literal("the") + Literal("Act")
-
-        public_law_exp = "Public" + "Law" + Word(string.digits) + '-' + Word(string.digits)
-        stat_at_large_exp = Word(string.digits) + Literal("Stat.") + Word(string.digits)
-
-        parse_all =  uscode_exp.setResultsName('USC') | cfr_exp | the_act_exp | public_law_exp
-        return parse_all
+    PUBLIC_LAW = 'PUBLIC_LAW'
 
     def citation_type(self, citation):
         """ Based on the citation parsed, return the type of the citation. """
@@ -35,15 +21,17 @@ class ExternalCitationParser(object):
             return ExternalCitationParser.UNITED_STATES_CODE
         elif 'Act' in citation:
             return ExternalCitationParser.THE_ACT
+        elif 'Public' in citation and 'Law' in citation:
+            return ExternalCitationParser.PUBLIC_LAW
 
     def reformat_citation(self, citation):
         """ Strip out unnecessary elements from the citation reference, so that 
         the various types of citations are presented consistently. """
-        return [c for c in citation if c not in ['U.S.C.', 'CFR', 'part', '.']]
+        return [c for c in citation if c not in ['U.S.C.', 'CFR', 'part', '.', 'Public', 'Law', '-']]
 
     def parse(self, text, parts=None):
         """ Parse the provided text, pulling out all the citations. """
-        parser  = self.get_parser()
+        parser  = grammar.regtext_external_citation
 
         cm = defaultdict(list)
         citation_strings = {}
@@ -60,3 +48,12 @@ class ExternalCitationParser(object):
             return layer_element
 
         return  [build_layer_element(k, offsets) for k,offsets in cm.items()]
+
+    def pre_process(self, tree):
+        #This layer has no pre-processing step
+        pass
+
+    def process(self, node):
+        citations_list = self.parse(node['text'], parts=node['label']['parts'])
+        if citations_list:
+            return (self.get_part_index(node['label']['parts']), citations_list)
