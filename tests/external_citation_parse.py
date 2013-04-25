@@ -8,9 +8,9 @@ class ParseTest(TestCase):
         """
             Test an external reference that looks like this: "section 918 of the Act"
         """
-        text = u"section 918 of the Act"
-        parser = external_citations.ExternalCitationParser()
-        citations = parser.parse(text, parts=None)
+        node = {'text': u"section 918 of the Act", 'label':{'parts':[1005, 2]}}
+        parser = external_citations.ExternalCitationParser(None)
+        citations = parser.process(node)
 
         self.assertEqual(len(citations), 1)
 
@@ -23,9 +23,8 @@ class ParseTest(TestCase):
             Ensure that we successfully parse Public Law citations that look like 
             the following: Public Law 111-203
         """
-        text = u"Public Law 111-203"
-        parser = external_citations.ExternalCitationParser()
-        citations = parser.parse(text, parts=None)
-
+        node = {'text': u"Public Law 111-203", 'label':{'parts':[1005, 2]}}
+        parser = external_citations.ExternalCitationParser(None)
+        citations = parser.process(node)
         self.assertEqual(len(citations), 1)
-        print citations
+        self.assertEqual(citations[0]['citation_type'], 'PUBLIC_LAW')

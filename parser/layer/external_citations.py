@@ -56,4 +56,4 @@ class ExternalCitationParser(Layer):
     def process(self, node):
         citations_list = self.parse(node['text'], parts=node['label']['parts'])
         if citations_list:
-            return (self.get_part_index(node['label']['parts']), citations_list)
+            return citations_list
