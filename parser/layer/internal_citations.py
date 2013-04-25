@@ -81,10 +81,6 @@ class InternalCitationParser(Layer):
                 })
         return citations
 
-    def pre_process(self, tree):
-        #This layer has no pre-processing step
-        pass
-
     def process(self, node):
         citations_list = self.parse(node['text'], parts=node['label']['parts'])
         if citations_list:

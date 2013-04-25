@@ -2,10 +2,6 @@ from layer import Layer
 
 class TableOfContentsLayer(Layer):
 
-    def pre_process(self):
-        #This layer has no pre-processing step.
-        pass
-
     def process(self, node):
         layer_element = []
 

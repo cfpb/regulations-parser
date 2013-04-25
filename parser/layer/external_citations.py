@@ -49,10 +49,6 @@ class ExternalCitationParser(Layer):
 
         return  [build_layer_element(k, offsets) for k,offsets in cm.items()]
 
-    def pre_process(self, tree):
-        #This layer has no pre-processing step
-        pass
-
     def process(self, node):
         citations_list = self.parse(node['text'], parts=node['label']['parts'])
         if citations_list:
