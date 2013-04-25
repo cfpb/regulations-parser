@@ -24,7 +24,7 @@ class Layer():
                 return found_node 
 
     def builder(self, node):
-        layer_element = process(self, node)
+        layer_element = self.process(node)
         if layer_element:
             part_index = '-'.join(node['label']['parts'])
             self.layer[part_index] = layer_element
