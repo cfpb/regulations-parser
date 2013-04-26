@@ -26,12 +26,11 @@ class Layer():
     def builder(self, node):
         layer_element = self.process(node)
         if layer_element:
-            part_index = '-'.join(node['label']['parts'])
-            self.layer[part_index] = layer_element
+            self.layer[node['label']['text']] = layer_element
 
         for c in node['children']:
             self.builder(c)
 
-    def build(self, **kwargs):
+    def build(self):
         self.builder(self.tree)
         return self.layer

@@ -22,11 +22,11 @@ def generate_table_of_contents(reg_json):
     """ Generate the Table of Contents layer """
 
     layer_generator = table_of_contents.TableOfContentsLayer(reg_json)
-    toc = layer_generator.build(sections_list=[['1005','A'], ['1005']])
+    toc = layer_generator.build()
     print json.dumps(toc)
 
 if __name__ == "__main__":
     reg_json = api_stub.get_regulation_as_json('/vagrant/data/regulations/regulation/1005/20111227')
-    #generate_table_of_contents(reg_json)
+    generate_table_of_contents(reg_json)
     #generate_internal_citations(reg_json)
-    generate_external_citations(reg_json)
+    #generate_external_citations(reg_json)
