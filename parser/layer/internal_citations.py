@@ -3,7 +3,9 @@ import string
 from parser.grammar import internal_citations as grammar
 from pyparsing import Word, Optional, oneOf, OneOrMore, Regex, originalTextFor, Suppress
 
-class InternalCitationParser(object):
+from layer import Layer
+
+class InternalCitationParser(Layer):
 
     def parse(self, text, parts=None):
         """ Parse the provided text, pulling out all the internal (self-referential) 
@@ -78,3 +80,8 @@ class InternalCitationParser(object):
                 'citation': filter(bool, label)
                 })
         return citations
+
+    def process(self, node):
+        citations_list = self.parse(node['text'], parts=node['label']['parts'])
+        if citations_list:
+            return citations_list

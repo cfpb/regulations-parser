@@ -3,13 +3,20 @@ from unittest import TestCase
 from parser.layer import internal_citations
 
 class ParseTest(TestCase):
+    def setUp(self):
+        self.parser = internal_citations.InternalCitationParser(None)
+
+    def test_process_method(self):
+        node = {'text': u"The requirements in paragraph (a)(4)(iii) of", 
+                'label':{'parts':['1005', '6']}}
+        citations = self.parser.process(node)
+        self.assertEqual(len(citations), 1)
 
     def test_multiple_paragraphs(self):
         """ Ensure that offsets work correctly in a simple multiple paragraph scenario. """
 
-        parser = internal_citations.InternalCitationParser()
         text = u"the requirements of paragraphs (c)(3), (d)(2), (e)(1), (e)(3), and (f) of this section"
-        citations = parser.parse(text, parts = ['1005', '6'])
+        citations = self.parser.parse(text, parts = ['1005', '6'])
 
         self.assertEqual(len(citations), 5)
 
@@ -23,16 +30,14 @@ class ParseTest(TestCase):
 
     def test_multiple_paragraph_or(self):
         """ Ensure that an 'or' between internal citations is matched correctly. """
-        parser = internal_citations.InternalCitationParser()
         text = u"set forth in paragraphs (b)(1) or (b)(2)" 
-        citations = parser.parse(text, parts = ['1005', '6'])
+        citations = self.parser.parse(text, parts = ['1005', '6'])
         self.assertEquals(2, len(citations))
 
     def test_single_paragraph(self):
         """ Ensure that offsets work correctly in a simple single paragraph citation. """
-        parser = internal_citations.InternalCitationParser()
         text = 'The requirements in paragraph (a)(4)(iii) of'
-        citations = parser.parse(text, parts = ['1005', '6'])
+        citations = self.parser.parse(text, parts = ['1005', '6'])
         c = citations[0]
         self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1]], 
                 u'(a)(4)(iii)')
@@ -41,16 +46,14 @@ class ParseTest(TestCase):
     def test_single_labeled_paragraph(self):
         """ Ensure the parser doesn't pick up unecessary elements, such as the 
         (a) in the text below. """
-        parser = internal_citations.InternalCitationParser()
         text = '(a) Solicited issuance. Except as provided in paragraph (b) of this section'
-        citations = parser.parse(text, parts = ['1005', '6'])
+        citations = self.parser.parse(text, parts = ['1005', '6'])
         self.assertEqual(1, len(citations))
 
     def test_multiple_section_citation(self):
         """ Ensure that offsets work correctly in a simple multiple section citation case. """
-        parser = internal_citations.InternalCitationParser()
         text = u"set forth in §§ 1005.6(b)(3) and 1005.11 (b)(1)(i) from 60 days"
-        citations = parser.parse(text, parts = ['1005', '6'])
+        citations = self.parser.parse(text, parts = ['1005', '6'])
 
         self.assertEqual(len(citations), 2)
         occurrences = 0
@@ -65,16 +68,14 @@ class ParseTest(TestCase):
 
     def test_single_section_citation(self):
         """ Ensure that offsets work correctly in a simple single section citation case. """
-        parser = internal_citations.InternalCitationParser()
         text = u"date in § 1005.20(h)(1) must disclose"
-        citations = parser.parse(text, parts = ['1005', '6'])
+        citations = self.parser.parse(text, parts = ['1005', '6'])
         c =  citations[0]
         self.assertEquals(text[c['offsets'][0][0]:c['offsets'][0][1]], u'1005.20(h)(1)')
 
     def test_multiple_paragraph_single_section(self):
         text = u'§ 1005.10(a) and (d)'
-        parser = internal_citations.InternalCitationParser()
-        result = parser.parse(text, parts = ['1005', '6'])
+        result = self.parser.parse(text, parts = ['1005', '6'])
         self.assertEqual(2, len(result))
         self.assertEqual(['1005', '10', 'a'], result[0]['citation'])
         self.assertEqual(['1005', '10', 'd'], result[1]['citation'])
@@ -85,8 +86,7 @@ class ParseTest(TestCase):
 
     def test_multiple_paragraph_single_section2(self):
         text = u'§ 1005.7(b)(1), (2) and (3)'
-        parser = internal_citations.InternalCitationParser()
-        result = parser.parse(text, parts = ['1005', '6'])
+        result = self.parser.parse(text, parts = ['1005', '6'])
         self.assertEqual(3, len(result))
         self.assertEqual(['1005', '7', 'b', '1'], result[0]['citation'])
         self.assertEqual(['1005', '7', 'b', '2'], result[1]['citation'])
@@ -100,8 +100,7 @@ class ParseTest(TestCase):
 
     def test_multiple_paragraphs_this_section(self):
         text = u'paragraphs (c)(1) and (2) of this section'
-        parser = internal_citations.InternalCitationParser()
-        result = parser.parse(text, parts = ['1005', '6'])
+        result = self.parser.parse(text, parts = ['1005', '6'])
         self.assertEqual(2, len(result))
         self.assertEqual(['1005', '6', 'c', '1'], result[0]['citation'])
         self.assertEqual(['1005', '6', 'c', '2'], result[1]['citation'])
