@@ -1,7 +1,6 @@
 #vim: set encoding=utf-8
 import string
 from parser.grammar import internal_citations as grammar
-from pyparsing import Word, Optional, oneOf, OneOrMore, Regex, originalTextFor, Suppress
 
 from layer import Layer
 
@@ -11,7 +10,6 @@ class InternalCitationParser(Layer):
         """ Parse the provided text, pulling out all the internal (self-referential) 
         citations. """
 
-        c = originalTextFor(grammar.regtext_citation)
         all_citations = []
 
         for citation, start, end in grammar.regtext_citation.scanString(text):
