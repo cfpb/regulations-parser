@@ -5,6 +5,7 @@ class Interpretations(Layer):
     """Supplement I (interpretations) provides (sometimes very lengthy) extra
     information about particular paragraphs. This layer provides those
     interpretations."""
+
     def process(self, node):
         """Is there an interpretation associated with this node? If yes,
         return the associated layer information. @TODO: Right now, this only
@@ -31,16 +32,16 @@ class Interpretations(Layer):
                     }]  # list as we will eventually match parents as well
 
 
-    def regtext_label(self, paragraphs):
+    def regtext_label(self, paragraph_ids):
         """Create a label corresponding to regtext paragraphs (parens)"""
         label = ''
-        for paragraph in paragraphs:
-            label += '(' + paragraph + ')'
+        for paragraph_id in paragraph_ids:
+            label += '(' + paragraph_id + ')'
         return label
 
-    def appendix_label(self, paragraphs):
+    def appendix_label(self, paragraph_ids):
         """Create a label corresponding to appendix paragraphs (dots)"""
-        label = '-' + paragraphs[0]
-        for paragraph in paragraphs[1:]:
-            label += '.' + paragraph
+        label = '-' + paragraph_ids[0]
+        for paragraph_id in paragraph_ids[1:]:
+            label += '.' + paragraph_id
         return label
