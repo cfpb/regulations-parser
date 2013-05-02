@@ -7,17 +7,27 @@ class LayerTermTest(TestCase):
 
     def test_has_definitions(self):
         t = Terms(None)
-        self.assertFalse(t.has_definitions(struct.node("This has no defs")))
+        valid_label = struct.label("101-22-c", ["101", "22", "c"])
+        self.assertFalse(t.has_definitions(struct.node("This has no defs",
+            label=valid_label)))
+        self.assertFalse(t.has_definitions(struct.node("No Def", 
+            label=struct.label("101-22-c", ["101", "22", "c"], "No def"))))
         self.assertFalse(t.has_definitions(
-            struct.node("No Def", label=struct.label("", [], "No def"))))
-        self.assertFalse(t.has_definitions(
-            struct.node("Tomatoes do not meet the definition 'vegetable'")))
+            struct.node("Tomatoes do not meet the definition 'vegetable'",
+                label=valid_label)))
+        self.assertFalse(t.has_definitions(struct.node("Definition", [],
+            struct.label("101-Appendix-A", ["101", "Appendix", "A"]))))
+        self.assertFalse(t.has_definitions(struct.node("Definition", [],
+            struct.label("101-Interpretations-11", 
+                ["101", "Interpretations", "11"]))))
         self.assertTrue(t.has_definitions(
-            struct.node("Definition. This has a definition.")))
+            struct.node("Definition. This has a definition.",
+                label=valid_label)))
         self.assertTrue(t.has_definitions(
-            struct.node("Definitions. This has multiple!")))
+            struct.node("Definitions. This has multiple!", label=valid_label)))
         self.assertTrue(t.has_definitions(
-            struct.node("No body", label=struct.label("",[],
+            struct.node("No body",
+                label=struct.label("101-22-c", ["101", "22", "c"],
                 "But definition is in the title"))))
 
 

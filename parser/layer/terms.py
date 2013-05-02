@@ -25,6 +25,10 @@ class Terms(Layer):
 
     def has_definitions(self, node):
         """Does this node have definitions?"""
+        if len(node['label']['parts']) < 2:
+            return False
+        if not node['label']['parts'][1].isdigit():
+            return False    # must be a reg text section
         return (
                 node['text'].lower().startswith('definition')
                 or ('title' in node['label'] 
