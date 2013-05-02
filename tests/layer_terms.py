@@ -88,3 +88,92 @@ class LayerTermTest(TestCase):
         self.assertTrue(('88','2','b','i','A') in t.scoped_terms)
         self.assertEqual([(u'awesome sauce', '88-2-b-i-A')], 
                 t.scoped_terms[('88','2','b','i','A')])
+
+    def test_calculate_offsets(self):
+        applicable_terms = [('rock band', 'a'), ('band', 'b'), ('drum', 'c'),
+                ('other thing', 'd')]
+        text = "I am in a rock band. That's a band with a drum, a rock drum."
+        t = Terms(None)
+        matches = t.calculate_offsets(text, applicable_terms)
+        self.assertEqual(3, len(matches))
+        found = [False, False, False]
+        for term, ref, offsets in matches:
+            if ref == 'a' and offsets == [(10,19)]:
+                found[0] = True
+            if ref == 'b' and offsets == [(30,34)]:
+                found[1] = True
+            if ref == 'c' and offsets == [(42,46), (55,59)]:
+                found[2] = True
+        self.assertEqual([True,True,True], found)
+
+    def test_calculate_offsets_word_part(self):
+        """If a defined term is part of another word, don't include it"""
+        applicable_terms = [('act', 'a')]
+        text = "I am about to act on this transaction."
+        t = Terms(None)
+        matches = t.calculate_offsets(text, applicable_terms)
+        self.assertEqual(1, len(matches))
+        self.assertEqual(1, len(matches[0][2]))
+
+    def test_process(self):
+        t = Terms(struct.node(children=[
+            struct.node("ABC5", children=[struct.node("child")],
+                label=struct.label("ref1")),
+            struct.node("AABBCC5", label=struct.label("ref2")),
+            struct.node("ABC3", label=struct.label("ref3")),
+            struct.node("AAA3", label=struct.label("ref4")),
+            struct.node("ABCABC3", label=struct.label("ref5")),
+            struct.node("ABCOTHER", label=struct.label("ref6")),
+            struct.node("ZZZOTHER", label=struct.label("ref7"))]))
+        t.scoped_terms = {
+                ("101", "22", "b", "2", "ii"): [
+                    ("abc", "ref1"),
+                    ("aabbcc", "ref2")],
+                ("101", "22", "b"): [
+                    ("abc", "ref3"),
+                    ("aaa", "ref4"),
+                    ("abcabc", "ref5")],
+                ("101", "22", "b", "2", "iii"): [
+                    ("abc", "ref6"),
+                    ("zzz", "ref7")]
+                }
+        #   Check that the return value is correct
+        layer_el = t.process(struct.node(
+            "This has abc, aabbcc, aaa, abcabc, and zzz", [],
+            struct.label("101-22-b-2-ii", ["101", "22", "b", "2", "ii"])))
+        self.assertEqual(4, len(layer_el))
+        found = [False, False, False, False]
+        for ref_obj in layer_el:
+            if ref_obj['ref'] == 'abc:ref1':
+                found[0] = True
+            if ref_obj['ref'] == 'aabbcc:ref2':
+                found[1] = True
+            if ref_obj['ref'] == 'aaa:ref4':
+                found[2] = True
+            if ref_obj['ref'] == 'abcabc:ref5':
+                found[3] = True
+        self.assertEqual([True, True, True, True], found)
+
+        #   Finally, verify that the associated references are present
+        self.assertTrue('referenced' in t.layer)
+
+        referenced = t.layer['referenced']
+        self.assertTrue('abcabc:ref5' in referenced)
+        self.assertEqual('ABCABC3', referenced['abcabc:ref5']['text'])
+        self.assertEqual('abcabc', referenced['abcabc:ref5']['term'])
+        self.assertEqual('ref5', referenced['abcabc:ref5']['reference'])
+
+        self.assertTrue('aaa:ref4' in referenced)
+        self.assertEqual('AAA3', referenced['aaa:ref4']['text'])
+        self.assertEqual('aaa', referenced['aaa:ref4']['term'])
+        self.assertEqual('ref4', referenced['aaa:ref4']['reference'])
+
+        self.assertTrue('aabbcc:ref2' in referenced)
+        self.assertEqual('AABBCC5', referenced['aabbcc:ref2']['text'])
+        self.assertEqual('aabbcc', referenced['aabbcc:ref2']['term'])
+        self.assertEqual('ref2', referenced['aabbcc:ref2']['reference'])
+
+        self.assertTrue('abc:ref1' in referenced)
+        self.assertEqual('ABC5child', referenced['abc:ref1']['text'])
+        self.assertEqual('abc', referenced['abc:ref1']['term'])
+        self.assertEqual('ref1', referenced['abc:ref1']['reference'])
