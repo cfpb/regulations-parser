@@ -25,7 +25,10 @@ class Terms(Layer):
 
     def has_definitions(self, node):
         """Does this node have definitions?"""
-        return 'definition' in node['text'].lower()
+        return (
+                node['text'].lower().startswith('definition')
+                or ('title' in node['label'] 
+                    and 'definition' in node['label']['title'].lower()))
 
     def node_definitions(self, node):
         """Walk through this node and its children to find defined terms."""

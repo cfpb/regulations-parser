@@ -8,10 +8,18 @@ class LayerTermTest(TestCase):
     def test_has_definitions(self):
         t = Terms(None)
         self.assertFalse(t.has_definitions(struct.node("This has no defs")))
+        self.assertFalse(t.has_definitions(
+            struct.node("No Def", label=struct.label("", [], "No def"))))
+        self.assertFalse(t.has_definitions(
+            struct.node("Tomatoes do not meet the definition 'vegetable'")))
         self.assertTrue(t.has_definitions(
-            struct.node("This has at least one definition.")))
+            struct.node("Definition. This has a definition.")))
         self.assertTrue(t.has_definitions(
-            struct.node("This has.\nmultiple Definitions.")))
+            struct.node("Definitions. This has multiple!")))
+        self.assertTrue(t.has_definitions(
+            struct.node("No body", label=struct.label("",[],
+                "But definition is in the title"))))
+
 
     def test_node_definitions(self):
         t = Terms(None)
@@ -62,17 +70,18 @@ class LayerTermTest(TestCase):
 
     def test_pre_process(self):
         tree = struct.node(children=[
-            struct.node(u"For the purposes of this part, “abcd” has the " +
-                "definition alphabet", label=struct.label("88-1", ["88","1"])),
+            struct.node(u"Definition. For the purposes of this part, "
+                + u"“abcd” is an alphabet", 
+                label=struct.label("88-1", ["88","1"])),
             struct.node(children=[
-                struct.node(u"For the purposes of this section, " +
-                    "definitions come later",
-                    children=[struct.node(u"“AXAX” means axe-cop",
-                        label=struct.label("88-2-a-1", ["88","2","a","1"]))
-                        ],
+                struct.node(u"Definitions come later for the purposes of "
+                    + "this section ", children=[
+                        struct.node(u"“AXAX” means axe-cop",
+                            label=struct.label("88-2-a-1", ["88","2","a","1"])
+                        )],
                     label=struct.label("88-2-a", ["88","2","a"])),
                 struct.node(children=[struct.node(children=[struct.node(
-                    u"The definition “awesome sauce” means great for the " +
+                    u"Definition. “Awesome sauce” means great for the " +
                     "purposes of this paragraph", 
                     label=struct.label("88-2-b-i-A",
                         ["88","2","b","i","A"]))])])
