@@ -16,7 +16,7 @@ class LayerTermTest(TestCase):
             struct.node("Tomatoes do not meet the definition 'vegetable'",
                 label=valid_label)))
         self.assertFalse(t.has_definitions(struct.node("Definition", [],
-            struct.label("101-Appendix-A", ["101", "Appendix", "A"]))))
+            struct.label("101-A-1", ["101", "A", "1"]))))
         self.assertFalse(t.has_definitions(struct.node("Definition", [],
             struct.label("101-Interpretations-11", 
                 ["101", "Interpretations", "11"]))))
