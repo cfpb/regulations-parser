@@ -32,5 +32,6 @@ class Layer():
             self.builder(c)
 
     def build(self):
+        self.pre_process()
         self.builder(self.tree)
         return self.layer
