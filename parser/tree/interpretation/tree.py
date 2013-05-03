@@ -76,5 +76,5 @@ def applicable_tree(text, section, parent_label):
     exclude = [(start,end) for _,start,end in
             comment_citation.scanString(body)]
     return interpParser.build_paragraph_tree(body, 1, exclude,
-            label=struct.extend_label(parent_label, label_text, label_text,
-                paragraph_header))
+            label=struct.extend_label(parent_label, "-" + label_text, 
+                label_text, paragraph_header))
