@@ -25,10 +25,12 @@ class Terms(Layer):
 
     def has_definitions(self, node):
         """Does this node have definitions?"""
+        # Definitions cannot be in the top-most layer of the tree (the root)
         if len(node['label']['parts']) < 2:
             return False
+        # Definitions are only in the reg text (not appendices/interprs)
         if not node['label']['parts'][1].isdigit():
-            return False    # must be a reg text section
+            return False
         return (
                 node['text'].lower().startswith('definition')
                 or ('title' in node['label'] 
