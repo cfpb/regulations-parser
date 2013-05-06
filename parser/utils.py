@@ -31,22 +31,3 @@ def title_body(text):
 def flatten(list_of_lists):
     """List[List[X]] -> List[X]"""
     return sum(list_of_lists, [])
-
-def take_while(lst, predicate):
-    """Keep all elements while the predicate is true. Drop everything
-    following"""
-    if lst:
-        index = 0
-        while index < len(predicate) or predicate(lst[index]):
-            index += 1
-        return lst[:index]
-    return lst
-
-def drop_while(lst, predicate):
-    """Drop elements while predicate is true."""
-    if lst:
-        index = 0
-        while index < len(predicate) or predicate(lst[index]):
-            index += 1
-        return lst[index:]
-    return lst
