@@ -10,7 +10,7 @@ import json
 def generate_external_citations(reg_json):
     """ Generate the enxternal citations layer """
 
-    layer_generator = internal_citations.ExternalCitationParser(reg_json)
+    layer_generator = external_citations.ExternalCitationParser(reg_json)
     layer = layer_generator.build()
     print json.dumps(layer)
 
@@ -39,8 +39,8 @@ def generate_terms(reg):
 
 if __name__ == "__main__":
     reg_json = api_stub.get_regulation_as_json('/vagrant/data/regulations/regulation/1005/20111227')
-    generate_table_of_contents(reg_json)
+    #generate_table_of_contents(reg_json)
     #generate_internal_citations(reg_json)
-    #generate_external_citations(reg_json)
+    generate_external_citations(reg_json)
     #generate_interpretations(reg_json)
     #generate_terms(reg_json)
