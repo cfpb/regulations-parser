@@ -19,4 +19,4 @@ public_law_exp = Literal("Public") + Literal("Law") + Word(string.digits) + '-' 
 
 stat_at_large_exp = Word(string.digits) + Literal("Stat.") + Word(string.digits)
 
-regtext_external_citation =  uscode_exp.setResultsName('USC') | cfr_exp | the_act_exp | public_law_exp
+regtext_external_citation =  uscode_exp.setResultsName('USC') | cfr_exp | the_act_exp | public_law_exp | stat_at_large_exp

@@ -28,3 +28,14 @@ class ParseTest(TestCase):
         citations = parser.process(node)
         self.assertEqual(len(citations), 1)
         self.assertEqual(citations[0]['citation_type'], 'PUBLIC_LAW')
+
+    def test_statues_at_large(self):
+        """
+            Ensure that we successfully parse Statues at Large citations that look 
+            like the following: 122 Stat. 1375
+        """
+        node = {'text': u'122 Stat. 1375', 'label':{'parts':[1003, 5]}}
+        parser = external_citations.ExternalCitationParser(None)
+        citations = parser.process(node)
+        self.assertEqual(len(citations), 1)
+        self.assertEqual(citations[0]['citation_type'], 'STATUES_AT_LARGE')
