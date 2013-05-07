@@ -1,10 +1,9 @@
 from itertools import dropwhile, takewhile
-import parser.grammar.rule_headers as grammar
 import re
 
 
 def find_section_by_section(xml_tree):
-    """Find the section-by-section analysis of this rule"""
+    """Find the section-by-section analysis of this notice"""
     xml_children = xml_tree.xpath('//SUPLINF/*')
     sxs = dropwhile(lambda el: (
         el.tag != 'HD'
@@ -16,7 +15,7 @@ def find_section_by_section(xml_tree):
     return list(sxs)
 
 def fetch_document_number(xml_tree):
-    """Pull out the document number, which is the id for this rule"""
+    """Pull out the document number, which is the id for this notice"""
     text = xml_tree.xpath('//FRDOC')[0].text
     match = re.search(r"(\d{4}-\d+)", text)
     if match:

@@ -1,8 +1,8 @@
 from lxml import etree
-from parser.rule.parse import *
+from parser.notice import *
 from unittest import TestCase
 
-class RuleParseTest(TestCase):
+class NoticeTest(TestCase):
 
     def test_find_section_by_section(self):
         sxs_xml = """
