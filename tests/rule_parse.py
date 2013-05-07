@@ -44,21 +44,57 @@ class RuleParseTest(TestCase):
         self.assertEqual("200110",
                 fetch_document_number(etree.fromstring(xml)))
 
-    def test_split_into_ttsr(self):
+    def test_build_section_by_section(self):
         xml = """
         <ROOT>
-            <HD SOURCE="HD2">Section Header</HD>
+            <HD SOURCE="HD3">Section Header</HD>
             <P>Content 1</P>
             <P>Content 2</P>
-            <HD SOURCE="HD3">Sub Section Header</HD>
+            <HD SOURCE="HD4">Sub Section Header</HD>
             <P>Content 3</P>
-            <HD SOURCE="HD3">Another</HD>
+            <HD SOURCE="HD4">Another</HD>
             <P>Content 4</P>
-            <HD SOURCE="HD2">Next Section</HD>
+            <HD SOURCE="HD3">Next Section</HD>
             <P>Content 5</P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        title, text_els, sub_sects, remaining = split_into_ttsr(sxs)
+        structures = build_section_by_section(sxs, 3)
+        self.assertEqual(2, len(structures))
+        self.assertEqual(structures[0], {
+            'title': 'Section Header',
+            'children': [
+                'Content 1',
+                'Content 2',
+                {
+                    'title': 'Sub Section Header',
+                    'children': ['Content 3']
+                }, 
+                {
+                    'title': 'Another',
+                    'children': ['Content 4']
+                }]
+            })
+        self.assertEqual(structures[1], {
+            'title': 'Next Section',
+            'children': ['Content 5']
+            })
+
+
+    def test_split_into_ttsr(self):
+        xml = """
+        <ROOT>
+            <HD SOURCE="HD3">Section Header</HD>
+            <P>Content 1</P>
+            <P>Content 2</P>
+            <HD SOURCE="HD4">Sub Section Header</HD>
+            <P>Content 3</P>
+            <HD SOURCE="HD4">Another</HD>
+            <P>Content 4</P>
+            <HD SOURCE="HD3">Next Section</HD>
+            <P>Content 5</P>
+        </ROOT>"""
+        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        title, text_els, sub_sects, remaining = split_into_ttsr(sxs, 3)
         self.assertEqual("Section Header", title.text)
         self.assertEqual(2, len(text_els))
         self.assertEqual("Content 1", text_els[0].text)
