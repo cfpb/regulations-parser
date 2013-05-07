@@ -1,6 +1,7 @@
 from itertools import dropwhile, takewhile
-from parser.grammar.rule_headers import applicable
+import parser.grammar.rule_headers as grammar
 from parser.tree import struct
+
 
 def find_section_by_section(xml_tree):
     """Find the section-by-section analysis of this rule"""
@@ -14,27 +15,66 @@ def find_section_by_section(xml_tree):
 
     return list(sxs)
 
-def build_section_by_section(sxs, depth=2):
+
+def build_section_by_section(sxs, part, parent_label, start_idx=1, depth=2):
     """Given a list of xml nodes in the section by section analysis, create
     trees with the same content. Who doesn't love trees?"""
     trees = []
     while sxs:
-        title = sxs[0]
-        sxs = sxs[1:]
-        source = 'HD' + str(depth)
-        body = list(takewhile(lambda e: e.tag != 'HD' 
-            or e.get('SOURCE') != source, sxs))
-        text_xml = list(takewhile(lambda e: e.tag != 'HD', body))
-        remaining_body = body[len(text_xml):]
-        children = map(convert_to_text, text_xml)
-        tree = struct.node('', 
-                children + build_section_by_section(remaining_body, depth+1),
-                struct.label(title.text))
+        title, text_els, sub_sections, sxs = split_into_ttsr(sxs, depth)
+
+        label_part = parse_into_label(title.text, part)
+        if label_part:
+            label = struct.extend_label(parent_label, '-' + label_part,
+                    label_part, title.text)
+        else:
+            label = struct.extend_label(parent_label, '-' + str(start_idx),
+                    str(start_idx), title.text)
+
+        children = []
+        for child_idx, text_node in enumerate(text_els):
+            children.append(struct.node(text_node.text,
+                label = struct.extend_label(label, '-' + str(child_idx+1),
+                    str(child_idx+1))))
+        children = children + build_section_by_section(sub_sections, part,
+                label, len(children)+1, depth+1)
+
+        tree = struct.node('', children, struct.label(title.text))
         trees.append(tree)
-        sxs = sxs[len(body):]
     return trees
 
-def convert_to_text(p_xml):
-    """XML P to tree node"""
-    return struct.node(p_xml.text)
 
+def split_into_ttsr(sxs, depth=2):
+    """Split the provided list of xml nodes into a node with a title, a
+    sequence of text nodes, a sequence of nodes associated with the sub
+    sections of this header, and the remaining xml nodes"""
+    title = sxs[0]
+    next_section_marker = 'HD' + str(depth)
+    section = list(takewhile(lambda e: e.tag != 'HD'
+        or e.get('SOURCE') != next_section_marker, sxs[1:]))
+    text_elements = list(takewhile(lambda e: e.tag != 'HD', section))
+    sub_sections = section[len(text_elements):]
+    remaining = sxs[1+len(text_elements)+len(sub_sections):]
+    return (title, text_elements, sub_sections, remaining)
+
+
+def parse_into_label(txt, part):
+    """Find what part+section+(paragraph) this text is related to. Returns
+    only the first match. Currently only accounts for references to
+    regulation text."""
+
+    for match, _, _ in grammar.applicable.scanString(txt):
+        paragraph_ids = []
+        if match.paragraphs:
+            if match.paragraphs.level1:
+                paragraph_ids.append(match.paragraphs.level1)
+            if match.paragraphs.level2:
+                paragraph_ids.append(match.paragraphs.level2)
+            if match.paragraphs.level3:
+                paragraph_ids.append(match.paragraphs.level3)
+            if match.paragraphs.level4:
+                paragraph_ids.append(match.paragraphs.level4)
+        label = "%s.%s" % (part, match.section)
+        for paragraph_id in paragraph_ids:
+            label += '(' + paragraph_id + ')'
+        return label

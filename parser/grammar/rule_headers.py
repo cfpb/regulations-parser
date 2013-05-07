@@ -11,7 +11,7 @@ section = (
 
 paragraph = (
         Word(string.digits).setResultsName("section")
-        + depth1_p)
+        + depth1_p.setResultsName("paragraphs"))
 
 
 applicable = section | paragraph
