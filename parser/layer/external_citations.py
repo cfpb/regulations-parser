@@ -12,6 +12,7 @@ class ExternalCitationParser(Layer):
     UNITED_STATES_CODE = 'USC'
     THE_ACT = 'ACT'
     PUBLIC_LAW = 'PUBLIC_LAW'
+    STATUTES_AT_LARGE = 'STATUTES_AT_LARGE'
 
     def citation_type(self, citation):
         """ Based on the citation parsed, return the type of the citation. """
@@ -23,6 +24,8 @@ class ExternalCitationParser(Layer):
             return ExternalCitationParser.THE_ACT
         elif 'Public' in citation and 'Law' in citation:
             return ExternalCitationParser.PUBLIC_LAW
+        elif 'Stat.' in citation:
+            return ExternalCitationParser.STATUTES_AT_LARGE
 
     def reformat_citation(self, citation):
         """ Strip out unnecessary elements from the citation reference, so that 
