@@ -79,6 +79,25 @@ class RuleParseTest(TestCase):
             'children': ['Content 5']
             })
 
+    def test_build_section_by_section_footnotes(self):
+        """We only account for paragraph tags right now"""
+        xml = """
+        <ROOT>
+            <HD SOURCE="HD3">Section Header</HD>
+            <P>Content 1</P>
+            <FTNT>Content A</FTNT>
+            <P>Content 2</P>
+        </ROOT>"""
+        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = build_section_by_section(sxs, 3)
+        self.assertEqual(1, len(structures))
+        self.assertEqual(structures[0], {
+            'title': 'Section Header',
+            'children': [
+                'Content 1',
+                'Content 2',
+                ]
+            })
 
     def test_split_into_ttsr(self):
         xml = """

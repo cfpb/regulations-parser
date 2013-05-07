@@ -30,7 +30,7 @@ def build_section_by_section(sxs, depth=2):
     while sxs:
         title, text_els, sub_sections, sxs = split_into_ttsr(sxs, depth)
 
-        children = map(lambda el: el.text, text_els)
+        children = [el.text for el in text_els if el.tag == 'P']
         children += build_section_by_section(sub_sections, depth+1)
 
         structures.append({
