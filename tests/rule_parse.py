@@ -44,6 +44,34 @@ class RuleParseTest(TestCase):
         self.assertEqual("200110",
                 fetch_document_number(etree.fromstring(xml)))
 
+    def test_split_into_ttsr(self):
+        xml = """
+        <ROOT>
+            <HD SOURCE="HD2">Section Header</HD>
+            <P>Content 1</P>
+            <P>Content 2</P>
+            <HD SOURCE="HD3">Sub Section Header</HD>
+            <P>Content 3</P>
+            <HD SOURCE="HD3">Another</HD>
+            <P>Content 4</P>
+            <HD SOURCE="HD2">Next Section</HD>
+            <P>Content 5</P>
+        </ROOT>"""
+        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        title, text_els, sub_sects, remaining = split_into_ttsr(sxs)
+        self.assertEqual("Section Header", title.text)
+        self.assertEqual(2, len(text_els))
+        self.assertEqual("Content 1", text_els[0].text)
+        self.assertEqual("Content 2", text_els[1].text)
+        self.assertEqual(4, len(sub_sects))
+        self.assertEqual("Sub Section Header", sub_sects[0].text)
+        self.assertEqual("Content 3", sub_sects[1].text)
+        self.assertEqual("Another", sub_sects[2].text)
+        self.assertEqual("Content 4", sub_sects[3].text)
+        self.assertEqual(2, len(remaining))
+        self.assertEqual("Next Section", remaining[0].text)
+        self.assertEqual("Content 5", remaining[1].text)
+
     def test_parse_into_label(self):
         self.assertEqual("101.22", 
                 parse_into_label("Section 101.22Stuff", "101"))
