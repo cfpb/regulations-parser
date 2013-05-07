@@ -18,9 +18,9 @@ def find_section_by_section(xml_tree):
 def fetch_document_number(xml_tree):
     """Pull out the document number, which is the id for this rule"""
     text = xml_tree.xpath('//FRDOC')[0].text
-    match = re.search(r"(\d{4})-(\d+)", text)
+    match = re.search(r"(\d{4}-\d+)", text)
     if match:
-        return match.group(1) + match.group(2)
+        return match.group(1)
 
 
 def build_section_by_section(sxs, depth=2):

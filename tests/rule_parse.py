@@ -41,7 +41,7 @@ class RuleParseTest(TestCase):
             <CHILD>Body</CHILD>
         </ROOT>
         """
-        self.assertEqual("200110",
+        self.assertEqual("2001-10",
                 fetch_document_number(etree.fromstring(xml)))
 
     def test_build_section_by_section(self):
