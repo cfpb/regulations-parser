@@ -1,6 +1,7 @@
 from itertools import dropwhile, takewhile
 import parser.grammar.rule_headers as grammar
 from parser.tree import struct
+import re
 
 
 def find_section_by_section(xml_tree):
@@ -14,6 +15,13 @@ def find_section_by_section(xml_tree):
     sxs = takewhile(lambda e: e.tag != 'HD' or e.get('SOURCE') != 'HD1', sxs)
 
     return list(sxs)
+
+def fetch_document_number(xml_tree):
+    """Pull out the document number, which is the id for this rule"""
+    text = xml_tree.xpath('//FRDOC')[0].text
+    match = re.search(r"(\d{4})-(\d+)", text)
+    if match:
+        return match.group(1) + match.group(2)
 
 
 def build_section_by_section(sxs, part, parent_label, start_idx=1, depth=2):
