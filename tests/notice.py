@@ -43,6 +43,18 @@ class NoticeTest(TestCase):
         """
         self.assertEqual("2001-10",
                 fetch_document_number(etree.fromstring(xml)))
+    
+    def test_fetch_cfr_part(self):
+        xml = """
+        <ROOT>
+            <CHILD />
+            <CHILD>Body</CHILD>
+            <CHILD>
+                <CFR>19 CFR Part 90210</CFR>
+            </CHILD>
+            <CHILD>Body</CHILD>
+        </ROOT>"""
+        self.assertEqual("90210", fetch_cfr_part(etree.fromstring(xml)))
 
     def test_build_section_by_section(self):
         xml = """
@@ -58,7 +70,7 @@ class NoticeTest(TestCase):
             <P>Content 5</P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 3)
+        structures = build_section_by_section(sxs, '100', 3)
         self.assertEqual(2, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section Header',
@@ -94,7 +106,7 @@ class NoticeTest(TestCase):
             <P>Content 2</P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 3)
+        structures = build_section_by_section(sxs, '100', 3)
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section Header',
@@ -104,6 +116,30 @@ class NoticeTest(TestCase):
                 ],
             'children': []
             })
+
+    def test_build_section_by_section_label(self):
+        """Check that labels are being added correctly"""
+        xml = """
+        <ROOT>
+            <HD SOURCE="HD2">Section 99.3 Info</HD>
+            <P>Content 1</P>
+            <HD SOURCE="HD3">3(q)(4) More Info</HD>
+            <P>Content 2</P>
+        </ROOT>"""
+        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = build_section_by_section(sxs, '99')
+        self.assertEqual(1, len(structures))
+        self.assertEqual(structures[0], {
+            'title': 'Section 99.3 Info',
+            'label': '99-3',
+            'paragraphs': ['Content 1'],
+            'children': [{
+                'title': '3(q)(4) More Info',
+                'label': '99-3-q-4',
+                'paragraphs': ['Content 2'],
+                'children': []
+            }]
+        })
 
     def test_split_into_ttsr(self):
         xml = """

@@ -11,9 +11,12 @@ if __name__ == "__main__":
         exit()
     rule = etree.parse(sys.argv[1])
 
+    part = fetch_cfr_part(rule)
+
     sxs = find_section_by_section(rule)
-    sxs = build_section_by_section(sxs)
+    sxs = build_section_by_section(sxs, part)
     print json.dumps({
         'document_number': fetch_document_number(rule),
+        'cfr_part': part,
         'section_by_section': sxs
         })

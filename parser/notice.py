@@ -22,8 +22,17 @@ def fetch_document_number(xml_tree):
     if match:
         return match.group(1)
 
+def fetch_cfr_part(xml_tree):
+    """The CFR Part is used in the ids used in the section by section
+    analysis (and elsewhere). This function figures out to which "part" this
+    notice applies."""
+    text = xml_tree.xpath('//CFR')[0].text
+    match = re.search(r"CFR Part (\d+)", text)
+    if match:
+        return match.group(1)
 
-def build_section_by_section(sxs, depth=2):
+
+def build_section_by_section(sxs, part, depth=2):
     """Given a list of xml nodes in the section by section analysis, pull
     out hierarchical data into a structure."""
     structures = []
@@ -31,13 +40,18 @@ def build_section_by_section(sxs, depth=2):
         title, text_els, sub_sections, sxs = split_into_ttsr(sxs, depth)
 
         paragraphs = [el.text for el in text_els if el.tag == 'P']
-        children = build_section_by_section(sub_sections, depth+1)
+        children = build_section_by_section(sub_sections, part, depth+1)
 
-        structures.append({
-            'title': title.text,
-            'paragraphs': paragraphs,
-            'children': children
-            })
+        next_structure = {
+                'title': title.text,
+                'paragraphs': paragraphs,
+                'children': children
+            }
+        label = parse_into_label(title.text, part)
+        if label:
+            next_structure['label'] = label
+
+        structures.append(next_structure)
     return structures
 
 
