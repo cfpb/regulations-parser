@@ -29,11 +29,12 @@ def build_section_by_section(sxs, depth=2):
     while sxs:
         title, text_els, sub_sections, sxs = split_into_ttsr(sxs, depth)
 
-        children = [el.text for el in text_els if el.tag == 'P']
-        children += build_section_by_section(sub_sections, depth+1)
+        paragraphs = [el.text for el in text_els if el.tag == 'P']
+        children = build_section_by_section(sub_sections, depth+1)
 
         structures.append({
             'title': title.text,
+            'paragraphs': paragraphs,
             'children': children
             })
     return structures

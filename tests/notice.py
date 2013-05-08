@@ -62,21 +62,26 @@ class NoticeTest(TestCase):
         self.assertEqual(2, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section Header',
-            'children': [
+            'paragraphs': [
                 'Content 1',
-                'Content 2',
+                'Content 2' 
+                ],
+            'children': [
                 {
                     'title': 'Sub Section Header',
-                    'children': ['Content 3']
+                    'paragraphs': ['Content 3'],
+                    'children': []
                 }, 
                 {
                     'title': 'Another',
-                    'children': ['Content 4']
+                    'paragraphs': ['Content 4'],
+                    'children': []
                 }]
             })
         self.assertEqual(structures[1], {
             'title': 'Next Section',
-            'children': ['Content 5']
+            'paragraphs': ['Content 5'],
+            'children': []
             })
 
     def test_build_section_by_section_footnotes(self):
@@ -93,10 +98,11 @@ class NoticeTest(TestCase):
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section Header',
-            'children': [
+            'paragraphs': [
                 'Content 1',
                 'Content 2',
-                ]
+                ],
+            'children': []
             })
 
     def test_split_into_ttsr(self):
