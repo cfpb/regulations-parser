@@ -1,4 +1,5 @@
 from itertools import dropwhile, takewhile
+from parser.grammar import rule_headers as grammar
 import re
 
 
@@ -52,3 +53,21 @@ def split_into_ttsr(sxs, depth=2):
     sub_sections = section[len(text_elements):]
     remaining = sxs[1+len(text_elements)+len(sub_sections):]
     return (title, text_elements, sub_sections, remaining)
+
+def parse_into_label(txt, part):
+    """Find what part+section+(paragraph) this text is related to. Returns
+    only the first match. Currently only accounts for references to
+    regulation text."""
+
+    for match, _, _ in grammar.applicable.scanString(txt):
+        paragraph_ids = []
+        if match.paragraphs:
+            if match.paragraphs.level1:
+                paragraph_ids.append(match.paragraphs.level1)
+            if match.paragraphs.level2:
+                paragraph_ids.append(match.paragraphs.level2)
+            if match.paragraphs.level3:
+                paragraph_ids.append(match.paragraphs.level3)
+            if match.paragraphs.level4:
+                paragraph_ids.append(match.paragraphs.level4)
+        return "-".join([part, match.section] + paragraph_ids)
