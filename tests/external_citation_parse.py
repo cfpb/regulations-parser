@@ -38,4 +38,4 @@ class ParseTest(TestCase):
         parser = external_citations.ExternalCitationParser(None)
         citations = parser.process(node)
         self.assertEqual(len(citations), 1)
-        self.assertEqual(citations[0]['citation_type'], 'STATUES_AT_LARGE')
+        self.assertEqual(citations[0]['citation_type'], 'STATUTES_AT_LARGE')
