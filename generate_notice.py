@@ -1,13 +1,13 @@
 import json
 from lxml import etree
-from parser.rule.parse import find_section_by_section, fetch_document_number
-from parser.rule.parse import build_section_by_section
+from parser.notice import find_section_by_section, fetch_document_number
+from parser.notice import build_section_by_section
 import sys
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print "Usage: python generate_rule path/to/rule.xml"
-        print " e.g.: python generate_rule 28.xml"
+        print "Usage: python generate_notice path/to/rule.xml"
+        print " e.g.: python generate_notice 28.xml"
         exit()
     rule = etree.parse(sys.argv[1])
 
