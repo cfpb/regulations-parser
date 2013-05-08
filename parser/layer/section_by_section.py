@@ -12,10 +12,10 @@ class SectionBySection(Layer):
         """Determine which (if any) section-by-section analyses would apply
         to this node."""
         analyses = []
-        look_for = '-'.join(node['label']['parts'])
-        def process_sxs(node):
-            if 'label' in node and node['label'] == look_for:
-                return node
+        def process_sxs(sxs):
+            if 'label' in sxs and sxs['label'] == node['label']['text']:
+                return sxs
+
         for notice in self.notices:
             search_results = flatten([walk(sxs, process_sxs) for sxs in 
                     notice['section_by_section']])
