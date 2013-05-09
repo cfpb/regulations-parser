@@ -30,11 +30,12 @@ class Client:
     def __init__(self):
         self.writer_class = FSWriteContent
 
-    def regulation(self, label, date):
-        return self.writer_class("regulation/%s/%s" % (label, date))
+    def regulation(self, label, doc_number):
+        return self.writer_class("regulation/%s/%s" % (label, doc_number))
 
-    def layer(self, layer_name, label, date):
-        return self.writer_class("layer/%s/%s/%s" % (layer_name, label, date))
+    def layer(self, layer_name, label, doc_number):
+        return self.writer_class(
+                "layer/%s/%s/%s" % (layer_name, label, doc_number))
 
     def notice(self, doc_number):
         return self.writer_class("notice/%s" % doc_number)
