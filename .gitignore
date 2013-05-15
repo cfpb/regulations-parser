@@ -1,5 +1,7 @@
 *.swp
 *.pyc
 
+local_settings.py
+
 regulations
 

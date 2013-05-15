@@ -10,10 +10,15 @@ def find_section_by_section(xml_tree):
         el.tag != 'HD'
         or el.get('SOURCE') != 'HD1' 
         or 'section-by-section' not in el.text.lower()), xml_children)
-    sxs.next()  #   Ignore Header
-    sxs = takewhile(lambda e: e.tag != 'HD' or e.get('SOURCE') != 'HD1', sxs)
 
-    return list(sxs)
+    try:
+        sxs.next()  #   Ignore Header
+        sxs = takewhile(lambda e: e.tag != 'HD' or e.get('SOURCE') != 'HD1', 
+                sxs)
+
+        return list(sxs)
+    except StopIteration:
+        return []
 
 def fetch_document_number(xml_tree):
     """Pull out the document number, which is the id for this notice"""
@@ -36,7 +41,7 @@ def build_section_by_section(sxs, part, depth=2):
     """Given a list of xml nodes in the section by section analysis, pull
     out hierarchical data into a structure."""
     structures = []
-    while sxs:
+    while len(sxs): # while sxs: is deprecated
         title, text_els, sub_sections, sxs = split_into_ttsr(sxs, depth)
 
         paragraphs = [el.text for el in text_els if el.tag == 'P']
@@ -85,3 +90,15 @@ def parse_into_label(txt, part):
             if match.paragraphs.level4:
                 paragraph_ids.append(match.paragraphs.level4)
         return "-".join([part, match.section] + paragraph_ids)
+
+def build_notice(xml):
+    """Given xml alone, build up a corresponding notice structure"""
+    cfr_part = fetch_cfr_part(xml)
+
+    sxs = find_section_by_section(xml)
+    sxs = build_section_by_section(sxs, cfr_part)
+    return {
+        'document_number': fetch_document_number(xml),
+        'cfr_part': cfr_part,
+        'section_by_section': sxs
+    }

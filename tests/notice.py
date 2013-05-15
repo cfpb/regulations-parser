@@ -30,6 +30,20 @@ class NoticeTest(TestCase):
         computed = find_section_by_section(etree.fromstring(full_xml))
         self.assertEqual(sxs_texts, map(lambda el: el.text, computed))
 
+    def test_find_section_by_section_not_present(self):
+        full_xml = """
+        <ROOT>
+            <SUPLINF>
+                <HD SOURCE="HED">Supplementary Info</HD>
+                <HD SOURCE="HD1">This is not sxs Analysis</HD>
+                <P>Stuff</P>
+                <P>Stuff2</P>
+                <FTNT>Foot Note</FTNT>
+            </SUPLINF>
+        </ROOT>"""
+        self.assertEqual([], find_section_by_section(etree.fromstring(
+            full_xml)))
+
     def test_fetch_document_number(self):
         xml = """
         <ROOT>
@@ -183,3 +197,29 @@ class NoticeTest(TestCase):
 
         self.assertEqual(None,
                 parse_into_label("Application of this rule", "101"))
+
+    def test_build_notice(self):
+        """Integration test for the building of a notice from XML"""
+        xml = """
+        <ROOT>
+            <FRDOC>[FR Doc. 7878-111 Filed 2-3-78; 1:02 pm]</FRDOC>
+            <CFR>220 CFR Part 9292</CFR>
+            <SUPLINF>
+                <HD SOURCE="HED">Supplementary Info</HD>
+                <HD SOURCE="HD1">V. Section-by-Section Analysis</HD>
+                <HD SOURCE="HD2">8(q) Words</HD>
+                <P>Content</P>
+                <HD SOURCE="HD1">Section that follows</HD>
+                <P>Following Content</P>
+            </SUPLINF>
+        </ROOT>"""
+        self.assertEqual(build_notice(etree.fromstring(xml)), {
+            'document_number': '7878-111',
+            'cfr_part': '9292',
+            'section_by_section': [{
+                'title': '8(q) Words',
+                'paragraphs': ['Content'],
+                'children': [],
+                'label': '9292-8-q'
+            }]
+        })
