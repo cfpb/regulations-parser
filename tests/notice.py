@@ -57,6 +57,68 @@ class NoticeTest(TestCase):
         """
         self.assertEqual("2001-10",
                 fetch_document_number(etree.fromstring(xml)))
+
+    def test_fetch_docket_number(self):
+        xml = """
+        <ROOT>
+            <CHILD />
+            <CHILD>Body</CHILD>
+            <CHILD>
+                <DEPDOC>[Docket No. AGENCY-2008-6789]</DEPDOC>
+            </CHILD>
+            <CHILD>Body</CHILD>
+        </ROOT>
+        """
+        self.assertEqual("2008-6789",
+                fetch_docket_number(etree.fromstring(xml)))
+
+    def test_fetch_simple_fields_withnorin(self):
+        xml = """
+        <ROOT>
+            <CHILD>
+                <AGENCY>Some Agency</AGENCY>
+                <ACT>
+                    <HD>Some Title</HD>
+                    <P>Action Here</P>
+                </ACT>
+                <SUM>
+                    <HD>Another Title</HD>
+                    <P>Summary Summary</P>
+                </SUM>
+            </CHILD>
+            <CHILD>Body</CHILD>
+        </ROOT>
+        """
+        self.assertEqual(fetch_simple_fields(etree.fromstring(xml)), {
+            'agency': 'Some Agency',
+            'action': 'Action Here',
+            'summary': 'Summary Summary'
+        })
+
+    def test_fetch_simple_fields_withrin(self):
+        xml = """
+        <ROOT>
+            <CHILD>
+                <RIN>RIN 2342-as213</RIN>
+                <AGENCY>Some Agency</AGENCY>
+                <ACT>
+                    <HD>Some Title</HD>
+                    <P>Action Here</P>
+                </ACT>
+                <SUM>
+                    <HD>Another Title</HD>
+                    <P>Summary Summary</P>
+                </SUM>
+            </CHILD>
+            <CHILD>Body</CHILD>
+        </ROOT>
+        """
+        self.assertEqual(fetch_simple_fields(etree.fromstring(xml)), {
+            'rin': '2342-as213',
+            'agency': 'Some Agency',
+            'action': 'Action Here',
+            'summary': 'Summary Summary'
+        })
     
     def test_fetch_cfr_part(self):
         xml = """
@@ -204,6 +266,16 @@ class NoticeTest(TestCase):
         <ROOT>
             <FRDOC>[FR Doc. 7878-111 Filed 2-3-78; 1:02 pm]</FRDOC>
             <CFR>220 CFR Part 9292</CFR>
+            <RIN>RIN a231a-232q</RIN>
+            <AGENCY>Agag</AGENCY>
+            <ACT>
+                <HD>Some Title</HD>
+                <P>actact</P>
+            </ACT>
+            <SUM>
+                <HD>Another Title</HD>
+                <P>sum sum sum</P>
+            </SUM>
             <SUPLINF>
                 <HD SOURCE="HED">Supplementary Info</HD>
                 <HD SOURCE="HD1">V. Section-by-Section Analysis</HD>
@@ -216,6 +288,10 @@ class NoticeTest(TestCase):
         self.assertEqual(build_notice(etree.fromstring(xml)), {
             'document_number': '7878-111',
             'cfr_part': '9292',
+            'rin': 'a231a-232q',
+            'agency': 'Agag',
+            'action': 'actact',
+            'summary': 'sum sum sum',
             'section_by_section': [{
                 'title': '8(q) Words',
                 'paragraphs': ['Content'],

@@ -27,6 +27,28 @@ def fetch_document_number(xml_tree):
     if match:
         return match.group(1)
 
+def fetch_docket_number(xml_tree):
+    """Pull out the /docket/ number."""
+    text = xml_tree.xpath('//DEPDOC')[0].text
+    match = re.search(r"(\d+-\d+)", text)
+    if match:
+        return match.group(1)
+
+def fetch_simple_fields(xml_tree):
+    """Return a map with several fields pulled from the XML. These fields
+    are easy to find, so we are lumping them together."""
+    fields = {}
+    #   Regulation ID Number
+    rin = xml_tree.xpath('//RIN')
+    if rin:
+        fields['rin'] = rin[0].text[len('RIN '):]
+
+    fields['agency'] = xml_tree.xpath('//AGENCY')[0].text
+    fields['action'] = xml_tree.xpath('//ACT/P')[0].text
+    fields['summary'] = xml_tree.xpath('//SUM/P')[0].text
+
+    return fields
+
 def fetch_cfr_part(xml_tree):
     """The CFR Part is used in the ids used in the section by section
     analysis (and elsewhere). This function figures out to which "part" this
@@ -97,8 +119,8 @@ def build_notice(xml):
 
     sxs = find_section_by_section(xml)
     sxs = build_section_by_section(sxs, cfr_part)
-    return {
-        'document_number': fetch_document_number(xml),
-        'cfr_part': cfr_part,
-        'section_by_section': sxs
-    }
+    to_return = fetch_simple_fields(xml)
+    to_return['document_number'] = fetch_document_number(xml)
+    to_return['cfr_part'] = cfr_part
+    to_return['section_by_section'] = sxs
+    return to_return
