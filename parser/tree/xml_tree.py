@@ -4,6 +4,7 @@ from lxml import etree
 from parser.tree.struct import label, node
 from parser.grammar.internal_citations import any_depth_p
 from parser.tree.paragraph import p_levels
+from parser.tree.node_stack import NodeStack
 
 def get_paragraph_markers(text):
     for citation, start, end in any_depth_p.scanString(text):
@@ -23,6 +24,12 @@ def determine_level(c, current_level):
     elif c in p_levels[3]:
         p_level = 4
     return p_level
+
+def write_parts(node):
+    node['label']['text'] = '-'.join(node['label']['parts'])
+
+    for n in node['children']:
+        write_parts(n)
 
 def prepend_parts(parts_prefix, n):
     """ Recursively preprend parts_prefix to the parts of the node 
@@ -45,6 +52,12 @@ def split_text(text, tokens):
     texts = [text[i[0]:i[1]] for i in slices] + [text[starts[-1]:]]
     return texts
 
+def unwind_stack(m_stack):
+    children = m_stack.pop()
+    parts_prefix = m_stack.peek_last()[1]['label']['parts']
+    children = [prepend_parts(parts_prefix, c[1]) for c in children]
+    m_stack.peek_last()[1]['children'] = children
+
 def build_tree():
     reg_xml = '/vagrant/data/regulations/regulation/1005.xml'
     doc = etree.parse(reg_xml)
@@ -62,14 +75,8 @@ def build_tree():
     sections = []
     for child in part.getchildren():
         if child.tag == 'SECTION':
-            section_title = child.xpath('SECTNO')[0].text + " " + child.xpath('SUBJECT')[0].text
-            section_number = re.search(r'%s\.(\d+)' % reg_part, section_title).group(1)
-            section_text = ' '.join([child.text] + [c.tail for c in child if c.tail])
-
             p_level = 1
-            parts = [reg_part, section_number]
-
-            m_stack = [[]]
+            m_stack = NodeStack()
             for ch in child.getchildren():
                 if ch.tag == 'P':
                     text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
@@ -82,38 +89,37 @@ def build_tree():
                     else:
                         node_text = [node_text]
 
-                    mt_list = zip(markers_list, node_text)
-                    for m, node_text in mt_list:
-                        new_p_level = determine_level(m, p_level)
+                    for m, node_text in zip(markers_list, node_text):
                         l = label(parts=[str(m)])
                         n = node(text=node_text, children=[], label=l)
-                        if new_p_level > p_level:
-                            m_stack.append([(new_p_level, n)])
-                        elif new_p_level < p_level:
-                            last = m_stack[-1]
-                            while last[0][0] > new_p_level:
-                                children = m_stack.pop()
-                                parts_prefix = m_stack[-1][-1][1]['label']['parts']
-                                children = [prepend_parts(parts_prefix, c[1]) for c in children]
-                                m_stack[-1][-1][1]['children'] = children
 
-                                last = m_stack[-1]
-                            m_stack[-1].append((new_p_level, n))
+                        new_p_level = determine_level(m, p_level)
+                        if new_p_level > p_level:
+                            m_stack.push((new_p_level, n))
+                        elif new_p_level < p_level:
+                            last = m_stack.peek()
+                            while last[0][0] > new_p_level:
+                                unwind_stack(m_stack)
+                                last = m_stack.peek()
+                            m_stack.push_last((new_p_level, n))
                         else:
-                            m_stack[-1].append((new_p_level, n))
+                            m_stack.push_last((new_p_level, n))
                         p_level = new_p_level
 
+            section_title = child.xpath('SECTNO')[0].text + " " + child.xpath('SUBJECT')[0].text
+            section_number = re.search(r'%s\.(\d+)' % reg_part, section_title).group(1)
+            section_text = ' '.join([child.text] + [c.tail for c in child if c.tail])
             sect_label = label("%s-%s" % (reg_part, section_number), [reg_part, section_number], section_title)
             sect_node = node(text=section_text, children=[], label=sect_label)
 
-            m_stack = [[(1, sect_node)]] + m_stack
+            m_stack.add_to_bottom((1, sect_node))
 
-            while len(m_stack) > 1:
-                children = m_stack.pop()
-                parts_prefix = m_stack[-1][-1][1]['label']['parts']
-                children = [prepend_parts(parts_prefix, c[1]) for c in children]
-                m_stack[-1][-1][1]['children'] = children
-            
-            sections.append(m_stack.pop())
+            while m_stack.size() > 1:
+                unwind_stack(m_stack)
+          
+            c = m_stack.pop()[0][1]
+            sections.append(c)
     tree['children'] = sections
+    write_parts(tree)
+
     return tree
