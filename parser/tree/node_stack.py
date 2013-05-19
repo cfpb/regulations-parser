@@ -1,24 +1,24 @@
-class MarkerStack():
+class NodeStack(object):
     def __init__(self):
         self.m_stack = [[]]
 
-    def pop():
+    def pop(self):
         return self.m_stack.pop()
 
-    def peek():
+    def peek(self):
         return self.m_stack[-1]
 
-    def push(m):
-        self.m_stack.append(m)
+    def push(self, m):
+        self.m_stack.append([m])
 
-    def push_last(m):
+    def push_last(self, m):
         self.m_stack[-1].append(m)
 
-    def peek_last():
+    def peek_last(self):
         return self.m_stack[-1][-1]
 
-    def unwind():
-        children = self.pop()
-        parts_prefix = self.peek_last()[1]['label']['parts']
-        children = [prepend_parts(parts_prefix, c[1]) for c in children]
-        self.peek_last()[1]['children'] = children
+    def add_to_bottom(self, m):
+        self.m_stack = [[m]] + self.m_stack 
+
+    def size(self):
+        return len(self.m_stack)
