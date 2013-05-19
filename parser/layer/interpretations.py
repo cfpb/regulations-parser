@@ -18,7 +18,7 @@ class Interpretations(Layer):
         section = node['label']['parts'][1]
         paragraphs = node['label']['parts'][2:]
 
-        interp_label = part + "-Interpretations-" + section
+        interp_label = part + "-Interpretations-" + section + "-"
         if section.isdigit():
             interp_label += self.regtext_label(paragraphs)
         else:
@@ -41,7 +41,7 @@ class Interpretations(Layer):
 
     def appendix_label(self, paragraph_ids):
         """Create a label corresponding to appendix paragraphs (dots)"""
-        label = '-' + paragraph_ids[0]
+        label = paragraph_ids[0]
         for paragraph_id in paragraph_ids[1:]:
             label += '.' + paragraph_id
         return label
