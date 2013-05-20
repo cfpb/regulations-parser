@@ -267,6 +267,17 @@ class NoticeTest(TestCase):
             ]
         })
 
+    def test_fetch_address_bullet(self):
+        xml = u"""
+        <ROOT>
+            <ADD>
+                <P>• Bullet: value</P>
+            </ADD>
+        </ROOT>"""
+        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+            'methods': [('Bullet', 'value')]
+        })
+
     def test_build_section_by_section(self):
         xml = """
         <ROOT>

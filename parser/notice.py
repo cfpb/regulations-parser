@@ -3,6 +3,7 @@ from itertools import dropwhile, takewhile
 from lxml import etree
 from parser.grammar import rule_headers as grammar
 import re
+import string
 
 
 def find_section_by_section(xml_tree):
@@ -101,6 +102,10 @@ def fetch_addresses(xml_tree):
         p = p.text
         if ':' in p:
             lhs, rhs = p.split(':', 1)
+            #   Remove strange characters at the beginning
+            while lhs and not (lhs[0] in string.letters or lhs[0] in
+                    string.digits):
+                lhs = lhs[1:]
             if rhs.strip() and not (lhs.endswith('http') or 
                     lhs.endswith('https')):
                 addresses['methods'] = (addresses.get('methods', []) +
