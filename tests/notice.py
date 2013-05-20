@@ -88,12 +88,17 @@ class NoticeTest(TestCase):
                 </SUM>
             </CHILD>
             <CHILD>Body</CHILD>
+            <FURINF>
+                <P>Contact information</P>
+            </FURINF>
         </ROOT>
         """
         self.assertEqual(fetch_simple_fields(etree.fromstring(xml)), {
             'agency': 'Some Agency',
             'action': 'Action Here',
-            'summary': 'Summary Summary'
+            'summary': 'Summary Summary',
+            'contact': 'Contact information'
+
         })
 
     def test_fetch_simple_fields_withrin(self):
@@ -112,13 +117,17 @@ class NoticeTest(TestCase):
                 </SUM>
             </CHILD>
             <CHILD>Body</CHILD>
+            <FURINF>
+                <P>Contact information</P>
+            </FURINF>
         </ROOT>
         """
         self.assertEqual(fetch_simple_fields(etree.fromstring(xml)), {
             'rin': '2342-as213',
             'agency': 'Some Agency',
             'action': 'Action Here',
-            'summary': 'Summary Summary'
+            'summary': 'Summary Summary',
+            'contact': 'Contact information'
         })
     
     def test_fetch_cfr_part(self):
@@ -386,6 +395,10 @@ class NoticeTest(TestCase):
                 <P>sum sum sum</P>
             </SUM>
             <SUPLINF>
+                <FURINF>
+                    <HD>CONTACT INFO:</HD>
+                    <P>Extra contact info here</P>
+                </FURINF>
                 <ADD>
                     <P>Email: example@example.com</P>
                     <P>Extra instructions</P>
@@ -408,6 +421,7 @@ class NoticeTest(TestCase):
             'rin': 'a231a-232q',
             'agency': 'Agag',
             'action': 'actact',
+            'contact': 'Extra contact info here',
             'summary': 'sum sum sum',
             'dates': { 'effective': ['1956-09-09'] },
             'addresses': { 
@@ -428,6 +442,10 @@ class NoticeTest(TestCase):
             <FRDOC>[FR Doc. 7878-111 Filed 2-3-78; 1:02 pm]</FRDOC>
             <CFR>220 CFR Part 9292</CFR>
             <AGENCY>Agag</AGENCY>
+            <FURINF>
+                <HD>CONTACT INFO:</HD>
+                <P>Extra contact info here</P>
+            </FURINF>
             <ACT>
                 <HD>Some Title</HD>
                 <P>actact</P>
@@ -450,6 +468,7 @@ class NoticeTest(TestCase):
             'cfr_part': '9292',
             'agency': 'Agag',
             'action': 'actact',
+            'contact': 'Extra contact info here',
             'summary': 'sum sum sum',
             'section_by_section': [{
                 'title': '8(q) Words',

@@ -48,6 +48,7 @@ def fetch_simple_fields(xml_tree):
     fields['agency'] = xml_tree.xpath('//AGENCY')[0].text
     fields['action'] = xml_tree.xpath('//ACT/P')[0].text
     fields['summary'] = xml_tree.xpath('//SUM/P')[0].text
+    fields['contact'] = xml_tree.xpath('//FURINF/P')[0].text
 
     return fields
 
