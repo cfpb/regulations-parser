@@ -250,6 +250,23 @@ class NoticeTest(TestCase):
             'instructions': ['Followed by more instructions.']
         })
 
+    def test_fetch_address_http(self):
+        xml = """
+        <ROOT>
+            <ADD>
+                <P>Mail:Something here</P>
+                <P>Otherwise, visit http://example.com</P>
+                <P>or https://example.com</P>
+            </ADD>
+        </ROOT>"""
+        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+            'methods': [('Mail', 'Something here')],
+            'instructions': [
+                'Otherwise, visit http://example.com',
+                'or https://example.com'
+            ]
+        })
+
     def test_build_section_by_section(self):
         xml = """
         <ROOT>

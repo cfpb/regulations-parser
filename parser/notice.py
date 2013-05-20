@@ -99,9 +99,10 @@ def fetch_addresses(xml_tree):
     for p in address_nodes:
         etree.strip_tags(p, 'E')
         p = p.text
-        if ': ' in p:
-            lhs, rhs = p.split(': ')
-            if rhs.strip():
+        if ':' in p:
+            lhs, rhs = p.split(':', 1)
+            if rhs.strip() and not (lhs.endswith('http') or 
+                    lhs.endswith('https')):
                 addresses['methods'] = (addresses.get('methods', []) +
                     [(lhs.strip(), rhs.strip())])
                 continue
