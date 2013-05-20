@@ -267,6 +267,20 @@ class NoticeTest(TestCase):
             ]
         })
 
+    def test_fetch_address_instructions(self):
+        xml = """
+        <ROOT>
+            <ADD>
+                <P>Mail: Something something</P>
+                <P>Instructions: Do these things</P>
+                <P>Then do those things</P>
+            </ADD>
+        </ROOT>"""
+        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+            'methods': [('Mail', 'Something something')],
+            'instructions': ['Do these things', 'Then do those things']
+        })
+
     def test_cleanup_address_p_bullet(self):
         xml = u"""<P>• Bullet: value</P>"""
         self.assertEqual(cleanup_address_p(etree.fromstring(xml)), 

@@ -128,11 +128,18 @@ def fetch_addresses(xml_tree):
     for p in address_nodes:
         p = cleanup_address_p(p)
         if ':' in p:
-            lhs, rhs = p.split(':', 1)
-            if rhs.strip() and not (lhs.endswith('http') or 
-                    lhs.endswith('https')):
+            label, content = p.split(':', 1)
+
+            #   Instructions is the label
+            if label.lower().strip() == 'instructions':
+                addresses['instructions'] = ([content.strip()] + 
+                        addresses.get('instructions', []))
+                continue
+
+            if content.strip() and not (label.endswith('http') or 
+                    label.endswith('https')):
                 addresses['methods'] = (addresses.get('methods', []) +
-                    [(lhs.strip(), rhs.strip())])
+                    [(label.strip(), content.strip())])
                 continue
         if not addresses:
             addresses['intro'] = p
