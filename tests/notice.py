@@ -1,3 +1,4 @@
+#vim: set encoding=utf-8
 from lxml import etree
 from parser.notice import *
 from unittest import TestCase
@@ -151,7 +152,7 @@ class NoticeTest(TestCase):
             <CHILD />
             <PREAMB />
         </ROOT>"""
-        self.assertEqual({}, fetch_dates(etree.fromstring(xml)))
+        self.assertEqual(None, fetch_dates(etree.fromstring(xml)))
 
     def test_fetch_dates_no_date_text(self):
         xml = """
@@ -164,7 +165,7 @@ class NoticeTest(TestCase):
                 </EFFDATE>
             </PREAMB>
         </ROOT>"""
-        self.assertEqual({}, fetch_dates(etree.fromstring(xml)))
+        self.assertEqual(None, fetch_dates(etree.fromstring(xml)))
     
     def test_fetch_dates(self):
         xml = """
@@ -185,6 +186,59 @@ class NoticeTest(TestCase):
             'effective': ['2005-05-09'],
             'comments': ['1987-06-03', '2004-07-09'],
             'other': ['2005-08-15']
+        })
+
+    def test_fetch_addreses_none(self):
+        xml = """
+        <ROOT>
+            <ADD>
+                <HD>ADDRESSES:</HD>
+            </ADD>
+        </ROOT>"""
+        self.assertEqual(None, fetch_addresses(etree.fromstring(xml)))
+        xml = """
+        <ROOT>
+            <CHILD />
+        </ROOT>"""
+        self.assertEqual(None, fetch_addresses(etree.fromstring(xml)))
+
+    def test_fetch_addresses(self):
+        xml = """
+        <ROOT>
+            <ADD>
+                <HD>ADDRESSES:</HD>
+                <P>Here is some initial instruction.</P>
+                <P><E T="03">Electronic: http://www.example.com.</E> MSG</P>
+                <P>Mail: Some address here</P>
+                <P>Blah Blah: Final method description</P>
+                <P>And then, we have some instructions</P>
+                <P>Followed by more instructions.</P>
+            </ADD>
+        </ROOT>"""
+        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+            'intro': 'Here is some initial instruction.',
+            'methods': [
+                ('Electronic', 'http://www.example.com. MSG'),
+                ('Mail', 'Some address here'),
+                ('Blah Blah', 'Final method description')
+            ],
+            'instructions': [
+                'And then, we have some instructions',
+                'Followed by more instructions.'
+            ]
+        })
+    
+    def test_fetch_addresses_no_intro(self):
+        xml = """
+        <ROOT>
+            <ADD>
+                <P>Mail: Some address here</P>
+                <P>Followed by more instructions.</P>
+            </ADD>
+        </ROOT>"""
+        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+            'methods': [('Mail', 'Some address here')],
+            'instructions': ['Followed by more instructions.']
         })
 
     def test_build_section_by_section(self):
@@ -332,6 +386,10 @@ class NoticeTest(TestCase):
                 <P>sum sum sum</P>
             </SUM>
             <SUPLINF>
+                <ADD>
+                    <P>Email: example@example.com</P>
+                    <P>Extra instructions</P>
+                </ADD>
                 <HD SOURCE="HED">Supplementary Info</HD>
                 <EFFDATE>
                     <HD>DATES:</HD>
@@ -352,6 +410,47 @@ class NoticeTest(TestCase):
             'action': 'actact',
             'summary': 'sum sum sum',
             'dates': { 'effective': ['1956-09-09'] },
+            'addresses': { 
+                'methods': [('Email', 'example@example.com')],
+                'instructions': ['Extra instructions']
+            },
+            'section_by_section': [{
+                'title': '8(q) Words',
+                'paragraphs': ['Content'],
+                'children': [],
+                'label': '9292-8-q'
+            }]
+        })
+
+    def test_build_notice_missing_fields(self):
+        xml = """
+        <ROOT>
+            <FRDOC>[FR Doc. 7878-111 Filed 2-3-78; 1:02 pm]</FRDOC>
+            <CFR>220 CFR Part 9292</CFR>
+            <AGENCY>Agag</AGENCY>
+            <ACT>
+                <HD>Some Title</HD>
+                <P>actact</P>
+            </ACT>
+            <SUM>
+                <HD>Another Title</HD>
+                <P>sum sum sum</P>
+            </SUM>
+            <SUPLINF>
+                <HD SOURCE="HED">Supplementary Info</HD>
+                <HD SOURCE="HD1">V. Section-by-Section Analysis</HD>
+                <HD SOURCE="HD2">8(q) Words</HD>
+                <P>Content</P>
+                <HD SOURCE="HD1">Section that follows</HD>
+                <P>Following Content</P>
+            </SUPLINF>
+        </ROOT>"""
+        self.assertEqual(build_notice(etree.fromstring(xml)), {
+            'document_number': '7878-111',
+            'cfr_part': '9292',
+            'agency': 'Agag',
+            'action': 'actact',
+            'summary': 'sum sum sum',
             'section_by_section': [{
                 'title': '8(q) Words',
                 'paragraphs': ['Content'],

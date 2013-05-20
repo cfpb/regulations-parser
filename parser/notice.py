@@ -1,5 +1,6 @@
 from datetime import datetime
 from itertools import dropwhile, takewhile
+from lxml import etree
 from parser.grammar import rule_headers as grammar
 import re
 
@@ -86,7 +87,31 @@ def fetch_dates(xml_tree):
             if result_pair:
                 date_type, date = result_pair
                 dates[date_type] = dates.get(date_type, []) + [date]
-    return dates
+    if dates:
+        return dates
+
+def fetch_addresses(xml_tree):
+    """Pull out address information (addresses + instructions). Final
+    notices do not have addresses (as we no longer accept comments)."""
+    address_nodes = xml_tree.xpath('//ADD/P')
+    addresses = {}
+    for p in address_nodes:
+        etree.strip_tags(p, 'E')
+        p = p.text
+        if ': ' in p:
+            lhs, rhs = p.split(': ')
+            if rhs.strip():
+                addresses['methods'] = (addresses.get('methods', []) +
+                    [(lhs.strip(), rhs.strip())])
+                continue
+        if not addresses:
+            addresses['intro'] = p
+        else:
+            addresses['instructions'] = (addresses.get('instructions', []) +
+                [p])
+    if addresses:
+        return addresses
+        
 
 def build_section_by_section(sxs, part, depth=2):
     """Given a list of xml nodes in the section by section analysis, pull
@@ -152,5 +177,10 @@ def build_notice(xml):
     to_return['document_number'] = fetch_document_number(xml)
     to_return['cfr_part'] = cfr_part
     to_return['section_by_section'] = sxs
-    to_return['dates'] = fetch_dates(xml)
+    dates = fetch_dates(xml)
+    if dates:
+        to_return['dates'] = dates
+    addresses = fetch_addresses(xml)
+    if addresses:
+        to_return['addresses'] = addresses
     return to_return
