@@ -267,16 +267,15 @@ class NoticeTest(TestCase):
             ]
         })
 
-    def test_fetch_address_bullet(self):
-        xml = u"""
-        <ROOT>
-            <ADD>
-                <P>• Bullet: value</P>
-            </ADD>
-        </ROOT>"""
-        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
-            'methods': [('Bullet', 'value')]
-        })
+    def test_cleanup_address_p_bullet(self):
+        xml = u"""<P>• Bullet: value</P>"""
+        self.assertEqual(cleanup_address_p(etree.fromstring(xml)), 
+            'Bullet: value')
+
+    def test_cleanup_address_p_smushed_tag(self):
+        xml = """<P>See<E T="03">This</E></P>"""
+        self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
+            'See This')
 
     def test_build_section_by_section(self):
         xml = """
