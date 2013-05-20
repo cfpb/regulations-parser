@@ -132,6 +132,61 @@ class NoticeTest(TestCase):
         </ROOT>"""
         self.assertEqual("90210", fetch_cfr_part(etree.fromstring(xml)))
 
+    def test_parse_date_sentence(self):
+        self.assertEqual(('comments', '2009-01-08'), parse_date_sentence(
+            'Comments must be received by January 8, 2009'))
+        self.assertEqual(('comments', '2005-02-12'), parse_date_sentence(
+            'Comments on the effective date must be received by '
+            + 'February 12, 2005'))
+        self.assertEqual(('effective', '1982-03-01'), parse_date_sentence(
+            'This rule is effective on March 1, 1982'))
+        self.assertEqual(('other', '1991-04-30'), parse_date_sentence(
+            "More info will be available on April 30, 1991"))
+        self.assertEqual(None, parse_date_sentence(
+            'The rule effective on April 30, 1991 did not make sense'))
+
+    def test_fetch_dates_no_xml_el(self):
+        xml = """
+        <ROOT>
+            <CHILD />
+            <PREAMB />
+        </ROOT>"""
+        self.assertEqual({}, fetch_dates(etree.fromstring(xml)))
+
+    def test_fetch_dates_no_date_text(self):
+        xml = """
+        <ROOT>
+            <CHILD />
+            <PREAMB>
+                <EFFDATE>
+                    <HD>DATES: </HD>
+                    <P>There are no dates for this.</P>
+                </EFFDATE>
+            </PREAMB>
+        </ROOT>"""
+        self.assertEqual({}, fetch_dates(etree.fromstring(xml)))
+    
+    def test_fetch_dates(self):
+        xml = """
+        <ROOT>
+            <CHILD />
+            <PREAMB>
+                <EFFDATE>
+                    <HD>DATES: </HD>
+                    <P>We said stuff that's effective on May 9, 2005. If
+                    you'd like to add comments, please do so by June 3, 1987.
+                    Wait, that doesn't make sense. I mean, the comment
+                    period ends on July 9, 2004. Whew. It would have been
+                    more confusing if I said August 15, 2005. Right?</P>
+                </EFFDATE>
+            </PREAMB>
+        </ROOT>"""
+        self.assertEqual(fetch_dates(etree.fromstring(xml)), {
+            'effective': ['2005-05-09'],
+            'comments': ['1987-06-03', '2004-07-09'],
+            'other': ['2005-08-15']
+        })
+
     def test_build_section_by_section(self):
         xml = """
         <ROOT>
@@ -278,6 +333,10 @@ class NoticeTest(TestCase):
             </SUM>
             <SUPLINF>
                 <HD SOURCE="HED">Supplementary Info</HD>
+                <EFFDATE>
+                    <HD>DATES:</HD>
+                    <P>This act is effective on September 9, 1956</P>
+                </EFFDATE>
                 <HD SOURCE="HD1">V. Section-by-Section Analysis</HD>
                 <HD SOURCE="HD2">8(q) Words</HD>
                 <P>Content</P>
@@ -292,6 +351,7 @@ class NoticeTest(TestCase):
             'agency': 'Agag',
             'action': 'actact',
             'summary': 'sum sum sum',
+            'dates': { 'effective': ['1956-09-09'] },
             'section_by_section': [{
                 'title': '8(q) Words',
                 'paragraphs': ['Content'],

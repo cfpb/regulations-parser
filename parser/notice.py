@@ -1,3 +1,4 @@
+from datetime import datetime
 from itertools import dropwhile, takewhile
 from parser.grammar import rule_headers as grammar
 import re
@@ -58,6 +59,34 @@ def fetch_cfr_part(xml_tree):
     if match:
         return match.group(1)
 
+def parse_date_sentence(sentence):
+    """Return the date type + date in this sentence (if one exists)."""
+    #   Search for month date, year at the end of the sentence
+    sentence = sentence.lower()
+    date_re = r".*((january|february|march|april|may|june|july|august"
+    date_re += r"|september|october|november|december) \d+, \d+)$"
+    match = re.match(date_re, sentence)
+    if match:
+        date = datetime.strptime(match.group(1), "%B %d, %Y")
+        if 'comment' in sentence:
+            return ('comments', date.strftime("%Y-%m-%d"))
+        if 'effective' in sentence:
+            return ('effective', date.strftime("%Y-%m-%d"))
+        return ('other', date.strftime('%Y-%m-%d'))
+
+def fetch_dates(xml_tree):
+    """Pull out any dates (and their types) from the XML. Not all notices
+    have all types of dates, some notices have multiple dates of the same
+    type."""
+    dates_field = xml_tree.xpath('//EFFDATE/P')
+    dates = {}
+    if dates_field:
+        for sentence in dates_field[0].text.split('.'):
+            result_pair = parse_date_sentence(sentence.replace('\n', ' '))
+            if result_pair:
+                date_type, date = result_pair
+                dates[date_type] = dates.get(date_type, []) + [date]
+    return dates
 
 def build_section_by_section(sxs, part, depth=2):
     """Given a list of xml nodes in the section by section analysis, pull
@@ -123,4 +152,5 @@ def build_notice(xml):
     to_return['document_number'] = fetch_document_number(xml)
     to_return['cfr_part'] = cfr_part
     to_return['section_by_section'] = sxs
+    to_return['dates'] = fetch_dates(xml)
     return to_return
