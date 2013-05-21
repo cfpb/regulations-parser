@@ -49,7 +49,7 @@ any_depth_p = (
         | upper_p.setResultsName("depth4_p"))
 
 
-and_phrases = Suppress(Regex(",|and|or") + Optional("and"))
+and_phrases = Suppress(Regex(",|and|or|through") + Optional("and"))
 
 
 paragraph_tail = OneOrMore(and_phrases +
@@ -96,6 +96,14 @@ regtext_citation = (
     | single_section_with_marker.setResultsName("single_section")
     | single_paragraph.setResultsName("single_paragraph") 
     | multiple_paragraphs.setResultsName("multiple_paragraphs"))
+
+
+appendix_citation = (
+    Word(string.ascii_uppercase) 
+    + Suppress('-')
+    + Word(string.digits).setResultsName("section")
+    + Optional(depth1_p + Optional(paragraph_tail))
+)
 
 
 upper_dec = "." + Word(string.ascii_uppercase)
