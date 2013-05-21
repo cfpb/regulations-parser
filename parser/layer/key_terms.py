@@ -18,6 +18,6 @@ class KeyTerms(Layer):
             layer_el = [{
                 "key_term": keyterm, 
                 #The first instance of the key term is right one. 
-                "location": [1]
+                "locations": [0]
             }]
             return layer_el
