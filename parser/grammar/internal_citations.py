@@ -82,19 +82,12 @@ multiple_sections = (
 single_paragraph = (
         Suppress("paragraph") 
         + any_depth_p.setResultsName("p_head")
-        )
-
-
-multiple_paragraphs_or = (
-        Suppress("paragraph")
-        + any_depth_p.setResultsName("p_head")
-        #   veeery similar to paragraph_tail, but only allow "or"s
-        + OneOrMore(Suppress("or") +
+        #   veeeery similar to paragraph_tail, but is optional
+        + Optional(conj_phrases +
             any_depth_p.setParseAction(keep_pos).setResultsName("p_tail",
                 listAllMatches=True)
             )
-)
-
+        )
 
 multiple_paragraphs = (
         Suppress("paragraphs")
@@ -105,7 +98,6 @@ multiple_paragraphs = (
 regtext_citation = (
     multiple_sections.setResultsName("multiple_sections") 
     | single_section_with_marker.setResultsName("single_section")
-    | multiple_paragraphs_or.setResultsName("multiple_paragraphs_or")
     | single_paragraph.setResultsName("single_paragraph")
     | multiple_paragraphs.setResultsName("multiple_paragraphs")
 )
