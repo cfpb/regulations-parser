@@ -62,3 +62,16 @@ class DepthSectionTest(TestCase):
             child = tree['children'][0]
             self.assertEqual(child['text'], line2[1:])
             self.assertEqual(0, len(child['children']))
+
+    def test_build_section_tree_a_or_b1(self):
+        line1 = u"§ 201.20 Super Awesome Section"
+        line2 = "\n(a) a (b) b (c) see paragraph (a) or (b)(1) of "
+        line2 += "this section"
+
+        tree = build_section_tree(line1+line2, 201)
+        self.assertEqual(tree['text'], "\n")
+        self.assertEqual(3, len(tree['children']))
+        child = tree['children'][2]
+        self.assertEqual(child['text'], "(c) see paragraph (a) or (b)(1) " +
+                "of this section")
+        self.assertEqual(0, len(child['children']))
