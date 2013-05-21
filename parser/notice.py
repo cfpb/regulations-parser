@@ -210,14 +210,14 @@ def build_notice(xml):
 
     sxs = find_section_by_section(xml)
     sxs = build_section_by_section(sxs, cfr_part)
-    to_return = fetch_simple_fields(xml)
-    to_return['document_number'] = fetch_document_number(xml)
-    to_return['cfr_part'] = cfr_part
-    to_return['section_by_section'] = sxs
+    notice = fetch_simple_fields(xml)
+    notice['document_number'] = fetch_document_number(xml)
+    notice['cfr_part'] = cfr_part
+    notice['section_by_section'] = sxs
     dates = fetch_dates(xml)
     if dates:
-        to_return['dates'] = dates
+        notice['dates'] = dates
     addresses = fetch_addresses(xml)
     if addresses:
-        to_return['addresses'] = addresses
-    return to_return
+        notice['addresses'] = addresses
+    return notice
