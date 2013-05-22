@@ -49,10 +49,10 @@ any_depth_p = (
         | upper_p.setResultsName("depth4_p"))
 
 
-and_phrases = Suppress(Regex(",|and|or") + Optional("and"))
+conj_phrases = Suppress(Regex(",|and|or|through") + Optional("and"))
 
 
-paragraph_tail = OneOrMore(and_phrases +
+paragraph_tail = OneOrMore(conj_phrases +
         any_depth_p.setParseAction(keep_pos).setResultsName("p_tail",
             listAllMatches=True)
         )
@@ -75,18 +75,22 @@ single_section_with_marker = (
 multiple_sections = (
         Suppress(u"§§")
         + single_section.setResultsName("s_head")
-        + OneOrMore(and_phrases 
+        + OneOrMore(conj_phrases 
             + single_section.setResultsName("s_tail", listAllMatches=True)))
 
 
 single_paragraph = (
         Suppress("paragraph") 
         + any_depth_p.setResultsName("p_head")
+        #   veeeery similar to paragraph_tail, but is optional
+        + Optional(conj_phrases +
+            any_depth_p.setParseAction(keep_pos).setResultsName("p_tail",
+                listAllMatches=True)
+            )
         )
 
-
 multiple_paragraphs = (
-        Suppress("paragraphs") 
+        Suppress("paragraphs")
         + any_depth_p.setResultsName("p_head")
         + paragraph_tail)
 
@@ -94,8 +98,17 @@ multiple_paragraphs = (
 regtext_citation = (
     multiple_sections.setResultsName("multiple_sections") 
     | single_section_with_marker.setResultsName("single_section")
-    | single_paragraph.setResultsName("single_paragraph") 
-    | multiple_paragraphs.setResultsName("multiple_paragraphs"))
+    | single_paragraph.setResultsName("single_paragraph")
+    | multiple_paragraphs.setResultsName("multiple_paragraphs")
+)
+
+
+appendix_citation = (
+    Word(string.ascii_uppercase) 
+    + Suppress('-')
+    + Word(string.digits).setResultsName("section")
+    + Optional(depth1_p + Optional(paragraph_tail))
+)
 
 
 upper_dec = "." + Word(string.ascii_uppercase)
