@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import re
+import HTMLParser
 from lxml import etree
 from parser.tree.struct import label, node
 from parser.grammar.internal_citations import any_depth_p
@@ -72,6 +73,8 @@ def build_tree():
 
     part = doc.xpath('//REGTEXT/PART')[0]
 
+    html_parser = HTMLParser.HTMLParser()
+
     sections = []
     for child in part.getchildren():
         if child.tag == 'SECTION':
@@ -82,6 +85,7 @@ def build_tree():
                     text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
                     markers_list = get_paragraph_markers(text)
                     node_text = ' '.join([ch.text] + [etree.tostring(c) for c in ch if c.tail])
+                    node_text = html_parser.unescape(node_text)
 
                     if len(markers_list) > 1:
                         actual_markers = ['(%s)' % m for m in markers_list]
