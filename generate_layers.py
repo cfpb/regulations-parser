@@ -5,6 +5,7 @@ from parser.layer import internal_citations
 from parser.layer import interpretations
 from parser.layer import table_of_contents
 from parser.layer import terms
+from parser.layer import key_terms
 import json
 
 def generate_external_citations(reg_json):
@@ -37,10 +38,17 @@ def generate_terms(reg):
     layer_generator = terms.Terms(reg)
     print json.dumps(layer_generator.build())
 
+def generate_key_terms(reg):
+    """ Generate the key terms layer """
+    layer_generator = key_terms.KeyTerms(reg)
+    layer_generator.build()
+    print json.dumps(layer_generator.build())
+
 if __name__ == "__main__":
-    reg_json = api_stub.get_regulation_as_json('/vagrant/data/regulations/regulation/1005/20111227')
+    reg_json = api_stub.get_regulation_as_json('/tmp/xtree.json')
     #generate_table_of_contents(reg_json)
     #generate_internal_citations(reg_json)
-    generate_external_citations(reg_json)
+    #generate_external_citations(reg_json)
     #generate_interpretations(reg_json)
     #generate_terms(reg_json)
+    generate_key_terms(reg_json)
