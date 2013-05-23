@@ -109,5 +109,52 @@ class ParseTest(TestCase):
         start, end = result[1]['offsets'][0]
         self.assertEqual(u'(2)', text[start:end])
 
+    def test_multiple_paragraphs_alpha_then_roman1(self):
+        text = u'paragraphs (b)(1)(ii) and (iii)'
+        result = self.parser.parse(text, parts = ['1005', '6'])
+        self.assertEqual(2, len(result))
+        self.assertEqual(['1005', '6', 'b', '1', 'ii'], result[0]['citation'])
+        self.assertEqual(['1005', '6', 'b', '1', 'iii'], result[1]['citation'])
+        start, end = result[0]['offsets'][0]
+        self.assertEqual(u'(b)(1)(ii)', text[start:end])
+        start, end = result[1]['offsets'][0]
+        self.assertEqual(u'(iii)', text[start:end])
+
+    def test_multiple_paragraphs_alpha_then_roman2(self):
+        text = u'§ 1005.15(d)(1)(i) and (ii)'
+        result = self.parser.parse(text, parts = ['1005', '15'])
+        self.assertEqual(2, len(result))
+        self.assertEqual(['1005', '15', 'd', '1', 'i'], result[0]['citation'])
+        self.assertEqual(['1005', '15', 'd', '1', 'ii'], result[1]['citation'])
+        start, end = result[0]['offsets'][0]
+        self.assertEqual(u'1005.15(d)(1)(i)', text[start:end])
+        start, end = result[1]['offsets'][0]
+        self.assertEqual(u'(ii)', text[start:end])
+
+    def test_multiple_paragraphs_alpha_then_roman3(self):
+        text = u'§ 1005.9(a)(5) (i), (ii), or (iii)'
+        result = self.parser.parse(text, parts = ['1005', '9'])
+        self.assertEqual(3, len(result))
+        self.assertEqual(['1005', '9', 'a', '5', 'i'], result[0]['citation'])
+        self.assertEqual(['1005', '9', 'a', '5', 'ii'], result[1]['citation'])
+        self.assertEqual(['1005', '9', 'a', '5', 'iii'], result[2]['citation'])
+        start, end = result[0]['offsets'][0]
+        self.assertEqual(u'1005.9(a)(5) (i)', text[start:end])
+        start, end = result[1]['offsets'][0]
+        self.assertEqual(u'(ii)', text[start:end])
+        start, end = result[2]['offsets'][0]
+        self.assertEqual(u'(iii)', text[start:end])
+
+    def test_multiple_paragraphs_alpha_then_roman4(self):
+        text =u'§ 1005.11(a)(1)(vi) or (vii).'
+        result = self.parser.parse(text, parts = ['1005', '11'])
+        self.assertEqual(2, len(result))
+        self.assertEqual(['1005', '11', 'a', '1', 'vi'], result[0]['citation'])
+        self.assertEqual(['1005', '11', 'a', '1', 'vii'], result[1]['citation'])
+        start, end = result[0]['offsets'][0]
+        self.assertEqual(u'1005.11(a)(1)(vi)', text[start:end])
+        start, end = result[1]['offsets'][0]
+        self.assertEqual(u'(vii)', text[start:end])
+
     def test_abc(self):
         text = "(d) Procedures in paragraph (c) of this section, the financial in this paragraph (d) if it"
