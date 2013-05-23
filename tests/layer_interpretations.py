@@ -83,3 +83,14 @@ class LayerInterpretationTest(TestCase):
         interp = Interpretations(root)
         self.assertFalse(interp.process(struct.node(
             label=struct.label("", ["100", "11", "a"]))) is None)
+
+    def test_empty_interpretations(self):
+        interp = Interpretations(None)
+        self.assertTrue(interp.empty_interpretation(struct.node('\n\n',
+            [])))
+        self.assertTrue(interp.empty_interpretation(struct.node('\n\n',
+            [struct.node('SubSection', [], struct.label('', [], 'Title'))])))
+        self.assertFalse(interp.empty_interpretation(struct.node('Content',
+            [])))
+        self.assertFalse(interp.empty_interpretation(struct.node('',
+            [struct.node('Subpar', [])])))
