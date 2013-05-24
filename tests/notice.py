@@ -1,3 +1,4 @@
+#vim: set encoding=utf-8
 from lxml import etree
 from parser.notice import *
 from unittest import TestCase
@@ -57,6 +58,77 @@ class NoticeTest(TestCase):
         """
         self.assertEqual("2001-10",
                 fetch_document_number(etree.fromstring(xml)))
+
+    def test_fetch_docket_number(self):
+        xml = """
+        <ROOT>
+            <CHILD />
+            <CHILD>Body</CHILD>
+            <CHILD>
+                <DEPDOC>[Docket No. AGENCY-2008-6789]</DEPDOC>
+            </CHILD>
+            <CHILD>Body</CHILD>
+        </ROOT>
+        """
+        self.assertEqual("2008-6789",
+                fetch_docket_number(etree.fromstring(xml)))
+
+    def test_fetch_simple_fields_withnorin(self):
+        xml = """
+        <ROOT>
+            <CHILD>
+                <AGENCY>Some Agency</AGENCY>
+                <ACT>
+                    <HD>Some Title</HD>
+                    <P>Action Here</P>
+                </ACT>
+                <SUM>
+                    <HD>Another Title</HD>
+                    <P>Summary Summary</P>
+                </SUM>
+            </CHILD>
+            <CHILD>Body</CHILD>
+            <FURINF>
+                <P>Contact information</P>
+            </FURINF>
+        </ROOT>
+        """
+        self.assertEqual(fetch_simple_fields(etree.fromstring(xml)), {
+            'agency': 'Some Agency',
+            'action': 'Action Here',
+            'summary': 'Summary Summary',
+            'contact': 'Contact information'
+
+        })
+
+    def test_fetch_simple_fields_withrin(self):
+        xml = """
+        <ROOT>
+            <CHILD>
+                <RIN>RIN 2342-as213</RIN>
+                <AGENCY>Some Agency</AGENCY>
+                <ACT>
+                    <HD>Some Title</HD>
+                    <P>Action Here</P>
+                </ACT>
+                <SUM>
+                    <HD>Another Title</HD>
+                    <P>Summary Summary</P>
+                </SUM>
+            </CHILD>
+            <CHILD>Body</CHILD>
+            <FURINF>
+                <P>Contact information</P>
+            </FURINF>
+        </ROOT>
+        """
+        self.assertEqual(fetch_simple_fields(etree.fromstring(xml)), {
+            'rin': '2342-as213',
+            'agency': 'Some Agency',
+            'action': 'Action Here',
+            'summary': 'Summary Summary',
+            'contact': 'Contact information'
+        })
     
     def test_fetch_cfr_part(self):
         xml = """
@@ -69,6 +141,155 @@ class NoticeTest(TestCase):
             <CHILD>Body</CHILD>
         </ROOT>"""
         self.assertEqual("90210", fetch_cfr_part(etree.fromstring(xml)))
+
+    def test_parse_date_sentence(self):
+        self.assertEqual(('comments', '2009-01-08'), parse_date_sentence(
+            'Comments must be received by January 8, 2009'))
+        self.assertEqual(('comments', '2005-02-12'), parse_date_sentence(
+            'Comments on the effective date must be received by '
+            + 'February 12, 2005'))
+        self.assertEqual(('effective', '1982-03-01'), parse_date_sentence(
+            'This rule is effective on March 1, 1982'))
+        self.assertEqual(('other', '1991-04-30'), parse_date_sentence(
+            "More info will be available on April 30, 1991"))
+        self.assertEqual(None, parse_date_sentence(
+            'The rule effective on April 30, 1991 did not make sense'))
+
+    def test_fetch_dates_no_xml_el(self):
+        xml = """
+        <ROOT>
+            <CHILD />
+            <PREAMB />
+        </ROOT>"""
+        self.assertEqual(None, fetch_dates(etree.fromstring(xml)))
+
+    def test_fetch_dates_no_date_text(self):
+        xml = """
+        <ROOT>
+            <CHILD />
+            <PREAMB>
+                <EFFDATE>
+                    <HD>DATES: </HD>
+                    <P>There are no dates for this.</P>
+                </EFFDATE>
+            </PREAMB>
+        </ROOT>"""
+        self.assertEqual(None, fetch_dates(etree.fromstring(xml)))
+    
+    def test_fetch_dates(self):
+        xml = """
+        <ROOT>
+            <CHILD />
+            <PREAMB>
+                <EFFDATE>
+                    <HD>DATES: </HD>
+                    <P>We said stuff that's effective on May 9, 2005. If
+                    you'd like to add comments, please do so by June 3, 1987.
+                    Wait, that doesn't make sense. I mean, the comment
+                    period ends on July 9, 2004. Whew. It would have been
+                    more confusing if I said August 15, 2005. Right?</P>
+                </EFFDATE>
+            </PREAMB>
+        </ROOT>"""
+        self.assertEqual(fetch_dates(etree.fromstring(xml)), {
+            'effective': ['2005-05-09'],
+            'comments': ['1987-06-03', '2004-07-09'],
+            'other': ['2005-08-15']
+        })
+
+    def test_fetch_addreses_none(self):
+        xml = """
+        <ROOT>
+            <ADD>
+                <HD>ADDRESSES:</HD>
+            </ADD>
+        </ROOT>"""
+        self.assertEqual(None, fetch_addresses(etree.fromstring(xml)))
+        xml = """
+        <ROOT>
+            <CHILD />
+        </ROOT>"""
+        self.assertEqual(None, fetch_addresses(etree.fromstring(xml)))
+
+    def test_fetch_addresses(self):
+        xml = """
+        <ROOT>
+            <ADD>
+                <HD>ADDRESSES:</HD>
+                <P>Here is some initial instruction.</P>
+                <P><E T="03">Electronic: http://www.example.com.</E> MSG</P>
+                <P>Mail: Some address here</P>
+                <P>Blah Blah: Final method description</P>
+                <P>And then, we have some instructions</P>
+                <P>Followed by more instructions.</P>
+            </ADD>
+        </ROOT>"""
+        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+            'intro': 'Here is some initial instruction.',
+            'methods': [
+                ('Electronic', 'http://www.example.com. MSG'),
+                ('Mail', 'Some address here'),
+                ('Blah Blah', 'Final method description')
+            ],
+            'instructions': [
+                'And then, we have some instructions',
+                'Followed by more instructions.'
+            ]
+        })
+    
+    def test_fetch_addresses_no_intro(self):
+        xml = """
+        <ROOT>
+            <ADD>
+                <P>Mail: Some address here</P>
+                <P>Followed by more instructions.</P>
+            </ADD>
+        </ROOT>"""
+        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+            'methods': [('Mail', 'Some address here')],
+            'instructions': ['Followed by more instructions.']
+        })
+
+    def test_fetch_address_http(self):
+        xml = """
+        <ROOT>
+            <ADD>
+                <P>Mail:Something here</P>
+                <P>Otherwise, visit http://example.com</P>
+                <P>or https://example.com</P>
+            </ADD>
+        </ROOT>"""
+        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+            'methods': [('Mail', 'Something here')],
+            'instructions': [
+                'Otherwise, visit http://example.com',
+                'or https://example.com'
+            ]
+        })
+
+    def test_fetch_address_instructions(self):
+        xml = """
+        <ROOT>
+            <ADD>
+                <P>Mail: Something something</P>
+                <P>Instructions: Do these things</P>
+                <P>Then do those things</P>
+            </ADD>
+        </ROOT>"""
+        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+            'methods': [('Mail', 'Something something')],
+            'instructions': ['Do these things', 'Then do those things']
+        })
+
+    def test_cleanup_address_p_bullet(self):
+        xml = u"""<P>• Bullet: value</P>"""
+        self.assertEqual(cleanup_address_p(etree.fromstring(xml)), 
+            'Bullet: value')
+
+    def test_cleanup_address_p_smushed_tag(self):
+        xml = """<P>See<E T="03">This</E></P>"""
+        self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
+            'See This')
 
     def test_build_section_by_section(self):
         xml = """
@@ -204,6 +425,76 @@ class NoticeTest(TestCase):
         <ROOT>
             <FRDOC>[FR Doc. 7878-111 Filed 2-3-78; 1:02 pm]</FRDOC>
             <CFR>220 CFR Part 9292</CFR>
+            <RIN>RIN a231a-232q</RIN>
+            <AGENCY>Agag</AGENCY>
+            <ACT>
+                <HD>Some Title</HD>
+                <P>actact</P>
+            </ACT>
+            <SUM>
+                <HD>Another Title</HD>
+                <P>sum sum sum</P>
+            </SUM>
+            <SUPLINF>
+                <FURINF>
+                    <HD>CONTACT INFO:</HD>
+                    <P>Extra contact info here</P>
+                </FURINF>
+                <ADD>
+                    <P>Email: example@example.com</P>
+                    <P>Extra instructions</P>
+                </ADD>
+                <HD SOURCE="HED">Supplementary Info</HD>
+                <EFFDATE>
+                    <HD>DATES:</HD>
+                    <P>This act is effective on September 9, 1956</P>
+                </EFFDATE>
+                <HD SOURCE="HD1">V. Section-by-Section Analysis</HD>
+                <HD SOURCE="HD2">8(q) Words</HD>
+                <P>Content</P>
+                <HD SOURCE="HD1">Section that follows</HD>
+                <P>Following Content</P>
+            </SUPLINF>
+        </ROOT>"""
+        self.assertEqual(build_notice(etree.fromstring(xml)), {
+            'document_number': '7878-111',
+            'cfr_part': '9292',
+            'rin': 'a231a-232q',
+            'agency': 'Agag',
+            'action': 'actact',
+            'contact': 'Extra contact info here',
+            'summary': 'sum sum sum',
+            'dates': { 'effective': ['1956-09-09'] },
+            'addresses': { 
+                'methods': [('Email', 'example@example.com')],
+                'instructions': ['Extra instructions']
+            },
+            'section_by_section': [{
+                'title': '8(q) Words',
+                'paragraphs': ['Content'],
+                'children': [],
+                'label': '9292-8-q'
+            }]
+        })
+
+    def test_build_notice_missing_fields(self):
+        xml = """
+        <ROOT>
+            <FRDOC>[FR Doc. 7878-111 Filed 2-3-78; 1:02 pm]</FRDOC>
+            <CFR>220 CFR Part 9292</CFR>
+            <AGENCY>Agag</AGENCY>
+            <FURINF>
+                <HD>CONTACT INFO:</HD>
+                <P>Extra contact info here</P>
+            </FURINF>
+            <ACT>
+                <HD>Some Title</HD>
+                <P>actact</P>
+            </ACT>
+            <SUM>
+                <HD>Another Title</HD>
+                <P>sum sum sum</P>
+            </SUM>
             <SUPLINF>
                 <HD SOURCE="HED">Supplementary Info</HD>
                 <HD SOURCE="HD1">V. Section-by-Section Analysis</HD>
@@ -216,6 +507,10 @@ class NoticeTest(TestCase):
         self.assertEqual(build_notice(etree.fromstring(xml)), {
             'document_number': '7878-111',
             'cfr_part': '9292',
+            'agency': 'Agag',
+            'action': 'actact',
+            'contact': 'Extra contact info here',
+            'summary': 'sum sum sum',
             'section_by_section': [{
                 'title': '8(q) Words',
                 'paragraphs': ['Content'],
