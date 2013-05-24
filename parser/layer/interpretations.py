@@ -25,12 +25,23 @@ class Interpretations(Layer):
             interp_label += self.appendix_label(paragraphs)
 
         interpretation = struct.find(self.tree, interp_label)
-        if interpretation:
+        if interpretation and not self.empty_interpretation(interpretation):
             return [{
                     'text': struct.join_text(interpretation),
                     'reference': interpretation['label']['text']
                     }]  # list as we will eventually match parents as well
 
+    def empty_interpretation(self, interpretation):
+        """We don't want to include empty (e.g. \n\n) nodes as
+        interpretations unless their children are subparagraphs. We 
+        distinguish subparagraphs from structural children by checking for a
+        title field."""
+        if interpretation['text'].strip():
+            return False
+        if (interpretation['children'] and 
+                'title' not in interpretation['children'][0]['label']):
+            return False
+        return True
 
     def regtext_label(self, paragraph_ids):
         """Create a label corresponding to regtext paragraphs (parens)"""
