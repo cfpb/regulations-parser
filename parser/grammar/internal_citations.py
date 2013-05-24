@@ -21,7 +21,7 @@ class WrappedResult():
 
 lower_p = (
         Suppress("(") 
-        + Word(string.ascii_lowercase).setResultsName("level1") 
+        + Word(string.ascii_lowercase, max=1).setResultsName("level1") 
         + Suppress(")"))
 digit_p = (
         Suppress("(") 
@@ -49,7 +49,10 @@ any_depth_p = (
         | upper_p.setResultsName("depth4_p"))
 
 
-conj_phrases = Suppress(Regex(",|and|or|through") + Optional("and"))
+conj_phrases = Suppress(
+        Regex(",|and|or|through") 
+        + Optional("and")
+        + Optional("or"))
 
 
 paragraph_tail = OneOrMore(conj_phrases +
