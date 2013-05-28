@@ -36,3 +36,29 @@ class LayerKeyTermTest(TestCase):
         node = struct.node('(a) T <E T="03">et seq.</E> has a list: apples', label=label)
         kt = KeyTerms(None)
         self.assertFalse(kt.keyterm_is_first(node, 'et seq.'))
+
+    def test_interpretation_markers(self):
+        label = struct.label('101-Interpretations-11-(c)-3', ['101', 'Interpretations', '(c)', '3'])
+        node = struct.node('3. <E T="03">et seq.</E> has a list: apples', label=label)
+        kt = KeyTerms(None)
+        results = kt.process(node)
+        self.assertNotEqual(results, None)
+        self.assertEqual(results[0]['key_term'], 'et seq.')
+        self.assertEqual(results[0]['locations'], [0])
+
+    def test_no_keyterm(self):
+        label = struct.label('101-22-a', ['101', '22', 'a'])
+        node = struct.node('(a) Apples are grown in New Zealand.', label=label)
+        kt = KeyTerms(None)
+        results = kt.process(node)
+        self.assertEquals(results, None)
+
+    def test_keyterm_and_emphasis(self):
+        label = struct.label('101-22-a', ['101', '22', 'a'])
+        node = struct.node('(a) <E T="03">Apples.</E> Apples are grown in New <E T="03">Zealand.</E>', label=label)
+        kt = KeyTerms(None)
+        results = kt.process(node)
+        self.assertNotEqual(results, None)
+        self.assertEqual(results[0]['key_term'], 'Apples.')
+        self.assertEqual(results[0]['locations'], [0])
+

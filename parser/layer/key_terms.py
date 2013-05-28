@@ -9,7 +9,11 @@ class KeyTerms(Layer):
     def process_node_text(self, node):
         """ Take a paragraph, remove the marker, and extraneous whitespaces. """
         marker = node['label']['parts'][-1]
-        marker = '(%s)' % marker
+
+        if 'Interpretations' in node['label']['parts']:
+            marker = marker + '.'
+        else:
+            marker = '(%s)' % marker
         text = node['text']
 
         text = text.replace(marker, '', 1).strip()
