@@ -107,11 +107,11 @@ regtext_citation = (
 
 
 appendix_citation = (
-    Word(string.ascii_uppercase) 
+    Word(string.ascii_uppercase).setResultsName("appendix") 
     + Suppress('-')
     + Word(string.digits).setResultsName("section")
-    + Optional(depth1_p + Optional(paragraph_tail))
-)
+    + Optional(depth1_p).setResultsName("paragraphs")
+).setParseAction(keep_pos)
 
 
 upper_dec = "." + Word(string.ascii_uppercase)

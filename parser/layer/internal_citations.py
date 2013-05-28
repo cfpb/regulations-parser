@@ -31,6 +31,17 @@ class InternalCitationParser(Layer):
                 all_citations.extend(self.paragraph_list(citation, 
                     citation.pos[0], end, citation.part, 
                     citation.section))
+
+        for cit, start, end in grammar.appendix_citation.scanString(text):
+            cit = cit[0][0]
+            label = [parts[0], cit.appendix, cit.section]
+            if cit.paragraphs:
+                label += list(cit.paragraphs[0][0])
+            all_citations.append({
+                "offsets": [cit.pos],
+                "citation": label
+            })
+
         return self.strip_whitespace(text, all_citations)
 
     def strip_whitespace(self, text, citations):

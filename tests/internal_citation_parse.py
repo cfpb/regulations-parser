@@ -146,7 +146,7 @@ class ParseTest(TestCase):
         self.assertEqual(u'(iii)', text[start:end])
 
     def test_multiple_paragraphs_alpha_then_roman4(self):
-        text =u'§ 1005.11(a)(1)(vi) or (vii).'
+        text = u'§ 1005.11(a)(1)(vi) or (vii).'
         result = self.parser.parse(text, parts = ['1005', '11'])
         self.assertEqual(2, len(result))
         self.assertEqual(['1005', '11', 'a', '1', 'vi'], result[0]['citation'])
@@ -156,5 +156,19 @@ class ParseTest(TestCase):
         start, end = result[1]['offsets'][0]
         self.assertEqual(u'(vii)', text[start:end])
 
-    def test_abc(self):
-        text = "(d) Procedures in paragraph (c) of this section, the financial in this paragraph (d) if it"
+    def test_appendix_citation(self):
+        text = "Please see A-5 and Q-2(r) and Z-12(g)(2)(ii) then more text"
+        result = self.parser.parse(text, parts = ['1005', '10'])
+        self.assertEqual(3, len(result))
+        resultA, resultQ, resultZ = result
+
+        self.assertEqual(['1005', 'A', '5'], resultA['citation'])
+        offsets = resultA['offsets'][0]
+        self.assertEqual('A-5', text[offsets[0]:offsets[1]])
+        self.assertEqual(['1005', 'Q', '2', 'r'], resultQ['citation'])
+        offsets = resultQ['offsets'][0]
+        self.assertEqual('Q-2(r)', text[offsets[0]:offsets[1]])
+        self.assertEqual(['1005', 'Z', '12', 'g', '2', 'ii'], 
+                resultZ['citation'])
+        offsets = resultZ['offsets'][0]
+        self.assertEqual('Z-12(g)(2)(ii)', text[offsets[0]:offsets[1]])
