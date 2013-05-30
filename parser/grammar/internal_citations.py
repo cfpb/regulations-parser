@@ -71,12 +71,12 @@ single_section = (
 
 
 single_section_with_marker = (
-        Suppress(u"§") 
+        Suppress(Regex(u"§|Section|section")) 
         + single_section.setResultsName("without_marker"))
 
 
 multiple_sections = (
-        Suppress(u"§§")
+        Suppress(Regex(u"§§|Sections|sections"))
         + single_section.setResultsName("s_head")
         + OneOrMore(conj_phrases 
             + single_section.setResultsName("s_tail", listAllMatches=True)))
