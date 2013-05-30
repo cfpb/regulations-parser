@@ -110,8 +110,9 @@ appendix_citation = (
     Word(string.ascii_uppercase).setResultsName("appendix") 
     + Suppress('-')
     + Word(string.digits).setResultsName("section")
-    + Optional(depth1_p).setResultsName("paragraphs")
-).setParseAction(keep_pos)
+    + Optional(depth1_p.setParseAction(keep_pos).setResultsName("p_head")
+        + Optional(paragraph_tail))
+)
 
 
 upper_dec = "." + Word(string.ascii_uppercase)

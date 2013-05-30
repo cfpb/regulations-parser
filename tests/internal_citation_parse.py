@@ -172,3 +172,21 @@ class ParseTest(TestCase):
                 resultZ['citation'])
         offsets = resultZ['offsets'][0]
         self.assertEqual('Z-12(g)(2)(ii)', text[offsets[0]:offsets[1]])
+
+    def test_appendix_multiple_paragraph(self):
+        text = "Please see E-9(a)(1), (2) and (d)(3)(v) for more"
+        result = self.parser.parse(text, parts = ['222', '18'])
+        self.assertEqual(3, len(result))
+        a1, a2, d3v = result
+
+        self.assertEqual(['222', 'E', '9', 'a', '1'], a1['citation'])
+        offsets = a1['offsets'][0]
+        self.assertEqual('E-9(a)(1)', text[offsets[0]:offsets[1]])
+
+        self.assertEqual(['222', 'E', '9', 'a', '2'], a2['citation'])
+        offsets = a2['offsets'][0]
+        self.assertEqual('(2)', text[offsets[0]:offsets[1]])
+
+        self.assertEqual(['222', 'E', '9', 'd', '3', 'v'], d3v['citation'])
+        offsets = d3v['offsets'][0]
+        self.assertEqual('(d)(3)(v)', text[offsets[0]:offsets[1]])
