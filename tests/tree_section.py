@@ -75,3 +75,11 @@ class DepthSectionTest(TestCase):
         self.assertEqual(child['text'], "(c) see paragraph (a) or (b)(1) " +
                 "of this section")
         self.assertEqual(0, len(child['children']))
+
+    def test_build_section_tree_appendix_through(self):
+        line1 = u"§ 201.20 Super Awesome Section"
+        line2 = "\n(a) references Model Forms A-30(a) through (b)"
+
+        tree = build_section_tree(line1+line2, 201)
+        self.assertEqual(tree['text'], "\n")
+        self.assertEqual(1, len(tree['children']))

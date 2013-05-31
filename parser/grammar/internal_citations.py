@@ -71,12 +71,12 @@ single_section = (
 
 
 single_section_with_marker = (
-        Suppress(u"§") 
+        Suppress(Regex(u"§|Section|section")) 
         + single_section.setResultsName("without_marker"))
 
 
 multiple_sections = (
-        Suppress(u"§§")
+        Suppress(Regex(u"§§|Sections|sections"))
         + single_section.setResultsName("s_head")
         + OneOrMore(conj_phrases 
             + single_section.setResultsName("s_tail", listAllMatches=True)))
@@ -110,8 +110,9 @@ appendix_citation = (
     Word(string.ascii_uppercase).setResultsName("appendix") 
     + Suppress('-')
     + Word(string.digits).setResultsName("section")
-    + Optional(depth1_p).setResultsName("paragraphs")
-).setParseAction(keep_pos)
+    + Optional(depth1_p.setParseAction(keep_pos).setResultsName("p_head")
+        + Optional(paragraph_tail))
+)
 
 
 upper_dec = "." + Word(string.ascii_uppercase)
