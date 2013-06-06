@@ -37,6 +37,17 @@ class InternalCitationParser(Layer):
             all_citations.extend(self.paragraph_list(cit, start, end,
                 label))
 
+        for cit, start, end in grammar.comment_citation.scanString(text):
+            label = [parts[0], 'Interpretations', cit.section]
+            paragraph_ref = ')('.join(filter(bool, 
+                [cit.p_head.level1, cit.p_head.level2, cit.p_head.level3, 
+                    cit.p_head.level4]))
+            label.append('(' + paragraph_ref + ')')
+            all_citations.append({
+                'offsets': [(start+len('comment '), end)],
+                'citation': label
+            })
+
         return self.strip_whitespace(text, all_citations)
 
     def strip_whitespace(self, text, citations):

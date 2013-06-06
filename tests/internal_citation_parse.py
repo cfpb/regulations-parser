@@ -212,3 +212,12 @@ class ParseTest(TestCase):
         self.assertEqual(['321','11','h','4'], r321['citation'])
         offsets = r321['offsets'][0]
         self.assertEqual('321.11 (h)(4)', text[offsets[0]:offsets[1]])
+
+    def test_comment_header(self):
+        text = "See comment 32(b)(3) blah blah"
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222','Interpretations','32', '(b)(3)'], 
+                result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('32(b)(3)', text[offsets[0]:offsets[1]])

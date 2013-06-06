@@ -120,10 +120,12 @@ roman_dec = "." + Word("ivxlcdm")
 
 
 comment_citation = (
-    "comment" 
-    + (Word(string.digits) + depth1_p)
-    + "-" 
-    + (Word(string.digits)
-        + Optional(roman_dec + Optional(upper_dec))
-        ).leaveWhitespace() # Exclude any period + space (end of sentence)
+    Suppress("comment")
+    + Word(string.digits).setResultsName("section")
+    + depth1_p.setResultsName('p_head')
+    + Optional("-" 
+        + (Word(string.digits)
+            + Optional(roman_dec + Optional(upper_dec))
+            ).leaveWhitespace() # Exclude any period + space (end of sentence)
     )
+)
