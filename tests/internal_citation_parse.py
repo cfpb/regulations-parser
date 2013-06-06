@@ -230,3 +230,13 @@ class ParseTest(TestCase):
                 result[0]['citation'])
         offsets = result[0]['offsets'][0]
         self.assertEqual('36(a)(2)-3', text[offsets[0]:offsets[1]])
+
+    def test_sub_comment2(self):
+        text = "See comment 3(b)(1)-1.v."
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222','Interpretations','3', '(b)(1)', '1', 'v'], 
+                result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        #   Note the final period is not included
+        self.assertEqual('3(b)(1)-1.v', text[offsets[0]:offsets[1]])

@@ -115,8 +115,8 @@ appendix_citation = (
 )
 
 
-upper_dec = "." + Word(string.ascii_uppercase)
-roman_dec = "." + Word("ivxlcdm")
+upper_dec = "." + Word(string.ascii_uppercase).setResultsName('level3')
+roman_dec = "." + Word("ivxlcdm").setResultsName('level2')
 
 
 comment_citation = (
@@ -124,9 +124,8 @@ comment_citation = (
     + Word(string.digits).setResultsName("section")
     + depth1_p.setResultsName('p_head')
     + Optional("-" + (
-        Word(string.digits).setResultsName('c_level1')
-        + Optional(roman_dec.setResultsName('c_level2')
-            + Optional(upper_dec.setResultsName('c_level3')))
+        Word(string.digits).setResultsName('level1')
+        + Optional(roman_dec + Optional(upper_dec))
         ).leaveWhitespace() # Exclude any period + space (end of sentence)
     )
 )

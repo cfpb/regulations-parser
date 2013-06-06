@@ -43,9 +43,9 @@ class InternalCitationParser(Layer):
                 [cit.p_head.level1, cit.p_head.level2, cit.p_head.level3, 
                     cit.p_head.level4]))
             label.append('(' + paragraph_ref + ')')
-            label.append(cit.c_level1)
-            label.append(cit.c_level2)
-            label.append(cit.c_level3)
+            label.append(cit.level1)
+            label.append(cit.level2)
+            label.append(cit.level3)
             all_citations.append({
                 'offsets': [(start+len('comment '), end)],
                 'citation': filter(bool, label)
