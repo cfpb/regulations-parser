@@ -221,3 +221,12 @@ class ParseTest(TestCase):
                 result[0]['citation'])
         offsets = result[0]['offsets'][0]
         self.assertEqual('32(b)(3)', text[offsets[0]:offsets[1]])
+
+    def test_sub_comment(self):
+        text = "refer to comment 36(a)(2)-3 of thing"
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222','Interpretations','36', '(a)(2)', '3'], 
+                result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('36(a)(2)-3', text[offsets[0]:offsets[1]])

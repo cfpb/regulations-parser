@@ -123,9 +123,10 @@ comment_citation = (
     Suppress("comment")
     + Word(string.digits).setResultsName("section")
     + depth1_p.setResultsName('p_head')
-    + Optional("-" 
-        + (Word(string.digits)
-            + Optional(roman_dec + Optional(upper_dec))
-            ).leaveWhitespace() # Exclude any period + space (end of sentence)
+    + Optional("-" + (
+        Word(string.digits).setResultsName('c_level1')
+        + Optional(roman_dec.setResultsName('c_level2')
+            + Optional(upper_dec.setResultsName('c_level3')))
+        ).leaveWhitespace() # Exclude any period + space (end of sentence)
     )
 )
