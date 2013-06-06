@@ -10,48 +10,63 @@ class InternalCitationParser(Layer):
         """ Parse the provided text, pulling out all the internal (self-referential) 
         citations. """
 
-        all_citations = []
-
-        for citation, start, end in grammar.regtext_citation.scanString(text):
-            if citation.single_paragraph or citation.multiple_paragraphs:
-                if citation.single_paragraph:
-                    citation = citation.single_paragraph
-                else:
-                    citation = citation.multiple_paragraphs
-                all_citations.extend(self.paragraph_list(citation, 
-                    citation.p_head.pos[0], end, parts[0:2]))
-            elif citation.multiple_sections:
-                sections = [citation.s_head] + list(citation.s_tail)
-                for section in sections:
-                    all_citations.extend(self.paragraph_list(section,
-                        section.pos[0], section.pos[1], 
-                        [section.part, section.section]))
-            else:
-                citation = citation.without_marker
-                all_citations.extend(self.paragraph_list(citation, 
-                    citation.pos[0], end, 
-                    [citation.part, citation.section]))
+        all_citations = self.regtext_citations(text, parts)
+        all_citations.extend(self.comment_citations(text, parts))
 
         for cit, start, end in grammar.appendix_citation.scanString(text):
             label = [parts[0], cit.appendix, cit.section]
             all_citations.extend(self.paragraph_list(cit, start, end,
                 label))
 
-        for cit, start, end in grammar.comment_citation.scanString(text):
-            label = [parts[0], 'Interpretations', cit.section]
-            paragraph_ref = ')('.join(filter(bool, 
-                [cit.p_head.level1, cit.p_head.level2, cit.p_head.level3, 
-                    cit.p_head.level4]))
-            label.append('(' + paragraph_ref + ')')
-            label.append(cit.level1)
-            label.append(cit.level2)
-            label.append(cit.level3)
-            all_citations.append({
-                'offsets': [(start+len('comment '), end)],
-                'citation': filter(bool, label)
-            })
-
         return self.strip_whitespace(text, all_citations)
+
+    def regtext_citations(self, text, parts):
+        """Find all citations that refer to regtext"""
+        citations = []
+        for citation, start, end in grammar.regtext_citation.scanString(text):
+            if citation.single_paragraph or citation.multiple_paragraphs:
+                if citation.single_paragraph:
+                    citation = citation.single_paragraph
+                else:
+                    citation = citation.multiple_paragraphs
+                citations.extend(self.paragraph_list(citation, 
+                    citation.p_head.pos[0], end, parts[0:2]))
+            elif citation.multiple_sections:
+                sections = [citation.s_head] + list(citation.s_tail)
+                for section in sections:
+                    citations.extend(self.paragraph_list(section,
+                        section.pos[0], section.pos[1], 
+                        [section.part, section.section]))
+            else:
+                citation = citation.without_marker
+                citations.extend(self.paragraph_list(citation, 
+                    citation.pos[0], end, 
+                    [citation.part, citation.section]))
+        return citations
+
+    def comment_citations(self, text, parts):
+        """Find all citations that refer to interpretations"""
+        citations = []
+        for cit, start, end in grammar.comment_citation.scanString(text):
+            label = [parts[0], 'Interpretations']
+            if cit.multiple_comments:
+                comments = [cit.c_head] + list(cit.c_tail)
+            else:
+                comments = [cit.without_marker]
+            for comment in comments:
+                start, end = comment.pos
+                cit = comment.tokens
+                label = [parts[0], 'Interpretations', cit.section]
+                paragraph_ref = ')('.join(filter(bool, list(cit.p_head)))
+                label.append('(' + paragraph_ref + ')')
+                label.append(cit.level1)
+                label.append(cit.level2)
+                label.append(cit.level3)
+                citations.append({
+                    'offsets': [(start, end)],
+                    'citation': filter(bool, label)
+                })
+        return citations
 
     def strip_whitespace(self, text, citations):
         """Modifies the offsets to exclude any trailing whitespace. Modifies

@@ -240,3 +240,16 @@ class ParseTest(TestCase):
         offsets = result[0]['offsets'][0]
         #   Note the final period is not included
         self.assertEqual('3(b)(1)-1.v', text[offsets[0]:offsets[1]])
+
+    def test_multiple_comments(self):
+        text = "See, e.g., comments 31(b)(1)(iv)-1 and 31(b)(1)(vi)-1"
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(2, len(result))
+        self.assertEqual(['222', 'Interpretations', '31', '(b)(1)(iv)',
+            '1'], result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('31(b)(1)(iv)-1', text[offsets[0]:offsets[1]])
+        self.assertEqual(['222', 'Interpretations', '31', '(b)(1)(vi)',
+            '1'], result[1]['citation'])
+        offsets = result[1]['offsets'][0]
+        self.assertEqual('31(b)(1)(vi)-1', text[offsets[0]:offsets[1]])
