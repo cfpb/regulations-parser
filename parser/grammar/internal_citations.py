@@ -115,15 +115,33 @@ appendix_citation = (
 )
 
 
-upper_dec = "." + Word(string.ascii_uppercase)
-roman_dec = "." + Word("ivxlcdm")
+upper_dec = "." + Word(string.ascii_uppercase).setResultsName('level3')
+roman_dec = "." + Word("ivxlcdm").setResultsName('level2')
 
 
-comment_citation = (
-    "comment" 
-    + (Word(string.digits) + depth1_p)
-    + "-" 
-    + (Word(string.digits)
+single_comment = (
+    Word(string.digits).setResultsName("section")
+    + depth1_p.setResultsName('p_head')
+    + Optional("-" + (
+        Word(string.digits).setResultsName('level1')
         + Optional(roman_dec + Optional(upper_dec))
         ).leaveWhitespace() # Exclude any period + space (end of sentence)
     )
+).setParseAction(keep_pos)
+
+
+single_comment_with_marker = (
+    Suppress("comment") +  single_comment.setResultsName('without_marker')
+)
+
+
+multiple_comments = (
+    Suppress("comments")
+    + single_comment.setResultsName("c_head")
+    + OneOrMore(conj_phrases
+        + single_comment.setResultsName("c_tail", listAllMatches=True)))
+
+comment_citation = (
+    multiple_comments.setResultsName("multiple_comments") 
+    | single_comment_with_marker.setResultsName("single_comment")
+)

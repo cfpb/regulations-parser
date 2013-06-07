@@ -212,3 +212,44 @@ class ParseTest(TestCase):
         self.assertEqual(['321','11','h','4'], r321['citation'])
         offsets = r321['offsets'][0]
         self.assertEqual('321.11 (h)(4)', text[offsets[0]:offsets[1]])
+
+    def test_comment_header(self):
+        text = "See comment 32(b)(3) blah blah"
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222','Interpretations','32', '(b)(3)'], 
+                result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('32(b)(3)', text[offsets[0]:offsets[1]])
+
+    def test_sub_comment(self):
+        text = "refer to comment 36(a)(2)-3 of thing"
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222','Interpretations','36', '(a)(2)', '3'], 
+                result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('36(a)(2)-3', text[offsets[0]:offsets[1]])
+
+    def test_sub_comment2(self):
+        text = "See comment 3(b)(1)-1.v."
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222','Interpretations','3', '(b)(1)', '1', 'v'], 
+                result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        #   Note the final period is not included
+        self.assertEqual('3(b)(1)-1.v', text[offsets[0]:offsets[1]])
+
+    def test_multiple_comments(self):
+        text = "See, e.g., comments 31(b)(1)(iv)-1 and 31(b)(1)(vi)-1"
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(2, len(result))
+        self.assertEqual(['222', 'Interpretations', '31', '(b)(1)(iv)',
+            '1'], result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('31(b)(1)(iv)-1', text[offsets[0]:offsets[1]])
+        self.assertEqual(['222', 'Interpretations', '31', '(b)(1)(vi)',
+            '1'], result[1]['citation'])
+        offsets = result[1]['offsets'][0]
+        self.assertEqual('31(b)(1)(vi)-1', text[offsets[0]:offsets[1]])
