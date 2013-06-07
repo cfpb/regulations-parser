@@ -23,6 +23,9 @@ class InternalCitationParser(Layer):
     def regtext_citations(self, text, parts):
         """Find all citations that refer to regtext"""
         citations = []
+        #   If referring to a specific paragraph using regtext notation, we
+        #   are not discussing an interp paragraph; use the associated regtext
+        paragraph_parts = [p for p in parts if p != 'Interpretations']
         for citation, start, end in grammar.regtext_citation.scanString(text):
             if citation.single_paragraph or citation.multiple_paragraphs:
                 if citation.single_paragraph:
@@ -30,7 +33,7 @@ class InternalCitationParser(Layer):
                 else:
                     citation = citation.multiple_paragraphs
                 citations.extend(self.paragraph_list(citation, 
-                    citation.p_head.pos[0], end, parts[0:2]))
+                    citation.p_head.pos[0], end, paragraph_parts[0:2]))
             elif citation.multiple_sections:
                 sections = [citation.s_head] + list(citation.s_tail)
                 for section in sections:
