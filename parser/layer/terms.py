@@ -87,7 +87,7 @@ class Terms(Layer):
         larger (i.e. containing) terms."""
 
         #   longer terms first
-        applicable_terms.sort(key=lambda x: x[0], reverse=True)
+        applicable_terms.sort(key=lambda x: len(x[0]), reverse=True)
 
         matches = []
         existing_defs = []
