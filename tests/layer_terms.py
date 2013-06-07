@@ -30,6 +30,14 @@ class LayerTermTest(TestCase):
                 label=struct.label("101-22-c", ["101", "22", "c"],
                 "But definition is in the title"))))
 
+    def test_has_definitions_p_marker(self):
+        t = Terms(None)
+        node = struct.node("(a) Definitions. For purposes of this " +
+            "section except blah", 
+            [], 
+            struct.label('88-20-a', ['88', '20', 'a']))
+        self.assertTrue(t.has_definitions(node))
+
 
     def test_node_definitions(self):
         t = Terms(None)
