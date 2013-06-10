@@ -253,3 +253,13 @@ class ParseTest(TestCase):
             '1'], result[1]['citation'])
         offsets = result[1]['offsets'][0]
         self.assertEqual('31(b)(1)(vi)-1', text[offsets[0]:offsets[1]])
+
+    def test_paren_in_interps(self):
+        text = "covers everything except paragraph (d)(3)(i) of this section"
+        result = self.parser.parse(text, 
+                parts = ['222', 'Interpretations', '87'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222', '87', 'd', '3', 'i'], result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('(d)(3)(i)', text[offsets[0]:offsets[1]])
+
