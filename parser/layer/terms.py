@@ -1,6 +1,7 @@
 from layer import Layer
 from parser import utils
 from parser.grammar.terms import term_parser
+from parser.layer.paragraph_markers import ParagraphMarkers
 from parser.tree import struct
 import re
 
@@ -31,8 +32,9 @@ class Terms(Layer):
         # Definitions are only in the reg text (not appendices/interprs)
         if not node['label']['parts'][1].isdigit():
             return False
+        stripped = node['text'].strip(ParagraphMarkers.marker(node)).strip()
         return (
-                node['text'].lower().startswith('definition')
+                stripped.lower().startswith('definition')
                 or ('title' in node['label'] 
                     and 'definition' in node['label']['title'].lower()))
 
@@ -85,7 +87,7 @@ class Terms(Layer):
         larger (i.e. containing) terms."""
 
         #   longer terms first
-        applicable_terms.sort(key=lambda x: x[0], reverse=True)
+        applicable_terms.sort(key=lambda x: len(x[0]), reverse=True)
 
         matches = []
         existing_defs = []
