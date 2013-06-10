@@ -1,5 +1,6 @@
 from layer import Layer
 from parser import utils
+from parser.grammar.external_citations import uscode_exp as uscode
 from parser.grammar.terms import term_parser
 from parser.layer.paragraph_markers import ParagraphMarkers
 from parser.tree import struct
@@ -39,10 +40,17 @@ class Terms(Layer):
                     and 'definition' in node['label']['title'].lower()))
 
     def node_definitions(self, node):
-        """Walk through this node and its children to find defined terms."""
+        """Walk through this node and its children to find defined terms.
+        'Act' is a special case, as it is also defined as an external
+        citation."""
         def per_node(n):
-            return [(match[0].lower(), n['label']['text']) 
+            matches = [(match[0].lower(), n['label']['text']) 
                     for match,_,_ in term_parser.scanString(n['text'])]
+            final_matches = []
+            for term, label in matches:
+                if term != 'act' or not list(uscode.scanString(n['text'])):
+                    final_matches.append((term, label))
+            return final_matches
         return utils.flatten(struct.walk(node, per_node))
 
     def definitions_scope(self, node):
