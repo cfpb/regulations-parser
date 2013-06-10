@@ -1,8 +1,8 @@
 #vim: set encoding=utf-8
-import string
-import urllib
 from collections import defaultdict
 from parser.grammar import external_citations as grammar
+import string
+import urllib
 
 from layer import Layer
 
@@ -10,18 +10,19 @@ class ExternalCitationParser(Layer):
     #The different types of citations
     CODE_OF_FEDERAL_REGULATIONS = 'CFR'
     UNITED_STATES_CODE = 'USC'
-    THE_ACT = 'ACT'
     PUBLIC_LAW = 'PUBLIC_LAW'
     STATUTES_AT_LARGE = 'STATUTES_AT_LARGE'
+
+    def __init__(self, tree, act_citation):
+        Layer.__init__(self, tree)
+        self.act_citation = act_citation
 
     def citation_type(self, citation):
         """ Based on the citation parsed, return the type of the citation. """
         if citation[1] == 'CFR':
             return ExternalCitationParser.CODE_OF_FEDERAL_REGULATIONS
-        elif citation[1] == 'U.S.C.':
+        elif citation[1] == 'U.S.C.' or 'Act' in citation:
             return ExternalCitationParser.UNITED_STATES_CODE
-        elif 'Act' in citation:
-            return ExternalCitationParser.THE_ACT
         elif 'Public' in citation and 'Law' in citation:
             return ExternalCitationParser.PUBLIC_LAW
         elif 'Stat.' in citation:
@@ -30,6 +31,8 @@ class ExternalCitationParser(Layer):
     def reformat_citation(self, citation):
         """ Strip out unnecessary elements from the citation reference, so that 
         the various types of citations are presented consistently. """
+        if 'Act' in citation:
+            citation = self.act_citation
         return [c for c in citation if c not in ['U.S.C.', 'CFR', 'part', '.', 'Public', 'Law', '-']]
 
     def parse(self, text, parts=None):

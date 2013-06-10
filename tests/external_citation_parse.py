@@ -1,6 +1,6 @@
 #vim: set encoding=utf-8
-from unittest import TestCase
 from parser.layer import external_citations
+from unittest import TestCase
 
 class ParseTest(TestCase):
 
@@ -9,13 +9,15 @@ class ParseTest(TestCase):
             Test an external reference that looks like this: "section 918 of the Act"
         """
         node = {'text': u"section 918 of the Act", 'label':{'parts':[1005, 2]}}
-        parser = external_citations.ExternalCitationParser(None)
+        parser = external_citations.ExternalCitationParser(None, 
+                ['1234', '5678'])
         citations = parser.process(node)
 
         self.assertEqual(len(citations), 1)
 
         citation = citations[0]
-        self.assertEqual(citation['citation'], ['the', 'Act'])
+        self.assertEqual(citation['citation'], ['1234', '5678'])
+        self.assertEqual(citation['citation_type'], 'USC')
         self.assertEqual(citation['offsets'][0][0], 15)
 
     def test_public_law(self):
@@ -24,7 +26,7 @@ class ParseTest(TestCase):
             the following: Public Law 111-203
         """
         node = {'text': u"Public Law 111-203", 'label':{'parts':[1005, 2]}}
-        parser = external_citations.ExternalCitationParser(None)
+        parser = external_citations.ExternalCitationParser(None, None)
         citations = parser.process(node)
         self.assertEqual(len(citations), 1)
         self.assertEqual(citations[0]['citation_type'], 'PUBLIC_LAW')
@@ -35,7 +37,7 @@ class ParseTest(TestCase):
             like the following: 122 Stat. 1375
         """
         node = {'text': u'122 Stat. 1375', 'label':{'parts':[1003, 5]}}
-        parser = external_citations.ExternalCitationParser(None)
+        parser = external_citations.ExternalCitationParser(None, None)
         citations = parser.process(node)
         self.assertEqual(len(citations), 1)
         self.assertEqual(citations[0]['citation_type'], 'STATUTES_AT_LARGE')

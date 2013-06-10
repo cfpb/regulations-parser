@@ -69,6 +69,14 @@ class LayerTermTest(TestCase):
         self.assertTrue((u'does see', 'ccc') in defs)
         self.assertTrue((u'subchildren', 'ddd') in defs)
 
+    def test_node_defintions_act(self):
+        t = Terms(None)
+        node = struct.node(u'“Act” means some reference to 99 U.S.C. 1234')
+        self.assertEqual([], t.node_definitions(node))
+
+        node = struct.node(u'“Act” means something else entirely')
+        self.assertEqual(1, len(t.node_definitions(node)))
+
     def test_definitions_scope(self):
         t = Terms(None)
         node = struct.node("", 
