@@ -159,6 +159,13 @@ class LayerTermTest(TestCase):
                 found[3] = True
         self.assertEqual([True,True,True,True], found)
 
+    def test_calculate_offsets_pluralized(self):
+        applicable_terms = [('activity', 'a'), ('other thing', 'd')]
+        text = "activity, activities."
+        t = Terms(None)
+        matches = t.calculate_offsets(text, applicable_terms)
+        self.assertEqual(2, len(matches))
+
     def test_calculate_offsets_lexical_container(self):
         applicable_terms = [('access device', 'a'), ('device', 'd')]
         text = "This access device is fantastic!"
