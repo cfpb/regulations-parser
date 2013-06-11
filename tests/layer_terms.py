@@ -140,6 +140,25 @@ class LayerTermTest(TestCase):
                 found[2] = True
         self.assertEqual([True,True,True], found)
 
+    def test_calculate_offsets_pluralized(self):
+        applicable_terms = [('rock band', 'a'), ('band', 'b'), ('drum', 'c'),
+                ('other thing', 'd')]
+        text = "I am in a rock band. That's a band with a drum, a rock drum. Many bands. "
+        t = Terms(None)
+        matches = t.calculate_offsets(text, applicable_terms)
+        self.assertEqual(4, len(matches))
+        found = [False, False, False, False]
+        for _, ref, offsets in matches:
+            if ref == 'a' and offsets == [(10,19)]:
+                found[0] = True
+            if ref == 'b' and offsets == [(66,71)]:
+                found[1] = True
+            if ref == 'b' and offsets == [(30,34)]:
+                found[2] = True
+            if ref == 'c' and offsets == [(42,46), (55,59)]:
+                found[3] = True
+        self.assertEqual([True,True,True,True], found)
+
     def test_calculate_offsets_lexical_container(self):
         applicable_terms = [('access device', 'a'), ('device', 'd')]
         text = "This access device is fantastic!"
