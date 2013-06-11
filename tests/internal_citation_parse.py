@@ -109,5 +109,157 @@ class ParseTest(TestCase):
         start, end = result[1]['offsets'][0]
         self.assertEqual(u'(2)', text[start:end])
 
-    def test_abc(self):
-        text = "(d) Procedures in paragraph (c) of this section, the financial in this paragraph (d) if it"
+    def test_multiple_paragraphs_alpha_then_roman1(self):
+        text = u'paragraphs (b)(1)(ii) and (iii)'
+        result = self.parser.parse(text, parts = ['1005', '6'])
+        self.assertEqual(2, len(result))
+        self.assertEqual(['1005', '6', 'b', '1', 'ii'], result[0]['citation'])
+        self.assertEqual(['1005', '6', 'b', '1', 'iii'], result[1]['citation'])
+        start, end = result[0]['offsets'][0]
+        self.assertEqual(u'(b)(1)(ii)', text[start:end])
+        start, end = result[1]['offsets'][0]
+        self.assertEqual(u'(iii)', text[start:end])
+
+    def test_multiple_paragraphs_alpha_then_roman2(self):
+        text = u'§ 1005.15(d)(1)(i) and (ii)'
+        result = self.parser.parse(text, parts = ['1005', '15'])
+        self.assertEqual(2, len(result))
+        self.assertEqual(['1005', '15', 'd', '1', 'i'], result[0]['citation'])
+        self.assertEqual(['1005', '15', 'd', '1', 'ii'], result[1]['citation'])
+        start, end = result[0]['offsets'][0]
+        self.assertEqual(u'1005.15(d)(1)(i)', text[start:end])
+        start, end = result[1]['offsets'][0]
+        self.assertEqual(u'(ii)', text[start:end])
+
+    def test_multiple_paragraphs_alpha_then_roman3(self):
+        text = u'§ 1005.9(a)(5) (i), (ii), or (iii)'
+        result = self.parser.parse(text, parts = ['1005', '9'])
+        self.assertEqual(3, len(result))
+        self.assertEqual(['1005', '9', 'a', '5', 'i'], result[0]['citation'])
+        self.assertEqual(['1005', '9', 'a', '5', 'ii'], result[1]['citation'])
+        self.assertEqual(['1005', '9', 'a', '5', 'iii'], result[2]['citation'])
+        start, end = result[0]['offsets'][0]
+        self.assertEqual(u'1005.9(a)(5) (i)', text[start:end])
+        start, end = result[1]['offsets'][0]
+        self.assertEqual(u'(ii)', text[start:end])
+        start, end = result[2]['offsets'][0]
+        self.assertEqual(u'(iii)', text[start:end])
+
+    def test_multiple_paragraphs_alpha_then_roman4(self):
+        text = u'§ 1005.11(a)(1)(vi) or (vii).'
+        result = self.parser.parse(text, parts = ['1005', '11'])
+        self.assertEqual(2, len(result))
+        self.assertEqual(['1005', '11', 'a', '1', 'vi'], result[0]['citation'])
+        self.assertEqual(['1005', '11', 'a', '1', 'vii'], result[1]['citation'])
+        start, end = result[0]['offsets'][0]
+        self.assertEqual(u'1005.11(a)(1)(vi)', text[start:end])
+        start, end = result[1]['offsets'][0]
+        self.assertEqual(u'(vii)', text[start:end])
+
+    def test_appendix_citation(self):
+        text = "Please see A-5 and Q-2(r) and Z-12(g)(2)(ii) then more text"
+        result = self.parser.parse(text, parts = ['1005', '10'])
+        self.assertEqual(3, len(result))
+        resultA, resultQ, resultZ = result
+
+        self.assertEqual(['1005', 'A', '5'], resultA['citation'])
+        offsets = resultA['offsets'][0]
+        self.assertEqual('A-5', text[offsets[0]:offsets[1]])
+        self.assertEqual(['1005', 'Q', '2', 'r'], resultQ['citation'])
+        offsets = resultQ['offsets'][0]
+        self.assertEqual('Q-2(r)', text[offsets[0]:offsets[1]])
+        self.assertEqual(['1005', 'Z', '12', 'g', '2', 'ii'], 
+                resultZ['citation'])
+        offsets = resultZ['offsets'][0]
+        self.assertEqual('Z-12(g)(2)(ii)', text[offsets[0]:offsets[1]])
+
+    def test_appendix_multiple_paragraph(self):
+        text = "Please see E-9(a)(1), (2) and (d)(3)(v) for more"
+        result = self.parser.parse(text, parts = ['222', '18'])
+        self.assertEqual(3, len(result))
+        a1, a2, d3v = result
+
+        self.assertEqual(['222', 'E', '9', 'a', '1'], a1['citation'])
+        offsets = a1['offsets'][0]
+        self.assertEqual('E-9(a)(1)', text[offsets[0]:offsets[1]])
+
+        self.assertEqual(['222', 'E', '9', 'a', '2'], a2['citation'])
+        offsets = a2['offsets'][0]
+        self.assertEqual('(2)', text[offsets[0]:offsets[1]])
+
+        self.assertEqual(['222', 'E', '9', 'd', '3', 'v'], d3v['citation'])
+        offsets = d3v['offsets'][0]
+        self.assertEqual('(d)(3)(v)', text[offsets[0]:offsets[1]])
+
+    def test_section_verbose(self):
+        text = "And Section 222.87(d)(2)(i) says something"
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222','87','d','2','i'], result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('222.87(d)(2)(i)', text[offsets[0]:offsets[1]])
+
+    def test_sections_verbose(self):
+        text = "Listing sections 11.55(d) and 321.11 (h)(4)"
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(2, len(result))
+        r11, r321 = result
+
+        self.assertEqual(['11','55','d'], r11['citation'])
+        offsets = r11['offsets'][0]
+        self.assertEqual('11.55(d)', text[offsets[0]:offsets[1]])
+
+        self.assertEqual(['321','11','h','4'], r321['citation'])
+        offsets = r321['offsets'][0]
+        self.assertEqual('321.11 (h)(4)', text[offsets[0]:offsets[1]])
+
+    def test_comment_header(self):
+        text = "See comment 32(b)(3) blah blah"
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222','Interpretations','32', '(b)(3)'], 
+                result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('32(b)(3)', text[offsets[0]:offsets[1]])
+
+    def test_sub_comment(self):
+        text = "refer to comment 36(a)(2)-3 of thing"
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222','Interpretations','36', '(a)(2)', '3'], 
+                result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('36(a)(2)-3', text[offsets[0]:offsets[1]])
+
+    def test_sub_comment2(self):
+        text = "See comment 3(b)(1)-1.v."
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222','Interpretations','3', '(b)(1)', '1', 'v'], 
+                result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        #   Note the final period is not included
+        self.assertEqual('3(b)(1)-1.v', text[offsets[0]:offsets[1]])
+
+    def test_multiple_comments(self):
+        text = "See, e.g., comments 31(b)(1)(iv)-1 and 31(b)(1)(vi)-1"
+        result = self.parser.parse(text, parts = ['222', '87'])
+        self.assertEqual(2, len(result))
+        self.assertEqual(['222', 'Interpretations', '31', '(b)(1)(iv)',
+            '1'], result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('31(b)(1)(iv)-1', text[offsets[0]:offsets[1]])
+        self.assertEqual(['222', 'Interpretations', '31', '(b)(1)(vi)',
+            '1'], result[1]['citation'])
+        offsets = result[1]['offsets'][0]
+        self.assertEqual('31(b)(1)(vi)-1', text[offsets[0]:offsets[1]])
+
+    def test_paren_in_interps(self):
+        text = "covers everything except paragraph (d)(3)(i) of this section"
+        result = self.parser.parse(text, 
+                parts = ['222', 'Interpretations', '87'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222', '87', 'd', '3', 'i'], result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('(d)(3)(i)', text[offsets[0]:offsets[1]])
+

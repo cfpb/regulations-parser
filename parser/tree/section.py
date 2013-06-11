@@ -1,6 +1,7 @@
 # vim: set encoding=utf-8
 import re
 from parser import utils
+from parser.grammar.internal_citations import appendix_citation
 from parser.grammar.internal_citations import regtext_citation
 from parser.search import find_offsets, find_start, segments
 from parser.tree.appendix.carving import find_appendix_start
@@ -50,6 +51,8 @@ def build_section_tree(text, part):
 
     exclude = [(start, end) for _, start, end in
             regtext_citation.scanString(text)]
+    exclude += [(start, end) for _, start, end in 
+            appendix_citation.scanString(text)]
     section = re.search(r'%d\.(\d+) ' % part, title).group(1)
     label = struct.label("%d-%s" % (part, section), [str(part), section])
     p_tree = regParser.build_paragraph_tree(text, exclude=exclude, label=label)

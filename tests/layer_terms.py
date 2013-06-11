@@ -30,6 +30,13 @@ class LayerTermTest(TestCase):
                 label=struct.label("101-22-c", ["101", "22", "c"],
                 "But definition is in the title"))))
 
+    def test_has_definitions_p_marker(self):
+        t = Terms(None)
+        node = struct.node("(a) Definitions. For purposes of this " +
+            "section except blah", 
+            [], 
+            struct.label('88-20-a', ['88', '20', 'a']))
+        self.assertTrue(t.has_definitions(node))
 
     def test_node_definitions(self):
         t = Terms(None)
@@ -61,6 +68,14 @@ class LayerTermTest(TestCase):
         self.assertTrue((u'moree', 'bbb') in defs)
         self.assertTrue((u'does see', 'ccc') in defs)
         self.assertTrue((u'subchildren', 'ddd') in defs)
+
+    def test_node_defintions_act(self):
+        t = Terms(None)
+        node = struct.node(u'“Act” means some reference to 99 U.S.C. 1234')
+        self.assertEqual([], t.node_definitions(node))
+
+        node = struct.node(u'“Act” means something else entirely')
+        self.assertEqual(1, len(t.node_definitions(node)))
 
     def test_definitions_scope(self):
         t = Terms(None)
@@ -116,7 +131,7 @@ class LayerTermTest(TestCase):
         matches = t.calculate_offsets(text, applicable_terms)
         self.assertEqual(3, len(matches))
         found = [False, False, False]
-        for term, ref, offsets in matches:
+        for _, ref, offsets in matches:
             if ref == 'a' and offsets == [(10,19)]:
                 found[0] = True
             if ref == 'b' and offsets == [(30,34)]:
@@ -124,6 +139,16 @@ class LayerTermTest(TestCase):
             if ref == 'c' and offsets == [(42,46), (55,59)]:
                 found[2] = True
         self.assertEqual([True,True,True], found)
+
+    def test_calculate_offsets_lexical_container(self):
+        applicable_terms = [('access device', 'a'), ('device', 'd')]
+        text = "This access device is fantastic!"
+        t = Terms(None)
+        matches = t.calculate_offsets(text, applicable_terms)
+        self.assertEqual(1, len(matches))
+        _, ref, offsets = matches[0]
+        self.assertEqual('a', ref)
+        self.assertEqual([(5,18)], offsets)
 
     def test_calculate_offsets_word_part(self):
         """If a defined term is part of another word, don't include it"""

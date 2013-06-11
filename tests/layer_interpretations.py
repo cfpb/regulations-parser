@@ -57,3 +57,40 @@ class LayerInterpretationTest(TestCase):
         self.assertEqual(None, interp.process(struct.node(
             label=struct.label("", ["102", "10", "a"]))))
 
+    def test_process_subparagraph_of_referenced_text(self):
+        root = struct.node(children = [
+            struct.node("\n\n\n", [   #   Empty
+                struct.node("Interp11a1", [],
+                    struct.label(
+                        "100-Interpretations-11-(a)(1)", title="11(a)(1)"
+                    )
+                )
+            ], struct.label("100-Interpretations-11-(a)"))
+        ], label=struct.label("100", ["100"]))
+        interp = Interpretations(root)
+        self.assertEqual(None, interp.process(struct.node(
+            label=struct.label("", ["100", "11", "a"]))))
+        self.assertFalse(interp.process(struct.node(
+            label=struct.label("", ["100", "11", "a", "1"]))) is None)
+
+    def test_process_has_multiple_paragraphs(self):
+        root = struct.node(children = [
+            struct.node("\n\n\n", [   #   Empty
+                struct.node("Interp11a-1", [],
+                    struct.label("100-Interpretations-11-(a)-1"))
+                ], struct.label("100-Interpretations-11-(a)"))
+            ], label=struct.label("100", ["100"]))
+        interp = Interpretations(root)
+        self.assertFalse(interp.process(struct.node(
+            label=struct.label("", ["100", "11", "a"]))) is None)
+
+    def test_empty_interpretations(self):
+        interp = Interpretations(None)
+        self.assertTrue(interp.empty_interpretation(struct.node('\n\n',
+            [])))
+        self.assertTrue(interp.empty_interpretation(struct.node('\n\n',
+            [struct.node('SubSection', [], struct.label('', [], 'Title'))])))
+        self.assertFalse(interp.empty_interpretation(struct.node('Content',
+            [])))
+        self.assertFalse(interp.empty_interpretation(struct.node('',
+            [struct.node('Subpar', [])])))

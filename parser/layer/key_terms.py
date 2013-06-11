@@ -1,4 +1,5 @@
 from layer import Layer
+from parser.layer.paragraph_markers import ParagraphMarkers
 import re
 
 class KeyTerms(Layer):
@@ -8,12 +9,7 @@ class KeyTerms(Layer):
 
     def process_node_text(self, node):
         """ Take a paragraph, remove the marker, and extraneous whitespaces. """
-        marker = node['label']['parts'][-1]
-
-        if 'Interpretations' in node['label']['parts']:
-            marker = marker + '.'
-        else:
-            marker = '(%s)' % marker
+        marker = ParagraphMarkers.marker(node)
         text = node['text']
 
         text = text.replace(marker, '', 1).strip()

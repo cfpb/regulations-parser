@@ -1,7 +1,7 @@
 # vim: set encoding=utf-8
 
 from parser.tree.section import *
-from parser.tree.struct import label
+from parser.tree.struct import label, node
 from unittest import TestCase
 
 class DepthSectionTest(TestCase):
@@ -47,3 +47,39 @@ class DepthSectionTest(TestCase):
                 self.assertTrue(key in tree)
                 self.assertEqual(p_tree[key], tree[key])
         self.assertEqual(tree['label'], label("201-20", ["201", "20"], line1))
+
+    def test_build_section_tree_appendix(self):
+        """Should should not break on references to appendices."""
+        line1 = u"§ 201.20 Super Awesome Section"
+        line2a = "\n(a) Par 1 references Q-5(b) through (d) of Appendix Q"
+        line2b = "\n(a) Par 1 references Q-5(a) through (d) of Appendix Q"
+        line2c = "\n(a) Par 1 references Q-5(a) of Appendix Q"
+
+        for line2 in [line2a, line2b, line2c]:
+            tree = build_section_tree(line1+line2, 201)
+            self.assertEqual(tree['text'], "\n")
+            self.assertEqual(1, len(tree['children']))
+            child = tree['children'][0]
+            self.assertEqual(child['text'], line2[1:])
+            self.assertEqual(0, len(child['children']))
+
+    def test_build_section_tree_a_or_b1(self):
+        line1 = u"§ 201.20 Super Awesome Section"
+        line2 = "\n(a) a (b) b (c) see paragraph (a) or (b)(1) of "
+        line2 += "this section"
+
+        tree = build_section_tree(line1+line2, 201)
+        self.assertEqual(tree['text'], "\n")
+        self.assertEqual(3, len(tree['children']))
+        child = tree['children'][2]
+        self.assertEqual(child['text'], "(c) see paragraph (a) or (b)(1) " +
+                "of this section")
+        self.assertEqual(0, len(child['children']))
+
+    def test_build_section_tree_appendix_through(self):
+        line1 = u"§ 201.20 Super Awesome Section"
+        line2 = "\n(a) references Model Forms A-30(a) through (b)"
+
+        tree = build_section_tree(line1+line2, 201)
+        self.assertEqual(tree['text'], "\n")
+        self.assertEqual(1, len(tree['children']))

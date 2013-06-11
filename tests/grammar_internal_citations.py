@@ -73,7 +73,7 @@ class GrammerInternalCitationsTest(TestCase):
     def test_comment_negative(self):
         citations = [
             "comment 10(5)-5",
-            "comment 10(b)"
+            "comment 10-b-q"
             "comment 10"
             "comment 8-b(1)"
         ]

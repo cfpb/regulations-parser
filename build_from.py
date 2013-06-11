@@ -3,14 +3,15 @@ from parser.api_writer import Client
 from parser.federalregister import fetch_notices
 from parser.layer import external_citations, internal_citations
 from parser.layer import table_of_contents, interpretations, terms
-from parser.layer import section_by_section
+from parser.layer import section_by_section, paragraph_markers
 from parser.tree.build import build_whole_regtree
 import sys
 
 if __name__ == "__main__":
-    if len(sys.argv) < 4:
-        print "Usage: python build_from.py regulation.txt title doc_#/version"
-        print "  e.g. python build_from.py rege.txt 12 2011-31725"
+    if len(sys.argv) < 6:
+        print("Usage: python build_from.py regulation.txt title " +
+                "doc_#/version act_title act_section")
+        print "  e.g. python build_from.py rege.txt 12 2011-31725 15 1693"
         exit()
 
     writer = Client()
@@ -32,7 +33,8 @@ if __name__ == "__main__":
         writer.notice(notice['document_number']).write(notice)
 
     #   Finally, all the layers
-    layer = external_citations.ExternalCitationParser(reg_tree).build()
+    layer = external_citations.ExternalCitationParser(reg_tree, 
+        sys.argv[4:]).build()
     writer.layer("external-citations", cfr_part, doc_number).write(layer)
 
     layer = internal_citations.InternalCitationParser(reg_tree).build()
@@ -46,6 +48,9 @@ if __name__ == "__main__":
 
     layer = terms.Terms(reg_tree).build()
     writer.layer("terms", cfr_part, doc_number).write(layer)
+
+    layer = paragraph_markers.ParagraphMarkers(reg_tree).build()
+    writer.layer("paragraph-markers", cfr_part, doc_number).write(layer)
 
     layer = section_by_section.SectionBySection(reg_tree, notices).build()
     writer.layer("analyses", cfr_part, doc_number).write(layer)

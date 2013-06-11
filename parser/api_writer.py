@@ -1,6 +1,7 @@
 import json
 import os
 import os.path
+import requests
 import settings
 
 class FSWriteContent:
@@ -23,12 +24,26 @@ class FSWriteContent:
                     separators=(', ', ': '))
             out.write(text)
 
+class APIWriteClient:
+    """This writer writes the contents to the specified API"""
+    def __init__(self, path):
+        self.path = path
+
+    def write(self, python_obj):
+        """Write the object (as json) to the API"""
+        requests.put(settings.API_BASE + self.path,
+            data=json.dumps(python_obj),
+            headers={'content-type': 'application/json'})
+
 
 class Client:
     """A Client for writing regulation(s) and meta data."""
 
     def __init__(self):
-        self.writer_class = FSWriteContent
+        if settings.API_BASE:
+            self.writer_class = APIWriteClient
+        else:
+            self.writer_class = FSWriteContent
 
     def regulation(self, label, doc_number):
         return self.writer_class("regulation/%s/%s" % (label, doc_number))
