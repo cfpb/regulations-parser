@@ -5,6 +5,7 @@ from parser.grammar.terms import term_parser
 from parser.layer.paragraph_markers import ParagraphMarkers
 from parser.tree import struct
 import re
+from inflection import pluralize
 
 class Terms(Layer):
 
@@ -93,6 +94,10 @@ class Terms(Layer):
     def calculate_offsets(self, text, applicable_terms):
         """Search for defined terms in this text, with a preference for all
         larger (i.e. containing) terms."""
+
+        #   add plurals to applicable terms
+        pluralized = [(pluralize(t[0]), t[1]) for t in applicable_terms]
+        applicable_terms += pluralized
 
         #   longer terms first
         applicable_terms.sort(key=lambda x: len(x[0]), reverse=True)
