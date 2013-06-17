@@ -3,7 +3,7 @@ from parser.api_writer import Client
 from parser.federalregister import fetch_notices
 from parser.layer import external_citations, internal_citations
 from parser.layer import table_of_contents, interpretations, terms
-from parser.layer import section_by_section, paragraph_markers
+from parser.layer import section_by_section, paragraph_markers, meta
 from parser.tree.build import build_whole_regtree
 import sys
 
@@ -54,3 +54,6 @@ if __name__ == "__main__":
 
     layer = section_by_section.SectionBySection(reg_tree, notices).build()
     writer.layer("analyses", cfr_part, doc_number).write(layer)
+
+    layer = meta.Meta(reg_tree, int(cfr_title), notices).build()
+    writer.layer("meta", cfr_part, doc_number).write(layer)
