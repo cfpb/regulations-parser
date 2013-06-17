@@ -72,8 +72,7 @@ class Meta(Layer):
                 'cfr_title_text': Meta.cfr_titles[self.cfr_title]
             }
             if self.notices:
-                notice = self.notices[-1]
-                if 'dates' in notice and 'effective' in notice['dates']:
-                    layer['effective_date'] = notice['dates']['effective'][0]
-
+                for dates in [n['dates']['effective'] for n in self.notices 
+                        if 'dates' in n and 'effective' in n['dates']]:
+                    layer['effective_date'] = dates[-1]
             return [dict(layer.items() + settings.META.items())]
