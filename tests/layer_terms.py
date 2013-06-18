@@ -215,6 +215,14 @@ class LayerTermTest(TestCase):
         self.assertEqual(1, len(matches))
         self.assertEqual(1, len(matches[0][2]))
 
+    def test_calculate_offsets_defining_term(self):
+        """If we are defining this term, don't include the definition"""
+        applicable_terms = [('potato', '1002-2')]
+        text = u"Here, I am defining “potato”."
+        t = Terms(None)
+        self.assertEqual(0, len(t.calculate_offsets(text,
+            applicable_terms)))
+
     def test_process(self):
         t = Terms(struct.node(children=[
             struct.node("ABC5", children=[struct.node("child")],

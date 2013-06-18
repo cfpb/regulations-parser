@@ -1,3 +1,4 @@
+# vim: set fileencoding=utf-8
 from layer import Layer
 from parser import utils
 from parser.grammar.external_citations import uscode_exp as uscode
@@ -132,9 +133,15 @@ class Terms(Layer):
                     for m in re.finditer(re_term, text.lower())]
             safe_offsets = []
             for start, end in offsets:
+                #   Remove phrases we are actively defining
+                if (start > 0 and text[start-1] == u'“' and 
+                        end < len(text) and text[end] == u'”'):
+                    continue
+                #   Start is contained in an existing def
                 if any(start >= e[0] and start <= e[1] 
                         for e in existing_defs):
                     continue
+                #   End is contained in an existing def
                 if any(end >= e[0] and end <= e[1] for e in existing_defs):
                     continue
                 safe_offsets.append((start, end))
