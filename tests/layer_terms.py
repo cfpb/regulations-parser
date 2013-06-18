@@ -38,6 +38,12 @@ class LayerTermTest(TestCase):
             struct.label('88-20-a', ['88', '20', 'a']))
         self.assertTrue(t.has_definitions(node))
 
+    def test_has_definitions_the_term_means(self):
+        t = Terms(None)
+        node = struct.node("(a) The term Bob means awesome", [],
+            struct.label('88-20-a', ['88', '20', 'a']))
+        self.assertTrue(t.has_definitions(node))
+
     def test_is_exclusion(self):
         t = Terms(None)
         self.assertFalse(t.is_exclusion('ex', 'ex ex ex', []))

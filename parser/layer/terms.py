@@ -39,7 +39,9 @@ class Terms(Layer):
         return (
                 stripped.lower().startswith('definition')
                 or ('title' in node['label'] 
-                    and 'definition' in node['label']['title'].lower()))
+                    and 'definition' in node['label']['title'].lower())
+                or re.search('the term .* means', stripped.lower())
+                )
 
     def is_exclusion(self, term, text, previous_terms):
         """Some definitions are exceptions/exclusions of a previously
