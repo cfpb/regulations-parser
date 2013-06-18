@@ -38,6 +38,18 @@ class LayerTermTest(TestCase):
             struct.label('88-20-a', ['88', '20', 'a']))
         self.assertTrue(t.has_definitions(node))
 
+    def test_is_exclusion(self):
+        t = Terms(None)
+        self.assertFalse(t.is_exclusion('ex', 'ex ex ex', []))
+        self.assertFalse(t.is_exclusion('ex', 'ex ex ex', [('abc', '1')]))
+        self.assertFalse(t.is_exclusion('ex', 'ex ex ex', [('ex', '1')]))
+        self.assertTrue(t.is_exclusion('ex', 
+            u'Something something the term “ex” does not include potato',
+            [('ex', '1')]))
+        self.assertFalse(t.is_exclusion('ex', 
+            u'Something something the term “ex” does not include potato',
+            [('abc', '1')]))
+
     def test_node_definitions(self):
         t = Terms(None)
         text1 = u'This has a “worD” and then more'
@@ -76,6 +88,16 @@ class LayerTermTest(TestCase):
 
         node = struct.node(u'“Act” means something else entirely')
         self.assertEqual(1, len(t.node_definitions(node)))
+
+    def test_node_definitions_exclusion(self):
+        t = Terms(None)
+        node = struct.node('',[
+            struct.node(u'“Bologna” is a type of deli meat',
+                label=struct.label('1')),
+            struct.node(u'Let us not forget that the term “bologna” ' +
+                'does not include turtle meat', label=struct.label('2'))
+        ])
+        self.assertEqual([(u'bologna', '1')], t.node_definitions(node))
 
     def test_definitions_scope(self):
         t = Terms(None)

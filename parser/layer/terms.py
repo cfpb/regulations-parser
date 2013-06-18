@@ -40,19 +40,31 @@ class Terms(Layer):
                 or ('title' in node['label'] 
                     and 'definition' in node['label']['title'].lower()))
 
+    def is_exclusion(self, term, text, previous_terms):
+        """Some definitions are exceptions/exclusions of a previously
+        defined term. At the moment, we do not want to include these as they
+        would replace previous (correct) definitions."""
+        if term not in [t for (t,_) in previous_terms]:
+            return False
+        regex = 'the term .?' + re.escape(term) + '.? does not include'
+        return bool(re.search(regex, text.lower()))
+
     def node_definitions(self, node):
         """Walk through this node and its children to find defined terms.
         'Act' is a special case, as it is also defined as an external
         citation."""
+        final_matches = []
         def per_node(n):
             matches = [(match[0].lower(), n['label']['text']) 
                     for match,_,_ in term_parser.scanString(n['text'])]
-            final_matches = []
             for term, label in matches:
-                if term != 'act' or not list(uscode.scanString(n['text'])):
-                    final_matches.append((term, label))
-            return final_matches
-        return utils.flatten(struct.walk(node, per_node))
+                if term == 'act' and list(uscode.scanString(n['text'])):
+                    continue
+                if self.is_exclusion(term, n['text'], final_matches):
+                    continue
+                final_matches.append((term, label))
+        struct.walk(node, per_node)
+        return final_matches
 
     def definitions_scope(self, node):
         """Try to determine the scope of definitions in this term."""
