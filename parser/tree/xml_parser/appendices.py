@@ -11,7 +11,7 @@ from parser.tree.interpretation.carving import get_section_number, applicable_pa
 from parser.tree.node_stack import NodeStack
 
 from parser.utils import roman_nums
-from parser.tree.xml_tree import get_paragraph_markers, split_text
+from parser.tree.xml_parser import tree_utils
 
 p_levels = [
     list(string.ascii_uppercase), #0 -> A
@@ -72,79 +72,75 @@ def get_appendix_section_number(title, appendix_letter):
     if result:
         return result.group(1)
 
-def prepend_parts(parts_prefix, n):
-    """ Recursively preprend parts_prefix to the parts of the node 
-    n. Parts is a list of markers that indicates where you are in the 
-    regulation text. """
-    n['label']['parts'] = parts_prefix + n['label']['parts']
-
-    if len(n['children']) > 1:
-        for c in n['children']:
-            prepend_parts(parts_prefix, c)
-    return n
-
 def determine_next_section(m_stack):
     last_level = m_stack.peek_last()[0]
     return p_levels[last_level][0]
 
-def unwind_stack(m_stack):
-    children = m_stack.pop()
-    parts_prefix = m_stack.peek_last()[1]['label']['parts']
-    children = [prepend_parts(parts_prefix, c[1]) for c in children]
-    m_stack.peek_last()[1]['children'] = children
+def process_supplement(m_stack, child):
+    supplement_section = None
+    for ch in child.getchildren():
+        n = None
+        node_level = None
+        if ch.tag == 'HD' and ch.attrib['SOURCE'] == 'HD1':
+            supplement_section = get_section_number(ch.text, 1005)
+            l = label(parts=[supplement_section], title=ch.text)
+            n = node(children=[], label=l)
+            node_level = 2
+        elif ch.tag == 'HD' and ch.attrib['SOURCE'] == 'HD2':
+            part_label = build_label("", applicable_paragraph(ch.text, supplement_section))
+            l = label(parts=[part_label], title=ch.text)
+            n = node(children=[], label=l)
+            node_level = 3
+        elif ch.tag == 'P':
+            text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
+            marker = get_interpretation_markers(text)
+            node_text = [tree_utils.get_node_text(ch)]
 
-def add_to_stack(m_stack, node_level, node):
-    """ Add a new node with level node_level to the stack. Unwind the stack 
-    when necessary. """
+            l = label(parts=[marker])
+            n = node(text=node_text, children=[], label=l)
+            node_level = interpretation_level(marker)
 
-    last = m_stack.peek()
-    element = (node_level, node)
+        tree_utils.add_to_stack(m_stack, node_level, n)
 
-    if node_level > last[0][0]:
-        m_stack.push(element)
-    elif node_level < last[0][0]:
-        while last[0][0] > node_level:
-            unwind_stack(m_stack)
-            last = m_stack.peek()
-        m_stack.push_last(element)
-    else:
-        m_stack.push_last(element)
-
-def process_appendix(m_stack, current_section, ch):
+def process_appendix(m_stack, current_section, child):
     html_parser = HTMLParser.HTMLParser()
 
-    if ch.tag == 'HD':
-        appendix_section = get_appendix_section_number(ch.text, current_section)
-        l = label(parts=[appendix_section], title=ch.text)
-        n = node(children=[], label=l)
+    for ch in child.getchildren():
+        if ch.tag == 'HD':
+            appendix_section = get_appendix_section_number(ch.text, current_section)
+            l = label(parts=[appendix_section], title=ch.text)
+            n = node(children=[], label=l)
 
-        node_level = 2
-        add_to_stack(m_stack, node_level, n)
-    if ch.tag == 'P':
-        text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
-        markers_list = get_paragraph_markers(text)
-        node_text = ' '.join([ch.text] + [etree.tostring(c) for c in ch if c.tail and c.tag != 'PRTPAGE'])
-        node_text = html_parser.unescape(node_text)
+            node_level = 2
+            tree_utils.add_to_stack(m_stack, node_level, n)
+        if ch.tag == 'P':
+            text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
+            markers_list = tree_utils.get_paragraph_markers(text)
 
-        if len(markers_list) > 0:
-            if len(markers_list) > 1:
-                actual_markers = ['(%s)' % m for m in markers_list]
-                node_text = split_text(node_text, actual_markers)
+            node_text = tree_utils.get_node_text(ch)
+
+            if len(markers_list) > 0:
+                if len(markers_list) > 1:
+                    actual_markers = ['(%s)' % m for m in markers_list]
+                    node_text = tree_utils.split_text(node_text, actual_markers)
+                else:
+                    node_text= [node_text]
+
+                for m, node_text in zip(markers_list, node_text):
+                    l = label(parts=[str(m)])
+                    n = node(text=node_text, children=[], label=l)
+
+                    last = m_stack.peek()
+                    node_level  = determine_level(m, last[0][0])
+                    tree_utils.add_to_stack(m_stack, node_level, n)
             else:
-                node_text= [node_text]
+                last = m_stack.peek_last()
+                last[1]['text'] = last[1]['text'] + '\n %s' % node_text
 
-            for m, node_text in zip(markers_list, node_text):
-                l = label(parts=[str(m)])
-                n = node(text=node_text, children=[], label=l)
+def build_non_reg_text(reg_xml):
+    """ This builds the tree for the non-regulation text such as Appendices 
+    and the Supplement section. """
 
-                last = m_stack.peek()
-                node_level  = determine_level(m, last[0][0])
-                add_to_stack(m_stack, node_level, n)
-        else:
-            last = m_stack.peek_last()
-            last[1]['text'] = last[1]['text'] + '\n %s' % node_text
-
-def build_tree(reg_xml):
     doc_root = etree.fromstring(reg_xml)
 
     reg_part = doc_root.xpath('//REGTEXT')[0].attrib['PART']
@@ -183,46 +179,18 @@ def build_tree(reg_xml):
             if len(last) == 0:
                 m_stack.push_last((p_level, n))
             else:
-                add_to_stack(m_stack, p_level, n)
+                tree_utils.add_to_stack(m_stack, p_level, n)
         elif current_section and section_type == 'APPENDIX':
             if child.tag == 'EXTRACT':
-                for ch in child.getchildren():
-                    process_appendix(m_stack, current_section, ch)
-                unwind_stack(m_stack)
+                process_appendix(m_stack, current_section, child)
+                tree_utils.unwind_stack(m_stack)
         elif current_section and section_type == 'SUPPLEMENT':
             if child.tag == 'EXTRACT':
-                supp_section = None
-                for ch in child.getchildren():
-                    if ch.tag == 'HD' and ch.attrib['SOURCE'] == 'HD1':
-                        supp_section = get_section_number(ch.text, 1005)
-                        l = label(parts=[supp_section], title=ch.text)
-                        n = node(children=[], label=l)
-                        node_level = 2
-                        add_to_stack(m_stack, node_level, n)
-                    elif ch.tag == 'HD' and ch.attrib['SOURCE'] == 'HD2':
-                        label_text = build_label("", applicable_paragraph(ch.text, supp_section))
-                        l = label(parts=[label_text], title=ch.text)
-                        n = node(children=[], label=l)
-
-                        node_level = 3
-                        add_to_stack(m_stack, node_level, n)
-                    elif ch.tag == 'P':
-                        text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
-                        marker = get_interpretation_markers(text)
-                        actual_markers = ["%s." % marker]
-
-                        node_text = ' '.join([ch.text] + [etree.tostring(c) for c in ch if c.tail and c.tag != 'PRTPAGE'])
-                        node_text = [html_parser.unescape(node_text)]
-
-                        l = label(parts=[marker])
-                        n = node(text=node_text, children=[], label=l)
-                        node_level = interpretation_level(marker)
-
-                        add_to_stack(m_stack, node_level, n)
-            unwind_stack(m_stack)
+                process_supplement(m_stack, child)
+                tree_utils.unwind_stack(m_stack)
 
     while m_stack.size() > 1:
-        unwind_stack(m_stack)
+        tree_utils.unwind_stack(m_stack)
 
     tree = {'children':[]}
     for level, section in m_stack.m_stack[0]:
