@@ -110,7 +110,7 @@ def process_supplement(m_stack, child):
         elif ch.tag == 'P':
             text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
             marker = get_interpretation_markers(text)
-            node_text = [tree_utils.get_node_text(ch)]
+            node_text = tree_utils.get_node_text(ch)
 
             l = label(parts=[marker])
             n = node(text=node_text, children=[], label=l)
