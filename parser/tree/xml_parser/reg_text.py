@@ -84,13 +84,16 @@ def build_tree(reg_xml):
             while m_stack.size() > 1:
                 tree_utils.unwind_stack(m_stack)
           
+
+            while m_stack.size() > 1:
+                tree_utils.unwind_stack(m_stack)
+
             c = m_stack.pop()[0][1]
             sections.append(c)
 
-    non_reg_sections = build_non_reg_text(reg_xml)
     tree['children'] = sections
+    non_reg_sections = build_non_reg_text(reg_xml)
     tree['children'] += non_reg_sections
-    write_parts(tree)
-        
 
+    write_parts(tree)
     return tree

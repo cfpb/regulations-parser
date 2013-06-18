@@ -81,7 +81,7 @@ def determine_next_section(m_stack, node_level):
 
     if node_level == last_level:
         #Get the next marker on the same level
-        last_marker = m_stack.peek_last()[1]['label']['parts'][0]
+        last_marker = m_stack.peek_last()[1]['label']['parts'][-1]
         last_marker_index =  p_levels[node_level-1].index(str(last_marker))
         next_marker = p_levels[node_level-1][last_marker_index + 1]
         return next_marker
@@ -92,14 +92,14 @@ def determine_next_section(m_stack, node_level):
         #We don't need to get the next marker on a previous
         #level because this doesn't happen. 
 
-def process_supplement(m_stack, child):
+def process_supplement(reg_part, m_stack, child):
     supplement_section = None
     for ch in child.getchildren():
         n = None
         node_level = None
         if ch.tag == 'HD' and ch.attrib['SOURCE'] == 'HD1':
             supplement_section = get_section_number(ch.text, 1005)
-            l = label(parts=[supplement_section], title=ch.text)
+            l = label(parts=[reg_part, supplement_section], title=ch.text)
             n = node(children=[], label=l)
             node_level = 2
         elif ch.tag == 'HD' and ch.attrib['SOURCE'] == 'HD2':
@@ -118,7 +118,7 @@ def process_supplement(m_stack, child):
 
         tree_utils.add_to_stack(m_stack, node_level, n)
 
-def process_appendix(m_stack, current_section, child):
+def process_appendix(reg_part, m_stack, current_section, child):
     html_parser = HTMLParser.HTMLParser()
 
     for ch in child.getchildren():
@@ -130,7 +130,7 @@ def process_appendix(m_stack, current_section, child):
 
                 if appendix_section is None:
                     print 'ISSUE'
-            l = label(parts=[appendix_section], title=ch.text)
+            l = label(parts=[reg_part, appendix_section], title=ch.text)
             n = node(children=[], label=l)
 
             node_level = 2
@@ -199,11 +199,11 @@ def build_non_reg_text(reg_xml):
                 tree_utils.add_to_stack(m_stack, p_level, n)
         elif current_section and section_type == 'APPENDIX':
             if child.tag == 'EXTRACT':
-                process_appendix(m_stack, current_section, child)
+                process_appendix(str(reg_part), m_stack, current_section, child)
                 tree_utils.unwind_stack(m_stack)
         elif current_section and section_type == 'SUPPLEMENT':
             if child.tag == 'EXTRACT':
-                process_supplement(m_stack, child)
+                process_supplement(str(reg_part), m_stack, child)
                 tree_utils.unwind_stack(m_stack)
 
     while m_stack.size() > 1:
