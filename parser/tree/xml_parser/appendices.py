@@ -131,7 +131,7 @@ def process_appendix(m_stack, current_section, child):
                     n = node(text=node_text, children=[], label=l)
 
                     last = m_stack.peek()
-                    node_level  = determine_level(m, last[0][0])
+                    node_level = determine_level(m, last[0][0])
                     tree_utils.add_to_stack(m_stack, node_level, n)
             else:
                 last = m_stack.peek_last()
@@ -140,11 +140,7 @@ def process_appendix(m_stack, current_section, child):
 def build_non_reg_text(reg_xml):
     """ This builds the tree for the non-regulation text such as Appendices 
     and the Supplement section. """
-
     doc_root = etree.fromstring(reg_xml)
-
-    reg_part = doc_root.xpath('//REGTEXT')[0].attrib['PART']
-    part = doc_root.xpath('//REGTEXT/PART')[0]
 
     reg_part = int(doc_root.xpath('//REGTEXT')[0].attrib['PART'])
     last_section = doc_root.xpath('//REGTEXT/PART/SECTION[last()]')[0]
@@ -152,7 +148,6 @@ def build_non_reg_text(reg_xml):
     section_type = None
     current_section = None
     m_stack = NodeStack()
-    html_parser = HTMLParser.HTMLParser()
 
     for child in last_section.getchildren():
         if child.tag == 'HD':
@@ -166,11 +161,11 @@ def build_non_reg_text(reg_xml):
                 if current_section == 'I':
                     current_section = 'Interpretations'
             else:
+                p_level = 2
                 if section_type == 'SUPPLEMENT' and 'Appendix' in child.text:
                     current_section = get_letter(child.text)
                 else:
                     current_section = determine_next_section(m_stack)
-                p_level = 2
 
             l = label(parts=[current_section], title=child.text)
             n = node(children=[], label=l)
@@ -192,8 +187,8 @@ def build_non_reg_text(reg_xml):
     while m_stack.size() > 1:
         tree_utils.unwind_stack(m_stack)
 
-    tree = {'children':[]}
+    sections = []
     for level, section in m_stack.m_stack[0]:
-        tree['children'].append(section)
+        sections.append(section)
 
-    return tree
+    return sections
