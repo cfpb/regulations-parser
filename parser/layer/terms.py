@@ -2,6 +2,7 @@ from layer import Layer
 from parser import utils
 from parser.grammar.external_citations import uscode_exp as uscode
 from parser.grammar.terms import term_parser
+from parser.layer.interpretations import Interpretations
 from parser.layer.paragraph_markers import ParagraphMarkers
 from parser.tree import struct
 import re
@@ -19,10 +20,10 @@ class Terms(Layer):
         these definition to self.scoped_terms"""
         def per_node(node):
             if self.has_definitions(node):
-                scope = self.definitions_scope(node)
-                definitions = self.node_definitions(node)
-                existing = self.scoped_terms.get(scope, [])
-                self.scoped_terms[scope] = existing + definitions
+                for scope in self.definitions_scopes(node):
+                    definitions = self.node_definitions(node)
+                    existing = self.scoped_terms.get(scope, [])
+                    self.scoped_terms[scope] = existing + definitions
 
         struct.walk(self.tree, per_node)
 
@@ -66,15 +67,22 @@ class Terms(Layer):
         struct.walk(node, per_node)
         return final_matches
 
-    def definitions_scope(self, node):
+    def definitions_scopes(self, node):
         """Try to determine the scope of definitions in this term."""
         if "purposes of this part" in node['text'].lower():
-            return tuple(node['label']['parts'][:1])
+            scope = node['label']['parts'][:1]
         elif "purposes of this section" in node['text'].lower():
-            return tuple(node['label']['parts'][:2])
+            scope = node['label']['parts'][:2]
         elif "purposes of this paragraph" in node['text'].lower():
-            return tuple(node['label']['parts'])
-        return tuple(node['label']['parts'][:1])    # defaults to whole reg
+            scope = node['label']['parts']
+        else:
+            scope = node['label']['parts'][:1]  # defaults to whole reg
+
+        interp_scope = Interpretations.regtext_to_interp_label(scope)
+        if interp_scope:
+            return [tuple(scope), tuple(interp_scope)]
+        else:
+            return [tuple(scope)]
 
     def process(self, node):
         """Determine which (if any) definitions would apply to this node,

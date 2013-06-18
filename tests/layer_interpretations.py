@@ -4,6 +4,20 @@ from unittest import TestCase
 
 class LayerInterpretationTest(TestCase):
 
+    def test_regtext_to_interp_label(self):
+        self.assertEqual(None,
+            Interpretations.regtext_to_interp_label(['100']))
+        self.assertEqual(['100', 'Interpretations', '4'],
+            Interpretations.regtext_to_interp_label(['100', '4']))
+        self.assertEqual(['100', 'Interpretations', 'C'],
+            Interpretations.regtext_to_interp_label(['100', 'C']))
+        self.assertEqual(['100', 'Interpretations', '7', '(b)(4)(i)'],
+            Interpretations.regtext_to_interp_label(['100', '7', 'b', '4',
+                'i']))
+        self.assertEqual(['100', 'Interpretations', 'Z', '7.iv.R'],
+            Interpretations.regtext_to_interp_label(['100', 'Z', '7', 'iv',
+                'R']))
+
     def test_regtext_label(self):
         interp = Interpretations(None)
         self.assertEqual('(c)', interp.regtext_label(['c']))

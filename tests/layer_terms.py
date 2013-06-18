@@ -99,21 +99,23 @@ class LayerTermTest(TestCase):
         ])
         self.assertEqual([(u'bologna', '1')], t.node_definitions(node))
 
-    def test_definitions_scope(self):
+    def test_definitions_scopes(self):
         t = Terms(None)
         node = struct.node("", 
                 label=struct.label("1000-22-a-5", ['1000', '22', 'a', '5']))
         node['text'] = 'For the purposes of this part, blah blah'
-        self.assertEqual(('1000',), t.definitions_scope(node))
+        self.assertEqual([('1000',)], t.definitions_scopes(node))
 
         node['text'] = 'For the purposes of this section, blah blah'
-        self.assertEqual(('1000', '22'), t.definitions_scope(node))
+        self.assertEqual([('1000', '22'), ('1000', 'Interpretations', '22')], 
+                t.definitions_scopes(node))
 
         node['text'] = 'For the purposes of this paragraph, blah blah'
-        self.assertEqual(('1000','22','a','5'), t.definitions_scope(node))
+        self.assertEqual([('1000','22','a','5'), ('1000', 'Interpretations',
+            '22', '(a)(5)')], t.definitions_scopes(node))
 
         node['text'] = 'Default'
-        self.assertEqual(('1000',), t.definitions_scope(node))
+        self.assertEqual([('1000',)], t.definitions_scopes(node))
 
     def test_pre_process(self):
         tree = struct.node(children=[
