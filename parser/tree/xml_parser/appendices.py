@@ -14,10 +14,10 @@ from parser.utils import roman_nums
 from parser.tree.xml_parser import tree_utils
 
 p_levels = [
-    list(string.ascii_uppercase), #0 -> A
-    [str(i) for i in range(1, 51)], #1 -> 1
-    list(string.ascii_lowercase),  #2 -> a
-    [str(i) for i in range(1, 51)], #3 -> 1
+    list(string.ascii_uppercase), #0 -> A (Level 1)
+    [str(i) for i in range(1, 51)], #1 -> 1 (Level 2)
+    list(string.ascii_lowercase),  #2 -> a (Level 3)
+    [str(i) for i in range(1, 51)], #3 -> 1 (Level 4)
     list(itertools.islice(roman_nums(), 0, 50)), #4 -> (i)
 ]
 
@@ -72,9 +72,25 @@ def get_appendix_section_number(title, appendix_letter):
     if result:
         return result.group(1)
 
-def determine_next_section(m_stack):
+def determine_next_section(m_stack, node_level):
+    """ Sometimes, sections aren't numbered or lettered with 
+    the body of the text. We peek at the stack, and figure out the next
+    marker. """
+
     last_level = m_stack.peek_last()[0]
-    return p_levels[last_level][0]
+
+    if node_level == last_level:
+        #Get the next marker on the same level
+        last_marker = m_stack.peek_last()[1]['label']['parts'][0]
+        last_marker_index =  p_levels[node_level-1].index(str(last_marker))
+        next_marker = p_levels[node_level-1][last_marker_index + 1]
+        return next_marker
+    if node_level > last_level:
+        #Get the first marker on the next level
+        return p_levels[node_level - 1][0]
+
+        #We don't need to get the next marker on a previous
+        #level because this doesn't happen. 
 
 def process_supplement(m_stack, child):
     supplement_section = None
@@ -108,6 +124,12 @@ def process_appendix(m_stack, current_section, child):
     for ch in child.getchildren():
         if ch.tag == 'HD':
             appendix_section = get_appendix_section_number(ch.text, current_section)
+
+            if appendix_section is None:
+                appendix_section = determine_next_section(m_stack, 2)
+
+                if appendix_section is None:
+                    print 'ISSUE'
             l = label(parts=[appendix_section], title=ch.text)
             n = node(children=[], label=l)
 
@@ -165,7 +187,7 @@ def build_non_reg_text(reg_xml):
                 if section_type == 'SUPPLEMENT' and 'Appendix' in child.text:
                     current_section = get_letter(child.text)
                 else:
-                    current_section = determine_next_section(m_stack)
+                    current_section = determine_next_section(m_stack, p_level)
 
             l = label(parts=[current_section], title=child.text)
             n = node(children=[], label=l)
