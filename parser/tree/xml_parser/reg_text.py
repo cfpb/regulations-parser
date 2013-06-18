@@ -23,6 +23,7 @@ def determine_level(c, current_level):
     return p_level
 
 def write_parts(node):
+    """ Go through the JSON tree and recursively fix the label texts. """
     node['label']['text'] = '-'.join(node['label']['parts'])
 
     for n in node['children']:
@@ -88,6 +89,8 @@ def build_tree(reg_xml):
 
     non_reg_sections = build_non_reg_text(reg_xml)
     tree['children'] = sections
+    tree['children'] += non_reg_sections
     write_parts(tree)
+        
 
     return tree
