@@ -60,6 +60,17 @@ def get_paragraph_markers(text):
 def get_node_text(node):
     """ Given an XML node, generate text from the node, skipping the PRTPAGE tag. """
     html_parser = HTMLParser.HTMLParser()
-    node_text = ' '.join([node.text] + [etree.tostring(c) for c in node if c.tail and c.tag != 'PRTPAGE'])
+
+    if node.text:
+        node_text = node.text
+    else:
+        node_text = ''
+
+    for c in node:
+        if c.tag == 'E':
+            node_text += ' ' + etree.tostring(c)
+        elif c.tail is not None:
+            node_text += c.tail
+
     node_text = html_parser.unescape(node_text)
     return node_text
