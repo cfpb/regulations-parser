@@ -6,23 +6,50 @@ class Interpretations(Layer):
     information about particular paragraphs. This layer provides those
     interpretations."""
 
+    @staticmethod
+    def regtext_to_interp_label(label_parts):
+        """Convert a regtext label (e.g. ['99','2','b','7']) into an
+        interpretation label (e.g. ['99', 'Interpretations', '2', 'b',
+        '7'])"""
+        if len(label_parts) < 2:    # the root doesn't have an interp
+            return
+
+        part = label_parts[0]
+        section = label_parts[1]
+        paragraphs = label_parts[2:]
+
+        interp_label = [part, "Interpretations", section]
+        if paragraphs and section.isdigit():
+            interp_label.append(Interpretations.regtext_label(paragraphs))
+        elif paragraphs:
+            interp_label.append(Interpretations.appendix_label(paragraphs))
+        return interp_label
+
+    @staticmethod
+    def regtext_label(paragraph_ids):
+        """Create a label corresponding to regtext paragraphs (parens)"""
+        label = ''
+        for paragraph_id in paragraph_ids:
+            label += '(' + paragraph_id + ')'
+        return label
+
+    @staticmethod
+    def appendix_label(paragraph_ids):
+        """Create a label corresponding to appendix paragraphs (dots)"""
+        return '.'.join(paragraph_ids)
+
     def process(self, node):
         """Is there an interpretation associated with this node? If yes,
         return the associated layer information. @TODO: Right now, this only
         associates if there is a direct match. It should also associate if any
         parents match"""
-        if len(node['label']['parts']) < 3:
+
+        interp_label = Interpretations.regtext_to_interp_label(
+                node['label']['parts'])
+        if not interp_label:
             return None
-
-        part = node['label']['parts'][0]
-        section = node['label']['parts'][1]
-        paragraphs = node['label']['parts'][2:]
-
-        interp_label = part + "-Interpretations-" + section + "-"
-        if section.isdigit():
-            interp_label += self.regtext_label(paragraphs)
         else:
-            interp_label += self.appendix_label(paragraphs)
+            interp_label = '-'.join(interp_label)
 
         interpretation = struct.find(self.tree, interp_label)
         if interpretation and not self.empty_interpretation(interpretation):
@@ -42,17 +69,3 @@ class Interpretations(Layer):
                 'title' not in interpretation['children'][0]['label']):
             return False
         return True
-
-    def regtext_label(self, paragraph_ids):
-        """Create a label corresponding to regtext paragraphs (parens)"""
-        label = ''
-        for paragraph_id in paragraph_ids:
-            label += '(' + paragraph_id + ')'
-        return label
-
-    def appendix_label(self, paragraph_ids):
-        """Create a label corresponding to appendix paragraphs (dots)"""
-        label = paragraph_ids[0]
-        for paragraph_id in paragraph_ids[1:]:
-            label += '.' + paragraph_id
-        return label

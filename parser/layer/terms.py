@@ -1,7 +1,9 @@
+# vim: set fileencoding=utf-8
 from layer import Layer
 from parser import utils
 from parser.grammar.external_citations import uscode_exp as uscode
 from parser.grammar.terms import term_parser
+from parser.layer.interpretations import Interpretations
 from parser.layer.paragraph_markers import ParagraphMarkers
 from parser.tree import struct
 import re
@@ -19,10 +21,10 @@ class Terms(Layer):
         these definition to self.scoped_terms"""
         def per_node(node):
             if self.has_definitions(node):
-                scope = self.definitions_scope(node)
-                definitions = self.node_definitions(node)
-                existing = self.scoped_terms.get(scope, [])
-                self.scoped_terms[scope] = existing + definitions
+                for scope in self.definitions_scopes(node):
+                    definitions = self.node_definitions(node)
+                    existing = self.scoped_terms.get(scope, [])
+                    self.scoped_terms[scope] = existing + definitions
 
         struct.walk(self.tree, per_node)
 
@@ -38,31 +40,53 @@ class Terms(Layer):
         return (
                 stripped.lower().startswith('definition')
                 or ('title' in node['label'] 
-                    and 'definition' in node['label']['title'].lower()))
+                    and 'definition' in node['label']['title'].lower())
+                or re.search('the term .* means', stripped.lower())
+                )
+
+    def is_exclusion(self, term, text, previous_terms):
+        """Some definitions are exceptions/exclusions of a previously
+        defined term. At the moment, we do not want to include these as they
+        would replace previous (correct) definitions."""
+        if term not in [t for (t,_) in previous_terms]:
+            return False
+        regex = 'the term .?' + re.escape(term) + '.? does not include'
+        return bool(re.search(regex, text.lower()))
 
     def node_definitions(self, node):
         """Walk through this node and its children to find defined terms.
         'Act' is a special case, as it is also defined as an external
         citation."""
+        final_matches = []
         def per_node(n):
-            matches = [(match[0].lower(), n['label']['text']) 
-                    for match,_,_ in term_parser.scanString(n['text'])]
-            final_matches = []
-            for term, label in matches:
-                if term != 'act' or not list(uscode.scanString(n['text'])):
-                    final_matches.append((term, label))
-            return final_matches
-        return utils.flatten(struct.walk(node, per_node))
+            for match in [m for m,_,_ in term_parser.scanString(n['text'])]:
+                term = match.term.tokens[0].lower()
+                pos = match.term.pos
+                if term == 'act' and list(uscode.scanString(n['text'])):
+                    continue
+                if self.is_exclusion(term, n['text'], final_matches):
+                    continue
+                final_matches.append((term, (n['label']['text'], pos[0],
+                    pos[1])))
+        struct.walk(node, per_node)
+        return final_matches
 
-    def definitions_scope(self, node):
+    def definitions_scopes(self, node):
         """Try to determine the scope of definitions in this term."""
         if "purposes of this part" in node['text'].lower():
-            return tuple(node['label']['parts'][:1])
+            scope = node['label']['parts'][:1]
         elif "purposes of this section" in node['text'].lower():
-            return tuple(node['label']['parts'][:2])
+            scope = node['label']['parts'][:2]
         elif "purposes of this paragraph" in node['text'].lower():
-            return tuple(node['label']['parts'])
-        return tuple(node['label']['parts'][:1])    # defaults to whole reg
+            scope = node['label']['parts']
+        else:
+            scope = node['label']['parts'][:1]  # defaults to whole reg
+
+        interp_scope = Interpretations.regtext_to_interp_label(scope)
+        if interp_scope:
+            return [tuple(scope), tuple(interp_scope)]
+        else:
+            return [tuple(scope)]
 
     def process(self, node):
         """Determine which (if any) definitions would apply to this node,
@@ -76,12 +100,14 @@ class Terms(Layer):
         layer_el = []
         term_list = [(term,ref) for term, ref in applicable_terms.iteritems()]
         matches = self.calculate_offsets(node['text'], term_list)
-        for term, ref, offsets in matches:
+        for term, ref_triplet, offsets in matches:
+            ref, ref_start, ref_end = ref_triplet
             term_ref = term + ":" + ref
             if term_ref not in self.layer['referenced']:
                 self.layer['referenced'][term_ref] = {
                         "term": term,
                         "reference": ref,
+                        "position": (ref_start, ref_end),
                         "text": struct.join_text(struct.find(self.tree, ref))
                         }
             layer_el.append({
@@ -110,9 +136,15 @@ class Terms(Layer):
                     for m in re.finditer(re_term, text.lower())]
             safe_offsets = []
             for start, end in offsets:
+                #   Remove phrases we are actively defining
+                if (start > 0 and text[start-1] == u'“' and 
+                        end < len(text) and text[end] == u'”'):
+                    continue
+                #   Start is contained in an existing def
                 if any(start >= e[0] and start <= e[1] 
                         for e in existing_defs):
                     continue
+                #   End is contained in an existing def
                 if any(end >= e[0] and end <= e[1] for e in existing_defs):
                     continue
                 safe_offsets.append((start, end))

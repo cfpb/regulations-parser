@@ -38,6 +38,24 @@ class LayerTermTest(TestCase):
             struct.label('88-20-a', ['88', '20', 'a']))
         self.assertTrue(t.has_definitions(node))
 
+    def test_has_definitions_the_term_means(self):
+        t = Terms(None)
+        node = struct.node("(a) The term Bob means awesome", [],
+            struct.label('88-20-a', ['88', '20', 'a']))
+        self.assertTrue(t.has_definitions(node))
+
+    def test_is_exclusion(self):
+        t = Terms(None)
+        self.assertFalse(t.is_exclusion('ex', 'ex ex ex', []))
+        self.assertFalse(t.is_exclusion('ex', 'ex ex ex', [('abc', '1')]))
+        self.assertFalse(t.is_exclusion('ex', 'ex ex ex', [('ex', '1')]))
+        self.assertTrue(t.is_exclusion('ex', 
+            u'Something something the term “ex” does not include potato',
+            [('ex', '1')]))
+        self.assertFalse(t.is_exclusion('ex', 
+            u'Something something the term “ex” does not include potato',
+            [('abc', '1')]))
+
     def test_node_definitions(self):
         t = Terms(None)
         text1 = u'This has a “worD” and then more'
@@ -63,11 +81,11 @@ class LayerTermTest(TestCase):
             ])
         defs = t.node_definitions(tree)
         self.assertEqual(5, len(defs))
-        self.assertTrue((u'word', 'aaa') in defs)
-        self.assertTrue((u'another word', 'bbb') in defs)
-        self.assertTrue((u'moree', 'bbb') in defs)
-        self.assertTrue((u'does see', 'ccc') in defs)
-        self.assertTrue((u'subchildren', 'ddd') in defs)
+        self.assertTrue((u'word', ('aaa', 12, 16)) in defs)
+        self.assertTrue((u'another word', ('bbb', 8, 20)) in defs)
+        self.assertTrue((u'moree', ('bbb', 32, 37)) in defs)
+        self.assertTrue((u'does see', ('ccc', 15, 23)) in defs)
+        self.assertTrue((u'subchildren', ('ddd', 7, 18)) in defs)
 
     def test_node_defintions_act(self):
         t = Terms(None)
@@ -77,21 +95,33 @@ class LayerTermTest(TestCase):
         node = struct.node(u'“Act” means something else entirely')
         self.assertEqual(1, len(t.node_definitions(node)))
 
-    def test_definitions_scope(self):
+    def test_node_definitions_exclusion(self):
+        t = Terms(None)
+        node = struct.node('',[
+            struct.node(u'“Bologna” is a type of deli meat',
+                label=struct.label('1')),
+            struct.node(u'Let us not forget that the term “bologna” ' +
+                'does not include turtle meat', label=struct.label('2'))
+        ])
+        self.assertEqual([(u'bologna', ('1',1,8))], t.node_definitions(node))
+
+    def test_definitions_scopes(self):
         t = Terms(None)
         node = struct.node("", 
                 label=struct.label("1000-22-a-5", ['1000', '22', 'a', '5']))
         node['text'] = 'For the purposes of this part, blah blah'
-        self.assertEqual(('1000',), t.definitions_scope(node))
+        self.assertEqual([('1000',)], t.definitions_scopes(node))
 
         node['text'] = 'For the purposes of this section, blah blah'
-        self.assertEqual(('1000', '22'), t.definitions_scope(node))
+        self.assertEqual([('1000', '22'), ('1000', 'Interpretations', '22')], 
+                t.definitions_scopes(node))
 
         node['text'] = 'For the purposes of this paragraph, blah blah'
-        self.assertEqual(('1000','22','a','5'), t.definitions_scope(node))
+        self.assertEqual([('1000','22','a','5'), ('1000', 'Interpretations',
+            '22', '(a)(5)')], t.definitions_scopes(node))
 
         node['text'] = 'Default'
-        self.assertEqual(('1000',), t.definitions_scope(node))
+        self.assertEqual([('1000',)], t.definitions_scopes(node))
 
     def test_pre_process(self):
         tree = struct.node(children=[
@@ -116,11 +146,12 @@ class LayerTermTest(TestCase):
         t.pre_process()
 
         self.assertTrue(('88',) in t.scoped_terms)
-        self.assertEqual([(u'abcd', '88-1')], t.scoped_terms[('88',)])
+        self.assertEqual([(u'abcd', ('88-1',44,48))], t.scoped_terms[('88',)])
         self.assertTrue(('88','2') in t.scoped_terms)
-        self.assertEqual([(u'axax', '88-2-a-1')], t.scoped_terms[('88','2')])
+        self.assertEqual([(u'axax', ('88-2-a-1',1,5))], 
+            t.scoped_terms[('88','2')])
         self.assertTrue(('88','2','b','i','A') in t.scoped_terms)
-        self.assertEqual([(u'awesome sauce', '88-2-b-i-A')], 
+        self.assertEqual([(u'awesome sauce', ('88-2-b-i-A',13,26))], 
                 t.scoped_terms[('88','2','b','i','A')])
 
     def test_calculate_offsets(self):
@@ -185,6 +216,14 @@ class LayerTermTest(TestCase):
         self.assertEqual(1, len(matches))
         self.assertEqual(1, len(matches[0][2]))
 
+    def test_calculate_offsets_defining_term(self):
+        """If we are defining this term, don't include the definition"""
+        applicable_terms = [('potato', '1002-2')]
+        text = u"Here, I am defining “potato”."
+        t = Terms(None)
+        self.assertEqual(0, len(t.calculate_offsets(text,
+            applicable_terms)))
+
     def test_process(self):
         t = Terms(struct.node(children=[
             struct.node("ABC5", children=[struct.node("child")],
@@ -197,15 +236,15 @@ class LayerTermTest(TestCase):
             struct.node("ZZZOTHER", label=struct.label("ref7"))]))
         t.scoped_terms = {
                 ("101", "22", "b", "2", "ii"): [
-                    ("abc", "ref1"),
-                    ("aabbcc", "ref2")],
+                    ("abc", ("ref1", 1, 2)),
+                    ("aabbcc", ("ref2", 2, 3))],
                 ("101", "22", "b"): [
-                    ("abc", "ref3"),
-                    ("aaa", "ref4"),
-                    ("abcabc", "ref5")],
+                    ("abc", ("ref3", 3, 4)),
+                    ("aaa", ("ref4", 4, 5)),
+                    ("abcabc", ("ref5", 5, 6))],
                 ("101", "22", "b", "2", "iii"): [
-                    ("abc", "ref6"),
-                    ("zzz", "ref7")]
+                    ("abc", ("ref6", 6, 7)),
+                    ("zzz", ("ref7", 7, 8))]
                 }
         #   Check that the return value is correct
         layer_el = t.process(struct.node(
@@ -232,18 +271,22 @@ class LayerTermTest(TestCase):
         self.assertEqual('ABCABC3', referenced['abcabc:ref5']['text'])
         self.assertEqual('abcabc', referenced['abcabc:ref5']['term'])
         self.assertEqual('ref5', referenced['abcabc:ref5']['reference'])
+        self.assertEqual((5,6), referenced['abcabc:ref5']['position'])
 
         self.assertTrue('aaa:ref4' in referenced)
         self.assertEqual('AAA3', referenced['aaa:ref4']['text'])
         self.assertEqual('aaa', referenced['aaa:ref4']['term'])
         self.assertEqual('ref4', referenced['aaa:ref4']['reference'])
+        self.assertEqual((4,5), referenced['aaa:ref4']['position'])
 
         self.assertTrue('aabbcc:ref2' in referenced)
         self.assertEqual('AABBCC5', referenced['aabbcc:ref2']['text'])
         self.assertEqual('aabbcc', referenced['aabbcc:ref2']['term'])
         self.assertEqual('ref2', referenced['aabbcc:ref2']['reference'])
+        self.assertEqual((2,3), referenced['aabbcc:ref2']['position'])
 
         self.assertTrue('abc:ref1' in referenced)
         self.assertEqual('ABC5child', referenced['abc:ref1']['text'])
         self.assertEqual('abc', referenced['abc:ref1']['term'])
         self.assertEqual('ref1', referenced['abc:ref1']['reference'])
+        self.assertEqual((1,2), referenced['abc:ref1']['position'])
