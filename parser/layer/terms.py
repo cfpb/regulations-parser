@@ -59,14 +59,15 @@ class Terms(Layer):
         citation."""
         final_matches = []
         def per_node(n):
-            matches = [(match[0].lower(), n['label']['text']) 
-                    for match,_,_ in term_parser.scanString(n['text'])]
-            for term, label in matches:
+            for match in [m for m,_,_ in term_parser.scanString(n['text'])]:
+                term = match.term.tokens[0].lower()
+                pos = match.term.pos
                 if term == 'act' and list(uscode.scanString(n['text'])):
                     continue
                 if self.is_exclusion(term, n['text'], final_matches):
                     continue
-                final_matches.append((term, label))
+                final_matches.append((term, (n['label']['text'], pos[0],
+                    pos[1])))
         struct.walk(node, per_node)
         return final_matches
 
@@ -99,12 +100,14 @@ class Terms(Layer):
         layer_el = []
         term_list = [(term,ref) for term, ref in applicable_terms.iteritems()]
         matches = self.calculate_offsets(node['text'], term_list)
-        for term, ref, offsets in matches:
+        for term, ref_triplet, offsets in matches:
+            ref, ref_start, ref_end = ref_triplet
             term_ref = term + ":" + ref
             if term_ref not in self.layer['referenced']:
                 self.layer['referenced'][term_ref] = {
                         "term": term,
                         "reference": ref,
+                        "position": (ref_start, ref_end),
                         "text": struct.join_text(struct.find(self.tree, ref))
                         }
             layer_el.append({
