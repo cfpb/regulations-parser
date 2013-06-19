@@ -1,6 +1,7 @@
 #vim: set encoding=utf-8
 import unittest
 from parser.tree.xml_parser import tree_utils
+from parser.tree.node_stack import NodeStack
 from lxml import etree
 
 class TreeUtilsTest(unittest.TestCase):
@@ -30,3 +31,19 @@ class TreeUtilsTest(unittest.TestCase):
         result = tree_utils.get_node_text(doc)
 
         self.assertEquals('(a) <E T="03">Fruit.</E>Apples, and Pineapples', result)
+
+    def test_unwind_stack(self):
+        level_one_n = {'label': {'parts': ['272']}, 'children':[]}
+        level_two_n = {'label': {'parts': ['a']}, 'children':[]}
+
+        m_stack = NodeStack()
+        m_stack.push_last((1, level_one_n))
+        tree_utils.add_to_stack(m_stack, 2, level_two_n)
+
+        self.assertEquals(m_stack.size(), 2)
+        tree_utils.unwind_stack(m_stack)
+
+        self.assertEquals(m_stack.size(), 1)
+
+        n = m_stack.pop()[0][1]
+        self.assertEqual(n['children'][0]['label']['parts'], ['272', 'a'])
