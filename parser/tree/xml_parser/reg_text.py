@@ -6,12 +6,8 @@ from parser.tree.struct import label, node
 from parser.grammar.internal_citations import any_depth_p
 from parser.tree.paragraph import p_levels
 from parser.tree.node_stack import NodeStack
-
-def get_paragraph_markers(text):
-    for citation, start, end in any_depth_p.scanString(text):
-        if start == 0:
-            return citation[0][0]
-    return []
+from parser.tree.xml_parser.appendices import build_non_reg_text
+from parser.tree.xml_parser import tree_utils
 
 def determine_level(c, current_level):
     """ Regulation paragraphs are hierarchical. This determines which level 
@@ -27,41 +23,14 @@ def determine_level(c, current_level):
     return p_level
 
 def write_parts(node):
+    """ Go through the JSON tree and recursively fix the label texts. """
     node['label']['text'] = '-'.join(node['label']['parts'])
 
     for n in node['children']:
         write_parts(n)
 
-def prepend_parts(parts_prefix, n):
-    """ Recursively preprend parts_prefix to the parts of the node 
-    n. Parts is a list of markers that indicates where you are in the 
-    regulation text. """
-    n['label']['parts'] = parts_prefix + n['label']['parts']
-
-    if len(n['children']) > 1:
-        for c in n['children']:
-            prepend_parts(parts_prefix, c)
-    return n
-
-def split_text(text, tokens):
-    """ 
-        Given a body of text that contains tokens, 
-        splice the text along those tokens. 
-    """
-    starts = [text.find(t) for t in tokens]
-    slices = zip(starts, starts[1:])
-    texts = [text[i[0]:i[1]] for i in slices] + [text[starts[-1]:]]
-    return texts
-
-def unwind_stack(m_stack):
-    children = m_stack.pop()
-    parts_prefix = m_stack.peek_last()[1]['label']['parts']
-    children = [prepend_parts(parts_prefix, c[1]) for c in children]
-    m_stack.peek_last()[1]['children'] = children
-
-def build_tree():
-    reg_xml = '/vagrant/data/regulations/regulation/1005.xml'
-    doc = etree.parse(reg_xml)
+def build_tree(reg_xml):
+    doc = etree.fromstring(reg_xml)
 
     reg_part = doc.xpath('//REGTEXT')[0].attrib['PART']
 
@@ -83,13 +52,12 @@ def build_tree():
             for ch in child.getchildren():
                 if ch.tag == 'P':
                     text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
-                    markers_list = get_paragraph_markers(text)
-                    node_text = ' '.join([ch.text] + [etree.tostring(c) for c in ch if c.tail])
-                    node_text = html_parser.unescape(node_text)
+                    markers_list = tree_utils.get_paragraph_markers(text)
+                    node_text = tree_utils.get_node_text(ch)
 
                     if len(markers_list) > 1:
                         actual_markers = ['(%s)' % m for m in markers_list]
-                        node_text = split_text(node_text, actual_markers)
+                        node_text = tree_utils.split_text(node_text, actual_markers)
                     else:
                         node_text = [node_text]
 
@@ -98,16 +66,11 @@ def build_tree():
                         n = node(text=node_text, children=[], label=l)
 
                         new_p_level = determine_level(m, p_level)
-                        if new_p_level > p_level:
-                            m_stack.push((new_p_level, n))
-                        elif new_p_level < p_level:
-                            last = m_stack.peek()
-                            while last[0][0] > new_p_level:
-                                unwind_stack(m_stack)
-                                last = m_stack.peek()
+                        last = m_stack.peek()
+                        if len(last) == 0:
                             m_stack.push_last((new_p_level, n))
                         else:
-                            m_stack.push_last((new_p_level, n))
+                            tree_utils.add_to_stack(m_stack, new_p_level, n)
                         p_level = new_p_level
 
             section_title = child.xpath('SECTNO')[0].text + " " + child.xpath('SUBJECT')[0].text
@@ -119,11 +82,18 @@ def build_tree():
             m_stack.add_to_bottom((1, sect_node))
 
             while m_stack.size() > 1:
-                unwind_stack(m_stack)
+                tree_utils.unwind_stack(m_stack)
           
+
+            while m_stack.size() > 1:
+                tree_utils.unwind_stack(m_stack)
+
             c = m_stack.pop()[0][1]
             sections.append(c)
-    tree['children'] = sections
-    write_parts(tree)
 
+    tree['children'] = sections
+    non_reg_sections = build_non_reg_text(reg_xml)
+    tree['children'] += non_reg_sections
+
+    write_parts(tree)
     return tree
