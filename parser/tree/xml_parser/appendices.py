@@ -43,9 +43,9 @@ def interpretation_level(marker):
     """
     if marker in i_levels[1]: #digits
         i_level = 4
-    if marker in i_levels[2]: #roman_nums
+    elif marker in i_levels[2]: #roman_nums
         i_level = 5
-    if marker in i_levels[3]: #ascii_uppercase
+    elif marker in i_levels[3]: #ascii_uppercase
         i_level = 6
     return i_level
 
@@ -54,11 +54,11 @@ def determine_level(marker, current_level):
     the new paragraph level. """
     if marker in p_levels[3] and current_level > 2: #digits
         p_level = 4
-    if marker in p_levels[0]: #ascii_uppercase
+    elif marker in p_levels[0]: #ascii_uppercase
         p_level = 1
-    if marker in p_levels[2]: #ascii_lowercase
+    elif marker in p_levels[2]: #ascii_lowercase
         p_level = 3
-    if marker in p_levels[4]: #roman_nums
+    elif marker in p_levels[4]: #roman_nums
         p_level = 5
     return p_level
         
@@ -128,8 +128,6 @@ def process_appendix(m_stack, current_section, child):
             if appendix_section is None:
                 appendix_section = determine_next_section(m_stack, 2)
 
-                if appendix_section is None:
-                    print 'ISSUE'
             l = label(parts=[appendix_section], title=ch.text)
             n = node(children=[], label=l)
 
@@ -154,6 +152,15 @@ def process_appendix(m_stack, current_section, child):
 
                     last = m_stack.peek()
                     node_level = determine_level(m, last[0][0])
+
+                    if m == 'i':
+                        #This is bit of a hack, since we can't easily distinguish between the Roman numeral
+                        #(i) and the letter (i) to determine the level. We look ahead to help. This is not 
+                        #a complete solution and we should circle back at some point. 
+                        next_text = ' '.join([ch.getnext().text] + [c.tail for c in ch.getnext() if c.tail])
+                        next_markers = tree_utils.get_paragraph_markers(next_text)
+                        if next_markers[0] == 'ii':
+                            node_level = 5
                     tree_utils.add_to_stack(m_stack, node_level, n)
             else:
                 last = m_stack.peek_last()
