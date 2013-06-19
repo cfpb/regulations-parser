@@ -8,8 +8,11 @@ class Interpretations(Layer):
 
     @staticmethod
     def regtext_to_interp_label(label_parts):
-        if len(label_parts) < 2:
-            return None
+        """Convert a regtext label (e.g. ['99','2','b','7']) into an
+        interpretation label (e.g. ['99', 'Interpretations', '2', 'b',
+        '7'])"""
+        if len(label_parts) < 2:    # the root doesn't have an interp
+            return
 
         part = label_parts[0]
         section = label_parts[1]
@@ -33,10 +36,7 @@ class Interpretations(Layer):
     @staticmethod
     def appendix_label(paragraph_ids):
         """Create a label corresponding to appendix paragraphs (dots)"""
-        label = paragraph_ids[0]
-        for paragraph_id in paragraph_ids[1:]:
-            label += '.' + paragraph_id
-        return label
+        return '.'.join(paragraph_ids)
 
     def process(self, node):
         """Is there an interpretation associated with this node? If yes,
