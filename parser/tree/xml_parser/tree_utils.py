@@ -9,7 +9,7 @@ def prepend_parts(parts_prefix, n):
 
     n['label']['parts'] = parts_prefix + n['label']['parts']
 
-    if len(n['children']) > 1:
+    if len(n['children']) > 0:
         for c in n['children']:
             prepend_parts(parts_prefix, c)
     return n
