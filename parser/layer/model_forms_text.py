@@ -50,17 +50,21 @@ class ModelFormText(Layer):
 
             if keyterm:
                 end = '</E>'
-                remainder_text = node['text'][node['text'].find(end) + len(end):].split(' ')
-                start_of_model_form = remainder_text[0]
+                node_text = node['text'][node['text'].find(end) + len(end):].split(' ')
             else:
                 node_text = KeyTerms.process_node_text(node).split(' ')
-                start_of_model_form = node_text[0]
-                #if start_of_model_form == '<E':
-                #    print node_text
-                #    print "BLAH 2"
+            
+            start_of_model_form = node_text[0]
+            end_of_model_form = node_text[-1]
 
-            layer_el = [{
-                'start_word': start_of_model_form,
-                'locations':[0]
-            }]
-            return layer_el
+            if start_of_model_form and end_of_model_form:
+                list_of_ends = [w for w in node_text if w == end_of_model_form]
+                location_end = len(list_of_ends) - 1
+                
+                layer_el = [{
+                    'start_word': start_of_model_form,
+                    'start_locations':[0],
+                    'end_word': end_of_model_form,
+                    'end_locations':[location_end]
+                }]
+                return layer_el
