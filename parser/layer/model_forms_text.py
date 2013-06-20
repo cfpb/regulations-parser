@@ -1,5 +1,7 @@
 from layer import Layer
+from parser.layer.key_terms import KeyTerms
 from parser.tree import struct
+
 import string
 
 class ModelFormText(Layer):
@@ -42,4 +44,23 @@ class ModelFormText(Layer):
         struct.walk(self.tree, per_node)
 
     def process(self, node):
-        pass
+        label = node['label']['text']
+        if label in self.model_forms_nodes and self.model_forms_nodes[label]:
+            keyterm = KeyTerms.get_keyterm(node)
+
+            if keyterm:
+                end = '</E>'
+                remainder_text = node['text'][node['text'].find(end) + len(end):].split(' ')
+                start_of_model_form = remainder_text[0]
+            else:
+                node_text = KeyTerms.process_node_text(node).split(' ')
+                start_of_model_form = node_text[0]
+                #if start_of_model_form == '<E':
+                #    print node_text
+                #    print "BLAH 2"
+
+            layer_el = [{
+                'start_word': start_of_model_form,
+                'locations':[0]
+            }]
+            return layer_el
