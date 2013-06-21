@@ -1,3 +1,4 @@
+#vim: set encoding=utf-8
 from parser.tree.appendix.carving import *
 from unittest import TestCase
 
@@ -72,3 +73,5 @@ class DepthAppendixCarvingTest(TestCase):
                 get_appendix_section_number("A-2--Title Stuff", 'A'))
         self.assertEqual("50", 
                 get_appendix_section_number("QQ-50--Title Stuff", 'QQ'))
+        self.assertEqual("21(b)",
+                get_appendix_section_number(u"A-21(b)—A Model form", 'A'))

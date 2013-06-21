@@ -56,6 +56,8 @@ CFR_TITLES = [ None,
     "Wildlife and Fisheries",
 ]
 
+DEFAULT_IMAGE_URL = ('https://s3.amazonaws.com/images.federalregister.gov/'
+    +'%s/original.gif')
 
 try:
     from local_settings import * 

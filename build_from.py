@@ -1,7 +1,7 @@
 import codecs
 from parser.api_writer import Client
 from parser.federalregister import fetch_notices
-from parser.layer import external_citations, internal_citations
+from parser.layer import external_citations, internal_citations, graphics
 from parser.layer import table_of_contents, interpretations, terms
 from parser.layer import section_by_section, paragraph_markers, meta
 from parser.tree.build import build_whole_regtree
@@ -57,3 +57,6 @@ if __name__ == "__main__":
 
     layer = meta.Meta(reg_tree, int(cfr_title), notices).build()
     writer.layer("meta", cfr_part, doc_number).write(layer)
+
+    layer = graphics.Graphics(reg_tree).build()
+    writer.layer("graphics", cfr_part, doc_number).write(layer)
