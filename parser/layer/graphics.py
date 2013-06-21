@@ -1,6 +1,7 @@
 from collections import defaultdict
 from parser.layer.layer import Layer
 import re
+import settings
 
 class Graphics(Layer):
     gid = re.compile(ur'!\[([\w\s]+?)\]\(([a-zA-Z0-9.]+?)\)')
@@ -17,8 +18,7 @@ class Graphics(Layer):
             match = matches_by_text[text][0]
             layer_el.append({
                 'text': match.group(0),
-                'url': ('https://s3.amazonaws.com/images.federalregister.gov/'
-                    + match.group(2) + '/original.gif'),
+                'url': settings.DEFAULT_IMAGE_URL % match.group(2),
                 'alt': match.group(1),
                 'locations': list(range(len(matches_by_text[text])))
             })
