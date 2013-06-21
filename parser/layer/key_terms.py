@@ -5,9 +5,9 @@ import re
 class KeyTerms(Layer):
     def __init__(self, tree):
         Layer.__init__(self, tree)
-        self.pattern = re.compile(ur'.*?<E T="03">([^<]*?)</E>.*?', re.UNICODE) 
 
-    def process_node_text(self, node):
+    @staticmethod
+    def process_node_text(node):
         """ Take a paragraph, remove the marker, and extraneous whitespaces. """
         marker = ParagraphMarkers.marker(node)
         text = node['text']
@@ -15,23 +15,28 @@ class KeyTerms(Layer):
         text = text.replace(marker, '', 1).strip()
         return text
 
-    def keyterm_is_first(self, node, keyterm):
+    @staticmethod
+    def keyterm_is_first(node, keyterm):
         """ The keyterm should be the first phrase in the paragraph. """
-        node_text = self.process_node_text(node)
+        node_text = KeyTerms.process_node_text(node)
         start = node_text.find(keyterm)
         tag_length = len("<E T='03'>")
 
         return start == tag_length
 
-    def process(self, node):
-        matches = self.pattern.match(node['text'])
-        if matches:
-            keyterm = matches.groups()[0]
+    @staticmethod
+    def get_keyterm(node):
+        pattern = re.compile(ur'.*?<E T="03">([^<]*?)</E>.*?', re.UNICODE) 
+        matches = pattern.match(node['text'])
+        if matches and KeyTerms.keyterm_is_first(node, matches.groups()[0]):
+            return matches.groups()[0]
 
-            if self.keyterm_is_first(node, keyterm):
-                layer_el = [{
+    def process(self, node):
+        keyterm = KeyTerms.get_keyterm(node)
+        if keyterm:
+            layer_el = [{
                     "key_term": keyterm, 
                     #The first instance of the key term is right one. 
-                    "locations": [0]
-                }]
-                return layer_el
+                    "locations": [0] }]
+            return layer_el
+
