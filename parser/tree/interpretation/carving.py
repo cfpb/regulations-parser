@@ -19,11 +19,13 @@ def segment_by_header(text, part):
 
     def offsets_fn(remaining_text, idx, excludes):
         """Find start/end of the next header"""
-        def find_start(remaining):
-            match = mecha_re.search(remaining)
-            if match:
-                return match.start()
-        return search.find_offsets(remaining_text, find_start)
+        match = mecha_re.search(remaining_text)
+        if match:
+            next_match = mecha_re.search(remaining_text[match.end():])
+            if next_match:
+                return (match.start(), next_match.start() + match.end())
+            else:
+                return (match.start(), len(remaining_text))
 
     return search.segments(text, offsets_fn)
 

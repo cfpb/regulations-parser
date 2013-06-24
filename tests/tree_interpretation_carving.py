@@ -29,6 +29,14 @@ class DepthInterpretationCarvingTest(TestCase):
             (len(text+s22+s23+s25), len(text+s22+s23+s25+sb))
             ], segment_by_header(text + s22 + s23 + s25 + sb, 87))
 
+    def test_segment_by_header_ten(self):
+        text = "Interp interp\n"
+        s10a = "10(a) Some Content\n\n"
+        s10a1 = "10(a)(1) Some subcontent\nContent content\n"
+        s10b = "10(b) Second level paragraph\nContennnnnt"
+
+        self.assertEqual(3, len(segment_by_header(text+s10a+s10a1+s10b, 0)))
+
     def test_get_section_number(self):
         self.assertEqual("101", 
                 get_section_number("Section 55.101 Something Here", 55))
