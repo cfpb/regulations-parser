@@ -11,10 +11,10 @@ class LayerInterpretationTest(TestCase):
             Interpretations.regtext_to_interp_label(['100', '4']))
         self.assertEqual(['100', 'Interpretations', 'C'],
             Interpretations.regtext_to_interp_label(['100', 'C']))
-        self.assertEqual(['100', 'Interpretations', '7', '(b)(4)(i)'],
+        self.assertEqual(['100', 'Interpretations', '7(b)(4)(i)'],
             Interpretations.regtext_to_interp_label(['100', '7', 'b', '4',
                 'i']))
-        self.assertEqual(['100', 'Interpretations', 'Z', '7.iv.R'],
+        self.assertEqual(['100', 'Interpretations', 'Z7.iv.R'],
             Interpretations.regtext_to_interp_label(['100', 'Z', '7', 'iv',
                 'R']))
 
@@ -34,14 +34,14 @@ class LayerInterpretationTest(TestCase):
         root = struct.node(children = [
             struct.node("Interp11a", 
                 [struct.node("child1"), struct.node("child2")],
-                struct.label("102-Interpretations-11-(a)")),
+                struct.label("102-Interpretations-11(a)")),
             struct.node("Interp11c5v",
-                label=struct.label("102-Interpretations-11-(c)(5)(v)")),
+                label=struct.label("102-Interpretations-11(c)(5)(v)")),
             struct.node("InterpB5ii",
-                label=struct.label("102-Interpretations-B-5.ii")),
+                label=struct.label("102-Interpretations-B5.ii")),
             struct.node(children=[struct.node(children=[
                 struct.node("Interp9c1",
-                    label=struct.label("102-Interpretations-9-(c)(1)"))])])
+                    label=struct.label("102-Interpretations-9(c)(1)"))])])
                 ], label=struct.label("102", ["102"]))
 
         interp = Interpretations(root)
@@ -58,13 +58,13 @@ class LayerInterpretationTest(TestCase):
         self.assertEqual(1, len(interp11c5v))
         self.assertEqual(1, len(interpB5ii))
         self.assertEqual(1, len(interp9c1))
-        self.assertEqual("102-Interpretations-11-(a)",
+        self.assertEqual("102-Interpretations-11(a)",
             interp11a[0]['reference'])
-        self.assertEqual("102-Interpretations-11-(c)(5)(v)",
+        self.assertEqual("102-Interpretations-11(c)(5)(v)",
             interp11c5v[0]['reference'])
-        self.assertEqual("102-Interpretations-B-5.ii",
+        self.assertEqual("102-Interpretations-B5.ii",
             interpB5ii[0]['reference'])
-        self.assertEqual("102-Interpretations-9-(c)(1)",
+        self.assertEqual("102-Interpretations-9(c)(1)",
             interp9c1[0]['reference'])
         self.assertEqual("Interp11achild1child2", interp11a[0]['text'])
         self.assertEqual("Interp9c1", interp9c1[0]['text'])
@@ -76,10 +76,10 @@ class LayerInterpretationTest(TestCase):
             struct.node("\n\n\n", [   #   Empty
                 struct.node("Interp11a1", [],
                     struct.label(
-                        "100-Interpretations-11-(a)(1)", title="11(a)(1)"
+                        "100-Interpretations-11(a)(1)", title="11(a)(1)"
                     )
                 )
-            ], struct.label("100-Interpretations-11-(a)"))
+            ], struct.label("100-Interpretations-11(a)"))
         ], label=struct.label("100", ["100"]))
         interp = Interpretations(root)
         self.assertEqual(None, interp.process(struct.node(
@@ -91,8 +91,8 @@ class LayerInterpretationTest(TestCase):
         root = struct.node(children = [
             struct.node("\n\n\n", [   #   Empty
                 struct.node("Interp11a-1", [],
-                    struct.label("100-Interpretations-11-(a)-1"))
-                ], struct.label("100-Interpretations-11-(a)"))
+                    struct.label("100-Interpretations-11(a)-1"))
+                ], struct.label("100-Interpretations-11(a)"))
             ], label=struct.label("100", ["100"]))
         interp = Interpretations(root)
         self.assertFalse(interp.process(struct.node(
