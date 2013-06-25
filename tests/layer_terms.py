@@ -79,7 +79,7 @@ class LayerTermTest(TestCase):
                 struct.node(text3c)
                 ])
             ])
-        defs = t.node_definitions(tree)
+        defs, excluded = t.node_definitions(tree)
         self.assertEqual(5, len(defs))
         self.assertTrue((u'word', ('aaa', 12, 16)) in defs)
         self.assertTrue((u'another word', ('bbb', 8, 20)) in defs)
@@ -90,10 +90,14 @@ class LayerTermTest(TestCase):
     def test_node_defintions_act(self):
         t = Terms(None)
         node = struct.node(u'“Act” means some reference to 99 U.S.C. 1234')
-        self.assertEqual([], t.node_definitions(node))
+        included, excluded = t.node_definitions(node)
+        self.assertEqual([], included)
+        self.assertEqual(1, len(excluded))
 
         node = struct.node(u'“Act” means something else entirely')
-        self.assertEqual(1, len(t.node_definitions(node)))
+        included, excluded = t.node_definitions(node)
+        self.assertEqual(1, len(included))
+        self.assertEqual([], excluded)
 
     def test_node_definitions_exclusion(self):
         t = Terms(None)
@@ -103,7 +107,9 @@ class LayerTermTest(TestCase):
             struct.node(u'Let us not forget that the term “bologna” ' +
                 'does not include turtle meat', label=struct.label('2'))
         ])
-        self.assertEqual([(u'bologna', ('1',1,8))], t.node_definitions(node))
+        included, excluded = t.node_definitions(node)
+        self.assertEqual([(u'bologna', ('1',1,8))], included)
+        self.assertEqual([(u'bologna', ('2',33,40))], excluded)
 
     def test_definitions_scopes(self):
         t = Terms(None)
@@ -153,6 +159,26 @@ class LayerTermTest(TestCase):
         self.assertTrue(('88','2','b','i','A') in t.scoped_terms)
         self.assertEqual([(u'awesome sauce', ('88-2-b-i-A',13,26))], 
                 t.scoped_terms[('88','2','b','i','A')])
+
+        # Finally, make sure the references are added
+        referenced = t.layer['referenced']
+        self.assertTrue('abcd:88-1' in referenced)
+        self.assertEqual('abcd', referenced['abcd:88-1']['term'])
+        self.assertEqual('88-1', referenced['abcd:88-1']['reference'])
+        self.assertEqual((44,48), referenced['abcd:88-1']['position'])
+
+        self.assertTrue('axax:88-2-a-1' in referenced)
+        self.assertEqual('axax', referenced['axax:88-2-a-1']['term'])
+        self.assertEqual('88-2-a-1', referenced['axax:88-2-a-1']['reference'])
+        self.assertEqual((1,5), referenced['axax:88-2-a-1']['position'])
+
+        self.assertTrue('awesome sauce:88-2-b-i-A' in referenced)
+        self.assertEqual('awesome sauce', 
+            referenced['awesome sauce:88-2-b-i-A']['term'])
+        self.assertEqual('88-2-b-i-A', 
+            referenced['awesome sauce:88-2-b-i-A']['reference'])
+        self.assertEqual((13,26), 
+            referenced['awesome sauce:88-2-b-i-A']['position'])
 
     def test_calculate_offsets(self):
         applicable_terms = [('rock band', 'a'), ('band', 'b'), ('drum', 'c'),
@@ -262,31 +288,3 @@ class LayerTermTest(TestCase):
             if ref_obj['ref'] == 'abcabc:ref5':
                 found[3] = True
         self.assertEqual([True, True, True, True], found)
-
-        #   Finally, verify that the associated references are present
-        self.assertTrue('referenced' in t.layer)
-
-        referenced = t.layer['referenced']
-        self.assertTrue('abcabc:ref5' in referenced)
-        self.assertEqual('ABCABC3', referenced['abcabc:ref5']['text'])
-        self.assertEqual('abcabc', referenced['abcabc:ref5']['term'])
-        self.assertEqual('ref5', referenced['abcabc:ref5']['reference'])
-        self.assertEqual((5,6), referenced['abcabc:ref5']['position'])
-
-        self.assertTrue('aaa:ref4' in referenced)
-        self.assertEqual('AAA3', referenced['aaa:ref4']['text'])
-        self.assertEqual('aaa', referenced['aaa:ref4']['term'])
-        self.assertEqual('ref4', referenced['aaa:ref4']['reference'])
-        self.assertEqual((4,5), referenced['aaa:ref4']['position'])
-
-        self.assertTrue('aabbcc:ref2' in referenced)
-        self.assertEqual('AABBCC5', referenced['aabbcc:ref2']['text'])
-        self.assertEqual('aabbcc', referenced['aabbcc:ref2']['term'])
-        self.assertEqual('ref2', referenced['aabbcc:ref2']['reference'])
-        self.assertEqual((2,3), referenced['aabbcc:ref2']['position'])
-
-        self.assertTrue('abc:ref1' in referenced)
-        self.assertEqual('ABC5child', referenced['abc:ref1']['text'])
-        self.assertEqual('abc', referenced['abc:ref1']['term'])
-        self.assertEqual('ref1', referenced['abc:ref1']['reference'])
-        self.assertEqual((1,2), referenced['abc:ref1']['position'])

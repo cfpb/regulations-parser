@@ -1,4 +1,5 @@
 # vim: set fileencoding=utf-8
+from collections import defaultdict
 from layer import Layer
 from parser import utils
 from parser.grammar.external_citations import uscode_exp as uscode
@@ -14,7 +15,8 @@ class Terms(Layer):
     def __init__(self, tree):
         Layer.__init__(self, tree)
         self.layer['referenced'] = {}
-        self.scoped_terms = {}  #   scope -> List[(term, definition_ref)]
+        #   scope -> List[(term, definition_ref)]
+        self.scoped_terms = defaultdict(list)
 
     def pre_process(self):
         """Step through every node in the tree, finding definitions. Add
@@ -22,11 +24,22 @@ class Terms(Layer):
         def per_node(node):
             if self.has_definitions(node):
                 for scope in self.definitions_scopes(node):
-                    definitions = self.node_definitions(node)
-                    existing = self.scoped_terms.get(scope, [])
-                    self.scoped_terms[scope] = existing + definitions
+                    included, excluded = self.node_definitions(node)
+                    self.scoped_terms[scope].extend(included)
+                    self.scoped_terms['EXCLUDED'].extend(excluded)
 
         struct.walk(self.tree, per_node)
+        
+        for scope in self.scoped_terms:
+            for term, def_ref in self.scoped_terms[scope]:
+                label, start, end = def_ref
+                self.layer['referenced'][term + ":" + label] = {
+                    'term': term,
+                    'reference': label,
+                    'position': (start, end),
+                    'text': struct.join_text(struct.find(self.tree, label))
+                }
+
 
     def has_definitions(self, node):
         """Does this node have definitions?"""
@@ -57,19 +70,22 @@ class Terms(Layer):
         """Walk through this node and its children to find defined terms.
         'Act' is a special case, as it is also defined as an external
         citation."""
-        final_matches = []
+        included_defs = []
+        excluded_defs = []
         def per_node(n):
             for match in [m for m,_,_ in term_parser.scanString(n['text'])]:
                 term = match.term.tokens[0].lower()
                 pos = match.term.pos
+
+                add_to = included_defs
+
                 if term == 'act' and list(uscode.scanString(n['text'])):
-                    continue
-                if self.is_exclusion(term, n['text'], final_matches):
-                    continue
-                final_matches.append((term, (n['label']['text'], pos[0],
-                    pos[1])))
+                    add_to = excluded_defs
+                if self.is_exclusion(term, n['text'], included_defs):
+                    add_to = excluded_defs
+                add_to.append((term, (n['label']['text'], pos[0], pos[1])))
         struct.walk(node, per_node)
-        return final_matches
+        return included_defs, excluded_defs
 
     def definitions_scopes(self, node):
         """Try to determine the scope of definitions in this term."""
@@ -101,17 +117,9 @@ class Terms(Layer):
         term_list = [(term,ref) for term, ref in applicable_terms.iteritems()]
         matches = self.calculate_offsets(node['text'], term_list)
         for term, ref_triplet, offsets in matches:
-            ref, ref_start, ref_end = ref_triplet
-            term_ref = term + ":" + ref
-            if term_ref not in self.layer['referenced']:
-                self.layer['referenced'][term_ref] = {
-                        "term": term,
-                        "reference": ref,
-                        "position": (ref_start, ref_end),
-                        "text": struct.join_text(struct.find(self.tree, ref))
-                        }
+            label, ref_start, ref_end = ref_triplet
             layer_el.append({
-                "ref": term_ref,
+                "ref": term + ':' + label,
                 "offsets": offsets
                 })
         return layer_el
