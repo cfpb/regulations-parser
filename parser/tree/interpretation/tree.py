@@ -35,7 +35,7 @@ def segment_tree(text, part, parent_label):
     """Build a tree representing the interpretation of a section, paragraph,
     or appendix."""
     title, body = utils.title_body(text)
-    exclude = [(s,e) for _,s,e in comment_citation.scanString(text)]
+    exclude = [(s,e) for _,s,e in comment_citation.scanString(body)]
 
     label_text = carving.get_appendix_letter(title)
     if not label_text:

@@ -189,3 +189,11 @@ class DepthInterpretationTreeTest(TestCase):
         result = segment_tree(title + non_title, 105, struct.label("abcd"))
         self.assertTrue('title' in result['label'])
         self.assertEqual(title, result['label']['title'])
+
+    def test_segment_tree_with_comment(self):
+        text = "Paragraph 20(b)(2)\n1. Some suff.\n"
+        text += "2. Ends with see comment 20(b)(2)-4.ii.\n"
+        text += "3. Then three\ni. Sub bit\nA. More\n4. Four"
+
+        result = segment_tree(text, 28, struct.label("abcd"))
+        self.assertEqual(4, len(result['children']))
