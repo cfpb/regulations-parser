@@ -1,14 +1,16 @@
 # vim: set fileencoding=utf-8
 from collections import defaultdict
+import re
+
 from inflection import pluralize
-from layer import Layer
+
 from parser import utils
 from parser.grammar.external_citations import uscode_exp as uscode
 from parser.grammar.terms import term_parser
 from parser.layer.interpretations import Interpretations
+from parser.layer.layer import Layer
 from parser.layer.paragraph_markers import ParagraphMarkers
 from parser.tree import struct
-import re
 import settings
 
 class Ref(object):
