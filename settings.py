@@ -1,6 +1,10 @@
 OUTPUT_DIR = ''
 API_BASE = ''
 META = {}
+#   Example usage: {'1': 'A', '8': 'B', 'Interpretations': None} leads to
+#   sections 1:8 in subpart A, 8:Interpretations in subpart B, and 
+#   Interpretations: without a subpart
+SUBPART_STARTS = {}
 
 #   All current, US CFR titles
 CFR_TITLES = [ None,
