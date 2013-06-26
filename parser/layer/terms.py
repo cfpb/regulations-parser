@@ -1,5 +1,6 @@
 # vim: set fileencoding=utf-8
 from collections import defaultdict
+from inflection import pluralize
 from layer import Layer
 from parser import utils
 from parser.grammar.external_citations import uscode_exp as uscode
@@ -8,7 +9,19 @@ from parser.layer.interpretations import Interpretations
 from parser.layer.paragraph_markers import ParagraphMarkers
 from parser.tree import struct
 import re
-from inflection import pluralize
+import settings
+
+class Ref(object):
+    def __init__(self, term, label, position):
+        self.term = term
+        self.label = label
+        self.position = position
+    def __eq__(self, other):
+        """Equality depends on equality of the fields"""
+        return (hasattr(other, 'term') and hasattr(other, 'label')
+                and hasattr(other, 'position') and self.term == other.term
+                and self.label == other.label 
+                and self.position == other.position)
 
 class Terms(Layer):
 
@@ -17,10 +30,32 @@ class Terms(Layer):
         self.layer['referenced'] = {}
         #   scope -> List[(term, definition_ref)]
         self.scoped_terms = defaultdict(list)
+        #   subpart -> list[section]
+        self.subpart_map = defaultdict(list)
+
+    def add_subparts(self):
+        """Document the relationship between sections and subparts"""
+
+        self.current_subpart = None     # Need a reference for the closure
+
+        def per_node(node):
+            if len(node['label']['parts']) == 2:    #   Subparts
+                section = node['label']['parts'][-1]
+                if section in settings.SUBPART_STARTS:
+                    self.current_subpart = settings.SUBPART_STARTS[section]
+                self.subpart_map[self.current_subpart].append(section)
+
+        struct.walk(self.tree, per_node)
+
+        del self.current_subpart    # can now remove it
 
     def pre_process(self):
         """Step through every node in the tree, finding definitions. Add
-        these definition to self.scoped_terms"""
+        these definition to self.scoped_terms. Also keep track of which
+        subpart we are in. Finally, document all defined terms. """
+
+        self.add_subparts()
+
         def per_node(node):
             if self.has_definitions(node):
                 for scope in self.definitions_scopes(node):
@@ -31,13 +66,12 @@ class Terms(Layer):
         struct.walk(self.tree, per_node)
         
         for scope in self.scoped_terms:
-            for term, def_ref in self.scoped_terms[scope]:
-                label, start, end = def_ref
-                self.layer['referenced'][term + ":" + label] = {
-                    'term': term,
-                    'reference': label,
-                    'position': (start, end),
-                    'text': struct.join_text(struct.find(self.tree, label))
+            for ref in self.scoped_terms[scope]:
+                self.layer['referenced'][ref.term + ":" + ref.label] = {
+                    'term': ref.term,
+                    'reference': ref.label,
+                    'position': ref.position,
+                    'text': struct.join_text(struct.find(self.tree, ref.label))
                 }
 
 
@@ -61,7 +95,7 @@ class Terms(Layer):
         """Some definitions are exceptions/exclusions of a previously
         defined term. At the moment, we do not want to include these as they
         would replace previous (correct) definitions."""
-        if term not in [t for (t,_) in previous_terms]:
+        if term not in [t.term for t in previous_terms]:
             return False
         regex = 'the term .?' + re.escape(term) + '.? does not include'
         return bool(re.search(regex, text.lower()))
@@ -83,26 +117,39 @@ class Terms(Layer):
                     add_to = excluded_defs
                 if self.is_exclusion(term, n['text'], included_defs):
                     add_to = excluded_defs
-                add_to.append((term, (n['label']['text'], pos[0], pos[1])))
+                add_to.append(Ref(term, n['label']['text'], pos))
         struct.walk(node, per_node)
         return included_defs, excluded_defs
 
+    def subpart_scope(self, label_parts):
+        """Given a label, determine which sections fall under the same
+        subpart"""
+        reg = label_parts[0]
+        section = label_parts[1]
+        for subpart in self.subpart_map:
+            if section in self.subpart_map[subpart]:
+                return [[reg, sect] for sect in self.subpart_map[subpart]]
+        return []
+
     def definitions_scopes(self, node):
         """Try to determine the scope of definitions in this term."""
+        scopes = []
         if "purposes of this part" in node['text'].lower():
-            scope = node['label']['parts'][:1]
+            scopes.append(node['label']['parts'][:1])
+        elif "purposes of this subpart" in node['text'].lower():
+            scopes.extend(self.subpart_scope(node['label']['parts']))
         elif "purposes of this section" in node['text'].lower():
-            scope = node['label']['parts'][:2]
+            scopes.append(node['label']['parts'][:2])
         elif "purposes of this paragraph" in node['text'].lower():
-            scope = node['label']['parts']
-        else:
-            scope = node['label']['parts'][:1]  # defaults to whole reg
+            scopes.append(node['label']['parts'])
+        else:   # defaults to whole reg
+            scopes.append(node['label']['parts'][:1])
 
-        interp_scope = Interpretations.regtext_to_interp_label(scope)
-        if interp_scope:
-            return [tuple(scope), tuple(interp_scope)]
-        else:
-            return [tuple(scope)]
+        for scope in list(scopes):  # second list so we can iterate
+            interp_scope = Interpretations.regtext_to_interp_label(scope)
+            if interp_scope:
+                scopes.append(interp_scope)
+        return [tuple(scope) for scope in scopes]
 
     def process(self, node):
         """Determine which (if any) definitions would apply to this node,
@@ -110,16 +157,15 @@ class Terms(Layer):
         applicable_terms = {}
         for segment_length in range(1, len(node['label']['parts'])+1):
             scope = tuple(node['label']['parts'][:segment_length])
-            for term, definition_ref in self.scoped_terms.get(scope, []):
-                applicable_terms[term] = definition_ref # overwrites
+            for ref in self.scoped_terms.get(scope, []):
+                applicable_terms[ref.term] = ref    # overwrites
 
         layer_el = []
         term_list = [(term,ref) for term, ref in applicable_terms.iteritems()]
         matches = self.calculate_offsets(node['text'], term_list)
-        for term, ref_triplet, offsets in matches:
-            label, ref_start, ref_end = ref_triplet
+        for term, ref, offsets in matches:
             layer_el.append({
-                "ref": term + ':' + label,
+                "ref": ref.term + ':' + ref.label,
                 "offsets": offsets
                 })
         return layer_el
