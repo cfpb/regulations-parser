@@ -219,6 +219,17 @@ class LayerTermTest(TestCase):
         self.assertEqual((13,26), 
             referenced['awesome sauce:88-2-b-i-A']['position'])
 
+    def test_excluded_offsets(self):
+        t = Terms(None)
+        t.scoped_terms['_'] = [
+            Ref('term', 'lablab', (4,6)), Ref('other', 'lablab', (8,9)),
+            Ref('more', 'nonnon', (1,8))
+        ]
+        self.assertEqual([(4,6), (8,9)], 
+                t.excluded_offsets('lablab', 'Some text'))
+        self.assertEqual([(1,8)], t.excluded_offsets('nonnon', 'Other'))
+        self.assertEqual([], t.excluded_offsets('ababab', 'Ab ab ab'))
+
     def test_calculate_offsets(self):
         applicable_terms = [('rock band', 'a'), ('band', 'b'), ('drum', 'c'),
                 ('other thing', 'd')]
@@ -280,6 +291,15 @@ class LayerTermTest(TestCase):
         matches = t.calculate_offsets(text, applicable_terms)
         self.assertEqual(1, len(matches))
         self.assertEqual(1, len(matches[0][2]))
+
+    def test_calculate_offsets_exclusions(self):
+        applicable_terms = [('act', 'a')]
+        text = "This text defines the 'fudge act'"
+        t = Terms(None)
+        self.assertEqual([], 
+                t.calculate_offsets(text, applicable_terms, [(23,32)]))
+        self.assertEqual([('act', 'a', [(29,32)])],
+                t.calculate_offsets(text, applicable_terms, [(1,5)]))
 
     def test_process(self):
         t = Terms(struct.node(children=[

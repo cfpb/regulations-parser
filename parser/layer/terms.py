@@ -166,7 +166,11 @@ class Terms(Layer):
         #   Remove any definitions defined in this paragraph
         term_list = [(term,ref) for term, ref in applicable_terms.iteritems()
             if ref.label != node['label']['text']]
-        matches = self.calculate_offsets(node['text'], term_list)
+
+        exclusions = self.excluded_offsets(node['label']['text'],
+            node['text'])
+
+        matches = self.calculate_offsets(node['text'], term_list, exclusions)
         for term, ref, offsets in matches:
             layer_el.append({
                 "ref": ref.term + ':' + ref.label,
@@ -174,10 +178,20 @@ class Terms(Layer):
                 })
         return layer_el
 
+    def excluded_offsets(self, label, text):
+        """We explicitly exclude certain chunks of text (for example, words
+        we are defining shouldn't have links appear within the defined
+        term.) More will be added in the future"""
+        exclusions = []
+        for reflist in self.scoped_terms.values():
+            exclusions.extend(ref.position for ref in reflist 
+                    if ref.label == label)
+        return exclusions
 
-    def calculate_offsets(self, text, applicable_terms):
+    def calculate_offsets(self, text, applicable_terms, exclusions = []):
         """Search for defined terms in this text, with a preference for all
         larger (i.e. containing) terms."""
+        exclusions = list(exclusions) # don't modify the original
 
         #   add plurals to applicable terms
         pluralized = [(pluralize(t[0]), t[1]) for t in applicable_terms]
@@ -187,7 +201,6 @@ class Terms(Layer):
         applicable_terms.sort(key=lambda x: len(x[0]), reverse=True)
 
         matches = []
-        existing_defs = []
         for term, ref in applicable_terms:
             re_term = ur'\b' + re.escape(term) + ur'\b'
             offsets = [(m.start(), m.end()) 
@@ -195,17 +208,16 @@ class Terms(Layer):
             safe_offsets = []
             for start, end in offsets:
                 #   Start is contained in an existing def
-                if any(start >= e[0] and start <= e[1] 
-                        for e in existing_defs):
+                if any(start >= e[0] and start <= e[1] for e in exclusions):
                     continue
                 #   End is contained in an existing def
-                if any(end >= e[0] and end <= e[1] for e in existing_defs):
+                if any(end >= e[0] and end <= e[1] for e in exclusions):
                     continue
                 safe_offsets.append((start, end))
             if not safe_offsets:
                 continue
 
-            existing_defs.extend(safe_offsets)
+            exclusions.extend(safe_offsets)
             matches.append((term, ref, safe_offsets))
         return matches
 
