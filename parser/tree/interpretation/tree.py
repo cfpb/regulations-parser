@@ -22,10 +22,7 @@ def build(text, part):
     segments = carving.segment_by_header(body, part)
 
     if segments:
-        children = []
-        for start,end in segments:
-            segment_text = body[start:end]
-            children.append(segment_tree(segment_text, part, label))
+        children = [segment_tree(body[s:e], part, label) for s,e in segments]
         return struct.node(body[:segments[0][0]], children, label)
     else:
         return struct.node(body, [], label)
