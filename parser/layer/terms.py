@@ -163,7 +163,9 @@ class Terms(Layer):
                 applicable_terms[ref.term] = ref    # overwrites
 
         layer_el = []
-        term_list = [(term,ref) for term, ref in applicable_terms.iteritems()]
+        #   Remove any definitions defined in this paragraph
+        term_list = [(term,ref) for term, ref in applicable_terms.iteritems()
+            if ref.label != node['label']['text']]
         matches = self.calculate_offsets(node['text'], term_list)
         for term, ref, offsets in matches:
             layer_el.append({
@@ -192,10 +194,6 @@ class Terms(Layer):
                     for m in re.finditer(re_term, text.lower())]
             safe_offsets = []
             for start, end in offsets:
-                #   Remove phrases we are actively defining
-                if (start > 0 and text[start-1] == u'“' and 
-                        end < len(text) and text[end] == u'”'):
-                    continue
                 #   Start is contained in an existing def
                 if any(start >= e[0] and start <= e[1] 
                         for e in existing_defs):

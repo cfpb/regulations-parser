@@ -148,7 +148,6 @@ class LayerTermTest(TestCase):
             'Other': []
         }
         node['text'] = 'For the purposes of this subpart, yada yada'
-        print t.definitions_scopes(node)
         self.assertEqual([('1000', 'a'), ('1000', '22'), 
             ('1000','Interpretations','a'), ('1000','Interpretations','22')],
             t.definitions_scopes(node))
@@ -282,14 +281,6 @@ class LayerTermTest(TestCase):
         self.assertEqual(1, len(matches))
         self.assertEqual(1, len(matches[0][2]))
 
-    def test_calculate_offsets_defining_term(self):
-        """If we are defining this term, don't include the definition"""
-        applicable_terms = [('potato', '1002-2')]
-        text = u"Here, I am defining “potato”."
-        t = Terms(None)
-        self.assertEqual(0, len(t.calculate_offsets(text,
-            applicable_terms)))
-
     def test_process(self):
         t = Terms(struct.node(children=[
             struct.node("ABC5", children=[struct.node("child")],
@@ -328,3 +319,20 @@ class LayerTermTest(TestCase):
             if ref_obj['ref'] == 'abcabc:ref5':
                 found[3] = True
         self.assertEqual([True, True, True, True], found)
+
+    def test_process_label_in_node(self):
+        """Make sure we don't highlight definitions that are being defined
+        in this paragraph."""
+        tree = struct.node(children=[
+            struct.node("Defining secret phrase.", 
+                label=struct.label("AB-a", ["AB", "a"])),
+            struct.node("Has secret phrase. Then some other content", 
+                label=struct.label("AB-b", ["AB", "b"]))
+        ], label=struct.label("AB", ["AB"]))
+        t = Terms(tree)
+        t.scoped_terms = {
+            ('AB',): [Ref("secret phrase", "AB-a", (9,22))]
+        }
+        #   Term is defined in the first child
+        self.assertEqual([], t.process(tree['children'][0]))
+        self.assertEqual(1, len(t.process(tree['children'][1])))
