@@ -1,11 +1,13 @@
-from pyparsing import Word, Optional, LineStart, LineEnd, SkipTo
-from parser.grammar.internal_citations import depth1_p
 import string
+
+from pyparsing import LineEnd, Literal, LineStart, SkipTo, Word
+
+from parser.grammar.internal_citations import depth1_p
 
 
 with_paragraph = (
     LineStart()
-    + "Paragraph" 
+    + Literal("Paragraph")
     + Word(string.digits).setResultsName("section")
     + depth1_p.setResultsName("pars")
 )
@@ -15,8 +17,7 @@ without_paragraph = (
     LineStart() 
     + Word(string.digits).setResultsName("section")
     + depth1_p.setResultsName("pars")
-    + SkipTo("\n").setResultsName("term")
-    + LineEnd()
+    + SkipTo(LineEnd()).setResultsName("term")
 )
 
 
