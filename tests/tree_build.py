@@ -49,24 +49,29 @@ class TreeBuildTest(TestCase):
         nodeI = n("\n", 
             label=l("200-Interpretations", ["200","Interpretations"],
                 "Supplement I to Part 200 - Official Interpretations"),
-            children=[n("\n",
-                label=l("200-Interpretations-2", ["200","Interpretations","2"], 
-                    "Section 200.2 Second section"),
-                children=[n("\n",
-                    label=l("200-Interpretations-2-(a)(5)",
-                    ["200","Interpretations","2","(a)(5)"], 
-                    "2(a)(5) First par"),
+            children=[
+                n("\n", 
+                    label=l("200-Interpretations-2", 
+                        ["200","Interpretations","2"], 
+                        "Section 200.2 Second section"),
+                    children=[]
+                ),
+                n("\n",
+                    label=l("200-Interpretations-2(a)(5)",
+                        ["200", "Interpretations", "2(a)(5)"],
+                        "2(a)(5) First par"),
                     children=[
-                    n("1. Commentary 1\n", label=l(
-                        "200-Interpretations-2-(a)(5)-1",
-                        ["200","Interpretations","2","(a)(5)","1"])),
-                    n("2. Commentary 2\n", label=l(
-                        "200-Interpretations-2-(a)(5)-2",
-                        ["200","Interpretations","2","(a)(5)","2"]))
+                        n("1. Commentary 1\n", label=l(
+                            "200-Interpretations-2(a)(5)-1",
+                            ["200","Interpretations","2(a)(5)","1"])),
+                        n("2. Commentary 2\n", label=l(
+                            "200-Interpretations-2(a)(5)-2",
+                            ["200","Interpretations","2(a)(5)","2"]))
                     ]
-                )]
-            )]
+                )
+            ]
         )
+        res = build_whole_regtree(text)
         #   Convert to JSON so we can ignore some unicode issues
         self.assertEqual(json.dumps(build_whole_regtree(text)), json.dumps(
             n("\n", label=l("200", ["200"], "Regulation Q"), children=[

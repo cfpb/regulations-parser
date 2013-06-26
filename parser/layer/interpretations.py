@@ -9,8 +9,7 @@ class Interpretations(Layer):
     @staticmethod
     def regtext_to_interp_label(label_parts):
         """Convert a regtext label (e.g. ['99','2','b','7']) into an
-        interpretation label (e.g. ['99', 'Interpretations', '2', 'b',
-        '7'])"""
+        interpretation label (e.g. ['99', 'Interpretations', '2(b)(7)'])"""
         if len(label_parts) < 2:    # the root doesn't have an interp
             return
 
@@ -18,12 +17,12 @@ class Interpretations(Layer):
         section = label_parts[1]
         paragraphs = label_parts[2:]
 
-        interp_label = [part, "Interpretations", section]
+        interp_label = section
         if paragraphs and section.isdigit():
-            interp_label.append(Interpretations.regtext_label(paragraphs))
+            interp_label += Interpretations.regtext_label(paragraphs)
         elif paragraphs:
-            interp_label.append(Interpretations.appendix_label(paragraphs))
-        return interp_label
+            interp_label += Interpretations.appendix_label(paragraphs)
+        return [part, 'Interpretations', interp_label]
 
     @staticmethod
     def regtext_label(paragraph_ids):

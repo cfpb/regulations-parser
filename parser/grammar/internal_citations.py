@@ -1,8 +1,10 @@
 #vim: set encoding=utf-8
 import string
-from parser.grammar.utils import keep_pos
+
 from pyparsing import OneOrMore, Optional, Regex, Suppress, Word
 from pyparsing import ParseResults
+
+from parser.grammar.utils import keep_pos
 
 lower_p = (
         Suppress("(") 

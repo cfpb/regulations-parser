@@ -118,7 +118,7 @@ class LayerTermTest(TestCase):
 
         node['text'] = 'For the purposes of this paragraph, blah blah'
         self.assertEqual([('1000','22','a','5'), ('1000', 'Interpretations',
-            '22', '(a)(5)')], t.definitions_scopes(node))
+            '22(a)(5)')], t.definitions_scopes(node))
 
         node['text'] = 'Default'
         self.assertEqual([('1000',)], t.definitions_scopes(node))
