@@ -1,6 +1,7 @@
 from collections import defaultdict
-from parser.layer.layer import Layer
 import re
+
+from parser.layer.layer import Layer
 import settings
 
 class Graphics(Layer):
@@ -16,9 +17,11 @@ class Graphics(Layer):
         layer_el = []
         for text in matches_by_text:
             match = matches_by_text[text][0]
+            url = settings.IMAGE_OVERRIDES.get(match.group(2),
+                    settings.DEFAULT_IMAGE_URL % match.group(2))
             layer_el.append({
                 'text': match.group(0),
-                'url': settings.DEFAULT_IMAGE_URL % match.group(2),
+                'url': url,
                 'alt': match.group(1),
                 'locations': list(range(len(matches_by_text[text])))
             })

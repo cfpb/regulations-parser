@@ -59,9 +59,9 @@ class InternalCitationParser(Layer):
             for comment in comments:
                 start, end = comment.pos
                 cit = comment.tokens
-                label = [parts[0], 'Interpretations', cit.section]
+                label = [parts[0], 'Interpretations']
                 paragraph_ref = ')('.join(filter(bool, list(cit.p_head)))
-                label.append('(' + paragraph_ref + ')')
+                label.append(cit.section + '(' + paragraph_ref + ')')
                 label.append(cit.level1)
                 label.append(cit.level2)
                 label.append(cit.level3)
