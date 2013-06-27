@@ -63,6 +63,9 @@ CFR_TITLES = [ None,
 DEFAULT_IMAGE_URL = ('https://s3.amazonaws.com/images.federalregister.gov/'
     +'%s/original.gif')
 
+# ImageId -> New URL (without placeholder)
+IMAGE_OVERRIDES = {}
+
 try:
     from local_settings import * 
 except ImportError:
