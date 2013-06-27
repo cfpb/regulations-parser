@@ -95,12 +95,12 @@ def determine_next_section(m_stack, node_level):
 def process_supplement(part, m_stack, child):
     """ Parse the Supplement sections and paragraphs. """
     for ch in child.getchildren():
-        if ch.tag == 'HD':
+        if ch.tag.upper() == 'HD':
             label_text = get_interpretation_label_text(ch.text, part)
             l = label(parts=[label_text], title=ch.text)
             n = node(children=[], label=l)
             node_level = 2
-        elif ch.tag == 'P':
+        elif ch.tag.upper() == 'P':
             text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
             marker = get_interpretation_markers(text)
             node_text = tree_utils.get_node_text(ch)
