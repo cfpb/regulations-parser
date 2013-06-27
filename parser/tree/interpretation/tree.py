@@ -27,7 +27,15 @@ def build(text, part):
     else:
         return struct.node(body, [], label)
 
-
+def get_interpretation_label_text(title, part):
+    """ Get the text for which paragraph or section this interpretation 
+    is for. """
+    label_text = carving.get_section_number(title, part)
+    if not label_text:  #   Paragraph
+        label_text = carving.build_label("", 
+            carving.applicable_paragraph(title))
+    return label_text
+    
 def segment_tree(text, part, parent_label):
     """Build a tree representing the interpretation of a section, paragraph,
     or appendix."""
