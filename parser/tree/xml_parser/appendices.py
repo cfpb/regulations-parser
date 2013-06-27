@@ -8,6 +8,7 @@ from parser.tree.struct import label, node
 from parser.tree.appendix.carving import get_appendix_letter
 from parser.tree.interpretation.carving import get_appendix_letter as get_letter
 from parser.tree.interpretation.carving import get_section_number, applicable_paragraph, build_label
+from parser.tree.interpretation.tree import get_interpretation_label_text
 from parser.tree.node_stack import NodeStack
 
 from parser.utils import roman_nums
@@ -37,17 +38,16 @@ def get_interpretation_markers(text):
         return citation[0]
 
 def interpretation_level(marker):
-    """ 
+    """
         Based on the marker, determine the interpretation paragraph level. 
-        Levels 1 - 3 don't need this, since they are marked differently. 
+        Levels 1,2 don't need this, since they are marked differently. 
     """
     if marker in i_levels[1]: #digits
-        i_level = 4
+        return 3
     elif marker in i_levels[2]: #roman_nums
-        i_level = 5
+        return 4
     elif marker in i_levels[3]: #ascii_uppercase
-        i_level = 6
-    return i_level
+        return 5
 
 def determine_level(marker, current_level):
     """ Based on the current level and the new marker, determine 
@@ -92,22 +92,15 @@ def determine_next_section(m_stack, node_level):
         #We don't need to get the next marker on a previous
         #level because this doesn't happen. 
 
-def process_supplement(m_stack, child):
-    supplement_section = None
+def process_supplement(part, m_stack, child):
+    """ Parse the Supplement sections and paragraphs. """
     for ch in child.getchildren():
-        n = None
-        node_level = None
-        if ch.tag == 'HD' and ch.attrib['SOURCE'] == 'HD1':
-            supplement_section = get_section_number(ch.text, 1005)
-            l = label(parts=[supplement_section], title=ch.text)
+        if ch.tag.upper() == 'HD':
+            label_text = get_interpretation_label_text(ch.text, part)
+            l = label(parts=[label_text], title=ch.text)
             n = node(children=[], label=l)
             node_level = 2
-        elif ch.tag == 'HD' and ch.attrib['SOURCE'] == 'HD2':
-            part_label = build_label("", applicable_paragraph(ch.text, supplement_section))
-            l = label(parts=[part_label], title=ch.text)
-            n = node(children=[], label=l)
-            node_level = 3
-        elif ch.tag == 'P':
+        elif ch.tag.upper() == 'P':
             text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
             marker = get_interpretation_markers(text)
             node_text = tree_utils.get_node_text(ch)
@@ -115,7 +108,6 @@ def process_supplement(m_stack, child):
             l = label(parts=[marker])
             n = node(text=node_text, children=[], label=l)
             node_level = interpretation_level(marker)
-
         tree_utils.add_to_stack(m_stack, node_level, n)
 
 def process_appendix(m_stack, current_section, child):
@@ -214,7 +206,7 @@ def build_non_reg_text(reg_xml):
                 tree_utils.unwind_stack(m_stack)
         elif current_section and section_type == 'SUPPLEMENT':
             if child.tag == 'EXTRACT':
-                process_supplement(m_stack, child)
+                process_supplement(reg_part, m_stack, child)
                 tree_utils.unwind_stack(m_stack)
 
     while m_stack.size() > 1:

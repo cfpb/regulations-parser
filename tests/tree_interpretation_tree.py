@@ -197,3 +197,13 @@ class DepthInterpretationTreeTest(TestCase):
 
         result = segment_tree(text, 28, struct.label("abcd"))
         self.assertEqual(4, len(result['children']))
+
+    def test_label_text_section(self):
+        text = "Section 105.11"
+        label_text = get_interpretation_label_text(text, 105)
+        self.assertEquals(label_text, '11')
+
+    def test_label_text_section(self):
+        text = "3(c)(4) Pandas"
+        label_text = get_interpretation_label_text(text, 105)
+        self.assertEquals(label_text, '3(c)(4)')
