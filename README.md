@@ -137,7 +137,7 @@ $ cd docs
 $ make dirhtml
 ```
 
-The output will be in ``docs/_build/html```.
+The output will be in ``docs/_build/dirhtml```.
 
 If you are adding new modules, you may need to re-run the skeleton build
 script first:
