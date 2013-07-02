@@ -94,7 +94,7 @@ act_section
 
 So, for the regulation we copy-pasted above, we could run
 ```bash
-$ python build_from.py reg.txt 12 `date` 15 1693
+$ python build_from.py reg.txt 12 `date +"%Y%m%d"` 15 1693
 ```
 
 This will generate three folders, ```regulation```, ```notice```, and
