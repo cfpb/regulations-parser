@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'regparser'
+project = u'Regulation Parser'
 copyright = u'2013, Author'
 
 # The version info for the project you're documenting, acts as replacement for
