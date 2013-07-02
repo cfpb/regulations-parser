@@ -1,4 +1,4 @@
-from parser.tree.interpretation.carving import *
+from reg_parser.tree.interpretation.carving import *
 from unittest import TestCase
 
 class EmptyClass: pass

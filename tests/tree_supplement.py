@@ -1,4 +1,4 @@
-from parser.tree.supplement import *
+from reg_parser.tree.supplement import *
 from unittest import TestCase
 
 class DepthSupplementTest(TestCase):

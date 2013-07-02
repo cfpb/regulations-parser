@@ -1,5 +1,5 @@
 #vim: set encoding=utf-8
-from parser.layer import external_citations
+from reg_parser.layer import external_citations
 from unittest import TestCase
 
 class ParseTest(TestCase):

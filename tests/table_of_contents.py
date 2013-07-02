@@ -1,7 +1,7 @@
 #vim: set encoding=utf-8
 from unittest import TestCase
-from parser.layer import table_of_contents
-from parser.tree.struct import node, label
+from reg_parser.layer import table_of_contents
+from reg_parser.tree.struct import node, label
 
 class TocTest(TestCase):
 

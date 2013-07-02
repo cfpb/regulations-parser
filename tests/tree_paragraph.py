@@ -1,5 +1,5 @@
-from parser.tree import struct
-from parser.tree.paragraph import ParagraphParser
+from reg_parser.tree import struct
+from reg_parser.tree.paragraph import ParagraphParser
 from unittest import TestCase
 
 class DepthParagraphTest(TestCase):

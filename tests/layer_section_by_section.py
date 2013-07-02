@@ -1,5 +1,5 @@
-from parser.layer.section_by_section import SectionBySection
-from parser.tree import struct
+from reg_parser.layer.section_by_section import SectionBySection
+from reg_parser.tree import struct
 from unittest import TestCase
 
 class LayerSectionBySectionTest(TestCase):

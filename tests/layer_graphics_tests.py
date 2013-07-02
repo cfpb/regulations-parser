@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from parser.layer.graphics import Graphics
-from parser.tree import struct
+from reg_parser.layer.graphics import Graphics
+from reg_parser.tree import struct
 import settings
 
 class LayerGraphicsTest(TestCase):

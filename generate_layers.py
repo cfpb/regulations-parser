@@ -1,11 +1,11 @@
-from parser import api_stub
-import parser.layer.table_of_contents
-from parser.layer import external_citations
-from parser.layer import internal_citations
-from parser.layer import interpretations
-from parser.layer import table_of_contents
-from parser.layer import terms
-from parser.layer import key_terms
+from reg_parser import api_stub
+import reg_parser.layer.table_of_contents
+from reg_parser.layer import external_citations
+from reg_parser.layer import internal_citations
+from reg_parser.layer import interpretations
+from reg_parser.layer import table_of_contents
+from reg_parser.layer import terms
+from reg_parser.layer import key_terms
 import json
 
 def generate_external_citations(reg_json):

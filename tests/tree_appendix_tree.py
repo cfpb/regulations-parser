@@ -1,5 +1,5 @@
-from parser.tree import struct
-from parser.tree.appendix.tree import *
+from reg_parser.tree import struct
+from reg_parser.tree.appendix.tree import *
 from unittest import TestCase
 
 class DepthAppendixTreeTest(TestCase):

@@ -1,6 +1,6 @@
-from parser.layer import key_terms
-from parser import api_stub
-from parser.tree import struct
+from reg_parser.layer import key_terms
+from reg_parser import api_stub
+from reg_parser.tree import struct
 import json
 
 def generate_key_terms_layer(xml_based_reg_json):

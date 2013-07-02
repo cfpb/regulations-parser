@@ -1,4 +1,4 @@
-from parser.tree.appendix.generic import *
+from reg_parser.tree.appendix.generic import *
 from unittest import TestCase
 
 class DepthAppendixGenericTest(TestCase):

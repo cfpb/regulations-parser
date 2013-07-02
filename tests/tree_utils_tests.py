@@ -1,7 +1,7 @@
 #vim: set encoding=utf-8
 import unittest
-from parser.tree.xml_parser import tree_utils
-from parser.tree.node_stack import NodeStack
+from reg_parser.tree.xml_parser import tree_utils
+from reg_parser.tree.node_stack import NodeStack
 from lxml import etree
 
 class TreeUtilsTest(unittest.TestCase):

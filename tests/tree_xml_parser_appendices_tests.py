@@ -3,8 +3,8 @@ from unittest import TestCase
 from lxml import etree
 from lxml import html
 
-from parser.tree.node_stack import NodeStack
-from parser.tree.xml_parser import appendices
+from reg_parser.tree.node_stack import NodeStack
+from reg_parser.tree.xml_parser import appendices
 
 class AppendicesTest(TestCase):
     def test_interpretation_markers(self):

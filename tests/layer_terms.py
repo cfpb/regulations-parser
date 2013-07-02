@@ -1,6 +1,6 @@
 # vim: set fileencoding=utf-8
-from parser.layer.terms import Ref, Terms
-from parser.tree import struct
+from reg_parser.layer.terms import Ref, Terms
+from reg_parser.tree import struct
 import settings
 from unittest import TestCase
 

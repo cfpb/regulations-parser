@@ -1,5 +1,5 @@
-from parser.layer.paragraph_markers import ParagraphMarkers
-from parser.tree import struct
+from reg_parser.layer.paragraph_markers import ParagraphMarkers
+from reg_parser.tree import struct
 from unittest import TestCase
 
 class ParagraphMarkersTest(TestCase):
