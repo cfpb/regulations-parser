@@ -1,10 +1,13 @@
 import json
 import os
-from regparser.api_writer import *
-import settings
 import shutil
 import tempfile
 from unittest import TestCase
+
+from mock import patch
+
+from regparser.api_writer import *
+import settings
 
 class FSWriteContentTest(TestCase):
     def setUp(self):
@@ -39,8 +42,37 @@ class FSWriteContentTest(TestCase):
         wrote = json.loads(open(settings.OUTPUT_DIR + '/replace/it').read())
         self.assertEqual(wrote, {'key': 'value'})
 
+class APIWriteContentTest(TestCase):
+
+    def setUp(self):
+        self.base = settings.API_BASE
+        settings.API_BASE = 'http://example.com/'
+
+    def tearDown(self):
+        settings.API_BASE = self.base
+
+    @patch('regparser.api_writer.requests')
+    def test_write(self, requests):
+        writer = APIWriteContent("a/path")
+        data = {"testing": ["body", 1, 2]}
+        writer.write(data)
+
+        args, kwargs = requests.put.call_args
+        self.assertEqual("http://example.com/a/path", args[0])
+        self.assertTrue('headers' in kwargs)
+        self.assertTrue('content-type' in kwargs['headers'])
+        self.assertEqual('application/json',
+            kwargs['headers']['content-type'])
+        self.assertTrue('data' in kwargs)
+        self.assertEqual(data, json.loads(kwargs['data']))
 
 class ClientTest(TestCase):
+
+    def setUp(self):
+        self.base = settings.API_BASE
+
+    def tearDown(self):
+        settings.API_BASE = self.base
 
     def test_regulation(self):
         client = Client()
@@ -56,3 +88,12 @@ class ClientTest(TestCase):
         client = Client()
         reg_writer = client.notice("docdoc")
         self.assertEqual("notice/docdoc", reg_writer.path)
+
+    def test_writer_class(self):
+        settings.API_BASE = ''
+        client = Client()
+        self.assertEqual('FSWriteContent', client.writer_class.__name__)
+
+        settings.API_BASE = 'some url'
+        client = Client()
+        self.assertEqual('APIWriteContent', client.writer_class.__name__)
