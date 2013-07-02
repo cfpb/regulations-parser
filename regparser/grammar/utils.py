@@ -1,4 +1,4 @@
-from pyparsing import getTokensEndLoc
+from pyparsing import getTokensEndLoc, Literal
 
 def keep_pos(source, location, tokens):
     """Wrap the tokens with a class that also keeps track of the match's
@@ -16,4 +16,9 @@ class WrappedResult():
         return getattr(self.tokens, attr)
 
 
-
+class DocLiteral(Literal):
+    """Setting an objects name to a unicode string causes Sphinx to freak
+    out. Instead, we'll replace with the provided (ascii) text."""
+    def __init__(self, literal, ascii_text):
+        super(DocLiteral, self).__init__(literal)
+        self.name = ascii_text
