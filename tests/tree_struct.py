@@ -1,4 +1,4 @@
-from reg_parser.tree.struct import *
+from regparser.tree.struct import *
 from unittest import TestCase
 
 class DepthTreeTest(TestCase):

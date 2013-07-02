@@ -1,5 +1,5 @@
-from reg_parser.layer.meta import Meta
-from reg_parser.tree import struct
+from regparser.layer.meta import Meta
+from regparser.tree import struct
 import settings
 from unittest import TestCase
 

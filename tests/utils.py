@@ -1,5 +1,5 @@
 import itertools
-from reg_parser.utils import *
+from regparser.utils import *
 from unittest import TestCase
 
 class Utils(TestCase):

@@ -1,4 +1,4 @@
-from reg_parser.search import *
+from regparser.search import *
 from unittest import TestCase
 
 class SearchTest(TestCase):

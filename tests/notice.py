@@ -1,6 +1,6 @@
 #vim: set encoding=utf-8
 from lxml import etree
-from reg_parser.notice import *
+from regparser.notice import *
 from unittest import TestCase
 
 class NoticeTest(TestCase):

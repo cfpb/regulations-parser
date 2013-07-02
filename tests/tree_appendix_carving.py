@@ -1,5 +1,5 @@
 #vim: set encoding=utf-8
-from reg_parser.tree.appendix.carving import *
+from regparser.tree.appendix.carving import *
 from unittest import TestCase
 
 class DepthAppendixCarvingTest(TestCase):

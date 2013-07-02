@@ -1,6 +1,6 @@
 from mock import patch
-from reg_parser.tree import struct
-from reg_parser.tree.interpretation.tree import *
+from regparser.tree import struct
+from regparser.tree.interpretation.tree import *
 from unittest import TestCase
 
 class DepthInterpretationTreeTest(TestCase):

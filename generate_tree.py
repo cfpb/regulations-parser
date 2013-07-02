@@ -1,9 +1,9 @@
 import codecs
 import json
-from reg_parser.tree.appendix.tree import trees_from as appendix_trees
-from reg_parser.tree.interpretation.tree import build as build_interp_tree
-from reg_parser.tree.reg_text import build_reg_text_tree
-from reg_parser.tree.supplement import find_supplement_start
+from regparser.tree.appendix.tree import trees_from as appendix_trees
+from regparser.tree.interpretation.tree import build as build_interp_tree
+from regparser.tree.reg_text import build_reg_text_tree
+from regparser.tree.supplement import find_supplement_start
 import sys
 
 if __name__ == "__main__":
