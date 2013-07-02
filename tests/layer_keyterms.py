@@ -1,7 +1,7 @@
 # vim: set fileencoding=utf-8
 from unittest import TestCase
-from parser.tree import struct
-from parser.layer.key_terms import KeyTerms
+from regparser.tree import struct
+from regparser.layer.key_terms import KeyTerms
 
 class LayerKeyTermTest(TestCase):
 

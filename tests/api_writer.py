@@ -1,6 +1,6 @@
 import json
 import os
-from parser.api_writer import *
+from regparser.api_writer import *
 import settings
 import shutil
 import tempfile

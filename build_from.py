@@ -1,10 +1,10 @@
 import codecs
-from parser.api_writer import Client
-from parser.federalregister import fetch_notices
-from parser.layer import external_citations, internal_citations, graphics
-from parser.layer import table_of_contents, interpretations, terms
-from parser.layer import section_by_section, paragraph_markers, meta
-from parser.tree.build import build_whole_regtree
+from regparser.api_writer import Client
+from regparser.federalregister import fetch_notices
+from regparser.layer import external_citations, internal_citations, graphics
+from regparser.layer import table_of_contents, interpretations, terms
+from regparser.layer import section_by_section, paragraph_markers, meta
+from regparser.tree.build import build_whole_regtree
 import sys
 
 if __name__ == "__main__":

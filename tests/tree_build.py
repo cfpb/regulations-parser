@@ -1,7 +1,7 @@
 #vim: set encoding=utf-8
 import json
-from parser.tree import struct
-from parser.tree.build import *
+from regparser.tree import struct
+from regparser.tree.build import *
 from unittest import TestCase
 
 class TreeBuildTest(TestCase):

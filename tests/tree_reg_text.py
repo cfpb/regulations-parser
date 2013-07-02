@@ -1,7 +1,7 @@
 # vim: set encoding=utf-8
 
-from parser.tree.reg_text import *
-from parser.tree.struct import label, node
+from regparser.tree.reg_text import *
+from regparser.tree.struct import label, node
 from unittest import TestCase
 
 class DepthRegTextTest(TestCase):

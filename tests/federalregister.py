@@ -1,10 +1,10 @@
 from mock import patch
-from parser.federalregister import *
+from regparser.federalregister import *
 from unittest import TestCase
 
 class FederalRegisterTest(TestCase):
 
-    @patch('parser.federalregister.urlopen')
+    @patch('regparser.federalregister.urlopen')
     def test_fetch_notice_xml(self, urlopen):
         """We don't actually want to call out to federal register, so we use
         a mock. Unfortunately, the mock is called twice with two very
@@ -31,12 +31,12 @@ class FederalRegisterTest(TestCase):
         self.assertEqual('XML String', fetch_notice_xml('initial-url'))
 
 
-    @patch('parser.federalregister.urlopen')
+    @patch('regparser.federalregister.urlopen')
     def test_fetch_notices(self, urlopen):
         """Fetch Notices combines data from a lot of places, so we will use
         many mocks."""
-        with patch('parser.federalregister.fetch_notice_xml') as fetch_xml:
-            with patch('parser.federalregister.build_notice') as build_note:
+        with patch('regparser.federalregister.fetch_notice_xml') as fetch_xml:
+            with patch('regparser.federalregister.build_notice') as build_note:
                 urlopen.return_value.read.return_value = """
                 {"results": [{"html_url": "url1"}, {"html_url": "url2"}]}
                 """

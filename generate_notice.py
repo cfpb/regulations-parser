@@ -1,7 +1,7 @@
 import json
 from lxml import etree
-from parser.notice import find_section_by_section, fetch_document_number
-from parser.notice import build_section_by_section, fetch_cfr_part
+from regparser.notice import find_section_by_section, fetch_document_number
+from regparser.notice import build_section_by_section, fetch_cfr_part
 import sys
 
 if __name__ == "__main__":
