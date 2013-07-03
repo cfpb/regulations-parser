@@ -1,6 +1,8 @@
 #vim: set encoding=utf-8
-from regparser.layer import external_citations
 from unittest import TestCase
+
+from regparser.tree import struct
+from regparser.layer import external_citations
 
 class ParseTest(TestCase):
 
@@ -41,3 +43,13 @@ class ParseTest(TestCase):
         citations = parser.process(node)
         self.assertEqual(len(citations), 1)
         self.assertEqual(citations[0]['citation_type'], 'STATUTES_AT_LARGE')
+
+    def test_cfr(self):
+        """Ensure that we successfully parse CFR references."""
+        node = struct.node("Ref 1: 12 CFR part 1026. "
+                + "Ref 2: 12 CFR 1026.13.")
+        parser = external_citations.ExternalCitationParser(None, None)
+        citations = parser.process(node)
+        self.assertEqual(2, len(citations))
+        self.assertEqual("CFR", citations[0]['citation_type'])
+        self.assertEqual("CFR", citations[1]['citation_type'])
