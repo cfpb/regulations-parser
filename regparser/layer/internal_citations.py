@@ -109,7 +109,7 @@ class InternalCitationParser(Layer):
             elif p.level3:
                 label[-2:] = [p.level3, p.level4]
             else:
-                label[-1] = p.level5
+                label[-1] = p.level4
             citations.append({
                 'offsets': [p.pos], 
                 'citation': filter(bool, label)

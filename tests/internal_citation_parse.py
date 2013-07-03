@@ -120,6 +120,20 @@ class ParseTest(TestCase):
         start, end = result[1]['offsets'][0]
         self.assertEqual(u'(iii)', text[start:end])
 
+    def test_multiple_paragraphs_max_depth(self):
+        text = u'see paragraphs (z)(9)(vi)(A) and (D)'
+        results = self.parser.parse(text, parts = ['999', '88'])
+        self.assertEqual(2, len(results))
+        resultA, resultD = results
+        self.assertEqual(['999', '88', 'z', '9', 'vi', 'A'], 
+                resultA['citation'])
+        offsets = resultA['offsets'][0]
+        self.assertEqual('(z)(9)(vi)(A)', text[offsets[0]:offsets[1]])
+        self.assertEqual(['999', '88', 'z', '9', 'vi', 'D'], 
+                resultD['citation'])
+        offsets = resultD['offsets'][0]
+        self.assertEqual('(D)', text[offsets[0]:offsets[1]])
+
     def test_multiple_paragraphs_alpha_then_roman2(self):
         text = u'§ 1005.15(d)(1)(i) and (ii)'
         result = self.parser.parse(text, parts = ['1005', '15'])
