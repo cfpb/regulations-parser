@@ -32,6 +32,10 @@ notices) with the text they are analyzing
 * inflection (0.1.2) - Helps determine pluralization (for terms layer)
 * requests (1.2.3) - Client library for writing output to an API
 
+## API Docs
+
+[Read The Docs](https://regulation-parser.readthedocs.org/en/latest/)
+
 ## Installation
 
 ### Getting the Code and Development Libs
@@ -75,6 +79,8 @@ the non-helpful info e-CFR puts in. Delete lines of the form
 * ^Link to an amendment .*$
 * Back to Top
 
+Also, delete any table of contents which contain the section character.
+
 Save that file as a text file (e.g. reg.txt).
 
 ### Run the parser
@@ -88,8 +94,11 @@ act_section
 
 So, for the regulation we copy-pasted above, we could run
 ```bash
-$ python build_from.py reg.txt 12 `date` 15 1693
+$ python build_from.py reg.txt 12 `date +"%Y%m%d"` 15 1693
 ```
+
+This will generate three folders, ```regulation```, ```notice```, and
+```layer``` in the ```OUTPUT_DIR``` (current directory by default).
 
 ### Settings
 
@@ -125,10 +134,10 @@ builder again.
 ```
 $ pip install Sphinx
 $ cd docs
-$ make html
+$ make dirhtml
 ```
 
-The output will be in ``docs/_build/html```.
+The output will be in ``docs/_build/dirhtml```.
 
 If you are adding new modules, you may need to re-run the skeleton build
 script first:
