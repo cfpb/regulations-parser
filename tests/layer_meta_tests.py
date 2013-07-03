@@ -49,3 +49,9 @@ class LayerMetaTest(TestCase):
         self.assertEqual('setting', result[0]['some'])
         self.assertTrue('then' in result[0])
         self.assertEqual(42, result[0]['then'])
+
+    def test_process_not_root(self):
+        m = Meta(None, 19, [])
+        result = m.process(struct.node('', [], struct.label('111-22',
+            ['111', '22'])))
+        self.assertEqual(None, result)

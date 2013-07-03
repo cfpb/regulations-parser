@@ -71,6 +71,11 @@ class LayerInterpretationTest(TestCase):
         self.assertEqual(None, interp.process(struct.node(
             label=struct.label("", ["102", "10", "a"]))))
 
+    def test_process_no_interp(self):
+        node = struct.node("placeholder", label=struct.label("234", ['234']))
+        interp = Interpretations(None)
+        self.assertEqual(None, interp.process(node))
+
     def test_process_subparagraph_of_referenced_text(self):
         root = struct.node(children = [
             struct.node("\n\n\n", [   #   Empty
