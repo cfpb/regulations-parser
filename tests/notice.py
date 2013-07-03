@@ -291,6 +291,16 @@ class NoticeTest(TestCase):
         self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
             'See This')
 
+    def test_cleanup_address_p_without_contents(self):
+        xml = """<P>See<E /> here!</P>"""
+        self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
+            'See here!')
+
+    def test_cleanup_address_p_subchildren(self):
+        xml = """<P>Oh<E T="03">yeah</E>man</P>"""
+        self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
+            'Oh yeah man')
+
     def test_build_section_by_section(self):
         xml = """
         <ROOT>

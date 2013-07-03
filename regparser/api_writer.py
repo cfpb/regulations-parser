@@ -24,7 +24,7 @@ class FSWriteContent:
                     separators=(', ', ': '))
             out.write(text)
 
-class APIWriteClient:
+class APIWriteContent:
     """This writer writes the contents to the specified API"""
     def __init__(self, path):
         self.path = path
@@ -41,7 +41,7 @@ class Client:
 
     def __init__(self):
         if settings.API_BASE:
-            self.writer_class = APIWriteClient
+            self.writer_class = APIWriteContent
         else:
             self.writer_class = FSWriteContent
 

@@ -6,13 +6,10 @@ class TableOfContentsLayer(Layer):
         """ To be eligible to contain a table of contents, all of a node's children must 
         have a title element. """
 
-        if 'children' in node:
-            for c in node['children']:
-                if 'title' not in c['label']:
-                    return False
-            return True
-        else:
-            return False
+        for c in node['children']:
+            if 'title' not in c['label']:
+                return False
+        return True
             
     def process(self, node):
         if self.check_toc_candidacy(node):                

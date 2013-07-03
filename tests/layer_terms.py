@@ -247,7 +247,7 @@ class LayerTermTest(TestCase):
                 found[2] = True
         self.assertEqual([True,True,True], found)
 
-    def test_calculate_offsets_pluralized(self):
+    def test_calculate_offsets_pluralized1(self):
         applicable_terms = [('rock band', 'a'), ('band', 'b'), ('drum', 'c'),
                 ('other thing', 'd')]
         text = "I am in a rock band. That's a band with a drum, a rock drum. Many bands. "
@@ -266,7 +266,7 @@ class LayerTermTest(TestCase):
                 found[3] = True
         self.assertEqual([True,True,True,True], found)
 
-    def test_calculate_offsets_pluralized(self):
+    def test_calculate_offsets_pluralized2(self):
         applicable_terms = [('activity', 'a'), ('other thing', 'd')]
         text = "activity, activities."
         t = Terms(None)
@@ -282,6 +282,16 @@ class LayerTermTest(TestCase):
         _, ref, offsets = matches[0]
         self.assertEqual('a', ref)
         self.assertEqual([(5,18)], offsets)
+
+    def test_calculate_offsets_overlap(self):
+        applicable_terms = [('mad cow disease', 'mc'), ('goes mad', 'gm')]
+        text = 'There goes mad cow disease'
+        t = Terms(None)
+        matches = t.calculate_offsets(text, applicable_terms)
+        self.assertEqual(1, len(matches))
+        _, ref, offsets = matches[0]
+        self.assertEqual('mc', ref)
+        self.assertEqual('mad cow disease', text[offsets[0][0]:offsets[0][1]])
 
     def test_calculate_offsets_word_part(self):
         """If a defined term is part of another word, don't include it"""
