@@ -9,9 +9,12 @@ class LayerTermTest(TestCase):
     def setUp(self):
         self.original_subpart = settings.SUBPART_STARTS
         settings.SUBPART_STARTS = {'1': None}
+        self.original_ignores = settings.IGNORE_DEFINITIONS_IN
+        settings.IGNORE_DEFINITIONS_IN = []
 
     def tearDown(self):
         settings.SUBPART_STARTS = self.original_subpart
+        settings.IGNORE_DEFINITIONS_IN = self.original_ignores
 
     def test_has_definitions(self):
         t = Terms(None)
@@ -229,6 +232,13 @@ class LayerTermTest(TestCase):
                 t.excluded_offsets('lablab', 'Some text'))
         self.assertEqual([(1,8)], t.excluded_offsets('nonnon', 'Other'))
         self.assertEqual([], t.excluded_offsets('ababab', 'Ab ab ab'))
+
+    def test_excluded_offsets_blacklist(self):
+        t = Terms(None)
+        t.scoped_terms['_'] = [Ref('bourgeois', '12-Q-2', 'Def')]
+        settings.IGNORE_DEFINITIONS_IN = ['bourgeois pig']
+        excluded = t.excluded_offsets('12-3', 'You are a bourgeois pig!')
+        self.assertEqual([(10,23)], excluded)
 
     def test_calculate_offsets(self):
         applicable_terms = [('rock band', 'a'), ('band', 'b'), ('drum', 'c'),
