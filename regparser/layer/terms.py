@@ -185,7 +185,10 @@ class Terms(Layer):
         exclusions = []
         for reflist in self.scoped_terms.values():
             exclusions.extend(ref.position for ref in reflist 
-                    if ref.label == label)
+                if ref.label == label)
+        for ignore_term in settings.IGNORE_DEFINITIONS_IN:
+            exclusions.extend((match.start(), match.end()) for match in
+                re.finditer(r'\b' + re.escape(ignore_term) + r'\b', text))
         return exclusions
 
     def calculate_offsets(self, text, applicable_terms, exclusions = []):
