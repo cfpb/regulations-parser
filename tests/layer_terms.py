@@ -240,6 +240,13 @@ class LayerTermTest(TestCase):
         excluded = t.excluded_offsets('12-3', 'You are a bourgeois pig!')
         self.assertEqual([(10,23)], excluded)
 
+    def test_excluded_offsets_blacklist_word_boundaries(self):
+        t = Terms(None)
+        t.scoped_terms['_'] = [Ref('act', '28-6-d', 'Def def def')]
+        settings.IGNORE_DEFINITIONS_IN = ['shed act']
+        excluded = t.excluded_offsets('28-9', "That's a watershed act")
+        self.assertEqual([], excluded)
+
     def test_calculate_offsets(self):
         applicable_terms = [('rock band', 'a'), ('band', 'b'), ('drum', 'c'),
                 ('other thing', 'd')]

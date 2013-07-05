@@ -188,7 +188,7 @@ class Terms(Layer):
                 if ref.label == label)
         for ignore_term in settings.IGNORE_DEFINITIONS_IN:
             exclusions.extend((match.start(), match.end()) for match in
-                re.finditer(re.escape(ignore_term), text))
+                re.finditer(r'\b' + re.escape(ignore_term) + r'\b', text))
         return exclusions
 
     def calculate_offsets(self, text, applicable_terms, exclusions = []):
