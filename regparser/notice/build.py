@@ -1,3 +1,4 @@
+from regparser.notice.diff import find_diffs
 from regparser.notice.fields import fetch_cfr_part, fetch_simple_fields
 from regparser.notice.fields import fetch_document_number, fetch_dates
 from regparser.notice.fields import fetch_addresses
@@ -20,4 +21,5 @@ def build_notice(xml):
     addresses = fetch_addresses(xml)
     if addresses:
         notice['addresses'] = addresses
+    find_diffs(xml)
     return notice

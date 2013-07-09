@@ -1,5 +1,6 @@
 from itertools import dropwhile, takewhile
-from regparser.grammar import rule_headers as grammar
+
+import regparser.grammar.rules as grammar
 
 
 def find_section_by_section(xml_tree):

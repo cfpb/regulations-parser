@@ -1,6 +1,6 @@
 import HTMLParser
 from lxml import etree
-from regparser.grammar.internal_citations import any_depth_p
+from regparser.grammar.common import any_depth_p
 
 def prepend_parts(parts_prefix, n):
     """ Recursively preprend parts_prefix to the parts of the node 

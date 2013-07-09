@@ -43,7 +43,7 @@ def fetch_cfr_part(xml_tree):
     analysis (and elsewhere). This function figures out to which "part" this
     notice applies."""
     text = xml_tree.xpath('//CFR')[0].text
-    match = re.search(r"CFR Part (\d+)", text)
+    match = re.search(r"CFR Parts? (\d+)", text)
     if match:
         return match.group(1)
 
