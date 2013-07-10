@@ -3,7 +3,7 @@ import re
 import HTMLParser
 from lxml import etree
 from regparser.tree.struct import label, node
-from regparser.grammar.internal_citations import any_depth_p
+from regparser.grammar.common import any_depth_p
 from regparser.tree.paragraph import p_levels
 from regparser.tree.node_stack import NodeStack
 from regparser.tree.xml_parser.appendices import build_non_reg_text
@@ -12,7 +12,7 @@ from regparser.tree.xml_parser import tree_utils
 def determine_level(c, current_level):
     """ Regulation paragraphs are hierarchical. This determines which level 
     the paragraph is at. """
-    if c in p_levels[2] and current_level  > 1:
+    if c in p_levels[2] and (current_level  > 1 or c not in p_levels[0]):
         p_level = 3
     elif c in p_levels[0]:
         p_level = 1
@@ -47,49 +47,7 @@ def build_tree(reg_xml):
     sections = []
     for child in part.getchildren():
         if child.tag == 'SECTION':
-            p_level = 1
-            m_stack = NodeStack()
-            for ch in child.getchildren():
-                if ch.tag == 'P':
-                    text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
-                    markers_list = tree_utils.get_paragraph_markers(text)
-                    node_text = tree_utils.get_node_text(ch)
-
-                    if len(markers_list) > 1:
-                        actual_markers = ['(%s)' % m for m in markers_list]
-                        node_text = tree_utils.split_text(node_text, actual_markers)
-                    else:
-                        node_text = [node_text]
-
-                    for m, node_text in zip(markers_list, node_text):
-                        l = label(parts=[str(m)])
-                        n = node(text=node_text, children=[], label=l)
-
-                        new_p_level = determine_level(m, p_level)
-                        last = m_stack.peek()
-                        if len(last) == 0:
-                            m_stack.push_last((new_p_level, n))
-                        else:
-                            tree_utils.add_to_stack(m_stack, new_p_level, n)
-                        p_level = new_p_level
-
-            section_title = child.xpath('SECTNO')[0].text + " " + child.xpath('SUBJECT')[0].text
-            section_number = re.search(r'%s\.(\d+)' % reg_part, section_title).group(1)
-            section_text = ' '.join([child.text] + [c.tail for c in child if c.tail])
-            sect_label = label("%s-%s" % (reg_part, section_number), [reg_part, section_number], section_title)
-            sect_node = node(text=section_text, children=[], label=sect_label)
-
-            m_stack.add_to_bottom((1, sect_node))
-
-            while m_stack.size() > 1:
-                tree_utils.unwind_stack(m_stack)
-          
-
-            while m_stack.size() > 1:
-                tree_utils.unwind_stack(m_stack)
-
-            c = m_stack.pop()[0][1]
-            sections.append(c)
+            sections.append(build_section(reg_part, child))
 
     tree['children'] = sections
     non_reg_sections = build_non_reg_text(reg_xml)
@@ -97,3 +55,52 @@ def build_tree(reg_xml):
 
     write_parts(tree)
     return tree
+
+def build_section(reg_part, section_xml):
+    p_level = 1
+    m_stack = NodeStack()
+    for ch in section_xml.getchildren():
+        if ch.tag == 'P':
+            text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
+            markers_list = tree_utils.get_paragraph_markers(text)
+            node_text = tree_utils.get_node_text(ch)
+
+            if len(markers_list) > 1:
+                actual_markers = ['(%s)' % m for m in markers_list]
+                node_text = tree_utils.split_text(node_text, actual_markers)
+            else:
+                node_text = [node_text]
+
+            for m, node_text in zip(markers_list, node_text):
+                l = label(parts=[str(m)])
+                n = node(text=node_text, children=[], label=l)
+
+                new_p_level = determine_level(m, p_level)
+                last = m_stack.peek()
+                if len(last) == 0:
+                    m_stack.push_last((new_p_level, n))
+                else:
+                    tree_utils.add_to_stack(m_stack, new_p_level, n)
+                p_level = new_p_level
+
+    section_title = section_xml.xpath('SECTNO')[0].text
+    subject_text = section_xml.xpath('SUBJECT')[0].text
+    if subject_text:
+        section_title += " " + subject_text
+
+    section_number_match = re.search(r'%s\.(\d+)' % reg_part, section_title)
+    #   Sometimes not reg text sections get mixed in
+    if section_number_match:
+        section_number = section_number_match.group(1)
+        section_text = ' '.join([section_xml.text] + [c.tail for c in
+            section_xml if c.tail])
+        sect_label = label("%s-%s" % (reg_part, section_number), 
+            [reg_part, section_number], section_title)
+        sect_node = node(text=section_text, children=[], label=sect_label)
+
+        m_stack.add_to_bottom((1, sect_node))
+
+        while m_stack.size() > 1:
+            tree_utils.unwind_stack(m_stack)
+
+        return m_stack.pop()[0][1]

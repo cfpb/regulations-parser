@@ -2,7 +2,7 @@ import string
 
 from pyparsing import LineEnd, Literal, LineStart, SkipTo, Word
 
-from regparser.grammar.internal_citations import depth1_p
+from regparser.grammar.common import depth1_p
 
 
 with_paragraph = (

@@ -1,6 +1,6 @@
 import json
 from lxml import etree
-from regparser.notice import build_notice
+from regparser.notice.build import build_notice
 import settings
 from urllib import urlencode, urlopen
 
