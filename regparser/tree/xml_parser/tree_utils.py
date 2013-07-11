@@ -8,6 +8,7 @@ def prepend_parts(parts_prefix, n):
     regulation text. """
 
     n['label']['parts'] = parts_prefix + n['label']['parts']
+    n['label']['text'] = '-'.join(n['label']['parts'])
 
     for c in n['children']:
         prepend_parts(parts_prefix, c)

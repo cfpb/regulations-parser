@@ -59,6 +59,7 @@ def build_tree(reg_xml):
 def build_section(reg_part, section_xml):
     p_level = 1
     m_stack = NodeStack()
+    section_texts = []
     for ch in section_xml.getchildren():
         if ch.tag == 'P':
             text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
@@ -68,8 +69,10 @@ def build_section(reg_part, section_xml):
             if len(markers_list) > 1:
                 actual_markers = ['(%s)' % m for m in markers_list]
                 node_text = tree_utils.split_text(node_text, actual_markers)
-            else:
+            elif markers_list:
                 node_text = [node_text]
+            else:   # Does not contain paragraph markers
+                section_texts.append(node_text)
 
             for m, node_text in zip(markers_list, node_text):
                 l = label(parts=[str(m)])
@@ -92,8 +95,7 @@ def build_section(reg_part, section_xml):
     #   Sometimes not reg text sections get mixed in
     if section_number_match:
         section_number = section_number_match.group(1)
-        section_text = ' '.join([section_xml.text] + [c.tail for c in
-            section_xml if c.tail])
+        section_text = ' '.join([section_xml.text] + section_texts)
         sect_label = label("%s-%s" % (reg_part, section_number), 
             [reg_part, section_number], section_title)
         sect_node = node(text=section_text, children=[], label=sect_label)
