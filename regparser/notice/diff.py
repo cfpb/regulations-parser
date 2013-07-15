@@ -3,6 +3,7 @@ import re
 
 from lxml import etree
 
+from regparser.grammar import rules as grammar, tokens
 from regparser.tree import struct
 from regparser.tree.xml_parser.reg_text import build_section
 
@@ -26,7 +27,7 @@ def find_diffs(xml_tree):
     last_context = None
     diffs = []
     #   Only final notices have this format
-    for section in xml_tree.xpath('//REGTEXT/SECTION'):
+    for section in xml_tree.xpath('//REGTEXT//SECTION'):
         section = clear_between(section, '[', ']')
         section = remove_char(remove_char(section, u'▸'), u'◂')
         node = build_section('1005', section)
@@ -42,3 +43,66 @@ def find_diffs(xml_tree):
 def node_is_empty(node):
     """Handle different ways the regulation represents no content"""
     return node['text'].strip() == ''
+
+def parse_amdpar(par):
+    text = etree.tostring(par, encoding=unicode)
+    print ""
+    print text.strip()
+    tokenized = [t[0] for t,s,e in grammar.amdpar_tokens.scanString(text)]
+    simplified = simplify_tokens(tokenized)
+    for diff in tokens_to_diffs(simplified):
+        print diff
+
+def simplify_tokens(tokenized):
+    simplified = list(tokenized)    #   copy
+    for i in range(len(tokenized)):
+        if (i < len(tokenized) - 1 
+                and isinstance(tokenized[i], tokens.SectionHeadingOf)):
+            simplified[i] = tokenized[i+1]
+            simplified[i+1] = tokens.SectionHeading()
+        if (i > 0 and isinstance(tokenized[i], tokens.Verb)
+                and not tokenized[i].active):
+            simplified[i] = tokenized[i-1]
+            simplified[i-1] = tokens.Verb(tokenized[i].verb, True)
+    return simplified
+
+def tokens_to_diffs(tokenized):
+    context = None
+    verb = None
+    diffs = []
+    for i in range(len(tokenized)):
+        token = tokenized[i]
+        if isinstance(token, tokens.Verb):
+            verb = token.verb
+        elif isinstance(token, tokens.Section):
+            context = [token.part, token.section]
+        elif isinstance(token, tokens.Paragraph):
+            p_id = token.id(context)
+
+            if verb == 'MOVE': 
+                if isinstance(tokenized[i-1], tokens.Paragraph):
+                    diffs.append((verb, '-'.join(context), '-'.join(p_id)))
+            else:
+                if token.text:
+                    modifier = '[text]'
+                else:
+                    modifier = ''
+                diffs.append((verb, '-'.join(p_id) + modifier))
+
+            context = p_id
+        elif isinstance(token, tokens.ParagraphList):
+            for p in token.paragraphs:
+                p_id = p.id(context)
+                context = p_id
+                if p.text:
+                    modifier = '[text]'
+                else:
+                    modifier = ''
+
+                diffs.append((verb, '-'.join(context) + modifier))
+        elif isinstance(token, tokens.SectionHeading):
+            diffs.append((verb, '-'.join(context) + '[title]'))
+        elif isinstance(token, tokens.IntroText):
+            diffs.append((verb, '-'.join(context) + '[text]'))
+    return diffs
+

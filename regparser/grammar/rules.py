@@ -115,7 +115,7 @@ single_par = (
             CaselessLiteral("text"))
         ).setParseAction(lambda match: tokens.Paragraph(None, None, 
             match[0][0].level1, match[0][0].level2, match[0][0].level3, 
-            match[0][0].level4, text=match[-1] == 'text'))
+            match[0][0].level4, match[0][0].level5, text=match[-1] == 'text'))
 single_par_with_section = (
         common.marker_part_section 
         + common.depth1_p
@@ -123,7 +123,7 @@ single_par_with_section = (
             CaselessLiteral("text"))
         ).setParseAction(lambda match: tokens.Paragraph(match[0].part, 
             match[0].section, match[1][0].level1, match[1][0].level2, 
-            match[1][0].level3, match[1][0].level4, 
+            match[1][0].level3, match[1][0].level4, match[1][0].level5,
             text=match[-1] == 'text'))
 intro_text_of = (
         Suppress(WordBoundaries(CaselessLiteral("introductory")))
@@ -132,7 +132,7 @@ intro_text_of = (
         + common.marker_paragraph
         ).setParseAction(lambda match: tokens.Paragraph(None, None,
             match[0][0].level1, match[0][0].level2, match[0][0].level3,
-            match[0][0].level4, text=True
+            match[0][0].level4, match[0][0].level5, text=True
         ))
 
 
@@ -141,13 +141,17 @@ def split_pars(match):
     matches = [match.head] + list(match.tail)
     for match in matches:
         par = tokens.Paragraph(match.part, match.section, match.level1, 
-                match.level2, match.level3, match.level4)
+                match.level2, match.level3, match.level4, match.level5)
         if match[-1] == 'text':
             par.text = True
         if match.conj == 'through':
             #   Iterate through, creating paragraph tokens
             prev = pars[-1]
-            if prev.level4:
+            if prev.level5:
+                for i in range(p_levels[4].index(prev.level5)+1,
+                        p_levels[4].index(par.level5)):
+                    pars.append(prev.clone(level5=p_levels[4][i]))
+            elif prev.level4:
                 for i in range(p_levels[3].index(prev.level4)+1,
                         p_levels[3].index(par.level4)):
                     pars.append(prev.clone(level4=p_levels[3][i]))

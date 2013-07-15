@@ -29,7 +29,7 @@ class ParagraphList:
 
 class Paragraph:
     def __init__(self, part=None, section=None, level1=None, level2=None,
-            level3=None, level4=None, text=False):
+            level3=None, level4=None, level5=None, text=False):
         def none_or(attr, value):
             if not value:
                 value = None
@@ -41,6 +41,7 @@ class Paragraph:
         none_or('level2', level2)
         none_or('level3', level3)
         none_or('level4', level4)
+        none_or('level5', level5)
         self.text = text
 
     def __repr__(self):
@@ -49,23 +50,25 @@ class Paragraph:
                 return 'None'
             else:
                 return "'%s'" % value
-        return "Paragraph( %s, %s, %s, %s, %s, %s, text=%s )" % (
+        return "Paragraph( %s, %s, %s, %s, %s, %s, %s, text=%s )" % (
                 none_str(self.part), none_str(self.section),
                 none_str(self.level1), none_str(self.level2),
-                none_str(self.level3), none_str(self.level4), self.text)
+                none_str(self.level3), none_str(self.level4), 
+                none_str(self.level5), self.text)
 
     def clone(self, part=None, section=None, level1=None, level2=None,
-            level3=None, level4=None, text=False):
+            level3=None, level4=None, level5=None, text=False):
         return Paragraph(part or self.part, section or self.section,
                 level1 or self.level1, level2 or self.level2, 
-                level3 or self.level3, level4 or self.level4)
+                level3 or self.level3, level4 or self.level4,
+                level5 or self.level5, text or self.text)
 
     def as_list(self):
         return [self.part, self.section, self.level1, self.level2,
-                self.level3, self.level4]
+                self.level3, self.level4, self.level5]
 
     def id(self, context):
-        id_parts = [None] * 6
+        id_parts = [None] * 7
         context = context or []
         for i in range(len(context)):
             id_parts[i] = context[i]

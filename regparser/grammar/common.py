@@ -20,6 +20,10 @@ upper_p = (
         Suppress("(") 
         + Word(string.ascii_uppercase).setResultsName("level4") 
         + Suppress(")"))
+em_digit_p = (
+        Suppress(Regex(r"\(<E[^>]*>"))
+        + Word(string.digits).setResultsName("level5")
+        + Suppress("</E>)"))
 
 part = Word(string.digits).setResultsName("part")
 
@@ -53,7 +57,8 @@ interpretation_marker = (
 )
 
 #   Minimally composed
-depth3_p = roman_p + Optional(upper_p)
+depth4_p = upper_p + Optional(em_digit_p)
+depth3_p = roman_p + Optional(depth4_p)
 depth2_p = digit_p + Optional(depth3_p)
 depth1_p = lower_p + Optional(depth2_p)
 
@@ -61,9 +66,10 @@ any_depth_p = (
         depth1_p.setResultsName("depth1_p") 
         | depth2_p.setResultsName("depth2_p") 
         | depth3_p.setResultsName("depth3_p") 
-        | upper_p.setResultsName("depth4_p"))
+        | depth4_p.setResultsName("depth4_p")
+        | em_digit_p.setResultsName("depth5_p"))
 
-any_p = lower_p | digit_p | roman_p | upper_p
+any_p = lower_p | digit_p | roman_p | upper_p | em_digit_p
 
 part_section = part + Suppress(".") + section
 
