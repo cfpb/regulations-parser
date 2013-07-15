@@ -36,9 +36,9 @@ paragraph_markers = Suppress("paragraphs")
 part_marker = Suppress("part")
 part_markers = Suppress("parts")
 
-through = Suppress("through")
+through = Literal("through")
 
-conj_phrases = Suppress(
+conj_phrases = (
         Regex(",|and|or") 
         + Optional("and") 
         + Optional("or")
