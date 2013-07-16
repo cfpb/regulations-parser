@@ -9,8 +9,9 @@ from lxml import etree
 
 def build_notice(xml):
     """Given xml alone, build up a corresponding notice structure"""
+    context = None
     for par in xml.xpath('//AMDPAR'):
-        parse_amdpar(par)
+        context = parse_amdpar(par, context)
     return
     cfr_part = fetch_cfr_part(xml)
 

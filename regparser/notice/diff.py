@@ -44,14 +44,16 @@ def node_is_empty(node):
     """Handle different ways the regulation represents no content"""
     return node['text'].strip() == ''
 
-def parse_amdpar(par):
+def parse_amdpar(par, initial_context):
     text = etree.tostring(par, encoding=unicode)
     print ""
     print text.strip()
     tokenized = [t[0] for t,s,e in grammar.amdpar_tokens.scanString(text)]
     simplified = simplify_tokens(tokenized)
-    for diff in tokens_to_diffs(simplified):
+    diffs, final_context = tokens_to_diffs(simplified, initial_context)
+    for diff in diffs:
         print diff
+    return final_context
 
 def simplify_tokens(tokenized):
     simplified = list(tokenized)    #   copy
@@ -66,8 +68,9 @@ def simplify_tokens(tokenized):
             simplified[i-1] = tokens.Verb(tokenized[i].verb, True)
     return simplified
 
-def tokens_to_diffs(tokenized):
-    context = None
+
+def tokens_to_diffs(tokenized, initial_context):
+    context = initial_context
     verb = None
     diffs = []
     for i in range(len(tokenized)):
@@ -104,5 +107,14 @@ def tokens_to_diffs(tokenized):
             diffs.append((verb, '-'.join(context) + '[title]'))
         elif isinstance(token, tokens.IntroText):
             diffs.append((verb, '-'.join(context) + '[text]'))
-    return diffs
+        elif isinstance(token, tokens.Appendix):
+            p_id = token.id(context)
+            context = p_id
+            diffs.append((verb, '-'.join(context)))
+        elif isinstance(token, tokens.AppendixList):
+            for a in token.appendices:
+                p_id = a.id(context)
+                context = p_id
+                diffs.append((verb, '-'.join(context)))
+    return diffs, context
 

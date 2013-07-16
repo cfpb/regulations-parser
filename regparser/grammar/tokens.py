@@ -20,12 +20,32 @@ class Section:
     def __repr__(self):
         return "Section( '%s', '%s' )" % (self.part, self.section)
 
+
+class Appendix:
+    def __init__(self, letter, section):
+        self.letter = letter
+        self.section = section
+    def __repr__(self):
+        return "Appendix( '%s', '%s' )" % (self.letter, self.section)
+    def id(self, context):
+        return [context[0], self.letter, self.section]
+
+
+class AppendixList:
+    def __init__(self, appendices):
+        self.appendices = appendices
+    def __repr__(self):
+        return "AppendixList([ %s ])" % ', '.join(map(repr,
+            self.appendices))
+
+
 class ParagraphList:
     def __init__(self, paragraphs):
         self.paragraphs = paragraphs
     def __repr__(self):
         return "ParagraphList([ %s ])" % ', '.join(map(repr,
             self.paragraphs))
+
 
 class Paragraph:
     def __init__(self, part=None, section=None, level1=None, level2=None,

@@ -1,7 +1,11 @@
 #vim: set encoding=utf-8
 import string
 
-from pyparsing import Literal, OneOrMore, Optional, Regex, Suppress, Word
+from pyparsing import alphanums, CaselessLiteral, Literal, OneOrMore, Optional
+from pyparsing import Regex, Suppress, Word, WordEnd, WordStart
+
+def WordBoundaries(grammar):
+    return WordStart(alphanums) + grammar + WordEnd(alphanums)
 
 # Atomic components; probably shouldn't use these directly
 lower_p = (
@@ -29,7 +33,7 @@ part = Word(string.digits).setResultsName("part")
 
 section = Word(string.digits).setResultsName("section")
 
-appendix_letter = Word(string.ascii_uppercase).setResultsName("appendix_letter")
+appendix_letter = Word(string.ascii_uppercase).setResultsName("letter")
 
 section_marker = Suppress(Regex(u"§|Section|section")) 
 section_markers = Suppress(Regex(u"§§|Sections|sections"))
@@ -40,7 +44,7 @@ paragraph_markers = Suppress("paragraphs")
 part_marker = Suppress("part")
 part_markers = Suppress("parts")
 
-through = Literal("through")
+through = WordBoundaries(CaselessLiteral("through"))
 
 conj_phrases = (
         Regex(",|and|or") 
@@ -94,6 +98,11 @@ marker_appendix = (
         + marker_part
 )
 
-appendix_shorthand = appendix_letter + Suppress("-") + section
+appendix_shorthand = (
+        appendix_letter 
+        + Suppress("-") 
+        + section
+        + Optional(lower_p)
+)
 
 marker_interpretation = interpretation_marker + marker_part

@@ -5,6 +5,7 @@ from pyparsing import CaselessLiteral, Literal, OneOrMore, Optional, Regex
 from pyparsing import Suppress, Word, WordEnd, WordStart
 
 from regparser.grammar import common, tokens
+from regparser.grammar.common import WordBoundaries
 from regparser.tree.paragraph import p_levels
 
 section = (
@@ -38,12 +39,6 @@ sections_through = (
         + common.part_section.setResultsName("rhs")
 )
 
-appendix_through = (
-        common.appendix_shorthand
-        + common.through
-        + common.appendix_shorthand
-)
-
 text = Suppress(
         (Literal("introductory") + Literal("text"))
 )
@@ -51,8 +46,6 @@ text = Suppress(
 
 
 
-def WordBoundaries(grammar):
-    return WordStart() + grammar + WordEnd()
 
 
 put_active = WordBoundaries(
@@ -186,6 +179,47 @@ multiple_par = (
                 tokens.ParagraphList(split_pars(match)))
 
 
+def match_to_appendix(match):
+    section = match.section
+    if match.level1:    #   Has (a) in label
+        section += '(' + match.level1 + ')'
+    return tokens.Appendix(match.letter, section)
+
+appendix = common.appendix_shorthand.copy().setParseAction(match_to_appendix)
+
+
+def split_appendices(match):
+    appendices = []
+    matches = [match.head] + list(match.tail)
+    last_level1 = None
+    for match in matches:
+        appendix = match_to_appendix(match)
+        if match.conj == 'through':
+            #   Iterate through, creating appendices
+            if last_level1:
+                for i in range(p_levels[0].index(last_level1)+1,
+                        p_levels[0].index(match.level1)):
+                    appendices.append(tokens.Appendix(match.letter, 
+                        match.section + '(%s)' % p_levels[0][i]))
+            else:   #   No (a) in label
+                prev = appendices[-1]
+                for i in range(int(prev.section)+1, int(match.section)):
+                    appendices.append(tokens.Appendix(match.letter, str(i)))
+        appendices.append(appendix)
+        last_level1 = match.level1
+    return appendices
+
+
+multiple_appendices = (
+        common.appendix_shorthand.setResultsName("head")
+        + OneOrMore((
+            (common.conj_phrases | common.through).setResultsName('conj')
+            + common.appendix_shorthand
+        ).setResultsName("tail", listAllMatches=True))
+    ).setParseAction(lambda match: 
+            tokens.AppendixList(split_appendices(match)))
+
+
 amdpar_tokens = (
     single_par
     | single_par_with_section
@@ -198,4 +232,6 @@ amdpar_tokens = (
     | section_heading_of
     | section_heading
     | marker_subpart
+    | multiple_appendices
+    | appendix
 )
