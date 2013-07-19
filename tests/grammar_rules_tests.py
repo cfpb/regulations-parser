@@ -1,11 +1,12 @@
+#vim: set encoding=utf-8
 import string
 from unittest import TestCase
 
-from regparser.grammar import tokens
-from regparser.grammar.rules import *
+from regparser.grammar import tokens, common
+from regparser.grammar.amdpar import *
 
 class GrammarRulesTests(TestCase):
-
+    """
     def test_appendix_through(self):
         result = multiple_appendices.parseString('A-30 through A-41')
         result = result[0]
@@ -42,3 +43,56 @@ class GrammarRulesTests(TestCase):
         self.assertEqual('30(c)', result.appendices[2].section)
         self.assertEqual('A', result.appendices[3].letter)
         self.assertEqual('30(d)', result.appendices[3].section)
+
+    def test_single_par_with_section(self):
+        text = u'§ 1005.3(a)'
+        result = single_par_with_section.parseString(text)
+        result = result[0]
+        self.assertEqual('1005', result.part)
+        self.assertEqual('3', result.section)
+        self.assertEqual('a', result.level1)
+        self.assertFalse(result.text)
+
+        text = u'§ 8675.301(r)(4) introductory text'
+        result = single_par_with_section.parseString(text)
+        result = result[0]
+        self.assertEqual('8675', result.part)
+        self.assertEqual('301', result.section)
+        self.assertEqual('r', result.level1)
+        self.assertEqual('4', result.level2)
+        self.assertTrue(result.text)
+
+    def test_multiple_sections(self):
+        text = u'§§ 1005.30, 1005.31, 1005.32, 1005.33, 1005.34, 1005.35,'
+        text += ' and 1005.36'
+        result = multiple_sections.parseString(text)
+        result = result[0]
+        self.assertEqual(7, len(result.sections))
+        for i in range(7):
+            self.assertEqual('1005', result.sections[i].part)
+            self.assertEqual(str(i+30), result.sections[i].section)
+
+        result = amdpar_tokens.parseString(text)
+        result = result[0]
+        self.assertEqual(7, len(result.sections))
+        for i in range(7):
+            self.assertEqual('1005', result.sections[i].part)
+            self.assertEqual(str(i+30), result.sections[i].section)
+
+    def test_single_interp_par(self):
+        result = single_interp_par.parseString('paragraph 2;')
+        result = result[0]
+        self.assertEqual('2', result.level1)
+
+        result = single_interp_par.parseString('paragraph 5.ii.Q;')
+        result = result[0]
+        self.assertEqual('5', result.level1)
+        self.assertEqual('ii', result.level2)
+        self.assertEqual('Q', result.level3)
+
+
+    def test_certainty(self):
+        result = token_patterns.scanString("Add subpart B to read as follows")
+        print list(result)
+        self.assertTrue(False)
+    """

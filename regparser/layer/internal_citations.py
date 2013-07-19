@@ -62,9 +62,10 @@ class InternalCitationParser(Layer):
                 label = [parts[0], 'Interpretations']
                 paragraph_ref = ')('.join(filter(bool, list(cit.p_head)))
                 label.append(cit.section + '(' + paragraph_ref + ')')
-                label.append(cit.level1)
-                label.append(cit.level2)
-                label.append(cit.level3)
+                if cit.comment_levels:
+                    label.append(cit.comment_levels.level1)
+                    label.append(cit.comment_levels.level2)
+                    label.append(cit.comment_levels.level3)
                 citations.append({
                     'offsets': [(start, end)],
                     'citation': filter(bool, label)

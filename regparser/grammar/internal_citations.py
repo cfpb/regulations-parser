@@ -82,12 +82,13 @@ single_comment = (
         Word(string.digits).setResultsName('level1')
         + Optional(roman_dec + Optional(upper_dec))
         ).leaveWhitespace() # Exclude any period + space (end of sentence)
-    )
+    ).setResultsName("comment_levels")
 ).setParseAction(keep_pos)
 
 
 single_comment_with_marker = (
-    Suppress("comment") +  single_comment.setResultsName('without_marker')
+    Suppress("comment") 
+    + single_comment.copy().setResultsName('without_marker')
 )
 
 
@@ -98,6 +99,6 @@ multiple_comments = (
         + single_comment.setResultsName("c_tail", listAllMatches=True)))
 
 comment_citation = (
-    multiple_comments.setResultsName("multiple_comments") 
-    | single_comment_with_marker.setResultsName("single_comment")
+    multiple_comments.copy().setResultsName("multiple_comments") 
+    | single_comment_with_marker.copy().setResultsName("single_comment")
 )
