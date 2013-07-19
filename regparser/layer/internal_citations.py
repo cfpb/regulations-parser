@@ -27,10 +27,9 @@ class InternalCitationParser(Layer):
         #   If referring to a specific paragraph using regtext notation, we
         #   are not discussing an interp paragraph; use the associated regtext
         paragraph_parts = [p for p in parts if p != 'Interpretations']
-        if len(paragraph_parts) < parts:
+        if len(paragraph_parts) < parts:    # Was an interp
             #   Remember to strip out any specific paragraph info
             paragraph_parts[1] = re.sub(r'\(.+\)', '', paragraph_parts[1])
-
             
         for citation, start, end in grammar.regtext_citation.scanString(text):
             if citation.single_paragraph or citation.multiple_paragraphs:
