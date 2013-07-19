@@ -1,9 +1,10 @@
 #vim: set encoding=utf-8
+from itertools import takewhile
 import re
 
 from lxml import etree
 
-from regparser.grammar import rules as grammar, tokens
+from regparser.grammar import amdpar, tokens
 from regparser.tree import struct
 from regparser.tree.xml_parser.reg_text import build_section
 
@@ -24,7 +25,7 @@ def remove_char(xml_node, char):
 
 def find_diffs(xml_tree):
     """Find the XML nodes that are needed to determine diffs"""
-    last_context = None
+    last_context = []
     diffs = []
     #   Only final notices have this format
     for section in xml_tree.xpath('//REGTEXT//SECTION'):
@@ -46,75 +47,126 @@ def node_is_empty(node):
 
 def parse_amdpar(par, initial_context):
     text = etree.tostring(par, encoding=unicode)
-    print ""
-    print text.strip()
-    tokenized = [t[0] for t,s,e in grammar.amdpar_tokens.scanString(text)]
-    simplified = simplify_tokens(tokenized)
-    diffs, final_context = tokens_to_diffs(simplified, initial_context)
-    for diff in diffs:
-        print diff
-    return final_context
+    #print ""
+    #print text.strip()
+    tokenized = [t[0] for t,_,_ in amdpar.token_patterns.scanString(text)]
+    tokenized = switch_passive(tokenized)
+    tokenized = context_to_paragraph(tokenized)
+    tokenized = separate_tokenlist(tokenized)
+    tokenized, final_context = compress_context(tokenized, initial_context)
+    diffs = make_diffs(tokenized)
+    return diffs, final_context
 
-def simplify_tokens(tokenized):
-    simplified = list(tokenized)    #   copy
-    for i in range(len(tokenized)):
-        if (i < len(tokenized) - 1 
-                and isinstance(tokenized[i], tokens.SectionHeadingOf)):
-            simplified[i] = tokenized[i+1]
-            simplified[i+1] = tokens.SectionHeading()
-        if (i > 0 and isinstance(tokenized[i], tokens.Verb)
-                and not tokenized[i].active):
-            simplified[i] = tokenized[i-1]
-            simplified[i-1] = tokens.Verb(tokenized[i].verb, True)
-    return simplified
+def switch_passive(tokenized):
+    """Passive verbs are modifying the phrase before them rather than the
+    phrase following. For consistency, we flip the order of such verbs"""
+    if all(not isinstance(t, tokens.Verb) or t.active for t in tokenized):
+        return tokenized
+    converted, remaining = [], tokenized
+    while remaining:
+        to_add = list(takewhile(lambda t: not isinstance(t, tokens.Verb),
+            remaining))
+        if len(to_add) < len(remaining):    #   also take the verb
+            verb = remaining[len(to_add)]
+            to_add.append(verb)
+            if not verb.active:   #   switch it to the beginning
+                to_add = to_add[-1:] + to_add[:-1]
+                verb.active = True
+        converted.extend(to_add)
+        remaining = remaining[len(to_add):]
+    return converted
 
+def context_to_paragraph(tokenized):
+    """Generally, section numbers, subparts, etc. are good contextual clues,
+    but sometimes they are the object of manipulation."""
 
-def tokens_to_diffs(tokenized, initial_context):
-    context = initial_context
+    #   Don't modify anything if there are already paragraphs or no verbs
+    for token in tokenized:
+        if isinstance(token, tokens.Paragraph):
+            return tokenized
+        elif (isinstance(token, tokens.TokenList) and 
+                any(isinstance(t, tokens.Paragraph) for t in token.tokens)):
+            return tokenized
+
+    converted = list(tokenized)    #   copy
+    verb_seen = False
+    for i in range(len(converted)):
+        token = converted[i]
+        if isinstance(token, tokens.Verb):
+            verb_seen = True
+        elif (verb_seen and isinstance(token, tokens.Context) 
+                and not token.certain):
+            converted[i] = tokens.Paragraph(token.label)
+    return converted
+
+def separate_tokenlist(tokenized):
+    """When we come across a token list, separate it out into individual
+    tokens"""
+    converted = []
+    for token in tokenized:
+        if isinstance(token, tokens.TokenList):
+            converted.extend(token.tokens)
+        else:
+            converted.append(token)
+    return converted
+
+def compress(lhs_label, rhs_label):
+    """Combine two labels where the rhs replaces the lhs. If the rhs is
+    empty, assume the lhs takes precedent."""
+    if not rhs_label:
+        return lhs_label
+
+    label = list(lhs_label)
+    label.extend([None]*len(rhs_label))
+    label = label[:len(rhs_label)]
+
+    for i in range(len(rhs_label)):
+        label[i] = rhs_label[i] or label[i]
+    return label
+
+def compress_context(tokenized, initial_context):
+    """Add context to each of the paragraphs (removing context)"""
+    context = list(initial_context) #   copy
+    converted = []
+    for token in tokenized:
+        if isinstance(token, tokens.Context):
+            #   One corner case: interpretations of appendices
+            if (len(context) > 1 and len(token.label) > 1
+                and context[1] == 'Interpretations'
+                and token.label[1] and token.label[1].startswith('Appendix')):
+                context = compress(context, [token.label[0], None,
+                    token.label[1]] + token.label[2:])
+            else:
+                context = compress(context, token.label)
+            continue
+        #   Another corner case: a "paragraph" is indicates interp context
+        elif (isinstance(token, tokens.Paragraph) and len(context) > 1
+            and len(token.label) > 3 and context[1] == 'Interpretations'
+            and token.label[1] != 'Interpretations'):
+            context = compress(context, [token.label[0], None, token.label[1],
+                '(' + ')('.join(p for p in token.label[3:] if p) + ')'])
+            continue
+        elif isinstance(token, tokens.Paragraph):
+            context = compress(context, token.label)
+            token.label = context
+        converted.append(token)
+    return converted, context
+
+def make_diffs(tokenized):
+    """Convert a sequence of (normalized) tokens into a list of diffs"""
     verb = None
     diffs = []
     for i in range(len(tokenized)):
         token = tokenized[i]
-        if isinstance(token, tokens.Verb):
-            verb = token.verb
-        elif isinstance(token, tokens.Section):
-            context = [token.part, token.section]
-        elif isinstance(token, tokens.Paragraph):
-            p_id = token.id(context)
 
+        if isinstance(token, tokens.Verb):
+            assert token.active
+            verb = token.verb
+        elif isinstance(token, tokens.Paragraph):
             if verb == 'MOVE': 
                 if isinstance(tokenized[i-1], tokens.Paragraph):
-                    diffs.append((verb, '-'.join(context), '-'.join(p_id)))
-            else:
-                if token.text:
-                    modifier = '[text]'
-                else:
-                    modifier = ''
-                diffs.append((verb, '-'.join(p_id) + modifier))
-
-            context = p_id
-        elif isinstance(token, tokens.ParagraphList):
-            for p in token.paragraphs:
-                p_id = p.id(context)
-                context = p_id
-                if p.text:
-                    modifier = '[text]'
-                else:
-                    modifier = ''
-
-                diffs.append((verb, '-'.join(context) + modifier))
-        elif isinstance(token, tokens.SectionHeading):
-            diffs.append((verb, '-'.join(context) + '[title]'))
-        elif isinstance(token, tokens.IntroText):
-            diffs.append((verb, '-'.join(context) + '[text]'))
-        elif isinstance(token, tokens.Appendix):
-            p_id = token.id(context)
-            context = p_id
-            diffs.append((verb, '-'.join(context)))
-        elif isinstance(token, tokens.AppendixList):
-            for a in token.appendices:
-                p_id = a.id(context)
-                context = p_id
-                diffs.append((verb, '-'.join(context)))
-    return diffs, context
-
+                    diffs.append((verb, 
+                        (tokenized[i-1].label_text(), token.label_text())))
+            elif verb:
+                diffs.append((verb, token.label_text()))
+    return diffs

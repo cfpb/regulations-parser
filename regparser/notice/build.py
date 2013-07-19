@@ -9,10 +9,6 @@ from lxml import etree
 
 def build_notice(xml):
     """Given xml alone, build up a corresponding notice structure"""
-    context = None
-    for par in xml.xpath('//AMDPAR'):
-        context = parse_amdpar(par, context)
-    return
     cfr_part = fetch_cfr_part(xml)
 
     sxs = find_section_by_section(xml)
@@ -27,5 +23,13 @@ def build_notice(xml):
     addresses = fetch_addresses(xml)
     if addresses:
         notice['addresses'] = addresses
-    find_diffs(xml)
+
+    context = []
+    diffs = []
+    for par in xml.xpath('//AMDPAR'):
+        diff_set, context = parse_amdpar(par, context)
+        diffs.extend(diff_set)
+    if diffs:
+        notice['diffs'] = diffs
+    #find_diffs(xml)
     return notice

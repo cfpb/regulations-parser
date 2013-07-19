@@ -1,3 +1,10 @@
+def _none_str(value):
+    if value is None:
+        return 'None'
+    else:
+        return "'%s'" % value
+
+
 class Verb:
     def __init__(self, verb, active):
         self.verb = verb
@@ -6,115 +13,36 @@ class Verb:
         return "Verb( '%s', active=%s )" % (self.verb, self.active)
 
 
-class Subpart:
-    def __init__(self, subpart):
-        self.subpart = subpart
+class Context:
+    def __init__(self, label, certain):
+        self.label = label
+        self.certain = certain
     def __repr__(self):
-        return "Subpart( '%s' )" % self.subpart
-
-
-class Section:
-    def __init__(self, part, section):
-        self.part = part
-        self.section = section
-    def __repr__(self):
-        return "Section( '%s', '%s' )" % (self.part, self.section)
-
-
-class Appendix:
-    def __init__(self, letter, section):
-        self.letter = letter
-        self.section = section
-    def __repr__(self):
-        return "Appendix( '%s', '%s' )" % (self.letter, self.section)
-    def id(self, context):
-        return [context[0], self.letter, self.section]
-
-
-class AppendixList:
-    def __init__(self, appendices):
-        self.appendices = appendices
-    def __repr__(self):
-        return "AppendixList([ %s ])" % ', '.join(map(repr,
-            self.appendices))
-
-
-class ParagraphList:
-    def __init__(self, paragraphs):
-        self.paragraphs = paragraphs
-    def __repr__(self):
-        return "ParagraphList([ %s ])" % ', '.join(map(repr,
-            self.paragraphs))
+        return "Context([ %s , certain=%s ])" % (
+            ', '.join(map(_none_str, self.label)), self.certain)
 
 
 class Paragraph:
-    def __init__(self, part=None, section=None, level1=None, level2=None,
-            level3=None, level4=None, level5=None, text=False):
-        def none_or(attr, value):
-            if not value:
-                value = None
-            setattr(self, attr, value)
-
-        none_or('part', part)
-        none_or('section', section)
-        none_or('level1', level1)
-        none_or('level2', level2)
-        none_or('level3', level3)
-        none_or('level4', level4)
-        none_or('level5', level5)
-        self.text = text
-
+    def __init__(self, label, field=None):
+        self.label = [p or None for p in label] #   replace with Nones
+        #   Trim the right side of the list
+        while self.label and not self.label[-1]:
+            self.label.pop()
+        self.field = field
     def __repr__(self):
-        def none_str(value):
-            if value is None:
-                return 'None'
-            else:
-                return "'%s'" % value
-        return "Paragraph( %s, %s, %s, %s, %s, %s, %s, text=%s )" % (
-                none_str(self.part), none_str(self.section),
-                none_str(self.level1), none_str(self.level2),
-                none_str(self.level3), none_str(self.level4), 
-                none_str(self.level5), self.text)
-
-    def clone(self, part=None, section=None, level1=None, level2=None,
-            level3=None, level4=None, level5=None, text=False):
-        return Paragraph(part or self.part, section or self.section,
-                level1 or self.level1, level2 or self.level2, 
-                level3 or self.level3, level4 or self.level4,
-                level5 or self.level5, text or self.text)
-
-    def as_list(self):
-        return [self.part, self.section, self.level1, self.level2,
-                self.level3, self.level4, self.level5]
-
-    def id(self, context):
-        id_parts = [None] * 7
-        context = context or []
-        for i in range(len(context)):
-            id_parts[i] = context[i]
-        as_list = self.as_list()
-
-        found_start = False
-        for i in range(len(as_list)):
-            if not as_list[i] and not found_start:
-                continue
-            elif as_list[i]:
-                found_start = True
-            id_parts[i] = as_list[i]
-        
-        return [part for part in id_parts if part is not None]
+        return "Paragraph([ %s ], field = %s )" % (
+                ', '.join(map(_none_str, self.label)), _none_str(self.field))
+    def label_text(self):
+        label = [p or '?' for p in self.label]
+        if self.field:
+            return '-'.join(label) + '[%s]' % self.field
+        else:
+            return '-'.join(label)
 
 
-class SectionHeading:
+class TokenList:
+    def __init__(self, tokens):
+        self.tokens = tokens
     def __repr__(self):
-        return "SectionHeading()"
+        return "TokenList([ %s ])" % ', '.join(map(repr, self.tokens))
 
-
-class SectionHeadingOf:
-    def __repr__(self):
-        return "SectionHeadingOf()"
-
-
-class IntroText:
-    def __repr__(self):
-        return "IntroText()"
