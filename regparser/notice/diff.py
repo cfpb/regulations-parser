@@ -41,9 +41,11 @@ def find_diffs(xml_tree):
                     print node['label']['parts'], node['text']
             per_node(node)
 
+
 def node_is_empty(node):
     """Handle different ways the regulation represents no content"""
     return node['text'].strip() == ''
+
 
 def parse_amdpar(par, initial_context):
     text = etree.tostring(par, encoding=unicode)
@@ -54,8 +56,9 @@ def parse_amdpar(par, initial_context):
     tokenized = context_to_paragraph(tokenized)
     tokenized = separate_tokenlist(tokenized)
     tokenized, final_context = compress_context(tokenized, initial_context)
-    diffs = make_diffs(tokenized)
-    return diffs, final_context
+    amends = make_amendments(tokenized)
+    return amends, final_context
+
 
 def switch_passive(tokenized):
     """Passive verbs are modifying the phrase before them rather than the
@@ -75,6 +78,7 @@ def switch_passive(tokenized):
         converted.extend(to_add)
         remaining = remaining[len(to_add):]
     return converted
+
 
 def context_to_paragraph(tokenized):
     """Generally, section numbers, subparts, etc. are good contextual clues,
@@ -99,6 +103,7 @@ def context_to_paragraph(tokenized):
             converted[i] = tokens.Paragraph(token.label)
     return converted
 
+
 def separate_tokenlist(tokenized):
     """When we come across a token list, separate it out into individual
     tokens"""
@@ -109,6 +114,7 @@ def separate_tokenlist(tokenized):
         else:
             converted.append(token)
     return converted
+
 
 def compress(lhs_label, rhs_label):
     """Combine two labels where the rhs replaces the lhs. If the rhs is
@@ -123,6 +129,7 @@ def compress(lhs_label, rhs_label):
     for i in range(len(rhs_label)):
         label[i] = rhs_label[i] or label[i]
     return label
+
 
 def compress_context(tokenized, initial_context):
     """Add context to each of the paragraphs (removing context)"""
@@ -143,7 +150,7 @@ def compress_context(tokenized, initial_context):
         elif (isinstance(token, tokens.Paragraph) and len(context) > 1
             and len(token.label) > 3 and context[1] == 'Interpretations'
             and token.label[1] != 'Interpretations'):
-            context = compress(context, [token.label[0], None, token.label[1],
+            context = compress(context, [token.label[0], None, token.label[2],
                 '(' + ')('.join(p for p in token.label[3:] if p) + ')'])
             continue
         elif isinstance(token, tokens.Paragraph):
@@ -152,10 +159,11 @@ def compress_context(tokenized, initial_context):
         converted.append(token)
     return converted, context
 
-def make_diffs(tokenized):
-    """Convert a sequence of (normalized) tokens into a list of diffs"""
+
+def make_amendments(tokenized):
+    """Convert a sequence of (normalized) tokens into a list of amendments"""
     verb = None
-    diffs = []
+    amends = []
     for i in range(len(tokenized)):
         token = tokenized[i]
 
@@ -165,8 +173,8 @@ def make_diffs(tokenized):
         elif isinstance(token, tokens.Paragraph):
             if verb == 'MOVE': 
                 if isinstance(tokenized[i-1], tokens.Paragraph):
-                    diffs.append((verb, 
+                    amends.append((verb, 
                         (tokenized[i-1].label_text(), token.label_text())))
             elif verb:
-                diffs.append((verb, token.label_text()))
-    return diffs
+                amends.append((verb, token.label_text()))
+    return amends

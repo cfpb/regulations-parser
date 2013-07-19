@@ -25,11 +25,11 @@ def build_notice(xml):
         notice['addresses'] = addresses
 
     context = []
-    diffs = []
+    amends = []
     for par in xml.xpath('//AMDPAR'):
-        diff_set, context = parse_amdpar(par, context)
-        diffs.extend(diff_set)
-    if diffs:
-        notice['diffs'] = diffs
+        amend_set, context = parse_amdpar(par, context)
+        amends.extend(amend_set)
+    if amends:
+        notice['amendments'] = amends
     #find_diffs(xml)
     return notice
