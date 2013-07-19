@@ -171,7 +171,7 @@ def make_amendments(tokenized):
             assert token.active
             verb = token.verb
         elif isinstance(token, tokens.Paragraph):
-            if verb == 'MOVE': 
+            if verb == tokens.Verb.MOVE: 
                 if isinstance(tokenized[i-1], tokens.Paragraph):
                     amends.append((verb, 
                         (tokenized[i-1].label_text(), token.label_text())))

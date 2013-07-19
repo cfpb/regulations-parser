@@ -9,49 +9,45 @@ from regparser.grammar.common import WordBoundaries
 from regparser.tree.paragraph import p_levels
 
 #   Verbs
-put_active = WordBoundaries(
-    CaselessLiteral("revising") | CaselessLiteral("revise")
-    | CaselessLiteral("correcting") | CaselessLiteral("correct")
-    ).setParseAction(lambda _: tokens.Verb("PUT", True))
-put_passive = WordBoundaries(
-    CaselessLiteral("revised") | CaselessLiteral("corrected")
-    ).setParseAction(lambda _: tokens.Verb("PUT", False))
+def generate_verb(word_list, verb, active):
+    """Short hand for making tokens.Verb from a list of trigger words"""
+    grammar = reduce(lambda l, r: l | r, 
+        map(lambda w: CaselessLiteral(w), word_list))
+    grammar = WordBoundaries(grammar)
+    grammar = grammar.setParseAction(lambda _: tokens.Verb(verb, active))
+    return grammar
 
-post_active = WordBoundaries(
-    CaselessLiteral("adding") | CaselessLiteral("add")
-    ).setParseAction(lambda _: tokens.Verb("POST", True))
-post_passive = WordBoundaries(
-    CaselessLiteral("added")
-    ).setParseAction(lambda _: tokens.Verb("POST", False))
+put_active = generate_verb(['revising', 'revise', 'correcting', 'correct'],
+    tokens.Verb.PUT, active=True)
+put_passive = generate_verb(['revised', 'corrected'], tokens.Verb.PUT,
+    active=False)
 
-delete_active = WordBoundaries(
-    CaselessLiteral("removing") | CaselessLiteral("remove")
-    ).setParseAction(lambda _: tokens.Verb("DELETE", True))
-delete_passive = WordBoundaries(
-    CaselessLiteral("removed")
-    ).setParseAction(lambda _: tokens.Verb("DELETE", False))
+post_active = generate_verb(['adding', 'add'], tokens.Verb.POST, active=True)
+post_passive = generate_verb(['added'], tokens.Verb.POST, active=False)
 
-move_active = WordBoundaries(
-    CaselessLiteral("redesignating") | CaselessLiteral("redesignate")
-    ).setParseAction(lambda _: tokens.Verb("MOVE", True))
-move_passive = WordBoundaries(
-    CaselessLiteral("redesignated")
-    ).setParseAction(lambda _: tokens.Verb("MOVE", False))
+delete_active = generate_verb(['removing', 'remove'], tokens.Verb.DELETE,
+    active=True)
+delete_passive = generate_verb(['removed'], tokens.Verb.DELETE, active=False)
 
+move_active = generate_verb(['redesignating', 'redesignate'],
+    tokens.Verb.MOVE, active=True)
+move_passive = generate_verb(['redesignated'], tokens.Verb.MOVE, active=False)
+
+
+#   Context
 context_certainty = Optional(
     common.Marker("in") 
     | (common.Marker("under") + Optional(common.Marker("subheading"))
     )).setResultsName("certain")
 
-#   Context
 interp = (
     context_certainty
     + common.marker_interpretation
     ).setParseAction(lambda m: tokens.Context([m.part, 'Interpretations'], 
         bool(m.certain)))
 marker_subpart = (
-    context_certainty.copy()
-    + common.marker_subpart.copy()
+    context_certainty
+    + common.marker_subpart
     ).setParseAction(lambda m: tokens.Context([None, 'Subpart:' + m.subpart], 
         bool(m.certain)))
 comment_context_with_section = (
@@ -83,30 +79,30 @@ section = (
 
 
 #   Paragraph components (used when not replacing the whole paragraph)
-section_heading = (
-    common.Marker("heading")
-    ).setParseAction(lambda _: tokens.Paragraph([], field='title'))
+section_heading = common.Marker("heading").setParseAction(lambda _: 
+    tokens.Paragraph([], field=tokens.Paragraph.HEADING_FIELD))
 intro_text = common.intro_text.copy().setParseAction(
-    lambda _: tokens.Paragraph([], field='text'))
+    lambda _: tokens.Paragraph([], field=tokens.Paragraph.HEADING_FIELD))
+
 
 #   Paragraphs
 section_heading_of = (
     common.Marker("heading") + common.Marker("of")
     + common.marker_part_section
-    ).setParseAction(lambda m: 
-        tokens.Paragraph([m.part, None, m.section], field='text'))
+    ).setParseAction(lambda m: tokens.Paragraph([m.part, None, m.section], 
+        field=tokens.Paragraph.TEXT_FIELD))
 intro_text_of = (
     common.intro_text + common.Marker("of")
     + common.marker_paragraph.copy()
     ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
         m.level1, m.level2, m.level3, m.level4, m.level5], 
-        field = 'text'))
+        field = tokens.Paragraph.TEXT_FIELD))
 single_par = (
     common.marker_paragraph
     + Optional(common.intro_text)
     ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
         m.level1, m.level2, m.level3, m.level4, m.level5], 
-        field = ('text' if m[-1] == 'text' else None)))
+        field = (tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
 section_single_par = (
     common.marker_part_section
     + common.depth1_p
@@ -114,7 +110,7 @@ section_single_par = (
     ).setParseAction(lambda m: tokens.Paragraph([m.part, None,
         m.section, m.level1, m.level2, m.level3,
         m.level4, m.level5],
-        field = ('text' if m[-1] == 'text' else None)))
+        field = (tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
 single_comment_par = (
     common.paragraph_marker
     + common.comment_p
@@ -122,7 +118,10 @@ single_comment_par = (
         'Interpretations', None, None, m.level2, m.level3,
         m.level4]))
 
+
+#   Token Lists
 def make_multiple(to_repeat):
+    """Shorthand for handling repeated tokens ('and', ',', 'through')"""
     return (
         (to_repeat + Optional(common.intro_text)).setResultsName("head")
         + OneOrMore((
@@ -133,6 +132,7 @@ def make_multiple(to_repeat):
     )
 
 def make_par_list(listify):
+    """Shorthand for turning a pyparsing match into a tokens.Paragraph"""
     def curried(match=None):
         pars = []
         matches = [match.head] + list(match.tail)
@@ -140,7 +140,7 @@ def make_par_list(listify):
             match_as_list = listify(match)
             next_par = tokens.Paragraph(match_as_list)
             if match[-1] == 'text':
-                next_par.field = 'text'
+                next_par.field = tokens.Paragraph.TEXT_FIELD
             if match.conj == 'through':
                 #   Iterate through, creating paragraph tokens
                 prev = pars[-1]
@@ -189,6 +189,8 @@ multiple_comments = (
         m.section, '(' + ')('.join(p for p in [m.level1, m.level2, m.level3,
             m.level4, m.level5] if p) + ')']))
 
+
+#   grammar which captures all of these possibilities
 token_patterns = (
     put_active | put_passive | post_active | post_passive
     | delete_active | delete_passive | move_active | move_passive

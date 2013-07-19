@@ -5,6 +5,7 @@
 """
 
 def _none_str(value):
+    """Shorthand for displaying a variable as a string or the text None"""
     if value is None:
         return 'None'
     else:
@@ -12,6 +13,8 @@ def _none_str(value):
 
 
 class Verb:
+    """Represents what action is taking place to the paragraphs"""
+
     PUT = 'PUT'
     POST = 'POST'
     MOVE = 'MOVE'
@@ -27,6 +30,12 @@ class Verb:
 
 
 class Context:
+    """Represents a bit of context for the paragraphs. This gets compressed
+    with the paragraph tokens to define the full scope of a paragraph. To
+    complicate matters, sometimes what looks like a Context is actually the
+    entity which is being modified (i.e. a paragraph). If we are certain
+    that this is only context, (e.g. "In Subpart A"), use 'certain'"""
+
     def __init__(self, label, certain=False):
         self.label = label
         self.certain = certain
@@ -38,6 +47,14 @@ class Context:
 
 
 class Paragraph:
+    """Represents an entity which is being modified by the amendment. Label
+    is a way to locate this paragraph (though see the above note). We might
+    be modifying a field of a paragraph (e.g. intro text only, or title
+    only;) if so, set the `field` parameter."""
+
+    TEXT_FIELD = 'text'
+    HEADING_FIELD = 'title'
+
     def __init__(self, label, field=None):
         self.label = [p or None for p in label] #   replace with Nones
         #   Trim the right side of the list
@@ -48,6 +65,7 @@ class Paragraph:
         return "Paragraph([ %s ], field = %s )" % (
                 ', '.join(map(_none_str, self.label)), _none_str(self.field))
     def label_text(self):
+        """Converts self.label into a string"""
         label = [p or '?' for p in self.label]
         if self.field:
             return '-'.join(label) + '[%s]' % self.field
@@ -58,6 +76,9 @@ class Paragraph:
 
 
 class TokenList:
+    """Represents a sequence of other tokens, e.g. comma separated of
+    created via "through" """
+
     def __init__(self, tokens):
         self.tokens = tokens
     def __repr__(self):
