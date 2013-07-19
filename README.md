@@ -1,6 +1,8 @@
 Regulations Parser
 ==================
 
+[![Build Status](https://travis-ci.org/eregs/regulations-parser.png)](https://travis-ci.org/eregs/regulations-parser)
+
 Parse a regulation (plain text) into a well-formated JSON tree (along with
 associated layers, such as links and definitions). This works hand-in-hand
 with regulations-site, a front-end for the data structures generated.
