@@ -148,3 +148,25 @@ script first:
 $ pip install Sphinx
 $ sphinx-apidoc -F -o docs regparser/
 ```
+
+
+##  Running Tests
+
+To run the unit tests, make sure you have added all of the testing
+requirements:
+
+```bash
+$ pip install -r requirements_test.txt
+```
+
+Then, run nose on all of the available unit tests:
+
+```bash
+$ nosetests tests/*.py
+```
+
+If you'd like a report of test coverage, use the [nose-cov](https://pypi.python.org/pypi/nose-cov) plugin:
+
+```bash
+$ nosetests --with-cov --cov-report term-missing --cov regparser tests/*.py
+```
