@@ -31,5 +31,5 @@ def build_notice(xml):
         amends.extend(amend_set)
     if amends:
         notice['amendments'] = amends
-    #find_diffs(xml)
+    #find_diffs(xml, cfr_par)
     return notice

@@ -23,7 +23,7 @@ def remove_char(xml_node, char):
     return etree.fromstring(as_str.replace(char, ''))
     
 
-def find_diffs(xml_tree):
+def find_diffs(xml_tree, cfr_part):
     """Find the XML nodes that are needed to determine diffs"""
     last_context = []
     diffs = []
@@ -31,7 +31,7 @@ def find_diffs(xml_tree):
     for section in xml_tree.xpath('//REGTEXT//SECTION'):
         section = clear_between(section, '[', ']')
         section = remove_char(remove_char(section, u'▸'), u'◂')
-        node = build_section('1005', section)
+        node = build_section(cfr_part, section)
         if node:
             def per_node(node):
                 if node_is_empty(node):
