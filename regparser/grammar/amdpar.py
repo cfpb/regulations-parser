@@ -69,8 +69,10 @@ comment_context_without_section = (
 appendix = (
     context_certainty
     + common.appendix_marker 
-    + common.appendix_letter).setParseAction(lambda m: tokens.Context(
-        [None, 'Appendix:' + m.letter], bool(m.certain)))
+    + common.appendix_letter
+    + Optional(common.Marker("to") + common.marker_part)
+    ).setParseAction(lambda m: tokens.Context(
+        [m.part, 'Appendix:' + m.letter], bool(m.certain)))
 section = (
     context_certainty
     + common.section_marker 
@@ -82,7 +84,7 @@ section = (
 section_heading = common.Marker("heading").setParseAction(lambda _: 
     tokens.Paragraph([], field=tokens.Paragraph.HEADING_FIELD))
 intro_text = common.intro_text.copy().setParseAction(
-    lambda _: tokens.Paragraph([], field=tokens.Paragraph.HEADING_FIELD))
+    lambda _: tokens.Paragraph([], field=tokens.Paragraph.TEXT_FIELD))
 
 
 #   Paragraphs
