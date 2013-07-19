@@ -65,13 +65,6 @@ def parse_into_label(txt, part):
 
     for match, _, _ in grammar.applicable.scanString(txt):
         paragraph_ids = []
-        if match.paragraphs:
-            if match.paragraphs.level1:
-                paragraph_ids.append(match.paragraphs.level1)
-            if match.paragraphs.level2:
-                paragraph_ids.append(match.paragraphs.level2)
-            if match.paragraphs.level3:
-                paragraph_ids.append(match.paragraphs.level3)
-            if match.paragraphs.level4:
-                paragraph_ids.append(match.paragraphs.level4)
+        paragraph_ids.extend(p for p in [match.level1, match.level2,
+            match.level3, match.level4] if p)
         return "-".join([part, match.section] + paragraph_ids)
