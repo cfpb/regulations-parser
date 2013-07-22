@@ -1,6 +1,8 @@
 Regulations Parser
 ==================
 
+[![Build Status](https://travis-ci.org/eregs/regulations-parser.png)](https://travis-ci.org/eregs/regulations-parser)
+
 Parse a regulation (plain text) into a well-formated JSON tree (along with
 associated layers, such as links and definitions). This works hand-in-hand
 with regulations-site, a front-end for the data structures generated.
@@ -123,8 +125,23 @@ files are to be written to an API instead)
 urls for them
 
 ### Keyterms Layer
-@TODO
 
+Unlike our other layers (at the moment), the Keyterms layer is build using
+XML from the Federal Register rather than plain text. Right now, this is a
+particularly manual process which involves manually retrieving each notice's 
+XML, generating a layer, and merging the results with the existing layer.
+This is not a problem if the regulation is completely re-issued.
+
+In any event, to generate the layer based on a particular XML, first
+download that XML (found by on [federalregister.gov](https://www.federalregister.gov) 
+by selecting 'DEV', then 'XML' on a notice). Then, modify the
+```build_tree.py``` file to point to the correct XML. Running this script
+will convert the XML into a JSON tree, maintaining some tags that the plain
+text version does not.
+
+Save this JSON to ```/tmp/xtree.json```, then run ```generate_layers.py```.
+The output *should* be a complete layer; so combine information from
+multiple rules, simply copy-paste the fields of the newly generated layer.
 
 ### Building the documentation
 
@@ -145,4 +162,26 @@ script first:
 ```
 $ pip install Sphinx
 $ sphinx-apidoc -F -o docs regparser/
+```
+
+
+##  Running Tests
+
+To run the unit tests, make sure you have added all of the testing
+requirements:
+
+```bash
+$ pip install -r requirements_test.txt
+```
+
+Then, run nose on all of the available unit tests:
+
+```bash
+$ nosetests tests/*.py
+```
+
+If you'd like a report of test coverage, use the [nose-cov](https://pypi.python.org/pypi/nose-cov) plugin:
+
+```bash
+$ nosetests --with-cov --cov-report term-missing --cov regparser tests/*.py
 ```
