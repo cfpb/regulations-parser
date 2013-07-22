@@ -277,3 +277,9 @@ class ParseTest(TestCase):
         offsets = result[0]['offsets'][0]
         self.assertEqual('(d)(3)(i)', text[offsets[0]:offsets[1]])
 
+        result = self.parser.parse(text, 
+                parts = ['222', 'Interpretations', '87(d)(3)'])
+        self.assertEqual(1, len(result))
+        self.assertEqual(['222', '87', 'd', '3', 'i'], result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('(d)(3)(i)', text[offsets[0]:offsets[1]])
