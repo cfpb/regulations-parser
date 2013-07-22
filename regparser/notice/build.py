@@ -1,9 +1,11 @@
-from regparser.notice.diff import find_diffs
+from regparser.notice.diff import find_diffs, parse_amdpar
 from regparser.notice.fields import fetch_cfr_part, fetch_simple_fields
 from regparser.notice.fields import fetch_document_number, fetch_dates
 from regparser.notice.fields import fetch_addresses
 from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
+
+from lxml import etree
 
 def build_notice(xml):
     """Given xml alone, build up a corresponding notice structure"""
@@ -21,5 +23,13 @@ def build_notice(xml):
     addresses = fetch_addresses(xml)
     if addresses:
         notice['addresses'] = addresses
-    find_diffs(xml)
+
+    context = []
+    amends = []
+    for par in xml.xpath('//AMDPAR'):
+        amend_set, context = parse_amdpar(par, context)
+        amends.extend(amend_set)
+    if amends:
+        notice['amendments'] = amends
+    #find_diffs(xml, cfr_par)
     return notice

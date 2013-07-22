@@ -21,7 +21,7 @@ paragraph_tail = OneOrMore(conj_phrases +
 
 single_section = (
         common.part_section
-        + Optional(common.depth1_p.setParseAction(keep_pos).setResultsName("p_head")
+        + Optional(common.depth1_p.copy().setParseAction(keep_pos).setResultsName("p_head")
             + Optional(paragraph_tail))
         ).setParseAction(keep_pos)
 
@@ -66,7 +66,7 @@ appendix_citation = (
     Word(string.ascii_uppercase).setResultsName("appendix") 
     + Suppress('-')
     + Word(string.digits).setResultsName("section")
-    + Optional(common.depth1_p.setParseAction(keep_pos).setResultsName("p_head")
+    + Optional(common.depth1_p.copy().setParseAction(keep_pos).setResultsName("p_head")
         + Optional(paragraph_tail))
 )
 
@@ -77,17 +77,18 @@ roman_dec = "." + Word("ivxlcdm").setResultsName('level2')
 
 single_comment = (
     Word(string.digits).setResultsName("section")
-    + common.depth1_p.setResultsName('p_head')
+    + common.depth1_p.copy().setResultsName('p_head')
     + Optional("-" + (
         Word(string.digits).setResultsName('level1')
         + Optional(roman_dec + Optional(upper_dec))
         ).leaveWhitespace() # Exclude any period + space (end of sentence)
-    )
+    ).setResultsName("comment_levels")
 ).setParseAction(keep_pos)
 
 
 single_comment_with_marker = (
-    Suppress("comment") +  single_comment.setResultsName('without_marker')
+    Suppress("comment") 
+    + single_comment.copy().setResultsName('without_marker')
 )
 
 
@@ -98,6 +99,6 @@ multiple_comments = (
         + single_comment.setResultsName("c_tail", listAllMatches=True)))
 
 comment_citation = (
-    multiple_comments.setResultsName("multiple_comments") 
-    | single_comment_with_marker.setResultsName("single_comment")
+    multiple_comments.copy().setResultsName("multiple_comments") 
+    | single_comment_with_marker.copy().setResultsName("single_comment")
 )

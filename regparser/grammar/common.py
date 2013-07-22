@@ -1,7 +1,14 @@
 #vim: set encoding=utf-8
 import string
 
-from pyparsing import Literal, OneOrMore, Optional, Regex, Suppress, Word
+from pyparsing import alphanums, CaselessLiteral, Literal, OneOrMore, Optional
+from pyparsing import Regex, Suppress, Word, WordEnd, WordStart
+
+def WordBoundaries(grammar):
+    return WordStart(alphanums) + grammar + WordEnd(alphanums)
+
+def Marker(txt):
+    return Suppress(WordBoundaries(CaselessLiteral(txt)))
 
 # Atomic components; probably shouldn't use these directly
 lower_p = (
@@ -20,25 +27,34 @@ upper_p = (
         Suppress("(") 
         + Word(string.ascii_uppercase).setResultsName("level4") 
         + Suppress(")"))
+em_digit_p = (
+        Suppress(Regex(r"\(<E[^>]*>"))
+        + Word(string.digits).setResultsName("level5")
+        + Suppress("</E>)"))
+
+upper_dec = "." + Word(string.ascii_uppercase).setResultsName('level3')
+roman_dec = "." + Word("ivxlcdm").setResultsName('level2')
 
 part = Word(string.digits).setResultsName("part")
 
 section = Word(string.digits).setResultsName("section")
 
-appendix_letter = Word(string.ascii_uppercase).setResultsName("appendix_letter")
+appendix_letter = Word(string.ascii_uppercase).setResultsName("letter")
 
 section_marker = Suppress(Regex(u"§|Section|section")) 
 section_markers = Suppress(Regex(u"§§|Sections|sections"))
 
-paragraph_marker = Suppress("paragraph")
-paragraph_markers = Suppress("paragraphs")
+paragraph_marker = Marker("paragraph")
+paragraph_markers = Marker("paragraphs")
 
-part_marker = Suppress("part")
-part_markers = Suppress("parts")
+part_marker = Marker("part")
+part_markers = Marker("parts")
 
-through = Suppress("through")
+subpart_marker = Marker("subpart")
 
-conj_phrases = Suppress(
+through = WordBoundaries(CaselessLiteral("through"))
+
+conj_phrases = (
         Regex(",|and|or") 
         + Optional("and") 
         + Optional("or")
@@ -53,17 +69,19 @@ interpretation_marker = (
 )
 
 #   Minimally composed
-depth3_p = roman_p + Optional(upper_p)
+depth4_p = upper_p + Optional(em_digit_p)
+depth3_p = roman_p + Optional(depth4_p)
 depth2_p = digit_p + Optional(depth3_p)
 depth1_p = lower_p + Optional(depth2_p)
 
 any_depth_p = (
-        depth1_p.setResultsName("depth1_p") 
-        | depth2_p.setResultsName("depth2_p") 
-        | depth3_p.setResultsName("depth3_p") 
-        | upper_p.setResultsName("depth4_p"))
+        depth1_p.copy().setResultsName("depth1_p") 
+        | depth2_p.copy().setResultsName("depth2_p") 
+        | depth3_p.copy().setResultsName("depth3_p") 
+        | depth4_p.copy().setResultsName("depth4_p")
+        | em_digit_p.copy().setResultsName("depth5_p"))
 
-any_p = lower_p | digit_p | roman_p | upper_p
+any_p = lower_p | digit_p | roman_p | upper_p | em_digit_p
 
 part_section = part + Suppress(".") + section
 
@@ -73,7 +91,7 @@ marker_part_sections = (
         + part_section 
         + OneOrMore(
             conj_phrases 
-            + part_section.setResultsName("s_tail", listAllMatches=True)
+            + part_section.copy().setResultsName("s_tail", listAllMatches=True)
         )
 )
 
@@ -88,6 +106,26 @@ marker_appendix = (
         + marker_part
 )
 
-appendix_shorthand = appendix_letter + Suppress("-") + section
+appendix_shorthand = (
+        appendix_letter 
+        + Suppress("-") 
+        + section
+        + Optional(lower_p)
+)
 
 marker_interpretation = interpretation_marker + marker_part
+
+marker_subpart = (
+        subpart_marker 
+        + Word(string.ascii_uppercase).setResultsName("subpart")
+)
+
+intro_text = Marker("introductory") + WordBoundaries(CaselessLiteral("text"))
+
+comment_p = (
+    Word(string.digits).setResultsName("level2") 
+    + Optional(
+        Suppress(".") + Word("ivxlcdm").setResultsName('level3')
+        + Optional(
+            Suppress(".")
+            + Word(string.ascii_uppercase).setResultsName("level4"))))
