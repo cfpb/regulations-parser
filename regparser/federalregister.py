@@ -23,8 +23,9 @@ def fetch_notices(cfr_title, cfr_part):
     notices = []
     for url in [r['html_url'] for r in results['results']]:
         notice_xml = fetch_notice_xml(url)
-        notice_xml = etree.fromstring(notice_xml)
-        notices.append(build_notice(notice_xml))
+        if notice_xml:
+            notice_xml = etree.fromstring(notice_xml)
+            notices.append(build_notice(notice_xml))
     return notices
 
 def fetch_notice_xml(html_url):
@@ -43,7 +44,8 @@ def fetch_notice_xml(html_url):
         if fmt['type'].lower() == 'xml':
             xml_url = FR_BASE + fmt['url']
 
-    connection = urlopen(xml_url)
-    xml_str = connection.read()
-    connection.close()
-    return xml_str
+    if xml_url:
+        connection = urlopen(xml_url)
+        xml_str = connection.read()
+        connection.close()
+        return xml_str
