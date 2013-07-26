@@ -6,17 +6,24 @@ from unittest import TestCase
 class NoticeFieldsTests(TestCase):
 
     def test_fetch_document_number(self):
-        xml = """
+        wrapper_xml = """
         <ROOT>
             <CHILD />
             <CHILD>Body</CHILD>
             <CHILD>
-                <FRDOC>[FR Doc. 2001-10 Filed 1-20-01; 12:52 am]</FRDOC>
+                <FRDOC>[FR Doc. %s Filed 1-20-01; 12:52 am]</FRDOC>
             </CHILD>
             <CHILD>Body</CHILD>
         </ROOT>
         """
+        xml = wrapper_xml % '2001-10'
         self.assertEqual("2001-10",
+                fetch_document_number(etree.fromstring(xml)))
+        xml = wrapper_xml % '01-1012'
+        self.assertEqual("01-1012",
+                fetch_document_number(etree.fromstring(xml)))
+        xml = wrapper_xml % 'E99-873'
+        self.assertEqual("E99-873",
                 fetch_document_number(etree.fromstring(xml)))
 
     def test_fetch_docket_number(self):

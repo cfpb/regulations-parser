@@ -30,6 +30,22 @@ class FederalRegisterTest(TestCase):
         urlopen.return_value.read.side_effect = read_response
         self.assertEqual('XML String', fetch_notice_xml('initial-url'))
 
+    @patch('regparser.federalregister.urlopen')
+    def test_fetch_notice_xml_none(self, urlopen):
+        """Account for notices without an XML link"""
+        urlopen.return_value.read.return_value = """
+            <script text="javascript">
+                var dev_formats = {"formats":[
+                    {"type":"pdf","url":"url.pdf",
+                        "title":"Original full text PDF", "name":"PDF"},
+                    {"type":"mods","url":"other_url/mods.xml",
+                        "title":"Government Printing Office metadata",
+                        "name":"MODS"},
+                    {"type":"json","url":"final",
+                        "title":"Normalized attributes and metadata",
+                        "name":"JSON"}]};
+            </script>"""
+        self.assertEqual(None, fetch_notice_xml('initial-url'))
 
     @patch('regparser.federalregister.urlopen')
     def test_fetch_notices(self, urlopen):
@@ -54,3 +70,13 @@ class FederalRegisterTest(TestCase):
                 self.assertEqual('url2', fetch_xml.call_args_list[1][0][0])
 
                 self.assertEqual(['NOTICE!', 'NOTICE!'], notices)
+
+    @patch('regparser.federalregister.urlopen')
+    def test_fetch_notices_no_xml(self, urlopen):
+        """Account for notices which has no XML"""
+        with patch('regparser.federalregister.fetch_notice_xml') as fetch_xml:
+            urlopen.return_value.read.return_value = """
+                {"results": [{"html_url": "url1"}, {"html_url": "url2"}]}
+                """
+            fetch_xml.return_value = None
+            self.assertEqual([], fetch_notices(23, 1222))
