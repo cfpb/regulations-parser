@@ -2,7 +2,7 @@ from regparser import utils
 from regparser.grammar.internal_citations import regtext_citation
 from regparser.tree import struct
 from regparser.tree.appendix import carving, generic
-from regparser.tree.section import regParser
+from regparser.tree.reg_text import regParser
 import string
 
 
