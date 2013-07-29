@@ -8,7 +8,7 @@ from lxml import etree
 def fetch_document_number(xml_tree):
     """Pull out the document number, which is the id for this notice"""
     text = xml_tree.xpath('//FRDOC')[0].text
-    match = re.search(r"(\d{4}-\d+)", text)
+    match = re.search(r"FR Doc. ([A-Z]?\d+-\d+)", text)
     if match:
         return match.group(1)
 
