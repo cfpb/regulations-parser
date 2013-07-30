@@ -1,3 +1,6 @@
+from json import JSONEncoder
+
+
 def label(text="", parts=[], title=None):
     if title:
         return {'text': text, 'parts': parts, 'title': title}
@@ -13,6 +16,33 @@ def node(text='', children=[], label=None):
     if not label:
         label = _label('',[])
     return {'text': text, 'children': children, 'label': label}
+
+
+class Node:
+    INTERP = 'interp'
+
+    def __init__(self, typ, text='', children=[], label=[], title=None):
+        self.typ = typ
+        self.text = text
+        self.children = list(children)  #   defensive copy
+        self.label = [l for l in label if l != '']
+        title = title or None
+        self.title = title
+    def __repr__(self):
+        return ("%s( typ = %s, text = %s, children = %s, label = %s, "
+            + "title = %s)" % (type(self.typ), repr(self.text), 
+                repr(self.children), repr(self.label), repr(self.title)))
+
+
+class NodeEncoder(JSONEncoder):
+    """Custom JSON encoder to handle Node objects"""
+    def default(self, obj):
+        if isinstance(obj, Node):
+            fields = dict(obj.__dict__)
+            if obj.title is None:
+                del fields['title']
+            return fields
+        return JSONEncoder.default(self, obj)
 
 
 def walk(node, fn):

@@ -4,15 +4,13 @@ import string
 import HTMLParser
 from lxml import etree
 from pyparsing import Optional, Word, LineStart, Suppress
-from regparser.tree.struct import label, node
-from regparser.tree.appendix.carving import get_appendix_letter
-from regparser.tree.interpretation.carving import get_appendix_letter as get_letter
-from regparser.tree.interpretation.carving import get_section_number, applicable_paragraph, build_label
-from regparser.tree.interpretation.tree import get_interpretation_label_text
-from regparser.tree.node_stack import NodeStack
 
-from regparser.utils import roman_nums
+import regparser.grammar.interpretation_headers as headers
+from regparser.tree.interpretation import text_to_label
+from regparser.tree.node_stack import NodeStack
+from regparser.tree.struct import label, node
 from regparser.tree.xml_parser import tree_utils
+from regparser.utils import roman_nums
 
 p_levels = [
     list(string.ascii_uppercase), #0 -> A (Level 1)
@@ -96,7 +94,7 @@ def process_supplement(part, m_stack, child):
     """ Parse the Supplement sections and paragraphs. """
     for ch in child.getchildren():
         if ch.tag.upper() == 'HD':
-            label_text = get_interpretation_label_text(ch.text, part)
+            label_text = text_to_label(ch.text, part)
             l = label(parts=[label_text], title=ch.text)
             n = node(children=[], label=l)
             node_level = 2
@@ -184,7 +182,7 @@ def build_non_reg_text(reg_xml):
             else:
                 p_level = 2
                 if section_type == 'SUPPLEMENT' and 'Appendix' in child.text:
-                    current_section = get_letter(child.text)
+                    current_section = headers.parseString(child.text).letter
                 else:
                     current_section = determine_next_section(m_stack, p_level)
 

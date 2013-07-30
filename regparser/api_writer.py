@@ -1,8 +1,9 @@
-import json
 import os
 import os.path
 import requests
 import settings
+
+from regparser.tree.struct import NodeEncoder
 
 class FSWriteContent:
     """This writer places the contents in the file system """
@@ -20,8 +21,8 @@ class FSWriteContent:
 
         full_path = settings.OUTPUT_DIR + os.path.join(*path_parts)
         with open(full_path, 'w') as out:
-            text = json.dumps(python_obj, sort_keys=True, indent=4,
-                    separators=(', ', ': '))
+            text = NodeEncoder(sort_keys=True, indent=4, 
+                    separators=(', ', ': ')).encode(python_obj)
             out.write(text)
 
 class APIWriteContent:
@@ -32,7 +33,7 @@ class APIWriteContent:
     def write(self, python_obj):
         """Write the object (as json) to the API"""
         requests.put(settings.API_BASE + self.path,
-            data=json.dumps(python_obj),
+            data=NodeEncoder().encode(python_obj),
             headers={'content-type': 'application/json'})
 
 

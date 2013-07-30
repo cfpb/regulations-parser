@@ -1,8 +1,9 @@
 #vim: set encoding=utf-8
-import json
-from regparser.tree import struct
-from regparser.tree.build import *
 from unittest import TestCase
+
+from regparser.tree import struct
+from regparser.tree.struct import Node
+from regparser.tree.build import *
 
 class TreeBuildTest(TestCase):
 
@@ -46,35 +47,27 @@ class TreeBuildTest(TestCase):
                     label=l("200-A-1-a", ["200","A","1","a"]))]
             )]
         )
-        nodeI = n("\n", 
-            label=l("200-Interpretations", ["200","Interpretations"],
-                "Supplement I to Part 200 - Official Interpretations"),
+        nodeI = Node(Node.INTERP, '\n', label=['200', 'Interp'], 
+            title='Supplement I to Part 200 - Official Interpretations',
             children=[
-                n("\n", 
-                    label=l("200-Interpretations-2", 
-                        ["200","Interpretations","2"], 
-                        "Section 200.2 Second section"),
-                    children=[]
-                ),
-                n("\n",
-                    label=l("200-Interpretations-2(a)(5)",
-                        ["200", "Interpretations", "2(a)(5)"],
-                        "2(a)(5) First par"),
+                Node(Node.INTERP, '\n', label=['200', '2', 'Interp'],
+                    title='Section 200.2 Second section'),
+                Node(Node.INTERP, '\n', label=['200','2','a','5','Interp'],
+                    title='2(a)(5) First par',
                     children=[
-                        n("1. Commentary 1\n", label=l(
-                            "200-Interpretations-2(a)(5)-1",
-                            ["200","Interpretations","2(a)(5)","1"])),
-                        n("2. Commentary 2\n", label=l(
-                            "200-Interpretations-2(a)(5)-2",
-                            ["200","Interpretations","2(a)(5)","2"]))
+                        Node(Node.INTERP, '1. Commentary 1\n',
+                            label=['200', '2', 'a', '5', 'Interp', '1']),
+                        Node(Node.INTERP, '2. Commentary 2\n',
+                            label=['200', '2', 'a', '5', 'Interp', '2'])
                     ]
                 )
             ]
         )
         res = build_whole_regtree(text)
         #   Convert to JSON so we can ignore some unicode issues
-        self.assertEqual(json.dumps(build_whole_regtree(text)), json.dumps(
-            n("\n", label=l("200", ["200"], "Regulation Q"), children=[
-                node201, node202, nodeA, nodeI
-            ])
-        ))
+        enc = struct.NodeEncoder(sort_keys=True)
+        self.assertEqual(
+            enc.encode(build_whole_regtree(text)), 
+            enc.encode(n("\n", label=l("200", ["200"], "Regulation Q"), 
+                children=[ node201, node202, nodeA, nodeI ]))
+        )

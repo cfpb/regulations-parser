@@ -49,3 +49,22 @@ class DepthTreeTest(TestCase):
         self.assertEqual("24", join_text(n2))
         self.assertEqual("3", join_text(n3))
         self.assertEqual("4", join_text(n4))
+
+    def test_encode(self):
+        n1 = Node('typtyp', 'texttext', [Node('t')], ['1','2','3'])
+        n2 = Node('someType', title='Some Title')
+
+        enc = NodeEncoder(sort_keys=True)
+        self.assertEqual(enc.encode(n1), enc.encode({
+            'typ': 'typtyp',
+            'text': 'texttext',
+            'children': [{'typ':'t', 'text':'', 'children':[], 'label':[]}],
+            'label': ['1', '2', '3']
+        }))
+        self.assertEqual(enc.encode(n2), enc.encode({
+            'typ': 'someType',
+            'text': '',
+            'children': [],
+            'label': [],
+            'title': 'Some Title'
+        }))

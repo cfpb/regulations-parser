@@ -1,7 +1,6 @@
-from regparser.layer import key_terms
 from regparser import api_stub
+from regparser.layer import key_terms
 from regparser.tree import struct
-import json
 
 def generate_key_terms_layer(xml_based_reg_json):
     layer_generator = key_terms.KeyTerms(xml_based_reg_json)
@@ -41,5 +40,5 @@ if __name__ == "__main__":
     tree = api_stub.get_regulation_as_json('/vagrant/data/stub-server/regulation/1005/2013-10604-eregs')
     struct.walk(tree, generate_keyterm)
 
-    print json.dumps(layer)
+    print struct.NodeEncoder().encode(layer)
 
