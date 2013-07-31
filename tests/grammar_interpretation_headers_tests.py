@@ -19,6 +19,9 @@ class GrammarInterpretationHeadersTest(TestCase):
         starts = [start for _,start,_ in 
             parser.scanString("\nSection 100.22")]
         self.assertEqual(1, starts[0])
+        starts = [start for _,start,_ in 
+            parser.scanString("\nParagraph 2(b)(2)")]
+        self.assertEqual(1, starts[0])
 
     def test_marker_par(self):
         match = parser.parseString("Paragraph 3(b)")

@@ -20,7 +20,7 @@ par = (
 
 
 marker_par = (
-    common.paragraph_marker
+    common.paragraph_marker.copy().leaveWhitespace()
     + common.section
     + common.depth1_p
 )
