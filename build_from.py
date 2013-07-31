@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     #   First, the regulation tree
     reg_tree = build_whole_regtree(reg)
-    cfr_part = reg_tree['label']['text']
+    cfr_part = reg_tree.label_id()
     cfr_title = sys.argv[2]
     doc_number = sys.argv[3]
     writer.regulation(cfr_part, doc_number).write(reg_tree)

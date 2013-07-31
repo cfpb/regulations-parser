@@ -123,6 +123,6 @@ class InternalCitationParser(Layer):
         return citations
 
     def process(self, node):
-        citations_list = self.parse(node['text'], parts=node['label']['parts'])
+        citations_list = self.parse(node.text, parts=node.label)
         if citations_list:
             return citations_list

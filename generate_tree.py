@@ -20,9 +20,9 @@ if __name__ == "__main__":
     part = int(sys.argv[2])
     reg_tree = build_reg_text_tree(reg, part)
     interp_tree = build_interp_tree(interp, part)
-    appendix_trees = appendix_trees(reg, part, reg_tree['label'])
+    appendix_trees = appendix_trees(reg, part, reg_tree.label)
 
-    reg_tree['children'].extend(appendix_trees)
-    reg_tree['children'].append(interp_tree)
+    reg_tree.children.extend(appendix_trees)
+    reg_tree.children.append(interp_tree)
 
     print NodeEncoder().encode(reg_tree)

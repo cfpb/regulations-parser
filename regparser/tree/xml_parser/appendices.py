@@ -79,7 +79,7 @@ def determine_next_section(m_stack, node_level):
 
     if node_level == last_level:
         #Get the next marker on the same level
-        last_marker = m_stack.peek_last()[1]['label']['parts'][-1]
+        last_marker = m_stack.peek_last()[1].label[-1]
         last_marker_index =  p_levels[node_level-1].index(str(last_marker))
         next_marker = p_levels[node_level-1][last_marker_index + 1]
         return next_marker
@@ -150,7 +150,7 @@ def process_appendix(m_stack, current_section, child):
                     tree_utils.add_to_stack(m_stack, node_level, n)
             else:
                 last = m_stack.peek_last()
-                last[1]['text'] = last[1]['text'] + '\n %s' % node_text
+                last[1].text = last[1].text + '\n %s' % node_text
 
 def build_non_reg_text(reg_xml):
     """ This builds the tree for the non-regulation text such as Appendices 

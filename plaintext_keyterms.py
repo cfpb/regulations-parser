@@ -15,7 +15,7 @@ layer = {}
 part_end = '1005.'
 
 def generate_keyterm(node):
-    if node['label']['text'] not in real_key_terms_layer:
+    if node.label_id() not in real_key_terms_layer:
         node_text = key_terms.KeyTerms.process_node_text(node).encode('utf-8')
         d = '.'
         sentences = [e+d for e in node_text.split(d) if e != '']
@@ -33,7 +33,7 @@ def generate_keyterm(node):
                         "key_term": first_sentence,
                         "locations": [0]
                     }
-                    layer[node['label']['text']] = [layer_element]
+                    layer[node.label_id()] = [layer_element]
 
 if __name__ == "__main__":
     #Use the plain text based JSON for the regulation. 
