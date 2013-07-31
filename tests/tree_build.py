@@ -1,8 +1,7 @@
 #vim: set encoding=utf-8
 from unittest import TestCase
 
-from regparser.tree import struct
-from regparser.tree.struct import Node
+from regparser.tree.struct import Node, NodeEncoder
 from regparser.tree.build import *
 
 class TreeBuildTest(TestCase):
@@ -31,33 +30,32 @@ class TreeBuildTest(TestCase):
         text += "1. Commentary 1\n"
         text += "2. Commentary 2\n"
 
-        n = struct.node
-        l = struct.label
-        node201 = n("\n", label=l("200-1", ["200", "1"],
-            u"§ 200.1 First section."), children=[
-            n(u"(a) First par\n", label=l("200-1-a", ["200","1","a"])),
-            n(u"(b) Second par\n", label=l("200-1-b", ["200","1","b"]))
-        ])
-        node202 = n("\nContent without sub pars\n", label=l("200-2", 
-            ["200","2"], u"§ 200.2 Second section."))
-        nodeA = n("\n", label=l("200-A", ["200","A"], 
-            "Appendix A to Part 200 - Appendix Title"), children=[
-            n("\n", label=l("200-A-1", ["200","A","1"], "A-1 Appendix 1"),
-                children=[n("(a) Appendix par 1\n", 
-                    label=l("200-A-1-a", ["200","A","1","a"]))]
-            )]
+        node201 = Node("\n", label=['200', '1'], 
+            title=u"§ 200.1 First section.", children=[
+                Node(u"(a) First par\n", label=["200","1","a"]),
+                Node(u"(b) Second par\n", label=["200","1","b"])
+            ]
         )
-        nodeI = Node(Node.INTERP, '\n', label=['200', 'Interp'], 
+        node202 = Node("\nContent without sub pars\n", label=["200","2"], 
+            title=u"§ 200.2 Second section.")
+        nodeA = Node("\n", label=["200","A"], 
+            title="Appendix A to Part 200 - Appendix Title", children=[
+                Node("\n", label=["200","A","1"], title="A-1 Appendix 1",
+                children=[Node("(a) Appendix par 1\n", 
+                    label=["200","A","1","a"])])
+            ]
+        )
+        nodeI = Node('\n', label=['200', 'Interp'], typ=Node.INTERP,
             title='Supplement I to Part 200 - Official Interpretations',
             children=[
-                Node(Node.INTERP, '\n', label=['200', '2', 'Interp'],
-                    title='Section 200.2 Second section'),
-                Node(Node.INTERP, '\n', label=['200','2','a','5','Interp'],
-                    title='2(a)(5) First par',
+                Node('\n', label=['200', '2', 'Interp'],
+                    title='Section 200.2 Second section', typ=Node.INTERP),
+                Node('\n', label=['200','2','a','5','Interp'],
+                    typ=Node.INTERP, title='2(a)(5) First par',
                     children=[
-                        Node(Node.INTERP, '1. Commentary 1\n',
+                        Node('1. Commentary 1\n', typ=Node.INTERP,
                             label=['200', '2', 'a', '5', 'Interp', '1']),
-                        Node(Node.INTERP, '2. Commentary 2\n',
+                        Node('2. Commentary 2\n', typ=Node.INTERP,
                             label=['200', '2', 'a', '5', 'Interp', '2'])
                     ]
                 )
@@ -65,9 +63,9 @@ class TreeBuildTest(TestCase):
         )
         res = build_whole_regtree(text)
         #   Convert to JSON so we can ignore some unicode issues
-        enc = struct.NodeEncoder(sort_keys=True)
+        enc = NodeEncoder(sort_keys=True)
         self.assertEqual(
             enc.encode(build_whole_regtree(text)), 
-            enc.encode(n("\n", label=l("200", ["200"], "Regulation Q"), 
+            enc.encode(Node("\n", label=["200"], title="Regulation Q", 
                 children=[ node201, node202, nodeA, nodeI ]))
         )

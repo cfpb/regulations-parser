@@ -2,7 +2,7 @@
 import re
 import HTMLParser
 from lxml import etree
-from regparser.tree.struct import label, node
+from regparser.tree.struct import Node
 from regparser.grammar.common import any_depth_p
 from regparser.tree.paragraph import p_levels
 from regparser.tree.node_stack import NodeStack
@@ -22,13 +22,6 @@ def determine_level(c, current_level):
         p_level = 4
     return p_level
 
-def write_parts(node):
-    """ Go through the JSON tree and recursively fix the label texts. """
-    node['label']['text'] = '-'.join(node['label']['parts'])
-
-    for n in node['children']:
-        write_parts(n)
-
 def build_tree(reg_xml):
     doc = etree.fromstring(reg_xml)
 
@@ -37,8 +30,7 @@ def build_tree(reg_xml):
     parent = doc.xpath('//REGTEXT/PART/HD')[0]
     title = parent.text
 
-    tree_label = label(text="", parts=[reg_part], title=title) 
-    tree = node(text="", children=[], label=tree_label)
+    tree = Node("", [], [reg_part], title)
 
     part = doc.xpath('//REGTEXT/PART')[0]
 
@@ -49,9 +41,9 @@ def build_tree(reg_xml):
         if child.tag == 'SECTION':
             sections.append(build_section(reg_part, child))
 
-    tree['children'] = sections
+    tree.children = sections
     non_reg_sections = build_non_reg_text(reg_xml)
-    tree['children'] += non_reg_sections
+    tree.children += non_reg_sections
 
     write_parts(tree)
     return tree
@@ -75,8 +67,7 @@ def build_section(reg_part, section_xml):
                 section_texts.append(node_text)
 
             for m, node_text in zip(markers_list, node_text):
-                l = label(parts=[str(m)])
-                n = node(text=node_text, children=[], label=l)
+                n = Node(node_text, [], [str(m)])
 
                 new_p_level = determine_level(m, p_level)
                 last = m_stack.peek()
@@ -96,9 +87,8 @@ def build_section(reg_part, section_xml):
     if section_number_match:
         section_number = section_number_match.group(1)
         section_text = ' '.join([section_xml.text] + section_texts)
-        sect_label = label("%s-%s" % (reg_part, section_number), 
-            [reg_part, section_number], section_title)
-        sect_node = node(text=section_text, children=[], label=sect_label)
+        sect_node = Node(section_text, label=[reg_part, section_number], 
+                title=section_title)
 
         m_stack.add_to_bottom((1, sect_node))
 

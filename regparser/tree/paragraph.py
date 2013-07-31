@@ -1,9 +1,11 @@
 import itertools
 import re
+import string
+import sys
+
 from regparser.tree import struct
 from regparser.search import segments
 from regparser.utils import roman_nums
-import string
 
 p_levels = [
     list(string.ascii_lowercase),
@@ -18,14 +20,13 @@ p_levels = [
 
 class ParagraphParser():
 
-    def __init__(self, p_regex, inner_label_fn, typ = None):
+    def __init__(self, p_regex, typ):
         """p_regex is the regular expression used when searching through
         paragraphs. It should contain a %s for the next paragraph 'part'
         (e.g. 'a', 'A', '1', 'i', etc.) inner_label_fn is a function which
         takes the current label, and the next paragraph 'part' and produces
         a new label."""
         self.p_regex = p_regex
-        self.inner_label_fn = inner_label_fn
         self.typ = typ
 
     def matching_subparagraph_ids(self, p_level, paragraph):
@@ -105,29 +106,6 @@ class ParagraphParser():
                     exclude)
         return segments(text, offsets_fn, exclude)
 
-    def build_paragraph_tree(self, text, p_level = 0, exclude = [], 
-            label = struct.label("", [])):
-        """
-        Build a dict to represent the text hierarchy. This method is
-        deprecated.
-        """
-        print "deprecated"
-        subparagraphs = self.paragraphs(text, p_level, exclude)
-        if subparagraphs:
-            body_text = text[0:subparagraphs[0][0]]
-        else:
-            body_text = text
-
-        children = []
-        for paragraph, (start,end) in enumerate(subparagraphs):
-            new_text = text[start:end]
-            new_excludes = [(e[0] - start, e[1] - start) for e in exclude]
-            new_label = self.inner_label_fn(label, 
-                    p_levels[p_level][paragraph])
-            children.append(self.build_paragraph_tree(new_text, p_level + 1,
-                new_excludes, new_label))
-        return struct.node(body_text, children, label)
-
     def build_tree(self, text, p_level = 0, exclude = [], label = [],
             title=''):
         """
@@ -146,4 +124,4 @@ class ParagraphParser():
             new_label = label + [p_levels[p_level][paragraph]]
             children.append(self.build_tree(new_text, p_level + 1,
                 new_excludes, new_label))
-        return struct.Node(self.typ, body_text, children, label, title)
+        return struct.Node(body_text, children, label, title, self.typ)

@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from regparser.layer.graphics import Graphics
-from regparser.tree import struct
+from regparser.tree.struct import Node
 import settings
 
 class LayerGraphicsTest(TestCase):
@@ -15,7 +15,7 @@ class LayerGraphicsTest(TestCase):
         settings.DEFAULT_IMAGE_URL = self.default_url
 
     def test_process(self):
-        node = struct.node("Testing ![ex](ABCD) then some more XXX " +
+        node = Node("Testing ![ex](ABCD) then some more XXX " +
             "some more ![222](XXX) followed by ![ex](ABCD) and XXX")
         g = Graphics(None)
         result = g.process(node)
@@ -35,7 +35,7 @@ class LayerGraphicsTest(TestCase):
         self.assertEqual([True, True], found)
 
     def test_process_format(self):
-        node = struct.node("![A88 Something](ER22MY13.257)")
+        node = Node("![A88 Something](ER22MY13.257)")
         g = Graphics(None)
         self.assertEqual(1, len(g.process(node)))
 
@@ -43,7 +43,7 @@ class LayerGraphicsTest(TestCase):
         settings.DEFAULT_IMAGE_URL = ":::::%s:::::"
         settings.IMAGE_OVERRIDES = {"a": "AAA", "f": "F8"}
 
-        node = struct.node("![Alt1](img1)   ![Alt2](f)  ![Alt3](a)")
+        node = Node("![Alt1](img1)   ![Alt2](f)  ![Alt3](a)")
         g = Graphics(None)
         results = g.process(node)
         self.assertEqual(3, len(results))

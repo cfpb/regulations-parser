@@ -1,8 +1,11 @@
 #vim: set encoding=utf-8
 import unittest
+
+from lxml import etree
+
+from regparser.tree.struct import Node
 from regparser.tree.xml_parser import tree_utils
 from regparser.tree.node_stack import NodeStack
-from lxml import etree
 
 class TreeUtilsTest(unittest.TestCase):
     def test_split_text(self):  
@@ -33,8 +36,8 @@ class TreeUtilsTest(unittest.TestCase):
         self.assertEquals('(a) <E T="03">Fruit.</E>Apples, and Pineapples', result)
 
     def test_unwind_stack(self):
-        level_one_n = {'label': {'parts': ['272']}, 'children':[]}
-        level_two_n = {'label': {'parts': ['a']}, 'children':[]}
+        level_one_n = Node(label=['272'])
+        level_two_n = Node(label=['a'])
 
         m_stack = NodeStack()
         m_stack.push_last((1, level_one_n))
@@ -46,4 +49,4 @@ class TreeUtilsTest(unittest.TestCase):
         self.assertEquals(m_stack.size(), 1)
 
         n = m_stack.pop()[0][1]
-        self.assertEqual(n['children'][0]['label']['parts'], ['272', 'a'])
+        self.assertEqual(n.children[0].label, ['272', 'a'])

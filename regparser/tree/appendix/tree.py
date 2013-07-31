@@ -1,8 +1,8 @@
 from regparser import utils
 from regparser.grammar.internal_citations import regtext_citation
-from regparser.tree import struct
 from regparser.tree.appendix import carving, generic
 from regparser.tree.reg_text import regParser
+from regparser.tree.struct import Node
 import string
 
 
@@ -14,47 +14,47 @@ def trees_from(text, part, parent_label):
     for begin, end in carving.appendices(text):
         title, appendix = utils.title_body(text[begin:end])
         appendix_letter = carving.get_appendix_letter(title, part)
-        label = struct.extend_label(parent_label, "-" + appendix_letter,
-                appendix_letter, title)
+        label = parent_label + [appendix_letter]
         sections = carving.appendix_sections(appendix, appendix_letter)
         if sections:
-            child = paragraph_tree(appendix_letter, sections, appendix, label)
+            child = paragraph_tree(appendix_letter, sections, appendix,
+                    label, title)
         else:
-            child = generic_tree(appendix, label)
+            child = generic_tree(appendix, label, title)
         children.append(child)
     return children
 
 
-def generic_tree(text, label):
+def generic_tree(text, label, title=None):
     """Use the "generic" parser to build a tree. The "generic" parser simply
     splits on Title Case and treats body text as the node content."""
     segments = generic.segments(text)
     if not segments:
-        return struct.node(text, label=label)
+        return Node(text, label=label, title=title)
 
     children = []
     for index, seg in enumerate(segments):
         start, end = seg
         seg_title, body = utils.title_body(text[start:end])
         label_character = string.ascii_lowercase[index]
-        children.append(struct.node(body, label=struct.extend_label(label,
-            "-" + label_character, label_character, seg_title)))
-    return struct.node(text[:segments[0][0]], children, label)
+        children.append(Node(body, label=(label + [label_character]),
+            title=seg_title))
+    return Node(text[:segments[0][0]], children, label, title)
 
 
-def paragraph_tree(appendix_letter, sections, text, label):
+def paragraph_tree(appendix_letter, sections, text, label, title=None):
     """Use the paragraph parser to parse through each section in this
     appendix."""
     if not sections:
-        return struct.node(text, label=label)
+        return Node(text, label=label, title=title)
     children = []
     for begin, end in sections:
-        title, section_text = utils.title_body(text[begin:end])
-        sec_num = carving.get_appendix_section_number(title, appendix_letter)
+        seg_title, section_text = utils.title_body(text[begin:end])
+        sec_num = carving.get_appendix_section_number(seg_title, 
+                appendix_letter)
         exclude = [(start, end) for _, start, end in
                 regtext_citation.scanString(section_text)]
-        child = regParser.build_paragraph_tree(section_text, 
-                exclude=exclude,
-                label=struct.extend_label(label, "-" + sec_num, sec_num, title))
+        child = regParser.build_tree(section_text, exclude=exclude, 
+                label=label + [sec_num], title=seg_title)
         children.append(child)
-    return struct.node(text[:sections[0][0]], children, label)
+    return Node(text[:sections[0][0]], children, label, title)

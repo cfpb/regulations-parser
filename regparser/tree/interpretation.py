@@ -6,7 +6,7 @@ from regparser.tree.paragraph import ParagraphParser
 
 
 #   Can only be preceded by white space or a start of line
-interpParser = ParagraphParser(r"(?<![^\s])%s\.", None, struct.Node.INTERP)
+interpParser = ParagraphParser(r"(?<![^\s])%s\.", struct.Node.INTERP)
 
 
 def build(text, part):
@@ -17,11 +17,11 @@ def build(text, part):
 
     if segments:
         children = [segment_tree(body[s:e], part, [part]) for s,e in segments]
-        return struct.Node(struct.Node.INTERP, body[:segments[0][0]], 
-                children, [part, 'Interp'], title)
+        return struct.Node(body[:segments[0][0]], children, [part, 'Interp'], 
+                title, struct.Node.INTERP)
     else:
-        return struct.Node(struct.Node.INTERP, body, [], [part, 'Interp'],
-                title)
+        return struct.Node(body, [], [part, 'Interp'], title,
+                struct.Node.INTERP)
 
 
 def segment_by_header(text, part):

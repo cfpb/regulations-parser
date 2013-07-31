@@ -1,6 +1,6 @@
 # vim: set fileencoding=utf-8
 from regparser.layer.terms import Ref, Terms
-from regparser.tree import struct
+from regparser.tree.struct import Node
 import settings
 from unittest import TestCase
 
@@ -18,41 +18,34 @@ class LayerTermTest(TestCase):
 
     def test_has_definitions(self):
         t = Terms(None)
-        valid_label = struct.label("101-22-c", ["101", "22", "c"])
-        self.assertFalse(t.has_definitions(struct.node("This has no defs",
-            label=valid_label)))
-        self.assertFalse(t.has_definitions(struct.node("No Def", 
-            label=struct.label("101-22-c", ["101", "22", "c"], "No def"))))
+        self.assertFalse(t.has_definitions(Node("This has no defs",
+            label=['101', '22', 'c'])))
+        self.assertFalse(t.has_definitions(Node("No Def", 
+            label=["101", "22", "c"], title="No def")))
         self.assertFalse(t.has_definitions(
-            struct.node("Tomatoes do not meet the definition 'vegetable'",
-                label=valid_label)))
-        self.assertFalse(t.has_definitions(struct.node("Definition", [],
-            struct.label("101-A-1", ["101", "A", "1"]))))
-        self.assertFalse(t.has_definitions(struct.node("Definition", [],
-            struct.label("101-Interpretations-11", 
-                ["101", "Interpretations", "11"]))))
+            Node("Tomatoes do not meet the definition 'vegetable'",
+                label=['101', '22', 'c'])))
+        self.assertFalse(t.has_definitions(Node("Definition",
+            label=['101', 'A', '1'])))
+        self.assertFalse(t.has_definitions(Node("Definition",
+            label=['101', '11', 'Interp'])))
         self.assertTrue(t.has_definitions(
-            struct.node("Definition. This has a definition.",
-                label=valid_label)))
+            Node("Definition. This has a definition.",
+                label=['101', '22', 'c'])))
         self.assertTrue(t.has_definitions(
-            struct.node("Definitions. This has multiple!", label=valid_label)))
-        self.assertTrue(t.has_definitions(
-            struct.node("No body",
-                label=struct.label("101-22-c", ["101", "22", "c"],
-                "But definition is in the title"))))
+            Node("Definitions. This has multiple!", label=['101','22','c'])))
+        self.assertTrue(t.has_definitions(Node("No body", 
+            label=['101', '22', 'c'], title="But definition is in the title")))
 
     def test_has_definitions_p_marker(self):
         t = Terms(None)
-        node = struct.node("(a) Definitions. For purposes of this " +
-            "section except blah", 
-            [], 
-            struct.label('88-20-a', ['88', '20', 'a']))
+        node = Node("(a) Definitions. For purposes of this " +
+            "section except blah", label=['88', '20', 'a'])
         self.assertTrue(t.has_definitions(node))
 
     def test_has_definitions_the_term_means(self):
         t = Terms(None)
-        node = struct.node("(a) The term Bob means awesome", [],
-            struct.label('88-20-a', ['88', '20', 'a']))
+        node = Node("(a) The term Bob means awesome", label=['88', '20', 'a'])
         self.assertTrue(t.has_definitions(node))
 
     def test_is_exclusion(self):
@@ -79,19 +72,18 @@ class LayerTermTest(TestCase):
         text3biA = u'Also has no terms'
         text3bii = u'Has no terms'
         text3c = u'Also has no terms'
-        tree = struct.node(children=[ 
-            struct.node(text1, label=struct.label("aaa")),
-            struct.node(text2, label=struct.label("bbb")),
-            struct.node(text3, children=[ 
-                struct.node(text3a, label=struct.label('ccc')),
-                struct.node(children=[ 
-                    struct.node(text3bi, [struct.node(text3biA)], 
-                        struct.label('ddd')),
-                    struct.node(text3bii)
-                    ]),
-                struct.node(text3c)
-                ])
+        tree = Node(children=[ 
+            Node(text1, label=['aaa']),
+            Node(text2, label=['bbb']),
+            Node(text3, children=[ 
+                Node(text3a, label=['ccc']),
+                Node(children=[ 
+                    Node(text3bi, [Node(text3biA)], ['ddd']),
+                    Node(text3bii)
+                ]),
+                Node(text3c)
             ])
+        ])
         defs, excluded = t.node_definitions(tree)
         self.assertEqual(5, len(defs))
         self.assertTrue(Ref('word', 'aaa', (12,16)) in defs)
@@ -102,23 +94,23 @@ class LayerTermTest(TestCase):
 
     def test_node_defintions_act(self):
         t = Terms(None)
-        node = struct.node(u'“Act” means some reference to 99 U.S.C. 1234')
+        node = Node(u'“Act” means some reference to 99 U.S.C. 1234')
         included, excluded = t.node_definitions(node)
         self.assertEqual([], included)
         self.assertEqual(1, len(excluded))
 
-        node = struct.node(u'“Act” means something else entirely')
+        node = Node(u'“Act” means something else entirely')
         included, excluded = t.node_definitions(node)
         self.assertEqual(1, len(included))
         self.assertEqual([], excluded)
 
     def test_node_definitions_exclusion(self):
         t = Terms(None)
-        node = struct.node('',[
-            struct.node(u'“Bologna” is a type of deli meat',
-                label=struct.label('1')),
-            struct.node(u'Let us not forget that the term “bologna” ' +
-                'does not include turtle meat', label=struct.label('2'))
+        node = Node('',[
+            Node(u'“Bologna” is a type of deli meat',
+                label=['1']),
+            Node(u'Let us not forget that the term “bologna” does not ' +
+                'include turtle meat', label=['2'])
         ])
         included, excluded = t.node_definitions(node)
         self.assertEqual([Ref('bologna', '1', (1,8))], included)
@@ -141,51 +133,49 @@ class LayerTermTest(TestCase):
 
     def test_definitions_scopes(self):
         t = Terms(None)
-        node = struct.node("", 
-                label=struct.label("1000-22-a-5", ['1000', '22', 'a', '5']))
-        node['text'] = 'For the purposes of this part, blah blah'
-        self.assertEqual([('1000',)], t.definitions_scopes(node))
+        node = Node(label=['1000', '22', 'a', '5'])
+        node.text = 'For the purposes of this part, blah blah'
+        self.assertEqual([('1000',), ('1000', 'Interp')], 
+            t.definitions_scopes(node))
 
         t.subpart_map = {
             'SubPart 1': ['a', '22'],
             'Other': []
         }
-        node['text'] = 'For the purposes of this subpart, yada yada'
+        node.text = 'For the purposes of this subpart, yada yada'
         self.assertEqual([('1000', 'a'), ('1000', '22'), 
-            ('1000','Interpretations','a'), ('1000','Interpretations','22')],
+            ('1000', 'a', 'Interp'), ('1000', '22', 'Interp')],
             t.definitions_scopes(node))
 
-        node['text'] = 'For the purposes of this section, blah blah'
-        self.assertEqual([('1000', '22'), ('1000', 'Interpretations', '22')], 
+        node.text = 'For the purposes of this section, blah blah'
+        self.assertEqual([('1000', '22'), ('1000', '22', 'Interp')], 
                 t.definitions_scopes(node))
 
-        node['text'] = 'For the purposes of this paragraph, blah blah'
-        self.assertEqual([('1000','22','a','5'), ('1000', 'Interpretations',
-            '22(a)(5)')], t.definitions_scopes(node))
+        node.text = 'For the purposes of this paragraph, blah blah'
+        self.assertEqual([('1000','22','a','5'),
+            ('1000','22','a','5','Interp')], t.definitions_scopes(node))
 
-        node['text'] = 'Default'
-        self.assertEqual([('1000',)], t.definitions_scopes(node))
+        node.text = 'Default'
+        self.assertEqual([('1000',), ('1000', 'Interp')], 
+            t.definitions_scopes(node))
 
     def test_pre_process(self):
         settings.SUBPART_STARTS = {'2': 'XQXQ'}
-        tree = struct.node(children=[
-            struct.node(u"Definition. For the purposes of this part, "
-                + u"“abcd” is an alphabet", 
-                label=struct.label("88-1", ["88","1"])),
-            struct.node(children=[
-                struct.node(u"Definitions come later for the purposes of "
-                    + "this section ", children=[
-                        struct.node(u"“AXAX” means axe-cop",
-                            label=struct.label("88-2-a-1", ["88","2","a","1"])
-                        )],
-                    label=struct.label("88-2-a", ["88","2","a"])),
-                struct.node(children=[struct.node(children=[struct.node(
+        tree = Node(children=[
+            Node(u"Definition. For the purposes of this part, “abcd” is "
+                + "an alphabet", label=['88', '1']),
+            Node(children=[
+                Node("Definitions come later for the purposes of this "
+                    + "section ", children=[
+                        Node(u"“AXAX” means axe-cop", label=["88","2","a","1"])
+                    ],
+                    label=["88","2","a"]),
+                Node(children=[Node(children=[Node(
                     u"Definition. “Awesome sauce” means great for the " +
                     "purposes of this paragraph", 
-                    label=struct.label("88-2-b-i-A",
-                        ["88","2","b","i","A"]))])])
-                ], label=struct.label('88-2', ['88','2']))
-            ])
+                    label=["88","2","b","i","A"])])])
+            ], label=['88','2'])
+        ])
         t = Terms(tree)
         t.pre_process()
 
@@ -329,15 +319,15 @@ class LayerTermTest(TestCase):
                 t.calculate_offsets(text, applicable_terms, [(1,5)]))
 
     def test_process(self):
-        t = Terms(struct.node(children=[
-            struct.node("ABC5", children=[struct.node("child")],
-                label=struct.label("ref1")),
-            struct.node("AABBCC5", label=struct.label("ref2")),
-            struct.node("ABC3", label=struct.label("ref3")),
-            struct.node("AAA3", label=struct.label("ref4")),
-            struct.node("ABCABC3", label=struct.label("ref5")),
-            struct.node("ABCOTHER", label=struct.label("ref6")),
-            struct.node("ZZZOTHER", label=struct.label("ref7"))]))
+        t = Terms(Node(children=[
+            Node("ABC5", children=[Node("child")], label=['ref1']),
+            Node("AABBCC5", label=['ref2']),
+            Node("ABC3", label=['ref3']),
+            Node("AAA3", label=['ref4']),
+            Node("ABCABC3", label=['ref5']),
+            Node("ABCOTHER", label=['ref6']),
+            Node("ZZZOTHER", label=['ref7']),
+        ]))
         t.scoped_terms = {
                 ("101", "22", "b", "2", "ii"): [
                     Ref("abc", "ref1", (1,2)),
@@ -351,9 +341,9 @@ class LayerTermTest(TestCase):
                     Ref("zzz", "ref7", (7,8))]
                 }
         #   Check that the return value is correct
-        layer_el = t.process(struct.node(
-            "This has abc, aabbcc, aaa, abcabc, and zzz", [],
-            struct.label("101-22-b-2-ii", ["101", "22", "b", "2", "ii"])))
+        layer_el = t.process(Node(
+            "This has abc, aabbcc, aaa, abcabc, and zzz",
+            label=["101", "22", "b", "2", "ii"]))
         self.assertEqual(4, len(layer_el))
         found = [False, False, False, False]
         for ref_obj in layer_el:
@@ -370,16 +360,15 @@ class LayerTermTest(TestCase):
     def test_process_label_in_node(self):
         """Make sure we don't highlight definitions that are being defined
         in this paragraph."""
-        tree = struct.node(children=[
-            struct.node("Defining secret phrase.", 
-                label=struct.label("AB-a", ["AB", "a"])),
-            struct.node("Has secret phrase. Then some other content", 
-                label=struct.label("AB-b", ["AB", "b"]))
-        ], label=struct.label("AB", ["AB"]))
+        tree = Node(children=[
+            Node("Defining secret phrase.", label=['AB', 'a']),
+            Node("Has secret phrase. Then some other content", 
+                label=['AB', 'b'])
+        ], label=['AB'])
         t = Terms(tree)
         t.scoped_terms = {
             ('AB',): [Ref("secret phrase", "AB-a", (9,22))]
         }
         #   Term is defined in the first child
-        self.assertEqual([], t.process(tree['children'][0]))
-        self.assertEqual(1, len(t.process(tree['children'][1])))
+        self.assertEqual([], t.process(tree.children[0]))
+        self.assertEqual(1, len(t.process(tree.children[1])))

@@ -53,7 +53,7 @@ class AppendicesTest(TestCase):
 
         last = m_stack.pop()
         self.assertEqual(last[0][0], 2)
-        self.assertEqual(last[0][1]['label']['parts'], ['5'])
+        self.assertEqual(last[0][1].label, ['5'])
 
     def test_process_supplement_header(self):
         xml = """
@@ -66,8 +66,8 @@ class AppendicesTest(TestCase):
 
         last = m_stack.pop()
         self.assertEqual(last[0][0], 2)
-        self.assertEqual(last[0][1]['label']['parts'], ['2(a)'])
-        self.assertEqual(last[0][1]['label']['title'], '2(a) Access Device')
+        self.assertEqual(last[0][1].label, ['2(a)'])
+        self.assertEqual(last[0][1].title, '2(a) Access Device')
 
     def test_process_supplement_header(self):
         xml = """
@@ -80,5 +80,5 @@ class AppendicesTest(TestCase):
 
         last = m_stack.pop()
         self.assertEqual(last[0][0], 4)
-        self.assertEqual(last[0][1]['label']['parts'], ['i'])
-        self.assertEqual(last[0][1]['text'], 'i. The red panda escaped.')
+        self.assertEqual(last[0][1].label, ['i'])
+        self.assertEqual(last[0][1].text, 'i. The red panda escaped.')

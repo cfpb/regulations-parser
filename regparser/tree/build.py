@@ -24,8 +24,8 @@ def build_whole_regtree(text):
     part = find_cfr_part(text)
     reg_tree = build_reg_text_tree(text, part)
     interps = build_interp_tree(interp, part)
-    appendices = appendix_trees(text, part, reg_tree['label'])
+    appendices = appendix_trees(text, part, reg_tree.label)
 
-    reg_tree['children'].extend(appendices)
-    reg_tree['children'].append(interps)
+    reg_tree.children.extend(appendices)
+    reg_tree.children.append(interps)
     return reg_tree

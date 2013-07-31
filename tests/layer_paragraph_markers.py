@@ -1,45 +1,41 @@
-from regparser.layer.paragraph_markers import ParagraphMarkers
-from regparser.tree import struct
 from unittest import TestCase
+
+from regparser.layer.paragraph_markers import ParagraphMarkers
+from regparser.tree.struct import Node
 
 class ParagraphMarkersTest(TestCase):
 
     def test_process_no_results(self):
         pm = ParagraphMarkers(None)
-        self.assertEqual(None, pm.process(struct.node(
-            "This has no paragraph", label=struct.label("a", ["a"])
-        )))
-        self.assertEqual(None, pm.process(struct.node(
-            "(b) Different paragraph", label=struct.label("a", ["a"])
-        )))
-        self.assertEqual(None, pm.process(struct.node(
-            "Later (a)", label=struct.label("a", ["a"])
-        )))
-        self.assertEqual(None, pm.process(struct.node("(a) Interpretation", 
-            label=struct.label("Interpretations-a", ["Interpretations", "a"])
-        )))
+        self.assertEqual(None, pm.process(
+            Node("This has no paragraph", label=["a"])
+        ))
+        self.assertEqual(None, pm.process(
+            Node("(b) Different paragraph", label=["a"])
+        ))
+        self.assertEqual(None, pm.process(
+            Node("Later (a)", label=["a"])
+        ))
+        self.assertEqual(None, pm.process(
+            Node("(a) Interpretation", label=["a", 'Interp'])
+        ))
 
     def test_process_with_results(self):
         pm = ParagraphMarkers(None)
-        self.assertEqual(pm.process(struct.node("(c) Paragraph",
-            label=struct.label("c", ["c"]))), [{
+        self.assertEqual(pm.process(Node("(c) Paragraph", label=['c'])), [{
                 "text": "(c)", "locations": [0]
-            }]
-        )
-        self.assertEqual(pm.process(struct.node("\n(vi) Paragraph",
-            label=struct.label("c-vi", ["c", "vi"]))), [{
+        }])
+        self.assertEqual(
+            pm.process(Node("\n(vi) Paragraph", label=['c', 'vi'])), [{
                 "text": "(vi)", "locations": [0]
             }]
         )
-        self.assertEqual(pm.process(struct.node("ii. Paragraph",
-            label=struct.label("Interpretations-ii", 
-                ["Interpretations", "ii"]))), [{
+        self.assertEqual(
+            pm.process(Node("ii. Paragraph", label=['ii', 'Interp'])), [{
                 "text": "ii.", "locations": [0]
             }]
         )
-        self.assertEqual(pm.process(struct.node("A. Paragraph",
-            label=struct.label("Interpretations-ii-A", 
-                ["Interpretations", "ii", "A"]))), [{
-                "text": "A.", "locations": [0]
-            }]
+        self.assertEqual(
+            pm.process(Node("A. Paragraph", label=['ii', 'A', 'Interp'])),
+            [{ "text": "A.", "locations": [0] }]
         )
