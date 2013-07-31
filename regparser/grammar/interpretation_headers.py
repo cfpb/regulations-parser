@@ -1,24 +1,36 @@
 import string
 
-from pyparsing import LineEnd, Literal, LineStart, SkipTo, Word
+from pyparsing import LineEnd, LineStart, SkipTo
 
-from regparser.grammar.common import depth1_p
+from regparser.grammar import common
 
 
-with_paragraph = (
-    LineStart()
-    + Literal("Paragraph")
-    + Word(string.digits).setResultsName("section")
-    + depth1_p.setResultsName("pars")
+section = (
+    common.Marker("section").copy().leaveWhitespace()
+    + common.part_section
+    + SkipTo(LineEnd())
 )
 
 
-without_paragraph = (
-    LineStart() 
-    + Word(string.digits).setResultsName("section")
-    + depth1_p.setResultsName("pars")
-    + SkipTo(LineEnd()).setResultsName("term")
+par = (
+    common.section.copy().leaveWhitespace()
+    + common.depth1_p
+    + SkipTo(LineEnd())
 )
 
 
-parser = with_paragraph | without_paragraph
+marker_par = (
+    common.paragraph_marker.copy().leaveWhitespace()
+    + common.section
+    + common.depth1_p
+)
+
+
+appendix = (
+    common.appendix_marker.copy().leaveWhitespace()
+    + common.appendix_letter
+    + SkipTo(LineEnd())
+)
+
+
+parser = LineStart() + (section | marker_par | par | appendix)

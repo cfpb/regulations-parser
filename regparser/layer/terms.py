@@ -7,7 +7,6 @@ from inflection import pluralize
 from regparser import utils
 from regparser.grammar.external_citations import uscode_exp as uscode
 from regparser.grammar.terms import term_parser
-from regparser.layer.interpretations import Interpretations
 from regparser.layer.layer import Layer
 from regparser.layer.paragraph_markers import ParagraphMarkers
 from regparser.tree import struct
@@ -41,8 +40,8 @@ class Terms(Layer):
         self.current_subpart = None     # Need a reference for the closure
 
         def per_node(node):
-            if len(node['label']['parts']) == 2:    #   Subparts
-                section = node['label']['parts'][-1]
+            if len(node.label) == 2:    #   Subparts
+                section = node.label[-1]
                 if section in settings.SUBPART_STARTS:
                     self.current_subpart = settings.SUBPART_STARTS[section]
                 self.subpart_map[self.current_subpart].append(section)
@@ -80,16 +79,15 @@ class Terms(Layer):
     def has_definitions(self, node):
         """Does this node have definitions?"""
         # Definitions cannot be in the top-most layer of the tree (the root)
-        if len(node['label']['parts']) < 2:
+        if len(node.label) < 2:
             return False
         # Definitions are only in the reg text (not appendices/interprs)
-        if not node['label']['parts'][1].isdigit():
+        if not node.label[1].isdigit() or 'Interp' in node.label:
             return False
-        stripped = node['text'].strip(ParagraphMarkers.marker(node)).strip()
+        stripped = node.text.strip(ParagraphMarkers.marker(node)).strip()
         return (
                 stripped.lower().startswith('definition')
-                or ('title' in node['label'] 
-                    and 'definition' in node['label']['title'].lower())
+                or (node.title and 'definition' in node.title.lower())
                 or re.search('the term .* means', stripped.lower())
                 )
 
@@ -109,17 +107,17 @@ class Terms(Layer):
         included_defs = []
         excluded_defs = []
         def per_node(n):
-            for match in [m for m,_,_ in term_parser.scanString(n['text'])]:
+            for match in [m for m,_,_ in term_parser.scanString(n.text)]:
                 term = match.term.tokens[0].lower()
                 pos = match.term.pos
 
                 add_to = included_defs
 
-                if term == 'act' and list(uscode.scanString(n['text'])):
+                if term == 'act' and list(uscode.scanString(n.text)):
                     add_to = excluded_defs
-                if self.is_exclusion(term, n['text'], included_defs):
+                if self.is_exclusion(term, n.text, included_defs):
                     add_to = excluded_defs
-                add_to.append(Ref(term, n['label']['text'], pos))
+                add_to.append(Ref(term, n.label_id(), pos))
         struct.walk(node, per_node)
         return included_defs, excluded_defs
 
@@ -136,19 +134,19 @@ class Terms(Layer):
     def definitions_scopes(self, node):
         """Try to determine the scope of definitions in this term."""
         scopes = []
-        if "purposes of this part" in node['text'].lower():
-            scopes.append(node['label']['parts'][:1])
-        elif "purposes of this subpart" in node['text'].lower():
-            scopes.extend(self.subpart_scope(node['label']['parts']))
-        elif "purposes of this section" in node['text'].lower():
-            scopes.append(node['label']['parts'][:2])
-        elif "purposes of this paragraph" in node['text'].lower():
-            scopes.append(node['label']['parts'])
+        if "purposes of this part" in node.text.lower():
+            scopes.append(node.label[:1])
+        elif "purposes of this subpart" in node.text.lower():
+            scopes.extend(self.subpart_scope(node.label))
+        elif "purposes of this section" in node.text.lower():
+            scopes.append(node.label[:2])
+        elif "purposes of this paragraph" in node.text.lower():
+            scopes.append(node.label)
         else:   # defaults to whole reg
-            scopes.append(node['label']['parts'][:1])
+            scopes.append(node.label[:1])
 
         for scope in list(scopes):  # second list so we can iterate
-            interp_scope = Interpretations.regtext_to_interp_label(scope)
+            interp_scope = scope + ['Interp']
             if interp_scope:
                 scopes.append(interp_scope)
         return [tuple(scope) for scope in scopes]
@@ -157,20 +155,19 @@ class Terms(Layer):
         """Determine which (if any) definitions would apply to this node,
         then find if any of those terms appear in this node"""
         applicable_terms = {}
-        for segment_length in range(1, len(node['label']['parts'])+1):
-            scope = tuple(node['label']['parts'][:segment_length])
+        for segment_length in range(1, len(node.label)+1):
+            scope = tuple(node.label[:segment_length])
             for ref in self.scoped_terms.get(scope, []):
                 applicable_terms[ref.term] = ref    # overwrites
 
         layer_el = []
         #   Remove any definitions defined in this paragraph
         term_list = [(term,ref) for term, ref in applicable_terms.iteritems()
-            if ref.label != node['label']['text']]
+            if ref.label != node.label_id()]
 
-        exclusions = self.excluded_offsets(node['label']['text'],
-            node['text'])
+        exclusions = self.excluded_offsets(node.label_id(), node.text)
 
-        matches = self.calculate_offsets(node['text'], term_list, exclusions)
+        matches = self.calculate_offsets(node.text, term_list, exclusions)
         for term, ref, offsets in matches:
             layer_el.append({
                 "ref": ref.term + ':' + ref.label,

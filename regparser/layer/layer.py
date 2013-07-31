@@ -16,9 +16,9 @@ class Layer():
     def builder(self, node):
         layer_element = self.process(node)
         if layer_element:
-            self.layer[node['label']['text']] = layer_element
+            self.layer[node.label_id()] = layer_element
 
-        for c in node['children']:
+        for c in node.children:
             self.builder(c)
 
     def build(self):

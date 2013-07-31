@@ -1,6 +1,4 @@
 from layer import Layer
-from regparser.tree.struct import walk
-from regparser.utils import flatten
 
 class SectionBySection(Layer):
 
@@ -12,13 +10,17 @@ class SectionBySection(Layer):
         """Determine which (if any) section-by-section analyses would apply
         to this node."""
         analyses = []
-        def process_sxs(sxs):
-            if 'label' in sxs and sxs['label'] == node['label']['text']:
-                return sxs
-
         for notice in self.notices:
-            search_results = flatten([walk(sxs, process_sxs) for sxs in 
-                    notice['section_by_section']])
+            search_results = []
+            def per_sxs(sxs):
+                if 'label' in sxs and sxs['label'] == node.label_id():
+                    search_results.append(sxs)
+                for child in sxs['children']:
+                    per_sxs(child)
+
+            for sxs in notice['section_by_section']:
+                per_sxs(sxs)
+
             for found in search_results:
                 analyses.append({
                     'text': self.concat(found),

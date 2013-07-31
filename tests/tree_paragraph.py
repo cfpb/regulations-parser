@@ -1,15 +1,11 @@
-from regparser.tree import struct
 from regparser.tree.paragraph import ParagraphParser
+from regparser.tree.struct import Node
 from unittest import TestCase
 
 class DepthParagraphTest(TestCase):
     def setUp(self):
         """Use a parser like that used for reg text."""
-        def _mk_label(old_label, next_part):
-            return struct.extend_label(old_label, '(' + next_part + ')', 
-                    next_part)
-
-        self.regParser = ParagraphParser(r"\(%s\)", _mk_label)
+        self.regParser = ParagraphParser(r"\(%s\)", Node.REGTEXT)
 
     def test_matching_subparagraph_ids(self):
         matches = self.regParser.matching_subparagraph_ids(0,8)    #   'i'
@@ -132,97 +128,41 @@ class DepthParagraphTest(TestCase):
     def test_build_paragraph_tree(self):
         """Verify several paragraph trees."""
         text = "This (a) is a good (1) test (2) of (3) some (b) body."
-        self.assertEqual(self.regParser.build_paragraph_tree(text),
-                {
-                    "text": "This ",
-                    "label": {"text": "", "parts": []},
-                    "children": [
-                        {
-                            "text": "(a) is a good ",
-                            "label": {"text": "(a)", "parts": ["a"]},
-                            "children": [
-                                {
-                                    "text": "(1) test ",
-                                    "label": {
-                                        "text": "(a)(1)",
-                                        "parts": ["a", "1"]
-                                        },
-                                    "children": []
-                                }, {
-                                    "text": "(2) of ",
-                                    "label": {
-                                        "text": "(a)(2)",
-                                        "parts": ["a", "2"]
-                                        },
-                                    "children": []
-                                }, {
-                                    "text": "(3) some ",
-                                    "label": {
-                                        "text": "(a)(3)",
-                                        "parts": ["a", "3"]
-                                        },
-                                    "children": []
-                                }
-                            ]
-                        }, {
-                            "text": "(b) body.",
-                            "label": {"text": "(b)", "parts": ["b"]},
-                            "children": []
-                        }
-                    ]
-                })
+        self.assertEqual(self.regParser.build_tree(text),
+            Node("This ", children=[
+                Node("(a) is a good ", label=['a'], children=[
+                    Node("(1) test ", label=['a', '1']),
+                    Node("(2) of ", label=['a', '2']),
+                    Node("(3) some ", label=['a', '3'])
+                ]),
+                Node("(b) body.", label=['b'])
+            ])
+        )
 
-    def test_build_paragraph_tree_exclude(self):
+    def test_build_tree_exclude(self):
         """Paragraph tree should not split on exclude areas."""
         ref = "Ref (b)(2)"
         text = "This (a) is a good (1) %s test (2) no?" % ref
         ref_pos = text.find(ref)
-        self.assertEqual(self.regParser.build_paragraph_tree(text, 
+        self.assertEqual(self.regParser.build_tree(text, 
             exclude=[(ref_pos,ref_pos+len(ref))]),
-                {
-                    "text": "This ",
-                    "label": {"text": "", "parts": []},
-                    "children": [
-                        {
-                            "text": "(a) is a good ",
-                            "label": {"text": "(a)", "parts": ["a"]},
-                            "children": [
-                                {
-                                    "text": "(1) %s test " % ref,
-                                    "label": {
-                                        "text": "(a)(1)",
-                                        "parts": ["a", "1"]
-                                        },
-                                    "children": []
-                                }, {
-                                    "text": "(2) no?",
-                                    "label": {
-                                        "text": "(a)(2)",
-                                        "parts": ["a", "2"]
-                                        },
-                                    "children": []
-                                }
-                            ]
-                        }
-                    ]
-                })
+            Node("This ", children=[
+                Node("(a) is a good ", label=['a'], children=[
+                    Node("(1) %s test " % ref, label=['a', '1']),
+                    Node("(2) no?", label=['a', '2'])
+                ])
+            ])
+        )
 
-    def test_build_paragraph_tree_label_preamble(self):
+    def test_build_tree_label_preamble(self):
         """Paragraph tree's labels can be prepended."""
         text = "This (a) is a good (1) test (2) of (3) some (b) body."
-        tree = self.regParser.build_paragraph_tree(text, 
-                label={"text": "205.14", "parts": ["205", "14"]})
-        self.assertEqual("205.14", tree['label']['text'])
-        self.assertEqual(["205", "14"], tree['label']['parts'])
-        child_a, child_b = tree['children']
-        self.assertEqual("205.14(a)", child_a['label']['text'])
-        self.assertEqual(["205", "14", "a"], child_a['label']['parts'])
-        child_a_1, child_a_2, child_a_3 = child_a['children']
-        self.assertEqual("205.14(a)(1)", child_a_1['label']['text'])
-        self.assertEqual(["205", "14", "a", "1"], child_a_1['label']['parts'])
-        self.assertEqual("205.14(a)(2)", child_a_2['label']['text'])
-        self.assertEqual(["205", "14", "a", "2"], child_a_2['label']['parts'])
-        self.assertEqual("205.14(a)(3)", child_a_3['label']['text'])
-        self.assertEqual(["205", "14", "a", "3"], child_a_3['label']['parts'])
-        self.assertEqual("205.14(b)", child_b['label']['text'])
-        self.assertEqual(["205", "14", "b"], child_b['label']['parts'])
+        tree = self.regParser.build_tree(text, label=['205', '14'])
+        self.assertEqual(["205", "14"], tree.label)
+        child_a, child_b = tree.children
+        self.assertEqual(["205", "14", "a"], child_a.label)
+        child_a_1, child_a_2, child_a_3 = child_a.children
+        self.assertEqual(["205", "14", "a", "1"], child_a_1.label)
+        self.assertEqual(["205", "14", "a", "2"], child_a_2.label)
+        self.assertEqual(["205", "14", "a", "3"], child_a_3.label)
+        self.assertEqual(["205", "14", "b"], child_b.label)

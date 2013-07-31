@@ -7,10 +7,9 @@ def prepend_parts(parts_prefix, n):
     n. Parts is a list of markers that indicates where you are in the 
     regulation text. """
 
-    n['label']['parts'] = parts_prefix + n['label']['parts']
-    n['label']['text'] = '-'.join(n['label']['parts'])
+    n.label = parts_prefix + n.label
 
-    for c in n['children']:
+    for c in n.children:
         prepend_parts(parts_prefix, c)
     return n
 
@@ -18,9 +17,9 @@ def unwind_stack(m_stack):
     """ Unwind the stack, collapsing sub-paragraphs that are on the stack into 
     the children of the previous level. """
     children = m_stack.pop()
-    parts_prefix = m_stack.peek_last()[1]['label']['parts']
+    parts_prefix = m_stack.peek_last()[1].label
     children = [prepend_parts(parts_prefix, c[1]) for c in children]
-    m_stack.peek_last()[1]['children'] = children
+    m_stack.peek_last()[1].children = children
 
 def add_to_stack(m_stack, node_level, node):
     """ Add a new node with level node_level to the stack. Unwind the stack 

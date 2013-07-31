@@ -1,14 +1,16 @@
 #vim: set encoding=utf-8
 from unittest import TestCase
+
 from regparser.layer import internal_citations
+from regparser.tree.struct import Node
 
 class ParseTest(TestCase):
     def setUp(self):
         self.parser = internal_citations.InternalCitationParser(None)
 
     def test_process_method(self):
-        node = {'text': u"The requirements in paragraph (a)(4)(iii) of", 
-                'label':{'parts':['1005', '6']}}
+        node = Node("The requirements in paragraph (a)(4)(iii) of", 
+            label=['1005', '6'])
         citations = self.parser.process(node)
         self.assertEqual(len(citations), 1)
 

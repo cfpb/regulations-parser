@@ -12,7 +12,7 @@ class Meta(Layer):
         """If this is the root element, add some 'meta' information about
         this regulation, including its cfr title, effective date, and any
         configured info"""
-        if len(node['label']['parts']) != 1:
+        if len(node.label) != 1:
             return
 
         layer = {
