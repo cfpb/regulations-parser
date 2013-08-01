@@ -45,7 +45,6 @@ def build_tree(reg_xml):
     non_reg_sections = build_non_reg_text(reg_xml)
     tree.children += non_reg_sections
 
-    write_parts(tree)
     return tree
 
 def build_section(reg_part, section_xml):

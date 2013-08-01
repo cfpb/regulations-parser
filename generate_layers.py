@@ -6,7 +6,7 @@ from regparser.layer import interpretations
 from regparser.layer import table_of_contents
 from regparser.layer import terms
 from regparser.layer import key_terms
-from regparser.struct import NodeEncoder
+from regparser.tree.struct import NodeEncoder
 
 def generate_external_citations(reg_json):
     """ Generate the enxternal citations layer """

@@ -7,7 +7,7 @@ class DepthAppendixTreeTest(TestCase):
     def test_generic_tree_no_children(self):
         text = "Non title text"
         node = generic_tree(text, ['lab'])
-        self.assertEqual(Node(text, label=['lab']), node)
+        self.assertEqual(Node(text, label=['lab'], typ=Node.APPENDIX), node)
 
     def test_generic_tree_with_children(self):
         start = "some text\n"
@@ -37,7 +37,7 @@ class DepthAppendixTreeTest(TestCase):
     def test_paragraph_tree_no_children(self):
         text = "Non title text"
         node = paragraph_tree('A', [], text, ['lab'])
-        self.assertEqual(Node(text, label=['lab']), node)
+        self.assertEqual(Node(text, label=['lab'], typ=Node.APPENDIX), node)
 
     def test_paragraph_tree_with_children(self):
         fill = "dsfdffsfs\n"

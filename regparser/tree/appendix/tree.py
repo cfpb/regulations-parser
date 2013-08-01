@@ -1,10 +1,11 @@
 from regparser import utils
 from regparser.grammar.internal_citations import regtext_citation
 from regparser.tree.appendix import carving, generic
-from regparser.tree.reg_text import regParser
+from regparser.tree.paragraph import ParagraphParser
 from regparser.tree.struct import Node
 import string
 
+parParser = ParagraphParser(r"\(%s\)", Node.APPENDIX)
 
 def trees_from(text, part, parent_label):
     """Build a tree for the appendix section. It will have children for each
@@ -30,7 +31,7 @@ def generic_tree(text, label, title=None):
     splits on Title Case and treats body text as the node content."""
     segments = generic.segments(text)
     if not segments:
-        return Node(text, label=label, title=title)
+        return Node(text, label=label, title=title, typ=Node.APPENDIX)
 
     children = []
     for index, seg in enumerate(segments):
@@ -38,15 +39,15 @@ def generic_tree(text, label, title=None):
         seg_title, body = utils.title_body(text[start:end])
         label_character = string.ascii_lowercase[index]
         children.append(Node(body, label=(label + [label_character]),
-            title=seg_title))
-    return Node(text[:segments[0][0]], children, label, title)
+            title=seg_title, typ=Node.APPENDIX))
+    return Node(text[:segments[0][0]], children, label, title, Node.APPENDIX)
 
 
 def paragraph_tree(appendix_letter, sections, text, label, title=None):
     """Use the paragraph parser to parse through each section in this
     appendix."""
     if not sections:
-        return Node(text, label=label, title=title)
+        return Node(text, label=label, title=title, typ=Node.APPENDIX)
     children = []
     for begin, end in sections:
         seg_title, section_text = utils.title_body(text[begin:end])
@@ -54,7 +55,7 @@ def paragraph_tree(appendix_letter, sections, text, label, title=None):
                 appendix_letter)
         exclude = [(start, end) for _, start, end in
                 regtext_citation.scanString(section_text)]
-        child = regParser.build_tree(section_text, exclude=exclude, 
+        child = parParser.build_tree(section_text, exclude=exclude, 
                 label=label + [sec_num], title=seg_title)
         children.append(child)
-    return Node(text[:sections[0][0]], children, label, title)
+    return Node(text[:sections[0][0]], children, label, title, Node.APPENDIX)

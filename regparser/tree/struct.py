@@ -1,17 +1,17 @@
-from json import JSONEncoder
+from json import JSONDecoder, JSONEncoder
 
 class Node:
-    APPENDIX = 'appendix'
-    INTERP = 'interp'
-    REGTEXT = 'regtext'
+    APPENDIX = u'appendix'
+    INTERP = u'interp'
+    REGTEXT = u'regtext'
 
     def __init__(self, text='', children=[], label=[], title=None, 
-            typ='regtext'):
+            typ=u'regtext'):
         self.text = unicode(text)
         self.children = list(children)  #   defensive copy
         self.label = [str(l) for l in label if l != '']
-        title = title or None
-        self.title = title
+        title = unicode(title or '')
+        self.title = title or None
         self.typ = typ
     def __repr__(self):
         return (("Node( text = %s, children = %s, label = %s, title = %s, "
@@ -32,6 +32,15 @@ class NodeEncoder(JSONEncoder):
                 del fields['title']
             return fields
         return JSONEncoder.default(self, obj)
+
+
+def node_decode_hook(d):
+    """Convert a JSON object into a Node"""
+    if set(('text', 'children', 'label', 'typ')) - set(d.keys()) == set():
+        return Node(d['text'], d['children'], d['label'],
+            d.get('title', None), d['typ'])
+    else:
+        return d
 
 
 def walk(node, fn):

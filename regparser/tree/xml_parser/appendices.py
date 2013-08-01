@@ -5,7 +5,7 @@ import HTMLParser
 from lxml import etree
 from pyparsing import Optional, Word, LineStart, Suppress
 
-import regparser.grammar.interpretation_headers as headers
+from regparser.grammar.interpretation_headers import parser as headers
 from regparser.tree.interpretation import text_to_label
 from regparser.tree.node_stack import NodeStack
 from regparser.tree.struct import Node
@@ -95,8 +95,8 @@ def process_supplement(part, m_stack, child):
     for ch in child.getchildren():
         if ch.tag.upper() == 'HD':
             label_text = text_to_label(ch.text, part)
-            n = Node(typ=Node.INTERP, label=[label_text], title=ch.text)
-            node_level = 2
+            n = Node(typ=Node.INTERP, label=label_text, title=ch.text)
+            node_level = 1
         elif ch.tag.upper() == 'P':
             text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
             marker = get_interpretation_markers(text)
@@ -171,13 +171,10 @@ def build_non_reg_text(reg_xml):
             if 'Appendix' in child.text and 'Part' in child.text:
                 section_type = 'APPENDIX'
                 typ = Node.APPENDIX
-                current_section = get_appendix_letter(child.text, reg_part)
+                current_section = headers.parseString(child.text).letter
             elif 'Supplement' in child.text and 'Part' in child.text:
                 section_type = 'SUPPLEMENT'
-                typ = Node.APPENDIX
-                current_section = get_supplement_letter(child.text, reg_part)
-                if current_section == 'I':
-                    current_section = 'Interpretations'
+                typ = Node.INTERP
             else:
                 p_level = 2
                 if section_type == 'SUPPLEMENT' and 'Appendix' in child.text:

@@ -1,4 +1,5 @@
 #vim: set encoding=utf-8
+from itertools import takewhile
 import re
 import string
 
@@ -26,10 +27,9 @@ class InternalCitationParser(Layer):
         citations = []
         #   If referring to a specific paragraph using regtext notation, we
         #   are not discussing an interp paragraph; use the associated regtext
-        paragraph_parts = [p for p in parts if p != 'Interpretations']
-        if len(paragraph_parts) < parts:    # Was an interp
-            #   Remember to strip out any specific paragraph info
-            paragraph_parts[1] = re.sub(r'\(.+\)', '', paragraph_parts[1])
+        paragraph_parts = list(takewhile(lambda p: p != 'Interp', parts))
+        if len(paragraph_parts) < 2:
+            return citations
             
         for citation, start, end in grammar.regtext_citation.scanString(text):
             if citation.single_paragraph or citation.multiple_paragraphs:
@@ -56,7 +56,6 @@ class InternalCitationParser(Layer):
         """Find all citations that refer to interpretations"""
         citations = []
         for cit, start, end in grammar.comment_citation.scanString(text):
-            label = [parts[0], 'Interpretations']
             if cit.multiple_comments:
                 comments = [cit.c_head] + list(cit.c_tail)
             else:
@@ -64,9 +63,9 @@ class InternalCitationParser(Layer):
             for comment in comments:
                 start, end = comment.pos
                 cit = comment.tokens
-                label = [parts[0], 'Interpretations']
-                paragraph_ref = ')('.join(filter(bool, list(cit.p_head)))
-                label.append(cit.section + '(' + paragraph_ref + ')')
+                label = [parts[0], cit.section]
+                label.extend(p for p in list(cit.p_head) if p)
+                label.append('Interp')
                 if cit.comment_levels:
                     label.append(cit.comment_levels.level1)
                     label.append(cit.comment_levels.level2)

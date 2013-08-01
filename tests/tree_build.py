@@ -38,11 +38,12 @@ class TreeBuildTest(TestCase):
         )
         node202 = Node("\nContent without sub pars\n", label=["200","2"], 
             title=u"§ 200.2 Second section.")
-        nodeA = Node("\n", label=["200","A"], 
+        nodeA = Node("\n", label=["200","A"], typ=Node.APPENDIX,
             title="Appendix A to Part 200 - Appendix Title", children=[
                 Node("\n", label=["200","A","1"], title="A-1 Appendix 1",
-                children=[Node("(a) Appendix par 1\n", 
-                    label=["200","A","1","a"])])
+                    typ=Node.APPENDIX,
+                    children=[Node("(a) Appendix par 1\n", typ=Node.APPENDIX,
+                        label=["200","A","1","a"])])
             ]
         )
         nodeI = Node('\n', label=['200', 'Interp'], typ=Node.INTERP,
