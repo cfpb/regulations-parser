@@ -95,14 +95,14 @@ def process_supplement(part, m_stack, child):
     for ch in child.getchildren():
         if ch.tag.upper() == 'HD':
             label_text = text_to_label(ch.text, part)
-            n = Node(typ=Node.INTERP, label=label_text, title=ch.text)
+            n = Node(node_type=Node.INTERP, label=label_text, title=ch.text)
             node_level = 1
         elif ch.tag.upper() == 'P':
             text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
             marker = get_interpretation_markers(text)
             node_text = tree_utils.get_node_text(ch)
 
-            n = Node(node_text, label=[marker], typ=Node.INTERP)
+            n = Node(node_text, label=[marker], node_type=Node.INTERP)
             node_level = interpretation_level(marker)
         tree_utils.add_to_stack(m_stack, node_level, n)
 
@@ -116,7 +116,8 @@ def process_appendix(m_stack, current_section, child):
             if appendix_section is None:
                 appendix_section = determine_next_section(m_stack, 2)
 
-            n = Node(typ=Node.APPENDIX, label=[appendix_section], title=ch.text)
+            n = Node(node_type=Node.APPENDIX, label=[appendix_section], 
+                    title=ch.text)
 
             node_level = 2
             tree_utils.add_to_stack(m_stack, node_level, n)
@@ -134,7 +135,7 @@ def process_appendix(m_stack, current_section, child):
                     node_text= [node_text]
 
                 for m, node_text in zip(markers_list, node_text):
-                    n = Node(node_text, label=[str(m)], typ=Node.APPENDIX)
+                    n = Node(node_text, label=[str(m)], node_type=Node.APPENDIX)
 
                     last = m_stack.peek()
                     node_level = determine_level(m, last[0][0])
@@ -161,7 +162,7 @@ def build_non_reg_text(reg_xml):
     last_section = doc_root.xpath('//REGTEXT/PART/SECTION[last()]')[0]
 
     section_type = None
-    typ = None
+    node_type = None
     current_section = None
     m_stack = NodeStack()
 
@@ -170,11 +171,11 @@ def build_non_reg_text(reg_xml):
             p_level = 1
             if 'Appendix' in child.text and 'Part' in child.text:
                 section_type = 'APPENDIX'
-                typ = Node.APPENDIX
+                node_type = Node.APPENDIX
                 current_section = headers.parseString(child.text).letter
             elif 'Supplement' in child.text and 'Part' in child.text:
                 section_type = 'SUPPLEMENT'
-                typ = Node.INTERP
+                node_type = Node.INTERP
             else:
                 p_level = 2
                 if section_type == 'SUPPLEMENT' and 'Appendix' in child.text:
@@ -187,7 +188,7 @@ def build_non_reg_text(reg_xml):
             else:
                 label = [current_section]
 
-            n = Node(typ=typ, label=label, title=child.text)
+            n = Node(node_type=node_type, label=label, title=child.text)
             last = m_stack.peek()
 
             if len(last) == 0:

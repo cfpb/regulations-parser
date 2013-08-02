@@ -28,7 +28,7 @@ class InternalCitationParser(Layer):
         #   If referring to a specific paragraph using regtext notation, we
         #   are not discussing an interp paragraph; use the associated regtext
         paragraph_parts = list(takewhile(lambda p: p != 'Interp', parts))
-        if len(paragraph_parts) < 2:
+        if len(paragraph_parts) < 2:    # no citations without a section
             return citations
             
         for citation, start, end in grammar.regtext_citation.scanString(text):

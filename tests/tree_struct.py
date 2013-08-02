@@ -53,18 +53,19 @@ class DepthTreeTest(TestCase):
         self.assertEqual("4", join_text(n4))
 
     def test_encode(self):
-        n1 = Node('texttext', [Node(typ='t')], ['1','2','3'])
-        n2 = Node(typ='someType', title='Some Title')
+        n1 = Node('texttext', [Node(node_type='t')], ['1','2','3'])
+        n2 = Node(node_type='someType', title='Some Title')
 
         enc = NodeEncoder(sort_keys=True)
         self.assertEqual(enc.encode(n1), enc.encode({
-            'typ': Node.REGTEXT,
+            'node_type': Node.REGTEXT,
             'text': 'texttext',
-            'children': [{'typ':'t', 'text':'', 'children':[], 'label':[]}],
+            'children': [
+                {'node_type':'t', 'text':'', 'children':[], 'label':[]}],
             'label': ['1', '2', '3']
         }))
         self.assertEqual(enc.encode(n2), enc.encode({
-            'typ': 'someType',
+            'node_type': 'someType',
             'text': '',
             'children': [],
             'label': [],
@@ -76,12 +77,12 @@ class DepthTreeTest(TestCase):
         self.assertEqual(d, json.loads(json.dumps(d),
             object_hook=node_decode_hook))
 
-        d = {'text': 't', 'label': [2,3,4], 'typ': 'regtext',
+        d = {'text': 't', 'label': [2,3,4], 'node_type': 'regtext',
             'children': [1,2,3]}
-        self.assertEqual(Node('t', [1,2,3], [2,3,4], typ=Node.REGTEXT),
+        self.assertEqual(Node('t', [1,2,3], [2,3,4], node_type=Node.REGTEXT),
             json.loads(json.dumps(d), object_hook=node_decode_hook))
 
-        d = {'text': 't', 'label': [2,3,4], 'typ': 'ttt', 'children': [1,2,3], 
-            'title': 'Example Title'}
+        d = {'text': 't', 'label': [2,3,4], 'node_type': 'ttt', 
+                'children': [1,2,3], 'title': 'Example Title'}
         self.assertEqual(Node('t', [1,2,3], [2,3,4], 'Example Title', u'ttt'), 
             json.loads(json.dumps(d), object_hook=node_decode_hook))

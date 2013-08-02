@@ -31,7 +31,7 @@ def generic_tree(text, label, title=None):
     splits on Title Case and treats body text as the node content."""
     segments = generic.segments(text)
     if not segments:
-        return Node(text, label=label, title=title, typ=Node.APPENDIX)
+        return Node(text, label=label, title=title, node_type=Node.APPENDIX)
 
     children = []
     for index, seg in enumerate(segments):
@@ -39,7 +39,7 @@ def generic_tree(text, label, title=None):
         seg_title, body = utils.title_body(text[start:end])
         label_character = string.ascii_lowercase[index]
         children.append(Node(body, label=(label + [label_character]),
-            title=seg_title, typ=Node.APPENDIX))
+            title=seg_title, node_type=Node.APPENDIX))
     return Node(text[:segments[0][0]], children, label, title, Node.APPENDIX)
 
 
@@ -47,7 +47,7 @@ def paragraph_tree(appendix_letter, sections, text, label, title=None):
     """Use the paragraph parser to parse through each section in this
     appendix."""
     if not sections:
-        return Node(text, label=label, title=title, typ=Node.APPENDIX)
+        return Node(text, label=label, title=title, node_type=Node.APPENDIX)
     children = []
     for begin, end in sections:
         seg_title, section_text = utils.title_body(text[begin:end])

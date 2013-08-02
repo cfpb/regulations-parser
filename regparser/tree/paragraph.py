@@ -20,14 +20,14 @@ p_levels = [
 
 class ParagraphParser():
 
-    def __init__(self, p_regex, typ):
+    def __init__(self, p_regex, node_type):
         """p_regex is the regular expression used when searching through
         paragraphs. It should contain a %s for the next paragraph 'part'
         (e.g. 'a', 'A', '1', 'i', etc.) inner_label_fn is a function which
         takes the current label, and the next paragraph 'part' and produces
         a new label."""
         self.p_regex = p_regex
-        self.typ = typ
+        self.node_type = node_type
 
     def matching_subparagraph_ids(self, p_level, paragraph):
         """Return a list of matches if this paragraph id matches one of the
@@ -124,4 +124,4 @@ class ParagraphParser():
             new_label = label + [p_levels[p_level][paragraph]]
             children.append(self.build_tree(new_text, p_level + 1,
                 new_excludes, new_label))
-        return struct.Node(body_text, children, label, title, self.typ)
+        return struct.Node(body_text, children, label, title, self.node_type)

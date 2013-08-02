@@ -38,25 +38,25 @@ class TreeBuildTest(TestCase):
         )
         node202 = Node("\nContent without sub pars\n", label=["200","2"], 
             title=u"§ 200.2 Second section.")
-        nodeA = Node("\n", label=["200","A"], typ=Node.APPENDIX,
+        nodeA = Node("\n", label=["200","A"], node_type=Node.APPENDIX,
             title="Appendix A to Part 200 - Appendix Title", children=[
                 Node("\n", label=["200","A","1"], title="A-1 Appendix 1",
-                    typ=Node.APPENDIX,
-                    children=[Node("(a) Appendix par 1\n", typ=Node.APPENDIX,
-                        label=["200","A","1","a"])])
+                    node_type=Node.APPENDIX,
+                    children=[Node("(a) Appendix par 1\n", 
+                        node_type=Node.APPENDIX, label=["200","A","1","a"])])
             ]
         )
-        nodeI = Node('\n', label=['200', 'Interp'], typ=Node.INTERP,
+        nodeI = Node('\n', label=['200', 'Interp'], node_type=Node.INTERP,
             title='Supplement I to Part 200 - Official Interpretations',
             children=[
-                Node('\n', label=['200', '2', 'Interp'],
-                    title='Section 200.2 Second section', typ=Node.INTERP),
+                Node('\n', label=['200', '2', 'Interp'], node_type=Node.INTERP,
+                    title='Section 200.2 Second section'),
                 Node('\n', label=['200','2','a','5','Interp'],
-                    typ=Node.INTERP, title='2(a)(5) First par',
+                    node_type=Node.INTERP, title='2(a)(5) First par',
                     children=[
-                        Node('1. Commentary 1\n', typ=Node.INTERP,
+                        Node('1. Commentary 1\n', node_type=Node.INTERP,
                             label=['200', '2', 'a', '5', 'Interp', '1']),
-                        Node('2. Commentary 2\n', typ=Node.INTERP,
+                        Node('2. Commentary 2\n', node_type=Node.INTERP,
                             label=['200', '2', 'a', '5', 'Interp', '2'])
                     ]
                 )

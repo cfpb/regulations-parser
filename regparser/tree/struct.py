@@ -6,17 +6,17 @@ class Node:
     REGTEXT = u'regtext'
 
     def __init__(self, text='', children=[], label=[], title=None, 
-            typ=u'regtext'):
+            node_type=u'regtext'):
         self.text = unicode(text)
         self.children = list(children)  #   defensive copy
         self.label = [str(l) for l in label if l != '']
         title = unicode(title or '')
         self.title = title or None
-        self.typ = typ
+        self.node_type = node_type
     def __repr__(self):
         return (("Node( text = %s, children = %s, label = %s, title = %s, "
-            + "typ = %s)") % (repr(self.text), repr(self.children), 
-                repr(self.label), repr(self.title), repr(self.typ)))
+            + "node_type = %s)") % (repr(self.text), repr(self.children), 
+                repr(self.label), repr(self.title), repr(self.node_type)))
     def __cmp__(self, other):
         return cmp(repr(self), repr(other))
     def label_id(self):
@@ -36,9 +36,9 @@ class NodeEncoder(JSONEncoder):
 
 def node_decode_hook(d):
     """Convert a JSON object into a Node"""
-    if set(('text', 'children', 'label', 'typ')) - set(d.keys()) == set():
+    if set(('text', 'children', 'label', 'node_type')) - set(d.keys()) == set():
         return Node(d['text'], d['children'], d['label'],
-            d.get('title', None), d['typ'])
+            d.get('title', None), d['node_type'])
     else:
         return d
 
