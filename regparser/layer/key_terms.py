@@ -10,7 +10,7 @@ class KeyTerms(Layer):
     def process_node_text(node):
         """ Take a paragraph, remove the marker, and extraneous whitespaces. """
         marker = ParagraphMarkers.marker(node)
-        text = node['text']
+        text = node.text
 
         text = text.replace(marker, '', 1).strip()
         return text
@@ -27,7 +27,7 @@ class KeyTerms(Layer):
     @staticmethod
     def get_keyterm(node):
         pattern = re.compile(ur'.*?<E T="03">([^<]*?)</E>.*?', re.UNICODE) 
-        matches = pattern.match(node['text'])
+        matches = pattern.match(node.text)
         if matches and KeyTerms.keyterm_is_first(node, matches.groups()[0]):
             return matches.groups()[0]
 

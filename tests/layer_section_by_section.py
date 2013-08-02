@@ -1,6 +1,7 @@
-from regparser.layer.section_by_section import SectionBySection
-from regparser.tree import struct
 from unittest import TestCase
+
+from regparser.layer.section_by_section import SectionBySection
+from regparser.tree.struct import Node
 
 class LayerSectionBySectionTest(TestCase):
 
@@ -34,13 +35,11 @@ class LayerSectionBySectionTest(TestCase):
                 }]
             }]
         }
-        def mknode(label):
-            return struct.node("", [], struct.label(label))
         s = SectionBySection(None, [notice1, notice2])
-        self.assertEqual(None, s.process(mknode("100-55")))
-        self.assertEqual(s.process(mknode("100-22-b")), 
+        self.assertEqual(None, s.process(Node(label=['100', '55'])))
+        self.assertEqual(s.process(Node(label=['100', '22', 'b'])),
             [{"text": 'BBB', "reference": ('111-22', '100-22-b')}])
-        self.assertEqual(s.process(mknode("100-22-b-2")), [
+        self.assertEqual(s.process(Node(label=['100', '22', 'b', '2'])), [
             {"text": 'AAA', "reference": ('111-22', '100-22-b-2')},
             {"text": 'CCC', "reference": ('111-23', '100-22-b-2')}
             ])

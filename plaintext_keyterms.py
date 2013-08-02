@@ -1,7 +1,6 @@
-from regparser.layer import key_terms
 from regparser import api_stub
+from regparser.layer import key_terms
 from regparser.tree import struct
-import json
 
 def generate_key_terms_layer(xml_based_reg_json):
     layer_generator = key_terms.KeyTerms(xml_based_reg_json)
@@ -16,7 +15,7 @@ layer = {}
 part_end = '1005.'
 
 def generate_keyterm(node):
-    if node['label']['text'] not in real_key_terms_layer:
+    if node.label_id() not in real_key_terms_layer:
         node_text = key_terms.KeyTerms.process_node_text(node).encode('utf-8')
         d = '.'
         sentences = [e+d for e in node_text.split(d) if e != '']
@@ -34,12 +33,12 @@ def generate_keyterm(node):
                         "key_term": first_sentence,
                         "locations": [0]
                     }
-                    layer[node['label']['text']] = [layer_element]
+                    layer[node.label_id()] = [layer_element]
 
 if __name__ == "__main__":
     #Use the plain text based JSON for the regulation. 
     tree = api_stub.get_regulation_as_json('/vagrant/data/stub-server/regulation/1005/2013-10604-eregs')
     struct.walk(tree, generate_keyterm)
 
-    print json.dumps(layer)
+    print struct.NodeEncoder().encode(layer)
 

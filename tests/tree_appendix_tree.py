@@ -1,14 +1,14 @@
-from regparser.tree import struct
 from regparser.tree.appendix.tree import *
+from regparser.tree.struct import Node
 from unittest import TestCase
 
 class DepthAppendixTreeTest(TestCase):
 
     def test_generic_tree_no_children(self):
         text = "Non title text"
-        l = struct.label('Some label')
-        node = generic_tree(text, l)
-        self.assertEqual(struct.node(text, label=l), node)
+        node = generic_tree(text, ['lab'])
+        self.assertEqual(Node(text, label=['lab'], node_type=Node.APPENDIX), 
+                node)
 
     def test_generic_tree_with_children(self):
         start = "some text\n"
@@ -16,30 +16,30 @@ class DepthAppendixTreeTest(TestCase):
         b1 = "\nSome body text\nsomething\nsomething\n"
         t2 = "Section Two"
         b2 = "\nSomething else\nhere"
-        l = struct.label('sl', ['s', 'l'], 'Some label')
-        t = generic_tree(start + t1 + b1 + t2 + b2, l)
+        t = generic_tree(start + t1 + b1 + t2 + b2, ['s', 'l'], 'Some label')
 
-        self.assertEqual(start, t['text'])
-        self.assertEqual(l, t['label'])
-        self.assertEqual(2, len(t['children']))
+        self.assertEqual(start, t.text)
+        self.assertEqual(['s', 'l'], t.label)
+        self.assertEqual('Some label', t.title)
+        self.assertEqual(2, len(t.children))
 
-        node = t['children'][0]
-        self.assertEqual(b1, node['text'])
-        self.assertEqual(struct.label('sl-a', ['s', 'l', 'a'], t1),
-            node['label'])
-        self.assertEqual(0, len(node['children']))
+        node = t.children[0]
+        self.assertEqual(b1, node.text)
+        self.assertEqual(['s', 'l', 'a'], node.label)
+        self.assertEqual(t1, node.title)
+        self.assertEqual(0, len(node.children))
 
-        node = t['children'][1]
-        self.assertEqual(b2, node['text'])
-        self.assertEqual(struct.label('sl-b', ['s', 'l', 'b'], t2),
-            node['label'])
-        self.assertEqual(0, len(node['children']))
+        node = t.children[1]
+        self.assertEqual(b2, node.text)
+        self.assertEqual(['s', 'l', 'b'], node.label)
+        self.assertEqual(t2, node.title)
+        self.assertEqual(0, len(node.children))
 
     def test_paragraph_tree_no_children(self):
         text = "Non title text"
-        l = struct.label('Some label')
-        node = paragraph_tree('A', [], text, l)
-        self.assertEqual(struct.node(text, label=l), node)
+        node = paragraph_tree('A', [], text, ['lab'])
+        self.assertEqual(Node(text, label=['lab'], node_type=Node.APPENDIX), 
+                node)
 
     def test_paragraph_tree_with_children(self):
         fill = "dsfdffsfs\n"
@@ -49,30 +49,32 @@ class DepthAppendixTreeTest(TestCase):
         p2 = '\nMore paragraphs\nWe love them all\nParagraphs\n'
         t3 = 'Q-44 - Title here'
         p3 = '\nThird paragraph here'
-        l = struct.label('L', ['l'])
         root = paragraph_tree('Q', [(len(fill), len(fill+t1+p1)), 
             (len(fill+t1+p1), len(fill+t1+p1+t2+p2)), 
             (len(fill+t1+p1+t2+p2), len(fill+t1+p1+t2+p2+t3+p3))],
             fill+t1+p1+t2+p2+t3+p3,
-            l)
-        self.assertEqual(fill, root['text'])
-        self.assertEqual(l, root['label'])
-        self.assertEqual(3, len(root['children']))
+            ['l'])
+        self.assertEqual(fill, root.text)
+        self.assertEqual(['l'], root.label)
+        self.assertEqual(3, len(root.children))
 
-        node = root['children'][0]
-        self.assertEqual(p1, node['text'])
-        self.assertEqual(struct.label('L-3', ['l','3'], t1), node['label'])
-        self.assertEqual(0, len(node['children']))
+        node = root.children[0]
+        self.assertEqual(p1, node.text)
+        self.assertEqual(['l','3'], node.label)
+        self.assertEqual(t1, node.title)
+        self.assertEqual(0, len(node.children))
 
-        node = root['children'][1]
-        self.assertEqual(p2, node['text'])
-        self.assertEqual(struct.label('L-5', ['l','5'], t2), node['label'])
-        self.assertEqual(0, len(node['children']))
+        node = root.children[1]
+        self.assertEqual(p2, node.text)
+        self.assertEqual(['l', '5'], node.label)
+        self.assertEqual(t2, node.title)
+        self.assertEqual(0, len(node.children))
 
-        node = root['children'][2]
-        self.assertEqual(p3, node['text'])
-        self.assertEqual(struct.label('L-44', ['l','44'], t3), node['label'])
-        self.assertEqual(0, len(node['children']))
+        node = root.children[2]
+        self.assertEqual(p3, node.text)
+        self.assertEqual(['l', '44'], node.label)
+        self.assertEqual(t3, node.title)
+        self.assertEqual(0, len(node.children))
 
     def test_trees_from(self):
         reg_text = "Some reg text\nOther reg text\nSection 55. etc.\n"
@@ -85,12 +87,10 @@ class DepthAppendixTreeTest(TestCase):
         
         text = reg_text + titleC + bodyC + titleJ + bodyJ + titleR + bodyR
 
-        nodes = trees_from(text, 22, struct.label('22', ['22']))
+        nodes = trees_from(text, 22, ['22'])
         self.assertTrue(3, len(nodes))
 
-        self.assertEqual(generic_tree(bodyC,
-            struct.label('22-C', ['22', 'C'], titleC)), nodes[0])
-        self.assertEqual(generic_tree(bodyJ,
-            struct.label('22-J', ['22', 'J'], titleJ)), nodes[1])
+        self.assertEqual(generic_tree(bodyC, ['22', 'C'], titleC), nodes[0])
+        self.assertEqual(generic_tree(bodyJ, ['22', 'J'], titleJ), nodes[1])
         self.assertEqual(paragraph_tree('R', [(1,29), (29, len(bodyR))], bodyR,
-            struct.label('22-R', ['22', 'R'], titleR)), nodes[2])
+            ['22', 'R'], titleR), nodes[2])

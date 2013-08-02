@@ -11,7 +11,7 @@ class Graphics(Layer):
         """If this node has a marker for an image in it, note where to get
         that image."""
         matches_by_text = defaultdict(list)
-        for match in Graphics.gid.finditer(node['text']):
+        for match in Graphics.gid.finditer(node.text):
             matches_by_text[match.group(0)].append(match)
 
         layer_el = []

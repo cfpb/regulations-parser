@@ -17,14 +17,11 @@ class RegTextTest(TestCase):
             </SECTION>
         """
         node = build_section('8675', etree.fromstring(xml))
-        self.assertEqual('Some content about this section.',
-                node['text'].strip())
-        self.assertEqual(1, len(node['children']))
-        self.assertEqual('8675-309', node['label']['text'])
-        self.assertEqual(['8675', '309'], node['label']['parts'])
+        self.assertEqual('Some content about this section.', node.text.strip())
+        self.assertEqual(1, len(node.children))
+        self.assertEqual(['8675', '309'], node.label)
 
-        child = node['children'][0]
-        self.assertEqual('(a) something something', child['text'].strip())
-        self.assertEqual([], child['children'])
-        self.assertEqual('8675-309-a', child['label']['text'])
-        self.assertEqual(['8675', '309', 'a'], child['label']['parts'])
+        child = node.children[0]
+        self.assertEqual('(a) something something', child.text.strip())
+        self.assertEqual([], child.children)
+        self.assertEqual(['8675', '309', 'a'], child.label)

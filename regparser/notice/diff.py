@@ -35,16 +35,16 @@ def find_diffs(xml_tree, cfr_part):
         if node:
             def per_node(node):
                 if node_is_empty(node):
-                    for c in node['children']:
+                    for c in node.children:
                         per_node(c)
                 else:
-                    print node['label']['parts'], node['text']
+                    print node.label, node.text
             per_node(node)
 
 
 def node_is_empty(node):
     """Handle different ways the regulation represents no content"""
-    return node['text'].strip() == ''
+    return node.text.strip() == ''
 
 
 def parse_amdpar(par, initial_context):

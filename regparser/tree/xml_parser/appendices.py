@@ -4,15 +4,13 @@ import string
 import HTMLParser
 from lxml import etree
 from pyparsing import Optional, Word, LineStart, Suppress
-from regparser.tree.struct import label, node
-from regparser.tree.appendix.carving import get_appendix_letter
-from regparser.tree.interpretation.carving import get_appendix_letter as get_letter
-from regparser.tree.interpretation.carving import get_section_number, applicable_paragraph, build_label
-from regparser.tree.interpretation.tree import get_interpretation_label_text
-from regparser.tree.node_stack import NodeStack
 
-from regparser.utils import roman_nums
+from regparser.grammar.interpretation_headers import parser as headers
+from regparser.tree.interpretation import text_to_label
+from regparser.tree.node_stack import NodeStack
+from regparser.tree.struct import Node
 from regparser.tree.xml_parser import tree_utils
+from regparser.utils import roman_nums
 
 p_levels = [
     list(string.ascii_uppercase), #0 -> A (Level 1)
@@ -81,7 +79,7 @@ def determine_next_section(m_stack, node_level):
 
     if node_level == last_level:
         #Get the next marker on the same level
-        last_marker = m_stack.peek_last()[1]['label']['parts'][-1]
+        last_marker = m_stack.peek_last()[1].label[-1]
         last_marker_index =  p_levels[node_level-1].index(str(last_marker))
         next_marker = p_levels[node_level-1][last_marker_index + 1]
         return next_marker
@@ -96,17 +94,15 @@ def process_supplement(part, m_stack, child):
     """ Parse the Supplement sections and paragraphs. """
     for ch in child.getchildren():
         if ch.tag.upper() == 'HD':
-            label_text = get_interpretation_label_text(ch.text, part)
-            l = label(parts=[label_text], title=ch.text)
-            n = node(children=[], label=l)
-            node_level = 2
+            label_text = text_to_label(ch.text, part)
+            n = Node(node_type=Node.INTERP, label=label_text, title=ch.text)
+            node_level = 1
         elif ch.tag.upper() == 'P':
             text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
             marker = get_interpretation_markers(text)
             node_text = tree_utils.get_node_text(ch)
 
-            l = label(parts=[marker])
-            n = node(text=node_text, children=[], label=l)
+            n = Node(node_text, label=[marker], node_type=Node.INTERP)
             node_level = interpretation_level(marker)
         tree_utils.add_to_stack(m_stack, node_level, n)
 
@@ -120,8 +116,8 @@ def process_appendix(m_stack, current_section, child):
             if appendix_section is None:
                 appendix_section = determine_next_section(m_stack, 2)
 
-            l = label(parts=[appendix_section], title=ch.text)
-            n = node(children=[], label=l)
+            n = Node(node_type=Node.APPENDIX, label=[appendix_section], 
+                    title=ch.text)
 
             node_level = 2
             tree_utils.add_to_stack(m_stack, node_level, n)
@@ -139,8 +135,7 @@ def process_appendix(m_stack, current_section, child):
                     node_text= [node_text]
 
                 for m, node_text in zip(markers_list, node_text):
-                    l = label(parts=[str(m)])
-                    n = node(text=node_text, children=[], label=l)
+                    n = Node(node_text, label=[str(m)], node_type=Node.APPENDIX)
 
                     last = m_stack.peek()
                     node_level = determine_level(m, last[0][0])
@@ -156,7 +151,7 @@ def process_appendix(m_stack, current_section, child):
                     tree_utils.add_to_stack(m_stack, node_level, n)
             else:
                 last = m_stack.peek_last()
-                last[1]['text'] = last[1]['text'] + '\n %s' % node_text
+                last[1].text = last[1].text + '\n %s' % node_text
 
 def build_non_reg_text(reg_xml):
     """ This builds the tree for the non-regulation text such as Appendices 
@@ -167,6 +162,7 @@ def build_non_reg_text(reg_xml):
     last_section = doc_root.xpath('//REGTEXT/PART/SECTION[last()]')[0]
 
     section_type = None
+    node_type = None
     current_section = None
     m_stack = NodeStack()
 
@@ -175,25 +171,24 @@ def build_non_reg_text(reg_xml):
             p_level = 1
             if 'Appendix' in child.text and 'Part' in child.text:
                 section_type = 'APPENDIX'
-                current_section = get_appendix_letter(child.text, reg_part)
+                node_type = Node.APPENDIX
+                current_section = headers.parseString(child.text).letter
             elif 'Supplement' in child.text and 'Part' in child.text:
                 section_type = 'SUPPLEMENT'
-                current_section = get_supplement_letter(child.text, reg_part)
-                if current_section == 'I':
-                    current_section = 'Interpretations'
+                node_type = Node.INTERP
             else:
                 p_level = 2
                 if section_type == 'SUPPLEMENT' and 'Appendix' in child.text:
-                    current_section = get_letter(child.text)
+                    current_section = headers.parseString(child.text).letter
                 else:
                     current_section = determine_next_section(m_stack, p_level)
 
             if p_level == 1:
-                l = label(parts=[str(reg_part), current_section], title=child.text)
+                label = [str(reg_part), current_section]
             else:
-                l = label(parts=[current_section], title=child.text)
+                label = [current_section]
 
-            n = node(children=[], label=l)
+            n = Node(node_type=node_type, label=label, title=child.text)
             last = m_stack.peek()
 
             if len(last) == 0:

@@ -1,5 +1,4 @@
 import re
-from regparser.tree.struct import label
 from regparser.search import find_start
 
 

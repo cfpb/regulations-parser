@@ -1,8 +1,8 @@
 #vim: set encoding=utf-8
 from unittest import TestCase
 
-from regparser.tree import struct
 from regparser.layer import external_citations
+from regparser.tree.struct import Node
 
 class ParseTest(TestCase):
 
@@ -10,7 +10,7 @@ class ParseTest(TestCase):
         """
             Test an external reference that looks like this: "section 918 of the Act"
         """
-        node = {'text': u"section 918 of the Act", 'label':{'parts':[1005, 2]}}
+        node = Node('section 918 of the Act', label=['1005', '2'])
         parser = external_citations.ExternalCitationParser(None, 
                 ['1234', '5678'])
         citations = parser.process(node)
@@ -27,7 +27,7 @@ class ParseTest(TestCase):
             Ensure that we successfully parse Public Law citations that look like 
             the following: Public Law 111-203
         """
-        node = {'text': u"Public Law 111-203", 'label':{'parts':[1005, 2]}}
+        node = Node("Public Law 111-203", label=['1005', '2'])
         parser = external_citations.ExternalCitationParser(None, None)
         citations = parser.process(node)
         self.assertEqual(len(citations), 1)
@@ -38,7 +38,7 @@ class ParseTest(TestCase):
             Ensure that we successfully parse Statues at Large citations that look 
             like the following: 122 Stat. 1375
         """
-        node = {'text': u'122 Stat. 1375', 'label':{'parts':[1003, 5]}}
+        node = Node('122 Stat. 1375', label=['1003', '5'])
         parser = external_citations.ExternalCitationParser(None, None)
         citations = parser.process(node)
         self.assertEqual(len(citations), 1)
@@ -46,7 +46,7 @@ class ParseTest(TestCase):
 
     def test_cfr(self):
         """Ensure that we successfully parse CFR references."""
-        node = struct.node("Ref 1: 12 CFR part 1026. "
+        node = Node("Ref 1: 12 CFR part 1026. "
                 + "Ref 2: 12 CFR 1026.13.")
         parser = external_citations.ExternalCitationParser(None, None)
         citations = parser.process(node)

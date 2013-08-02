@@ -1,8 +1,10 @@
-import json
+import sys
+
 from lxml import etree
+
+from regparser.tree.struct import NodeEncoder
 from regparser.notice import find_section_by_section, fetch_document_number
 from regparser.notice import build_section_by_section, fetch_cfr_part
-import sys
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -15,7 +17,7 @@ if __name__ == "__main__":
 
     sxs = find_section_by_section(rule)
     sxs = build_section_by_section(sxs, part)
-    print json.dumps({
+    print NodeEncoder().encode({
         'document_number': fetch_document_number(rule),
         'cfr_part': part,
         'section_by_section': sxs

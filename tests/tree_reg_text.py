@@ -1,15 +1,15 @@
 # vim: set encoding=utf-8
 
 from regparser.tree.reg_text import *
-from regparser.tree.struct import label, node
+from regparser.tree.struct import Node
 from unittest import TestCase
 
 class DepthRegTextTest(TestCase):
 
     def test_build_reg_text_tree_no_sections(self):
         text = "Regulation Title\nThen some more content"
-        self.assertEqual(node(text, label=label("201", ["201"], 
-            "Regulation Title")), build_reg_text_tree(text, 201))
+        self.assertEqual(Node(text, [], ['201'], 'Regulation Title'), 
+                build_reg_text_tree(text, 201))
 
     def test_build_reg_text_tree_sections(self):
         title = u"Regulation Title"
@@ -26,29 +26,30 @@ class DepthRegTextTest(TestCase):
             sect4_title, sect4))
 
         reg = build_reg_text_tree(text, 204)
-        self.assertEqual(label("204", ["204"], title), reg['label'])
-        self.assertEqual("", reg['text'].strip())
-        self.assertEqual(3, len(reg['children']))
-        (sect1_tree, sect2_tree, sect4_tree) = reg['children']
+        self.assertEqual(["204"], reg.label)
+        self.assertEqual(title, reg.title)
+        self.assertEqual("", reg.text.strip())
+        self.assertEqual(3, len(reg.children))
+        (sect1_tree, sect2_tree, sect4_tree) = reg.children
 
-        self.assertEqual(label("204-1", ["204", "1"], sect1_title),
-                sect1_tree['label'])
-        self.assertEqual("", sect1_tree['text'].strip())
-        self.assertEqual(3, len(sect1_tree['children']))
-        self.assertEqual(0, len(sect1_tree['children'][0]['children']))
-        self.assertEqual(2, len(sect1_tree['children'][1]['children']))
-        self.assertEqual(0, len(sect1_tree['children'][2]['children']))
+        self.assertEqual(['204', '1'], sect1_tree.label)
+        self.assertEqual(sect1_title, sect1_tree.title)
+        self.assertEqual("", sect1_tree.text.strip())
+        self.assertEqual(3, len(sect1_tree.children))
+        self.assertEqual(0, len(sect1_tree.children[0].children))
+        self.assertEqual(2, len(sect1_tree.children[1].children))
+        self.assertEqual(0, len(sect1_tree.children[2].children))
 
-        self.assertEqual(label("204-2", ["204", "2"], sect2_title),
-                sect2_tree['label'])
-        self.assertEqual(sect2, sect2_tree['text'].strip())
-        self.assertEqual(0, len(sect2_tree['children']))
+        self.assertEqual(['204', '2'], sect2_tree.label)
+        self.assertEqual(sect2_title, sect2_tree.title)
+        self.assertEqual(sect2, sect2_tree.text.strip())
+        self.assertEqual(0, len(sect2_tree.children))
 
-        self.assertEqual(label("204-4", ["204", "4"], sect4_title),
-                sect4_tree['label'])
-        self.assertEqual(u"Others", sect4_tree['text'].strip())
-        self.assertEqual(1, len(sect4_tree['children']))
-        self.assertEqual(3, len(sect4_tree['children'][0]['children']))
+        self.assertEqual(['204', '4'], sect4_tree.label)
+        self.assertEqual(sect4_title, sect4_tree.title)
+        self.assertEqual(u"Others", sect4_tree.text.strip())
+        self.assertEqual(1, len(sect4_tree.children))
+        self.assertEqual(3, len(sect4_tree.children[0].children))
 
     def test_find_next_section_start(self):
         text = u"\n\nSomething\n§ 205.3 thing\n\n§ 205.4 Something\n§ 203.19"
@@ -82,15 +83,13 @@ class DepthRegTextTest(TestCase):
     def test_build_section_tree(self):
         """Should be just like build_paragraph tree, but with a label"""
         line1 = u"§ 201.20 Super Awesome Section"
-        line2 = "\nThis (a) is a good (1) test (2) of (3) some (b) body."
+        line2 = u"\nThis (a) is a good (1) test (2) of (3) some (b) body."
         tree = build_section_tree(line1+line2, 201)
-        p_tree = regParser.build_paragraph_tree(line2, 
-                label=label("201-20", ["201", "20"]))
-        for key in p_tree:
-            if key != 'label':
-                self.assertTrue(key in tree)
-                self.assertEqual(p_tree[key], tree[key])
-        self.assertEqual(tree['label'], label("201-20", ["201", "20"], line1))
+        p_tree = regParser.build_tree(line2, label=['201', '20'])
+        self.assertEqual(p_tree.text, tree.text)
+        self.assertEqual(p_tree.children, tree.children)
+        self.assertEqual(['201', '20'], tree.label)
+        self.assertEqual(line1, tree.title)
 
     def test_build_section_tree_appendix(self):
         """Should should not break on references to appendices."""
@@ -101,11 +100,11 @@ class DepthRegTextTest(TestCase):
 
         for line2 in [line2a, line2b, line2c]:
             tree = build_section_tree(line1+line2, 201)
-            self.assertEqual(tree['text'], "\n")
-            self.assertEqual(1, len(tree['children']))
-            child = tree['children'][0]
-            self.assertEqual(child['text'], line2[1:])
-            self.assertEqual(0, len(child['children']))
+            self.assertEqual(tree.text, "\n")
+            self.assertEqual(1, len(tree.children))
+            child = tree.children[0]
+            self.assertEqual(child.text, line2[1:])
+            self.assertEqual(0, len(child.children))
 
     def test_build_section_tree_a_or_b1(self):
         line1 = u"§ 201.20 Super Awesome Section"
@@ -113,17 +112,17 @@ class DepthRegTextTest(TestCase):
         line2 += "this section"
 
         tree = build_section_tree(line1+line2, 201)
-        self.assertEqual(tree['text'], "\n")
-        self.assertEqual(3, len(tree['children']))
-        child = tree['children'][2]
-        self.assertEqual(child['text'], "(c) see paragraph (a) or (b)(1) " +
+        self.assertEqual(tree.text, "\n")
+        self.assertEqual(3, len(tree.children))
+        child = tree.children[2]
+        self.assertEqual(child.text, "(c) see paragraph (a) or (b)(1) " +
                 "of this section")
-        self.assertEqual(0, len(child['children']))
+        self.assertEqual(0, len(child.children))
 
     def test_build_section_tree_appendix_through(self):
         line1 = u"§ 201.20 Super Awesome Section"
         line2 = "\n(a) references Model Forms A-30(a) through (b)"
 
         tree = build_section_tree(line1+line2, 201)
-        self.assertEqual(tree['text'], "\n")
-        self.assertEqual(1, len(tree['children']))
+        self.assertEqual(tree.text, "\n")
+        self.assertEqual(1, len(tree.children))

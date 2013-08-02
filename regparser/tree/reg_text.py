@@ -15,25 +15,21 @@ def build_reg_text_tree(text, part):
     """Build up the whole tree from the plain text of a single
     regulation."""
     title, body = utils.title_body(text)
-    lab = struct.label(str(part), [str(part)], title)
+    label = [str(part)]
 
     sects = sections(body, part)
     if not sects:
-        return struct.node(text, label=lab)
+        return struct.Node(text, [], label, title)
     children_text = body[:sects[0][0]]
 
     children = []
     for start,end in sects:
         section_text = body[start:end]
         children.append(build_section_tree(section_text, part))
-    return struct.node(children_text, children, lab)
+    return struct.Node(children_text, children, label, title)
 
 
-def _mk_label(old_label, next_part):
-    return struct.extend_label(old_label, '-' + next_part, next_part)
-
-
-regParser = ParagraphParser(r"\(%s\)", _mk_label)
+regParser = ParagraphParser(r"\(%s\)", struct.Node.REGTEXT)
 
 
 def find_next_section_start(text, part):
@@ -74,8 +70,7 @@ def build_section_tree(text, part):
     exclude += [(start, end) for _, start, end in 
             appendix_citation.scanString(text)]
     section = re.search(r'%d\.(\d+) ' % part, title).group(1)
-    label = struct.label("%d-%s" % (part, section), [str(part), section])
-    p_tree = regParser.build_paragraph_tree(text, exclude=exclude, label=label)
-
-    p_tree['label']['title'] = title
+    label = [str(part), section]
+    p_tree = regParser.build_tree(text, exclude=exclude, label=label,
+            title=title)
     return p_tree
