@@ -46,18 +46,20 @@ class TreeBuildTest(TestCase):
                         node_type=Node.APPENDIX, label=["200","A","1","a"])])
             ]
         )
-        nodeI = Node('\n', label=['200', 'Interp'], node_type=Node.INTERP,
+        nodeI = Node('\n', label=['200', Node.INTERP_MARK], 
+            node_type=Node.INTERP,
             title='Supplement I to Part 200 - Official Interpretations',
             children=[
-                Node('\n', label=['200', '2', 'Interp'], node_type=Node.INTERP,
+                Node('\n', label=['200', '2', Node.INTERP_MARK], 
+                    node_type=Node.INTERP,
                     title='Section 200.2 Second section'),
-                Node('\n', label=['200','2','a','5','Interp'],
+                Node('\n', label=['200','2','a','5',Node.INTERP_MARK],
                     node_type=Node.INTERP, title='2(a)(5) First par',
                     children=[
                         Node('1. Commentary 1\n', node_type=Node.INTERP,
-                            label=['200', '2', 'a', '5', 'Interp', '1']),
+                            label=['200','2','a','5',Node.INTERP_MARK,'1']),
                         Node('2. Commentary 2\n', node_type=Node.INTERP,
-                            label=['200', '2', 'a', '5', 'Interp', '2'])
+                            label=['200','2','a','5',Node.INTERP_MARK,'2'])
                     ]
                 )
             ]

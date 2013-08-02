@@ -28,7 +28,7 @@ class LayerTermTest(TestCase):
         self.assertFalse(t.has_definitions(Node("Definition",
             label=['101', 'A', '1'])))
         self.assertFalse(t.has_definitions(Node("Definition",
-            label=['101', '11', 'Interp'])))
+            label=['101', '11', Node.INTERP_MARK])))
         self.assertTrue(t.has_definitions(
             Node("Definition. This has a definition.",
                 label=['101', '22', 'c'])))
@@ -135,7 +135,7 @@ class LayerTermTest(TestCase):
         t = Terms(None)
         node = Node(label=['1000', '22', 'a', '5'])
         node.text = 'For the purposes of this part, blah blah'
-        self.assertEqual([('1000',), ('1000', 'Interp')], 
+        self.assertEqual([('1000',), ('1000', Node.INTERP_MARK)], 
             t.definitions_scopes(node))
 
         t.subpart_map = {
@@ -144,19 +144,20 @@ class LayerTermTest(TestCase):
         }
         node.text = 'For the purposes of this subpart, yada yada'
         self.assertEqual([('1000', 'a'), ('1000', '22'), 
-            ('1000', 'a', 'Interp'), ('1000', '22', 'Interp')],
+            ('1000', 'a', Node.INTERP_MARK), ('1000', '22', Node.INTERP_MARK)],
             t.definitions_scopes(node))
 
         node.text = 'For the purposes of this section, blah blah'
-        self.assertEqual([('1000', '22'), ('1000', '22', 'Interp')], 
+        self.assertEqual([('1000', '22'), ('1000', '22', Node.INTERP_MARK)], 
                 t.definitions_scopes(node))
 
         node.text = 'For the purposes of this paragraph, blah blah'
-        self.assertEqual([('1000','22','a','5'),
-            ('1000','22','a','5','Interp')], t.definitions_scopes(node))
+        self.assertEqual([('1000','22','a','5'), 
+            ('1000','22','a','5',Node.INTERP_MARK)], 
+            t.definitions_scopes(node))
 
         node.text = 'Default'
-        self.assertEqual([('1000',), ('1000', 'Interp')], 
+        self.assertEqual([('1000',), ('1000', Node.INTERP_MARK)], 
             t.definitions_scopes(node))
 
     def test_pre_process(self):

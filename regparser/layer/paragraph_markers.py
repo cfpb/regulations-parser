@@ -1,4 +1,5 @@
 from layer import Layer
+from regparser.tree.struct import Node
 
 class ParagraphMarkers(Layer):
 
@@ -13,7 +14,7 @@ class ParagraphMarkers(Layer):
 
     @staticmethod
     def marker(node):
-        m = [l for l in node.label if l != 'Interp'][-1]
+        m = [l for l in node.label if l != Node.INTERP_MARK][-1]
 
         if 'Interpretations' in node.label or 'Interp' in node.label:
             m = m + '.'

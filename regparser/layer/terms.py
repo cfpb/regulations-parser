@@ -82,7 +82,7 @@ class Terms(Layer):
         if len(node.label) < 2:
             return False
         # Definitions are only in the reg text (not appendices/interprs)
-        if not node.label[1].isdigit() or 'Interp' in node.label:
+        if not node.label[1].isdigit() or struct.Node.INTERP_MARK in node.label:
             return False
         stripped = node.text.strip(ParagraphMarkers.marker(node)).strip()
         return (
@@ -146,7 +146,7 @@ class Terms(Layer):
             scopes.append(node.label[:1])
 
         for scope in list(scopes):  # second list so we can iterate
-            interp_scope = scope + ['Interp']
+            interp_scope = scope + [struct.Node.INTERP_MARK]
             if interp_scope:
                 scopes.append(interp_scope)
         return [tuple(scope) for scope in scopes]

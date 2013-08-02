@@ -1,12 +1,12 @@
 from regparser import utils
 from regparser.grammar.internal_citations import comment_citation
 import regparser.grammar.interpretation_headers as grammar
-from regparser.tree import struct
 from regparser.tree.paragraph import ParagraphParser
+from regparser.tree.struct import Node
 
 
 #   Can only be preceded by white space or a start of line
-interpParser = ParagraphParser(r"(?<![^\s])%s\.", struct.Node.INTERP)
+interpParser = ParagraphParser(r"(?<![^\s])%s\.", Node.INTERP)
 
 
 def build(text, part):
@@ -17,11 +17,11 @@ def build(text, part):
 
     if segments:
         children = [segment_tree(body[s:e], part, [part]) for s,e in segments]
-        return struct.Node(body[:segments[0][0]], children, [part, 'Interp'], 
-                title, struct.Node.INTERP)
+        return Node(body[:segments[0][0]], children, [part, Node.INTERP_MARK], 
+                title, Node.INTERP)
     else:
-        return struct.Node(body, [], [part, 'Interp'], title,
-                struct.Node.INTERP)
+        return Node(body, [], [part, Node.INTERP_MARK], title,
+                Node.INTERP)
 
 
 def segment_by_header(text, part):
@@ -58,5 +58,5 @@ def text_to_label(text, part):
             label.pop()
     else:   #   Section only
         label = [part, parsed.section]
-    label = label + ['Interp']
+    label = label + [Node.INTERP_MARK]
     return label

@@ -45,7 +45,7 @@ class DepthInterpretationTreeTest(TestCase):
         body = "\nAnd then more\nSome more\nAnd yet another line"
         result = build(title + body, '100')
         self.assertEqual(body, result.text)
-        self.assertEqual(['100', 'Interp'], result.label)
+        self.assertEqual(['100', Node.INTERP_MARK], result.label)
         self.assertEqual(title, result.title)
         self.assertEqual(0, len(result.children))
 
@@ -74,12 +74,12 @@ class DepthInterpretationTreeTest(TestCase):
 
         node = result.children[0]
         self.assertEqual("\nmore more\n", node.text)
-        self.assertEqual(['100', '22', 'Interp'], node.label)
+        self.assertEqual(['100', '22', Node.INTERP_MARK], node.label)
         self.assertEqual(0, len(node.children))
 
         node = result.children[1]
         self.assertEqual("\nand more", node.text)
-        self.assertEqual(['100', '5', 'Interp'], node.label)
+        self.assertEqual(['100', '5', Node.INTERP_MARK], node.label)
         self.assertEqual(0, len(node.children))
 
 
@@ -88,7 +88,7 @@ class DepthInterpretationTreeTest(TestCase):
         body = "1. Regulation text 2. Some more i. With ii. Subparts"
         node = segment_tree(title + "\n" + body, '100', ['100'])
         self.assertEqual(title, node.title)
-        self.assertEqual(['100', 'Q', 'Interp'], node.label)
+        self.assertEqual(['100', 'Q', Node.INTERP_MARK], node.label)
         self.assertEqual(2, len(node.children))
         self.assertEqual(2, len(node.children[1].children))
 
@@ -101,33 +101,36 @@ class DepthInterpretationTreeTest(TestCase):
         depth2 = "2. Start of line with "
         text = title + "\n" + depth1 + depth2 + depth2i + depth2ii + depth2iii
         a_tree = segment_tree(text, '111', ['111', '3', 'b'])
-        self.assertEqual(['111', '3', 'b', 'Interp'], a_tree.label)
+        self.assertEqual(['111', '3', 'b', Node.INTERP_MARK], a_tree.label)
         self.assertEqual('Paragraph 3(b)', a_tree.title)
         self.assertEqual("", a_tree.text.strip())
         self.assertEqual(2, len(a_tree.children))
 
         node = a_tree.children[0]
-        self.assertEqual(['111', '3', 'b', 'Interp', '1'], node.label)
+        self.assertEqual(['111', '3', 'b', Node.INTERP_MARK, '1'], node.label)
         self.assertEqual(depth1, node.text)
         self.assertEqual(0, len(node.children))
 
         node = a_tree.children[1]
-        self.assertEqual(['111', '3', 'b', 'Interp', '2'], node.label)
+        self.assertEqual(['111', '3', 'b', Node.INTERP_MARK, '2'], node.label)
         self.assertEqual(depth2, node.text)
         self.assertEqual(3, len(node.children))
 
         node = a_tree.children[1].children[0]
-        self.assertEqual(['111', '3', 'b', 'Interp', '2', 'i'], node.label)
+        self.assertEqual(['111', '3', 'b', Node.INTERP_MARK, '2', 'i'], 
+                node.label)
         self.assertEqual(depth2i, node.text)
         self.assertEqual(0, len(node.children))
 
         node = a_tree.children[1].children[1]
-        self.assertEqual(['111', '3', 'b', 'Interp', '2', 'ii'], node.label)
+        self.assertEqual(['111', '3', 'b', Node.INTERP_MARK, '2', 'ii'], 
+                node.label)
         self.assertEqual(depth2ii, node.text)
         self.assertEqual(0, len(node.children))
 
         node = a_tree.children[1].children[2]
-        self.assertEqual(['111', '3', 'b', 'Interp', '2', 'iii'], node.label)
+        self.assertEqual(['111', '3', 'b', Node.INTERP_MARK, '2', 'iii'], 
+                node.label)
         self.assertEqual(depth2iii, node.text)
         self.assertEqual(0, len(node.children))
 
@@ -142,17 +145,17 @@ class DepthInterpretationTreeTest(TestCase):
         child = result.children[0]
         self.assertEqual("1. Some contents\n", child.text)
         self.assertEqual([], child.children)
-        self.assertEqual(['105', '11', 'Interp', '1'], child.label)
+        self.assertEqual(['105', '11', Node.INTERP_MARK, '1'], child.label)
 
         child = result.children[1]
         self.assertEqual("2. Other data\n", child.text)
         self.assertEqual(1, len(child.children))
-        self.assertEqual(['105', '11', 'Interp', '2'], child.label)
+        self.assertEqual(['105', '11', Node.INTERP_MARK, '2'], child.label)
         
         child = result.children[1].children[0]
         self.assertEqual("i. Hello hello", child.text)
         self.assertEqual([], child.children)
-        self.assertEqual(['105', '11', 'Interp', '2', 'i'], child.label)
+        self.assertEqual(['105', '11', Node.INTERP_MARK, '2', 'i'], child.label)
 
     def test_segment_tree_no_children(self):
         title = "Section 105.11 This is a section title"
@@ -160,7 +163,7 @@ class DepthInterpretationTreeTest(TestCase):
         non_title = "\n" + body
         result = segment_tree(title + non_title, '105', ['105'])
         self.assertEqual(non_title, result.text)
-        self.assertEqual(['105', '11', 'Interp'], result.label)
+        self.assertEqual(['105', '11', Node.INTERP_MARK], result.label)
         self.assertEqual(0, len(result.children))
 
     def test_segment_tree_label(self):

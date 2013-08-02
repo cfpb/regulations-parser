@@ -5,8 +5,10 @@ class Node:
     INTERP = u'interp'
     REGTEXT = u'regtext'
 
+    INTERP_MARK = 'Interp'
+
     def __init__(self, text='', children=[], label=[], title=None, 
-            node_type=u'regtext'):
+            node_type=REGTEXT):
         self.text = unicode(text)
         self.children = list(children)  #   defensive copy
         self.label = [str(l) for l in label if l != '']

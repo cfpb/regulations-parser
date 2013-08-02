@@ -233,7 +233,8 @@ class ParseTest(TestCase):
         text = "See comment 32(b)(3) blah blah"
         result = self.parser.parse(text, parts = ['222', '87'])
         self.assertEqual(1, len(result))
-        self.assertEqual(['222','32','b','3','Interp'], result[0]['citation'])
+        self.assertEqual(['222','32','b','3', Node.INTERP_MARK], 
+                result[0]['citation'])
         offsets = result[0]['offsets'][0]
         self.assertEqual('32(b)(3)', text[offsets[0]:offsets[1]])
 
@@ -241,7 +242,7 @@ class ParseTest(TestCase):
         text = "refer to comment 36(a)(2)-3 of thing"
         result = self.parser.parse(text, parts = ['222', '87'])
         self.assertEqual(1, len(result))
-        self.assertEqual(['222', '36', 'a', '2', 'Interp', '3'],
+        self.assertEqual(['222', '36', 'a', '2', Node.INTERP_MARK, '3'],
                 result[0]['citation'])
         offsets = result[0]['offsets'][0]
         self.assertEqual('36(a)(2)-3', text[offsets[0]:offsets[1]])
@@ -250,7 +251,7 @@ class ParseTest(TestCase):
         text = "See comment 3(b)(1)-1.v."
         result = self.parser.parse(text, parts = ['222', '87'])
         self.assertEqual(1, len(result))
-        self.assertEqual(['222', '3', 'b', '1', 'Interp', '1', 'v'],
+        self.assertEqual(['222', '3', 'b', '1', Node.INTERP_MARK, '1', 'v'],
                 result[0]['citation'])
         offsets = result[0]['offsets'][0]
         #   Note the final period is not included
@@ -260,28 +261,29 @@ class ParseTest(TestCase):
         text = "See, e.g., comments 31(b)(1)(iv)-1 and 31(b)(1)(vi)-1"
         result = self.parser.parse(text, parts = ['222', '87'])
         self.assertEqual(2, len(result))
-        self.assertEqual(['222', '31', 'b', '1', 'iv', 'Interp', '1'],
+        self.assertEqual(['222', '31', 'b', '1', 'iv', Node.INTERP_MARK, '1'],
             result[0]['citation'])
         offsets = result[0]['offsets'][0]
         self.assertEqual('31(b)(1)(iv)-1', text[offsets[0]:offsets[1]])
-        self.assertEqual(['222', '31', 'b', '1', 'vi', 'Interp', '1'],
+        self.assertEqual(['222', '31', 'b', '1', 'vi', Node.INTERP_MARK, '1'],
             result[1]['citation'])
         offsets = result[1]['offsets'][0]
         self.assertEqual('31(b)(1)(vi)-1', text[offsets[0]:offsets[1]])
 
     def test_paren_in_interps(self):
         text = "covers everything except paragraph (d)(3)(i) of this section"
-        result = self.parser.parse(text, parts=['222', '87', 'Interp'])
+        result = self.parser.parse(text, parts=['222','87',Node.INTERP_MARK])
         self.assertEqual(1, len(result))
         self.assertEqual(['222', '87', 'd', '3', 'i'], result[0]['citation'])
         offsets = result[0]['offsets'][0]
         self.assertEqual('(d)(3)(i)', text[offsets[0]:offsets[1]])
 
-        result = self.parser.parse(text, parts=['222','87','d','3','Interp'])
+        result = self.parser.parse(text, 
+                parts=['222', '87', 'd', '3', Node.INTERP_MARK])
         self.assertEqual(1, len(result))
         self.assertEqual(['222', '87', 'd', '3', 'i'], result[0]['citation'])
         offsets = result[0]['offsets'][0]
         self.assertEqual('(d)(3)(i)', text[offsets[0]:offsets[1]])
 
-        result = self.parser.parse(text, parts=['222','Interp'])
+        result = self.parser.parse(text, parts=['222', Node.INTERP_MARK])
         self.assertEqual(0, len(result))

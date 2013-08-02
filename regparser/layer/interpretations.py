@@ -12,7 +12,7 @@ class Interpretations(Layer):
         associates if there is a direct match. It should also associate if any
         parents match"""
 
-        interp_label = '-'.join(node.label + ['Interp'])
+        interp_label = '-'.join(node.label + [struct.Node.INTERP_MARK])
 
         interpretation = struct.find(self.tree, interp_label)
         if interpretation and not self.empty_interpretation(interpretation):
@@ -28,5 +28,6 @@ class Interpretations(Layer):
         location of the 'Interp' delimiter."""
         if interp.text.strip():
             return False
-        return all(not child.label or child.label[-1] == 'Interp' 
-            for child in interp.children)
+        return all(not child.label 
+                or child.label[-1] == struct.Node.INTERP_MARK 
+                for child in interp.children)

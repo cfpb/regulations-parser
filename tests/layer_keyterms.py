@@ -41,7 +41,7 @@ class LayerKeyTermTest(TestCase):
 
     def test_interpretation_markers(self):
         node = Node('3. <E T="03">et seq.</E> has a list: apples', 
-            label=['101', 'c', 'Interp', '3'])
+            label=['101', 'c', Node.INTERP_MARK, '3'])
         kt = KeyTerms(None)
         results = kt.process(node)
         self.assertNotEqual(results, None)

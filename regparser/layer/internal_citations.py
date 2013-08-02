@@ -5,6 +5,7 @@ import string
 
 from regparser.grammar import internal_citations as grammar
 from regparser.layer.layer import Layer
+from regparser.tree.struct import Node
 
 class InternalCitationParser(Layer):
 
@@ -27,7 +28,8 @@ class InternalCitationParser(Layer):
         citations = []
         #   If referring to a specific paragraph using regtext notation, we
         #   are not discussing an interp paragraph; use the associated regtext
-        paragraph_parts = list(takewhile(lambda p: p != 'Interp', parts))
+        paragraph_parts = list(takewhile(
+            lambda p: p != Node.INTERP_MARK, parts))
         if len(paragraph_parts) < 2:    # no citations without a section
             return citations
             
@@ -65,7 +67,7 @@ class InternalCitationParser(Layer):
                 cit = comment.tokens
                 label = [parts[0], cit.section]
                 label.extend(p for p in list(cit.p_head) if p)
-                label.append('Interp')
+                label.append(Node.INTERP_MARK)
                 if cit.comment_levels:
                     label.append(cit.comment_levels.level1)
                     label.append(cit.comment_levels.level2)
