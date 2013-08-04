@@ -13,16 +13,18 @@ class DepthRegTextTest(TestCase):
 
     def test_build_reg_text_tree_sections(self):
         title = u"Regulation Title"
+        subpart_a = u"Subpart A—First subpart"
         sect1_title = u"§ 204.1 Best Section"
         sect1 = u"(a) I believe this is (b) the (1) best section "
         sect1 += "(2) don't (c) you?"
         sect2_title = u"§ 204.2 Second Best Section"
         sect2 = u"Some sections \ndon't have must \ndepth at all."
+        subpart_b = u"Subpart B—First subpart"
         sect4_title = u"§ 204.4 I Skipped One"
         sect4 = u"Others \n(a) Skip sections for (1) No \n(2) Apparent \n"
         sect4 += "(3) Reason"
 
-        text = "\n".join((title, sect1_title, sect1, sect2_title, sect2, 
+        text = "\n".join((title, subpart_a, sect1_title, sect1, sect2_title, sect2, 
             sect4_title, sect4))
 
         reg = build_reg_text_tree(text, 204)
@@ -57,6 +59,32 @@ class DepthRegTextTest(TestCase):
         self.assertEqual(None, find_next_section_start(text, 204))
         self.assertEqual(45, find_next_section_start(text, 203))
 
+    def test_find_next_subpart_start(self):
+        text = u"\n\nSomething\nSubpart A—Procedures for Application\n\n"
+        self.assertEqual(12, find_next_subpart_start(text))
+
+    def test_next_subpart_offsets(self):
+        """ Should get the start and end of each offset. """
+        text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection"
+        text += u"\n\nSomething\nSubpart A—Procedures for Application\n\n"
+        text += u"\n\nSomething else\nSubpart B—Model Forms for Application\n\n"
+        self.assertEqual((56,111), next_subpart_offsets(text))
+
+        text = u"\n\nSomething\nSubpart A—Application\nAppendix A"
+        self.assertEqual((12, 34), next_subpart_offsets(text))
+
+        text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection"
+        text += u"\n\nSomething\nubpart A—Procedures for Application\n\n"
+        text += u"\n\nSomething else\nSubpart B—Model Forms for Application\n\n"
+        self.assertEqual((110,149), next_subpart_offsets(text))
+
+        text = u"ubpart A—First subpart\n"
+        text += u"§ 201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa\n"
+        text += u"\nSubpart B—Second subpart\n"
+        text += u"§ 2015 dfds \n sdfds § 20132 saddsa \n\n sdsadsa\n"
+        self.assertEqual((72,143), next_subpart_offsets(text))
+
+       
     def test_next_section_offsets(self):
         """Should get the start and end of each section, even if it is
         followed by an Appendix or a supplement"""
@@ -79,6 +107,19 @@ class DepthRegTextTest(TestCase):
         text += u"§ 201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa\n"
         text += u"Appendix A bssds \n sdsdsad \nsadad \ndsada"
         self.assertEqual([(2,45), (45,93)], sections(text, 201))
+
+    #def test_sections_stop_at_subpart(self):
+    #    text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection\n"
+    #    text += u"§ 201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa\n"
+    #    text += u"Subpart J—Awesome subpart\n"
+    #    self.assertEqual([(2,45), (45,93)], sections(text, 201))
+
+    def test_subparts(self):
+        text = u"Subpart A—First subpart\n"
+        text += u"§ 201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa\n"
+        text += u"\nSubpart B—Second subpart\n"
+        text += u"§ 2015 dfds \n sdfds § 20132 saddsa \n\n sdsadsa\n"
+        self.assertEqual([(0,73), (73, 144)], subparts(text))
 
     def test_build_section_tree(self):
         """Should be just like build_paragraph tree, but with a label"""

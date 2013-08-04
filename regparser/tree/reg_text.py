@@ -12,12 +12,15 @@ from regparser.tree.supplement import find_supplement_start
 
 
 def build_reg_text_tree(text, part):
-    """Build up the whole tree from the plain text of a single
-    regulation."""
+    """Build up the whole tree from the plain text of a single regulation. This
+    only builds the regulation text part, and does not include appendices or
+    the supplement. """
     title, body = utils.title_body(text)
     label = [str(part)]
 
     sects = sections(body, part)
+    #subpart_locations = subparts(body)
+    #print subpart_locations
     if not sects:
         return struct.Node(text, [], label, title)
     children_text = body[:sects[0][0]]
@@ -28,14 +31,15 @@ def build_reg_text_tree(text, part):
         children.append(build_section_tree(section_text, part))
     return struct.Node(children_text, children, label, title)
 
-
 regParser = ParagraphParser(r"\(%s\)", struct.Node.REGTEXT)
 
+def find_next_subpart_start(text):
+    """ Find the start of the next Subpart (e.g. Subpart B)"""
+    return find_start(text, u'Subpart', ur'[A-Z]—')
 
 def find_next_section_start(text, part):
     """Find the start of the next section (e.g. 205.14)"""
     return find_start(text, u"§", str(part) + r"\.\d+")
-
 
 def next_section_offsets(text, part):
     """Find the start/end of the next section"""
@@ -43,6 +47,24 @@ def next_section_offsets(text, part):
     if offsets is None:
         return None
 
+    start, end = offsets
+    subpart_start = find_next_subpart_start(text)
+    print "subpart start: %s" % subpart_start
+    appendix_start = find_appendix_start(text)
+    supplement_start = find_supplement_start(text)
+    if subpart_start != None and subpart_start < end:
+        return (start, subpart_start)
+    if appendix_start != None and appendix_start < end:
+        return (start, appendix_start)
+    if supplement_start != None and supplement_start < end:
+        return (start, supplement_start)
+    return (start, end)
+
+def next_subpart_offsets(text):
+    """Find the start,end of the next subpart"""
+    offsets = find_offsets(text, find_next_subpart_start)
+    if offsets is None:
+        return None
     start, end = offsets
     appendix_start = find_appendix_start(text)
     supplement_start = find_supplement_start(text)
@@ -52,13 +74,17 @@ def next_section_offsets(text, part):
         return (start, supplement_start)
     return (start, end)
 
-
 def sections(text, part):
     """Return a list of section offsets. Does not include appendices."""
     def offsets_fn(remaining_text, idx, excludes):
         return next_section_offsets(remaining_text, part)
     return segments(text, offsets_fn)
 
+def subparts(text):
+    """ Return a list of subpart offset. Does not include appendices, supplements. """
+    def offsets_fn(remaining_text, idx, excludes):
+        return next_subpart_offsets(remaining_text)
+    return segments(text, offsets_fn)
 
 def build_section_tree(text, part):
     """Construct the tree for a whole section. Assumes the section starts
