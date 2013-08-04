@@ -17,7 +17,7 @@ def find_cfr_part(text):
     return int(best)
 
 def build_whole_regtree(text):
-    """Combine the output of numerous functions to get to a while regulation
+    """Combine the output of numerous functions to get to a whole regulation
     tree."""
     interp = text[find_supplement_start(text):]
 
