@@ -2,7 +2,7 @@ from regparser import utils
 from regparser.grammar.internal_citations import comment_citation
 import regparser.grammar.interpretation_headers as grammar
 from regparser.tree.paragraph import ParagraphParser
-from regparser.tree.struct import Node
+from regparser.tree.struct import Node, treeify
 
 
 #   Can only be preceded by white space or a start of line
@@ -17,8 +17,8 @@ def build(text, part):
 
     if segments:
         children = [segment_tree(body[s:e], part, [part]) for s,e in segments]
-        return Node(body[:segments[0][0]], children, [part, Node.INTERP_MARK], 
-                title, Node.INTERP)
+        return Node(body[:segments[0][0]], treeify(children), 
+                [part, Node.INTERP_MARK], title, Node.INTERP)
     else:
         return Node(body, [], [part, Node.INTERP_MARK], title,
                 Node.INTERP)

@@ -52,14 +52,21 @@ class TreeBuildTest(TestCase):
             children=[
                 Node('\n', label=['200', '2', Node.INTERP_MARK], 
                     node_type=Node.INTERP,
-                    title='Section 200.2 Second section'),
-                Node('\n', label=['200','2','a','5',Node.INTERP_MARK],
-                    node_type=Node.INTERP, title='2(a)(5) First par',
-                    children=[
-                        Node('1. Commentary 1\n', node_type=Node.INTERP,
-                            label=['200','2','a','5',Node.INTERP_MARK,'1']),
-                        Node('2. Commentary 2\n', node_type=Node.INTERP,
-                            label=['200','2','a','5',Node.INTERP_MARK,'2'])
+                    title='Section 200.2 Second section',
+                    children = [ 
+                        Node('\n', label=['200','2','a','5',Node.INTERP_MARK],
+                            node_type=Node.INTERP, title='2(a)(5) First par',
+                            children=[
+                                Node('1. Commentary 1\n', 
+                                    node_type = Node.INTERP, 
+                                    label = ['200', '2', 'a', '5',
+                                        Node.INTERP_MARK, '1']),
+                                Node('2. Commentary 2\n', 
+                                    node_type = Node.INTERP,
+                                    label = ['200', '2', 'a', '5',
+                                        Node.INTERP_MARK, '2'])
+                            ]
+                        )
                     ]
                 )
             ]
