@@ -86,3 +86,44 @@ class DepthTreeTest(TestCase):
                 'children': [1,2,3], 'title': 'Example Title'}
         self.assertEqual(Node('t', [1,2,3], [2,3,4], 'Example Title', u'ttt'), 
             json.loads(json.dumps(d), object_hook=node_decode_hook))
+
+    def test_treeify(self):
+        n1 = Node(label=['1'])
+        n1b = Node(label=['1', 'b'])
+        n1b5 = Node(label=['1', 'b', '5'])
+
+        n2 = Node(label=['2'])
+
+        result = treeify([n1, n1b5, n2, n1b])
+        self.assertEqual(sorted(result), sorted([
+            Node(label=['1'], children=[
+                Node(label=['1', 'b'], children=[
+                    Node(label=['1', 'b', '5'])
+                ])
+            ]),
+            Node(label=['2'])
+        ]))
+
+    def test_treeify_interp(self):
+        n1 = Node(label=['1', 'Interp'])
+        n1b = Node(label=['1', 'b', 'Interp'])
+        n1b5 = Node(label=['1', 'b', '5', 'Interp'])
+
+        result = treeify([n1, n1b, n1b5])
+        self.assertEqual(result, [
+            Node(label=['1', 'Interp'], children=[
+                Node(label=['1', 'b', 'Interp'], children=[
+                    Node(label=['1', 'b', '5', 'Interp'])
+                ])
+            ])
+        ])
+
+    def test_treeify_keep_children(self):
+        n1 = Node(label=['1'])
+        n1b = Node(label=['1', 'b'], children=[1,2,3])
+
+        self.assertEqual(treeify([n1, n1b]), [
+            Node(label=['1'], children = [
+                Node(label=['1', 'b'], children=[1,2,3])
+            ])
+        ])

@@ -82,6 +82,23 @@ class DepthInterpretationTreeTest(TestCase):
         self.assertEqual(['100', '5', Node.INTERP_MARK], node.label)
         self.assertEqual(0, len(node.children))
 
+    def test_build_interp_headers(self):
+        text = "\nSection 876.2 Definitions\n\n2(r) Def1\n\n2(r)(4) SubSub"
+        result = build(text, "876")
+
+        self.assertEqual(['876', Node.INTERP_MARK], result.label)
+        self.assertEqual(1, len(result.children))
+
+        child = result.children[0]
+        self.assertEqual(['876', '2', Node.INTERP_MARK], child.label)
+        self.assertEqual(1, len(child.children))
+
+        child = child.children[0]
+        self.assertEqual(['876', '2', 'r', Node.INTERP_MARK], child.label)
+        self.assertEqual(1, len(child.children))
+
+        child = child.children[0]
+        self.assertEqual(['876','2','r','4',Node.INTERP_MARK], child.label)
 
     def test_segment_tree_appendix(self):
         title = "Appendix Q - The Questions"
