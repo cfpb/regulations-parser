@@ -3,6 +3,7 @@ import string
 
 from pyparsing import alphanums, CaselessLiteral, Literal, OneOrMore, Optional
 from pyparsing import Regex, Suppress, Word, WordEnd, WordStart
+from pyparsing import LineEnd, LineStart, SkipTo
 
 def WordBoundaries(grammar):
     return WordStart(alphanums) + grammar + WordEnd(alphanums)
@@ -119,6 +120,11 @@ marker_subpart = (
         subpart_marker 
         + Word(string.ascii_uppercase).setResultsName("subpart")
 )
+
+subpart = (subpart_marker + 
+    Word(string.ascii_uppercase).setResultsName("subpart_letter") +
+    Suppress(Literal(u"—")) +
+    SkipTo(LineEnd()).setResultsName("subpart_title"))
 
 intro_text = Marker("introductory") + WordBoundaries(CaselessLiteral("text"))
 

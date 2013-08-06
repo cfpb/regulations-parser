@@ -8,7 +8,8 @@ class DepthRegTextTest(TestCase):
 
     def test_build_reg_text_tree_no_sections(self):
         text = "Regulation Title\nThen some more content"
-        self.assertEqual(Node(text, [], ['201'], 'Regulation Title'), 
+        empty_part = Node('', [], ['201', 'Subpart'], '', node_type=Node.EMPTYPART)
+        self.assertEqual(Node(text, [empty_part], ['201'], 'Regulation Title'), 
                 build_reg_text_tree(text, 201))
 
     def test_build_reg_text_tree_sections(self):
@@ -25,7 +26,7 @@ class DepthRegTextTest(TestCase):
         sect4 += "(3) Reason"
 
         text = "\n".join((title, subpart_a, sect1_title, sect1, sect2_title, sect2, 
-            sect4_title, sect4))
+            subpart_b, sect4_title, sect4))
 
         reg = build_reg_text_tree(text, 204)
         self.assertEqual(["204"], reg.label)

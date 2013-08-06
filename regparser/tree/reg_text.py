@@ -4,6 +4,7 @@ import re
 from regparser import utils
 from regparser.grammar.internal_citations import appendix_citation
 from regparser.grammar.internal_citations import regtext_citation
+from regparser.grammar.common import subpart
 from regparser.search import find_offsets, find_start, segments
 from regparser.tree import struct
 from regparser.tree.appendix.carving import find_appendix_start
@@ -18,20 +19,68 @@ def build_reg_text_tree(text, part):
     title, body = utils.title_body(text)
     label = [str(part)]
 
-    sects = sections(body, part)
-    #subpart_locations = subparts(body)
-    #print subpart_locations
-    if not sects:
-        return struct.Node(text, [], label, title)
-    children_text = body[:sects[0][0]]
+    subpart_locations = subparts(body)
+    subparts_list = []
 
-    children = []
-    for start,end in sects:
-        section_text = body[start:end]
-        children.append(build_section_tree(section_text, part))
-    return struct.Node(children_text, children, label, title)
+    if subpart_locations:
+        for start,end in subpart_locations:
+            subpart_body = body[start:end]
+            subpart = build_subpart(subpart_body, part)
+            sects = sections(subpart_body, part)
+            if sects:
+                subpart_children = []
+                for s,e in sects:
+                    section_text = subpart_body[s:e]
+                    subpart_children.append(build_section_tree(section_text, part))
+            subpart.children = subpart_children
+            subparts_list.append(subpart)
+        children_text = body[:subpart_locations[0][0]] 
+    else:
+        sects = sections(body,part)
+        empty_part = build_empty_part(part)
+
+        if not sects:
+            return struct.Node(text, [empty_part], label, title)
+
+        children = []
+        for s,e in sects:
+            section_text = body[start:end]
+            children.append(build_section_tree(section_text, part))
+        empty_part.children = children
+        subparts_list.append(empty_part)
+
+        children_text = body[:sects[0][0]]
+
+    return struct.Node(children_text, subparts_list, label, title)
+            
+    #if not sects:
+    #    return struct.Node(text, [], label, title)
+    #children_text = body[:sects[0][0]]
+
+    #children = []
+    #for start,end in sects:
+    #    section_text = body[start:end]
+    #    children.append(build_section_tree(section_text, part))
+    #return struct.Node(children_text, children, label, title)
 
 regParser = ParagraphParser(r"\(%s\)", struct.Node.REGTEXT)
+
+def build_empty_part(part):
+    """ When a regulation doesn't have a subpart, we give it an emptypart (a
+    dummy subpart) so that the regulation tree is consistent. """
+
+    label = [str(part), 'Subpart']
+    return struct.Node('', [], label, '', 
+            node_type=struct.Node.EMPTYPART)
+
+def build_subpart(text, part):
+    results = subpart.parseString(text)
+    subpart_letter = results.subpart_letter
+    subpart_title = results.subpart_title
+    label = [str(part), 'Subpart', subpart_letter]
+
+    return struct.Node("", [], label, 
+                subpart_title, node_type=struct.Node.SUBPART)
 
 def find_next_subpart_start(text):
     """ Find the start of the next Subpart (e.g. Subpart B)"""
@@ -49,10 +98,9 @@ def next_section_offsets(text, part):
 
     start, end = offsets
     subpart_start = find_next_subpart_start(text)
-    print "subpart start: %s" % subpart_start
     appendix_start = find_appendix_start(text)
     supplement_start = find_supplement_start(text)
-    if subpart_start != None and subpart_start < end:
+    if subpart_start != None and subpart_start > start and subpart_start < end:
         return (start, subpart_start)
     if appendix_start != None and appendix_start < end:
         return (start, appendix_start)
