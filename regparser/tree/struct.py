@@ -4,6 +4,8 @@ class Node:
     APPENDIX = u'appendix'
     INTERP = u'interp'
     REGTEXT = u'regtext'
+    SUBPART = u'subpart'
+    EMPTYPART = u'emptypart'
 
     INTERP_MARK = 'Interp'
 
