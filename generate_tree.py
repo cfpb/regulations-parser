@@ -2,7 +2,7 @@ import codecs
 import sys
 
 from regparser.tree.appendix.tree import trees_from as appendix_trees
-from regparser.tree.interpretation.tree import build as build_interp_tree
+from regparser.tree.interpretation import build as build_interp_tree
 from regparser.tree.reg_text import build_reg_text_tree
 from regparser.tree.struct import NodeEncoder
 from regparser.tree.supplement import find_supplement_start
