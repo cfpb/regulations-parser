@@ -12,6 +12,28 @@ class DepthRegTextTest(TestCase):
         self.assertEqual(Node(text, [empty_part], ['201'], 'Regulation Title'), 
                 build_reg_text_tree(text, 201))
 
+    def test_build_reg_text_empty_and_subpart(self):
+        """ In some cases, we have a few sections before the first subpart. """
+        title = u"Regulation Title"
+        sect1_title = u"§ 204.1 Best Section"
+        sect1 = u"(a) I believe this is (b) the (1) best section "
+        sect1 += "(2) don't (c) you?"
+        subpart_a = u"Subpart A—First subpart"
+        sect2_title = u"§ 204.2 Second Best Section"
+        sect2 = u"Some sections \ndon't have must \ndepth at all."
+        subpart_b = u"Subpart B—First subpart"
+        sect4_title = u"§ 204.4 I Skipped One"
+        sect4 = u"Others \n(a) Skip sections for (1) No \n(2) Apparent \n"
+        sect4 += "(3) Reason"
+
+        text = "\n".join((title, sect1_title, sect1, subpart_a, sect2_title, sect2, 
+            subpart_b, sect4_title, sect4))
+        reg = build_reg_text_tree(text, 204)
+        self.assertEqual(["204"], reg.label)
+        self.assertEqual(title, reg.title)
+        self.assertEqual("", reg.text.strip())
+        self.assertEqual(3, len(reg.children))
+
     def test_build_reg_text_tree_sections(self):
         title = u"Regulation Title"
         subpart_a = u"Subpart A—First subpart"
@@ -32,8 +54,12 @@ class DepthRegTextTest(TestCase):
         self.assertEqual(["204"], reg.label)
         self.assertEqual(title, reg.title)
         self.assertEqual("", reg.text.strip())
-        self.assertEqual(3, len(reg.children))
-        (sect1_tree, sect2_tree, sect4_tree) = reg.children
+        self.assertEqual(2, len(reg.children))
+
+        (subpart_a_tree, subpart_b_tree) = reg.children 
+
+        (sect1_tree, sect2_tree) = subpart_a_tree.children
+        sect4_tree  = subpart_b_tree.children[0]
 
         self.assertEqual(['204', '1'], sect1_tree.label)
         self.assertEqual(sect1_title, sect1_tree.title)

@@ -11,6 +11,21 @@ from regparser.tree.appendix.carving import find_appendix_start
 from regparser.tree.paragraph import ParagraphParser
 from regparser.tree.supplement import find_supplement_start
 
+def build_subparts_tree(text, part, subpart_builder):
+    """ Build a tree of a subpart, and it's children sections. 
+    subpart_builder can be a builder that builds a subpart or an 
+    emptypart. """
+
+    sects = sections(text, part)
+    if sects:
+        subpart = subpart_builder(part)
+        children = []
+        for s,e in sects:
+            section_text = text[s:e]
+            children.append(build_section_tree(section_text, part))
+        subpart.children = children
+        return (subpart, text[:sects[0][0]])
+    return (None, None)
 
 def build_reg_text_tree(text, part):
     """Build up the whole tree from the plain text of a single regulation. This
@@ -19,50 +34,32 @@ def build_reg_text_tree(text, part):
     title, body = utils.title_body(text)
     label = [str(part)]
 
-    subpart_locations = subparts(body)
     subparts_list = []
 
+    subpart_locations = subparts(body)
     if subpart_locations:
+        pre_subpart = body[:subpart_locations[0][0]] 
+        first_emptypart, children_text = build_subparts_tree(pre_subpart, part, build_empty_part)
+        if first_emptypart:
+            subparts_list.append(first_emptypart)
+        else:
+            children_text = pre_subpart
+
         for start,end in subpart_locations:
             subpart_body = body[start:end]
-            subpart = build_subpart(subpart_body, part)
-            sects = sections(subpart_body, part)
-            if sects:
-                subpart_children = []
-                for s,e in sects:
-                    section_text = subpart_body[s:e]
-                    subpart_children.append(build_section_tree(section_text, part))
-            subpart.children = subpart_children
+            subpart, _ = build_subparts_tree(subpart_body, part, lambda p: build_subpart(subpart_body, p))
             subparts_list.append(subpart)
-        children_text = body[:subpart_locations[0][0]] 
     else:
-        sects = sections(body,part)
-        empty_part = build_empty_part(part)
-
-        if not sects:
-            return struct.Node(text, [empty_part], label, title)
-
-        children = []
-        for s,e in sects:
-            section_text = body[start:end]
-            children.append(build_section_tree(section_text, part))
-        empty_part.children = children
-        subparts_list.append(empty_part)
-
-        children_text = body[:sects[0][0]]
-
+        emptypart, children_text = build_subparts_tree(body, part, build_empty_part)
+        if emptypart:
+            subpart_lists.append(emptypart)
+        else:
+            return struct.Node(text, 
+                    [build_empty_part(part)], 
+                    label, 
+                    title)
     return struct.Node(children_text, subparts_list, label, title)
             
-    #if not sects:
-    #    return struct.Node(text, [], label, title)
-    #children_text = body[:sects[0][0]]
-
-    #children = []
-    #for start,end in sects:
-    #    section_text = body[start:end]
-    #    children.append(build_section_tree(section_text, part))
-    #return struct.Node(children_text, children, label, title)
-
 regParser = ParagraphParser(r"\(%s\)", struct.Node.REGTEXT)
 
 def build_empty_part(part):
