@@ -11,21 +11,23 @@ from regparser.tree.appendix.carving import find_appendix_start
 from regparser.tree.paragraph import ParagraphParser
 from regparser.tree.supplement import find_supplement_start
 
+
 def build_subparts_tree(text, part, subpart_builder):
-    """ Build a tree of a subpart, and it's children sections. 
-    subpart_builder can be a builder that builds a subpart or an 
+    """ Build a tree of a subpart, and it's children sections.
+    subpart_builder can be a builder that builds a subpart or an
     emptypart. """
 
     sects = sections(text, part)
     if sects:
         subpart = subpart_builder(part)
         children = []
-        for s,e in sects:
+        for s, e in sects:
             section_text = text[s:e]
             children.append(build_section_tree(section_text, part))
         subpart.children = children
         return (subpart, text[:sects[0][0]])
     return (None, None)
+
 
 def build_reg_text_tree(text, part):
     """Build up the whole tree from the plain text of a single regulation. This
@@ -38,37 +40,40 @@ def build_reg_text_tree(text, part):
 
     subpart_locations = subparts(body)
     if subpart_locations:
-        pre_subpart = body[:subpart_locations[0][0]] 
-        first_emptypart, children_text = build_subparts_tree(pre_subpart, part, build_empty_part)
+        pre_subpart = body[:subpart_locations[0][0]]
+        first_emptypart, children_text = build_subparts_tree(
+            pre_subpart, part, build_empty_part)
         if first_emptypart:
             subparts_list.append(first_emptypart)
         else:
             children_text = pre_subpart
 
-        for start,end in subpart_locations:
+        for start, end in subpart_locations:
             subpart_body = body[start:end]
-            subpart, _ = build_subparts_tree(subpart_body, part, lambda p: build_subpart(subpart_body, p))
+            subpart, _ = build_subparts_tree(
+                subpart_body, part, lambda p: build_subpart(subpart_body, p))
             subparts_list.append(subpart)
     else:
-        emptypart, children_text = build_subparts_tree(body, part, build_empty_part)
+        emptypart, children_text = build_subparts_tree(
+            body, part, build_empty_part)
         if emptypart:
             subparts_list.append(emptypart)
         else:
-            return struct.Node(text, 
-                    [build_empty_part(part)], 
-                    label, 
-                    title)
+            return struct.Node(
+                text, [build_empty_part(part)], label, title)
     return struct.Node(children_text, subparts_list, label, title)
-            
+
 regParser = ParagraphParser(r"\(%s\)", struct.Node.REGTEXT)
+
 
 def build_empty_part(part):
     """ When a regulation doesn't have a subpart, we give it an emptypart (a
     dummy subpart) so that the regulation tree is consistent. """
 
     label = [str(part), 'Subpart']
-    return struct.Node('', [], label, '', 
-            node_type=struct.Node.EMPTYPART)
+    return struct.Node(
+        '', [], label, '', node_type=struct.Node.EMPTYPART)
+
 
 def build_subpart(text, part):
     results = subpart.parseString(text)
@@ -76,16 +81,19 @@ def build_subpart(text, part):
     subpart_title = results.subpart_title
     label = [str(part), 'Subpart', subpart_letter]
 
-    return struct.Node("", [], label, 
-                subpart_title, node_type=struct.Node.SUBPART)
+    return struct.Node(
+        "", [], label, subpart_title, node_type=struct.Node.SUBPART)
+
 
 def find_next_subpart_start(text):
     """ Find the start of the next Subpart (e.g. Subpart B)"""
     return find_start(text, u'Subpart', ur'[A-Z]—')
 
+
 def find_next_section_start(text, part):
     """Find the start of the next section (e.g. 205.14)"""
     return find_start(text, u"§", str(part) + r"\.\d+")
+
 
 def next_section_offsets(text, part):
     """Find the start/end of the next section"""
@@ -97,13 +105,15 @@ def next_section_offsets(text, part):
     subpart_start = find_next_subpart_start(text)
     appendix_start = find_appendix_start(text)
     supplement_start = find_supplement_start(text)
-    if subpart_start != None and subpart_start > start and subpart_start < end:
+    if subpart_start is not None \
+            and subpart_start > start and subpart_start < end:
         return (start, subpart_start)
-    if appendix_start != None and appendix_start < end:
+    if appendix_start is not None and appendix_start < end:
         return (start, appendix_start)
-    if supplement_start != None and supplement_start < end:
+    if supplement_start is not None and supplement_start < end:
         return (start, supplement_start)
     return (start, end)
+
 
 def next_subpart_offsets(text):
     """Find the start,end of the next subpart"""
@@ -113,11 +123,12 @@ def next_subpart_offsets(text):
     start, end = offsets
     appendix_start = find_appendix_start(text)
     supplement_start = find_supplement_start(text)
-    if appendix_start != None and appendix_start < end:
+    if appendix_start is not None and appendix_start < end:
         return (start, appendix_start)
-    if supplement_start != None and supplement_start < end:
+    if supplement_start is not None and supplement_start < end:
         return (start, supplement_start)
     return (start, end)
+
 
 def sections(text, part):
     """Return a list of section offsets. Does not include appendices."""
@@ -125,11 +136,15 @@ def sections(text, part):
         return next_section_offsets(remaining_text, part)
     return segments(text, offsets_fn)
 
+
 def subparts(text):
-    """ Return a list of subpart offset. Does not include appendices, supplements. """
+    """ Return a list of subpart offset. Does not include appendices,
+    supplements. """
+
     def offsets_fn(remaining_text, idx, excludes):
         return next_subpart_offsets(remaining_text)
     return segments(text, offsets_fn)
+
 
 def build_section_tree(text, part):
     """Construct the tree for a whole section. Assumes the section starts
@@ -137,11 +152,12 @@ def build_section_tree(text, part):
     title, text = utils.title_body(text)
 
     exclude = [(start, end) for _, start, end in
-            regtext_citation.scanString(text)]
-    exclude += [(start, end) for _, start, end in 
-            appendix_citation.scanString(text)]
+               regtext_citation.scanString(text)]
+
+    exclude += [(start, end) for _, start, end in
+                appendix_citation.scanString(text)]
     section = re.search(r'%d\.(\d+) ' % part, title).group(1)
     label = [str(part), section]
-    p_tree = regParser.build_tree(text, exclude=exclude, label=label,
-            title=title)
+    p_tree = regParser.build_tree(
+        text, exclude=exclude, label=label, title=title)
     return p_tree
