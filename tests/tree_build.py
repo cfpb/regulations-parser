@@ -30,6 +30,7 @@ class TreeBuildTest(TestCase):
         text += "1. Commentary 1\n"
         text += "2. Commentary 2\n"
 
+
         node201 = Node("\n", label=['200', '1'], 
             title=u"§ 200.1 First section.", children=[
                 Node(u"(a) First par\n", label=["200","1","a"]),
@@ -64,11 +65,14 @@ class TreeBuildTest(TestCase):
                 )
             ]
         )
+        nodeEP = Node('', label=['200', 'Subpart'], title='', 
+                    children=[node201, node202], node_type=Node.EMPTYPART)
+
         res = build_whole_regtree(text)
         #   Convert to JSON so we can ignore some unicode issues
         enc = NodeEncoder(sort_keys=True)
         self.assertEqual(
             enc.encode(build_whole_regtree(text)), 
             enc.encode(Node("\n", label=["200"], title="Regulation Q", 
-                children=[ node201, node202, nodeA, nodeI ]))
+                children=[ nodeEP, nodeA, nodeI ]))
         )

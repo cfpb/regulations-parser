@@ -52,7 +52,7 @@ def build_reg_text_tree(text, part):
     else:
         emptypart, children_text = build_subparts_tree(body, part, build_empty_part)
         if emptypart:
-            subpart_lists.append(emptypart)
+            subparts_list.append(emptypart)
         else:
             return struct.Node(text, 
                     [build_empty_part(part)], 
