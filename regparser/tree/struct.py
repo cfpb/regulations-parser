@@ -1,5 +1,6 @@
 from json import JSONDecoder, JSONEncoder
 
+
 class Node:
     APPENDIX = u'appendix'
     INTERP = u'interp'
@@ -9,20 +10,28 @@ class Node:
 
     INTERP_MARK = 'Interp'
 
-    def __init__(self, text='', children=[], label=[], title=None, 
+    def __init__(
+        self, text='', children=[], label=[], title=None,
             node_type=REGTEXT):
+
         self.text = unicode(text)
-        self.children = list(children)  #   defensive copy
+
+        #defensive copy
+        self.children = list(children)
+
         self.label = [str(l) for l in label if l != '']
         title = unicode(title or '')
         self.title = title or None
         self.node_type = node_type
+
     def __repr__(self):
         return (("Node( text = %s, children = %s, label = %s, title = %s, "
-            + "node_type = %s)") % (repr(self.text), repr(self.children), 
+                + "node_type = %s)") % (repr(self.text), repr(self.children),
                 repr(self.label), repr(self.title), repr(self.node_type)))
+
     def __cmp__(self, other):
         return cmp(repr(self), repr(other))
+
     def label_id(self):
         return '-'.join(self.label)
 
@@ -40,8 +49,12 @@ class NodeEncoder(JSONEncoder):
 
 def node_decode_hook(d):
     """Convert a JSON object into a Node"""
-    if set(('text', 'children', 'label', 'node_type')) - set(d.keys()) == set():
-        return Node(d['text'], d['children'], d['label'],
+    if set(
+            ('text', 'children',
+                'label', 'node_type')) - set(d.keys()) == set():
+
+        return Node(
+            d['text'], d['children'], d['label'],
             d.get('title', None), d['node_type'])
     else:
         return d
@@ -51,7 +64,8 @@ def walk(node, fn):
     """Perform fn for every node in the tree. Pre-order traversal. fn must
     be a function that accepts a root node."""
     result = fn(node)
-    if result != None:
+
+    if result is not None:
         results = [result]
     else:
         results = []

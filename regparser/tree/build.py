@@ -4,6 +4,7 @@ from regparser.tree.reg_text import build_reg_text_tree
 from regparser.tree.supplement import find_supplement_start
 import re
 
+
 def find_cfr_part(text):
     """Figure out what CFR this is referring to from the text."""
     counts = {}
@@ -15,6 +16,7 @@ def find_cfr_part(text):
             best = part
             best_count = counts[part]
     return int(best)
+
 
 def build_whole_regtree(text):
     """Combine the output of numerous functions to get to a whole regulation

@@ -6,6 +6,7 @@ import urllib
 
 from layer import Layer
 
+
 class ExternalCitationParser(Layer):
     #The different types of citations
     CODE_OF_FEDERAL_REGULATIONS = 'CFR'
@@ -29,15 +30,16 @@ class ExternalCitationParser(Layer):
             return ExternalCitationParser.STATUTES_AT_LARGE
 
     def reformat_citation(self, citation):
-        """ Strip out unnecessary elements from the citation reference, so that 
+        """ Strip out unnecessary elements from the citation reference, so that
         the various types of citations are presented consistently. """
         if 'Act' in citation:
             citation = self.act_citation
-        return [c for c in citation if c not in ['U.S.C.', 'CFR', 'part', '.', 'Public', 'Law', '-']]
+        return [c for c in citation if c not in [
+            'U.S.C.', 'CFR', 'part', '.', 'Public', 'Law', '-']]
 
     def parse(self, text, parts=None):
         """ Parse the provided text, pulling out all the citations. """
-        parser  = grammar.regtext_external_citation
+        parser = grammar.regtext_external_citation
 
         cm = defaultdict(list)
         citation_strings = {}
@@ -47,13 +49,14 @@ class ExternalCitationParser(Layer):
             citation_strings[index] = citation.asList()
 
         def build_layer_element(k, offsets):
-            layer_element = {'offsets': offsets, 
+            layer_element = {
+                'offsets': offsets,
                 'citation': self.reformat_citation(citation_strings[k]),
                 'citation_type': self.citation_type(citation_strings[k])
             }
             return layer_element
 
-        return  [build_layer_element(k, offsets) for k,offsets in cm.items()]
+        return [build_layer_element(k, offsets) for k, offsets in cm.items()]
 
     def process(self, node):
         citations_list = self.parse(node.text, parts=node.label)

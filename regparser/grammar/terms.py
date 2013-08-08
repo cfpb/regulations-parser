@@ -10,5 +10,5 @@ smart_quotes = (
     ).setParseAction(keep_pos).setResultsName("term")
 )
 
-term_parser = smart_quotes #   will eventually include italic text, etc.
-
+# will eventually include italic text, etc.
+term_parser = smart_quotes

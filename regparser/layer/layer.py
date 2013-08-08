@@ -9,8 +9,10 @@ class Layer():
         pass
 
     def process(self, node):
-        """ Construct the element of the layer relevant to processing the given node, so it returns 
-        (pargraph_id, layer_content) or None if there is no relevant information. """
+        """ Construct the element of the layer relevant to processing the given
+        node, so it returns (pargraph_id, layer_content) or None if there is no
+        relevant information. """
+
         return NotImplemented
 
     def builder(self, node):

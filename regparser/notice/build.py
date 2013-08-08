@@ -7,6 +7,7 @@ from regparser.notice.sxs import build_section_by_section
 
 from lxml import etree
 
+
 def build_notice(xml):
     """Given xml alone, build up a corresponding notice structure"""
     cfr_part = fetch_cfr_part(xml)
