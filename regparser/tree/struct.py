@@ -89,3 +89,31 @@ def join_text(node):
     bits = []
     walk(node, lambda n: bits.append(n.text))
     return ''.join(bits)
+
+
+def treeify(nodes):
+    """Given a list of nodes, convert those nodes into the appropriate tree
+    structure based on their labels. This assumes that all nodes will fall
+    under a set of 'root' nodes, which have the min-length label."""
+    if not nodes:
+        return nodes
+    
+    min_len, with_min = len(nodes[0].label), []
+
+    for node in nodes:
+        if len(node.label) == min_len:
+            with_min.append(node)
+        elif len(node.label) < min_len:
+            min_len = len(node.label)
+            with_min = [node]
+
+    roots = []
+    for root in with_min:
+        if root.label[-1] == Node.INTERP_MARK:
+            is_child = lambda n: n.label[:len(root.label)-1] == root.label[:-1]
+        else:
+            is_child = lambda n: n.label[:len(root.label)] == root.label
+        children = [n for n in nodes if n != root and is_child(n)]
+        root.children = root.children + treeify(children)
+        roots.append(root)
+    return roots
