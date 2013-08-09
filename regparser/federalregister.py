@@ -7,6 +7,7 @@ from urllib import urlencode, urlopen
 FR_BASE = "https://www.federalregister.gov"
 API_BASE = FR_BASE + "/api/v1/"
 
+
 def fetch_notices(cfr_title, cfr_part):
     """Search through all articles associated with this part. Right now,
     limited to 1000; could use paging to fix this in the future."""
@@ -28,6 +29,7 @@ def fetch_notices(cfr_title, cfr_part):
             notices.append(build_notice(notice_xml))
     return notices
 
+
 def fetch_notice_xml(html_url):
     """Unfortunately, the API doesn't link directly to the XML. We therefore
     fetch the HTML and scrape it to find the correct XML"""
@@ -38,7 +40,7 @@ def fetch_notice_xml(html_url):
     json_start = html_str.find('{"formats"')
     json_end = html_str.find(";", json_start)
     dev_formats = json.loads(html_str[json_start:json_end])
-    
+
     xml_url = None
     for fmt in dev_formats['formats']:
         if fmt['type'].lower() == 'xml':

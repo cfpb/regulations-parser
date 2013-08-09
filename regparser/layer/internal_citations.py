@@ -7,19 +7,20 @@ from regparser.grammar import internal_citations as grammar
 from regparser.layer.layer import Layer
 from regparser.tree.struct import Node
 
+
 class InternalCitationParser(Layer):
 
     def parse(self, text, parts=None):
-        """ Parse the provided text, pulling out all the internal (self-referential) 
-        citations. """
+        """ Parse the provided text, pulling out all the internal
+        (self-referential) citations. """
 
         all_citations = self.regtext_citations(text, parts)
         all_citations.extend(self.comment_citations(text, parts))
 
         for cit, start, end in grammar.appendix_citation.scanString(text):
             label = [parts[0], cit.appendix, cit.section]
-            all_citations.extend(self.paragraph_list(cit, start, end,
-                label))
+            all_citations.extend(
+                self.paragraph_list(cit, start, end, label))
 
         return self.strip_whitespace(text, all_citations)
 
@@ -32,25 +33,28 @@ class InternalCitationParser(Layer):
             lambda p: p != Node.INTERP_MARK, parts))
         if len(paragraph_parts) < 2:    # no citations without a section
             return citations
-            
+
         for citation, start, end in grammar.regtext_citation.scanString(text):
             if citation.single_paragraph or citation.multiple_paragraphs:
                 if citation.single_paragraph:
                     citation = citation.single_paragraph
                 else:
                     citation = citation.multiple_paragraphs
-                citations.extend(self.paragraph_list(citation, 
-                    citation.p_head.pos[0], end, paragraph_parts[0:2]))
+
+                citations.extend(
+                    self.paragraph_list(
+                        citation, citation.p_head.pos[0],
+                        end, paragraph_parts[0:2]))
             elif citation.multiple_sections:
                 sections = [citation.s_head] + list(citation.s_tail)
                 for section in sections:
-                    citations.extend(self.paragraph_list(section,
-                        section.pos[0], section.pos[1], 
+                    citations.extend(self.paragraph_list(
+                        section, section.pos[0], section.pos[1],
                         [section.part, section.section]))
             else:
                 citation = citation.without_marker
-                citations.extend(self.paragraph_list(citation, 
-                    citation.pos[0], end, 
+                citations.extend(self.paragraph_list(
+                    citation, citation.pos[0], end,
                     [citation.part, citation.section]))
         return citations
 
@@ -105,7 +109,7 @@ class InternalCitationParser(Layer):
         else:
             label.extend([None, None, None, None])
         citations.append({
-            'offsets': [(start,end)], 
+            'offsets': [(start, end)],
             'citation': filter(bool, label)
             })
         for p in match.p_tail:
@@ -118,7 +122,7 @@ class InternalCitationParser(Layer):
             else:
                 label[-1] = p.level4
             citations.append({
-                'offsets': [p.pos], 
+                'offsets': [p.pos],
                 'citation': filter(bool, label)
                 })
         return citations

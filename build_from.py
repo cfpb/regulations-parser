@@ -10,7 +10,7 @@ import sys
 if __name__ == "__main__":
     if len(sys.argv) < 6:
         print("Usage: python build_from.py regulation.txt title " +
-                "doc_#/version act_title act_section")
+              "doc_#/version act_title act_section")
         print "  e.g. python build_from.py rege.txt 12 2011-31725 15 1693"
         exit()
 
@@ -33,8 +33,8 @@ if __name__ == "__main__":
         writer.notice(notice['document_number']).write(notice)
 
     #   Finally, all the layers
-    layer = external_citations.ExternalCitationParser(reg_tree, 
-        sys.argv[4:]).build()
+    layer = external_citations.ExternalCitationParser(
+        reg_tree, sys.argv[4:]).build()
     writer.layer("external-citations", cfr_part, doc_number).write(layer)
 
     layer = internal_citations.InternalCitationParser(reg_tree).build()

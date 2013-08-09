@@ -1,5 +1,6 @@
 from pyparsing import getTokensEndLoc, Literal
 
+
 def keep_pos(source, location, tokens):
     """Wrap the tokens with a class that also keeps track of the match's
     location."""
@@ -12,6 +13,7 @@ class WrappedResult():
     def __init__(self, tokens, start, end):
         self.tokens = tokens
         self.pos = (start, end)
+
     def __getattr__(self, attr):
         return getattr(self.tokens, attr)
 

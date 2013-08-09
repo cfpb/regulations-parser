@@ -1,6 +1,7 @@
 from layer import Layer
 from regparser.tree.struct import Node
 
+
 class ParagraphMarkers(Layer):
 
     def process(self, node):
@@ -21,4 +22,3 @@ class ParagraphMarkers(Layer):
         else:
             m = '(%s)' % m
         return m
-

@@ -7,6 +7,7 @@ import string
 
 parParser = ParagraphParser(r"\(%s\)", Node.APPENDIX)
 
+
 def trees_from(text, part, parent_label):
     """Build a tree for the appendix section. It will have children for each
     appendix. Text is the text of the entire regulation, while part is the
@@ -18,8 +19,8 @@ def trees_from(text, part, parent_label):
         label = parent_label + [appendix_letter]
         sections = carving.appendix_sections(appendix, appendix_letter)
         if sections:
-            child = paragraph_tree(appendix_letter, sections, appendix,
-                    label, title)
+            child = paragraph_tree(
+                appendix_letter, sections, appendix, label, title)
         else:
             child = generic_tree(appendix, label, title)
         children.append(child)
@@ -38,8 +39,11 @@ def generic_tree(text, label, title=None):
         start, end = seg
         seg_title, body = utils.title_body(text[start:end])
         label_character = string.ascii_lowercase[index]
-        children.append(Node(body, label=(label + [label_character]),
-            title=seg_title, node_type=Node.APPENDIX))
+        children.append(
+            Node(body, label=(
+                label + [label_character]),
+                title=seg_title, node_type=Node.APPENDIX))
+
     return Node(text[:segments[0][0]], children, label, title, Node.APPENDIX)
 
 
@@ -51,11 +55,15 @@ def paragraph_tree(appendix_letter, sections, text, label, title=None):
     children = []
     for begin, end in sections:
         seg_title, section_text = utils.title_body(text[begin:end])
-        sec_num = carving.get_appendix_section_number(seg_title, 
-                appendix_letter)
-        exclude = [(start, end) for _, start, end in
-                regtext_citation.scanString(section_text)]
-        child = parParser.build_tree(section_text, exclude=exclude, 
-                label=label + [sec_num], title=seg_title)
+        sec_num = carving.get_appendix_section_number(
+            seg_title, appendix_letter)
+        exclude = [
+            (start, end) for _, start, end in
+            regtext_citation.scanString(section_text)]
+
+        child = parParser.build_tree(
+            section_text, exclude=exclude, label=label + [sec_num],
+            title=seg_title)
+
         children.append(child)
     return Node(text[:sections[0][0]], children, label, title, Node.APPENDIX)

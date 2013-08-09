@@ -8,53 +8,60 @@ from regparser.grammar import common, tokens
 from regparser.grammar.common import WordBoundaries
 from regparser.tree.paragraph import p_levels
 
-#   Verbs
+
+#Verbs
 def generate_verb(word_list, verb, active):
     """Short hand for making tokens.Verb from a list of trigger words"""
-    grammar = reduce(lambda l, r: l | r, 
+    grammar = reduce(
+        lambda l, r: l | r,
         map(lambda w: CaselessLiteral(w), word_list))
     grammar = WordBoundaries(grammar)
     grammar = grammar.setParseAction(lambda _: tokens.Verb(verb, active))
     return grammar
 
-put_active = generate_verb(['revising', 'revise', 'correcting', 'correct'],
+put_active = generate_verb(
+    ['revising', 'revise', 'correcting', 'correct'],
     tokens.Verb.PUT, active=True)
-put_passive = generate_verb(['revised', 'corrected'], tokens.Verb.PUT,
+
+put_passive = generate_verb(
+    ['revised', 'corrected'], tokens.Verb.PUT,
     active=False)
 
 post_active = generate_verb(['adding', 'add'], tokens.Verb.POST, active=True)
 post_passive = generate_verb(['added'], tokens.Verb.POST, active=False)
 
-delete_active = generate_verb(['removing', 'remove'], tokens.Verb.DELETE,
-    active=True)
+delete_active = generate_verb(
+    ['removing', 'remove'], tokens.Verb.DELETE, active=True)
 delete_passive = generate_verb(['removed'], tokens.Verb.DELETE, active=False)
 
-move_active = generate_verb(['redesignating', 'redesignate'],
-    tokens.Verb.MOVE, active=True)
+move_active = generate_verb(
+    ['redesignating', 'redesignate'], tokens.Verb.MOVE, active=True)
+
 move_passive = generate_verb(['redesignated'], tokens.Verb.MOVE, active=False)
 
 
 #   Context
 context_certainty = Optional(
-    common.Marker("in") 
-    | (common.Marker("under") + Optional(common.Marker("subheading"))
-    )).setResultsName("certain")
+    common.Marker("in") | (
+        common.Marker("under") + Optional(
+            common.Marker("subheading")))).setResultsName("certain")
 
 interp = (
     context_certainty
     + common.marker_interpretation
-    ).setParseAction(lambda m: tokens.Context([m.part, 'Interpretations'], 
-        bool(m.certain)))
+    ).setParseAction(lambda m: tokens.Context(
+    [m.part, 'Interpretations'], bool(m.certain)))
+
 marker_subpart = (
     context_certainty
     + common.marker_subpart
-    ).setParseAction(lambda m: tokens.Context([None, 'Subpart:' + m.subpart], 
-        bool(m.certain)))
+    ).setParseAction(lambda m: tokens.Context(
+    [None, 'Subpart:' + m.subpart], bool(m.certain)))
 comment_context_with_section = (
     context_certainty
     #   Confusingly, these are sometimes "comments", sometimes "paragraphs"
     + (common.Marker("comment") | common.Marker("paragraph"))
-    + common.section 
+    + common.section
     + common.depth1_p
     ).setParseAction(lambda m: tokens.Context([None, 'Interpretations', 
         m.section, '(' + ')('.join(p for p in [m.level1, m.level2, m.level3, 
@@ -68,7 +75,7 @@ comment_context_without_section = (
             if p) + ')'], bool(m.certain)))
 appendix = (
     context_certainty
-    + common.appendix_marker 
+    + common.appendix_marker
     + common.appendix_letter
     + Optional(common.Marker("to") + common.marker_part)
     ).setParseAction(lambda m: tokens.Context(
@@ -98,13 +105,13 @@ intro_text_of = (
     + common.marker_paragraph.copy()
     ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
         m.level1, m.level2, m.level3, m.level4, m.level5], 
-        field = tokens.Paragraph.TEXT_FIELD))
+        field=tokens.Paragraph.TEXT_FIELD))
 single_par = (
     common.marker_paragraph
     + Optional(common.intro_text)
     ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
         m.level1, m.level2, m.level3, m.level4, m.level5], 
-        field = (tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
+        field=(tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
 section_single_par = (
     common.marker_part_section
     + common.depth1_p
@@ -112,8 +119,8 @@ section_single_par = (
     ).setParseAction(lambda m: tokens.Paragraph([m.part, None,
         m.section, m.level1, m.level2, m.level3,
         m.level4, m.level5],
-        field = (tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
-single_comment_par = (
+        field=(tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
+single_comment_par=(
     common.paragraph_marker
     + common.comment_p
     ).setParseAction(lambda m: tokens.Paragraph([None,
@@ -133,6 +140,7 @@ def make_multiple(to_repeat):
         ).setResultsName("tail", listAllMatches=True))
     )
 
+
 def make_par_list(listify):
     """Shorthand for turning a pyparsing match into a tokens.Paragraph"""
     def curried(match=None):
@@ -146,12 +154,14 @@ def make_par_list(listify):
             if match.conj == 'through':
                 #   Iterate through, creating paragraph tokens
                 prev = pars[-1]
-                if len(prev.label) == 3:    #   Section numbers
+                if len(prev.label) == 3:
+                    # Section numbers
                     for i in range(int(prev.label[-1]) + 1, 
                             int(next_par.label[-1])):
                         pars.append(tokens.Paragraph(prev.label[:2] 
                             + [str(i)]))
-                if len(prev.label) > 3:     #   Paragraphs
+                if len(prev.label) > 3:
+                    # Paragraphs
                     depth = len(prev.label)
                     start = p_levels[depth-4].index(prev.label[-1]) + 1
                     end = p_levels[depth-4].index(next_par.label[-1])
@@ -201,13 +211,14 @@ token_patterns = (
     | comment_context_with_section | comment_context_without_section
 
     | section_heading | section_heading_of | intro_text_of
-    | single_par | section_single_par 
+    | single_par | section_single_par
 
     | multiple_sections | multiple_pars | multiple_appendices
     | multiple_comment_pars | multiple_comments
-
-    | single_comment_par    #   Must come after multiple_comment_pars
-
-    | section       #   Must come after section_single_par
-    | intro_text    #   Must come after intro_text_of
+    #   Must come after multiple_comment_pars
+    | single_comment_par
+    #   Must come after section_single_par
+    | section
+    #   Must come after intro_text_of
+    | intro_text
 )
