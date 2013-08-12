@@ -16,7 +16,7 @@ class NoticeBuildTest(TestCase):
             'full_text_xml_url': None,
             'html_url': 'some url',
             'publication_date': '1955-12-10',
-            'regulation_id_number': 'a231a-232q',
+            'regulation_id_numbers': ['a231a-232q'],
         }
         self.assertEqual(build_notice('5', '9292', fr), {
             'abstract': 'sum sum sum',
@@ -30,7 +30,7 @@ class NoticeBuildTest(TestCase):
             'fr_url': 'some url',
             'initial_effective_on': '1956-09-09',
             'publication_date': '1955-12-10',
-            'regulation_id_number': 'a231a-232q',
+            'regulation_id_numbers': ['a231a-232q'],
         })
 
     def test_process_xml(self):

@@ -1,16 +1,19 @@
+from urllib import urlencode, urlopen
+
+from lxml import etree
+
 from regparser.notice.diff import parse_amdpar
 from regparser.notice.address import fetch_addresses
 from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
 
-from lxml import etree
 
 def build_notice(cfr_title, cfr_part, fr_notice):
     """Given JSON from the federal register, create our notice structure"""
     notice = {'cfr_title': cfr_title, 'cfr_part': cfr_part}
     #   Copy over most fields
     for field in ['abstract', 'action', 'agency_names', 'comments_close_on',
-            'document_number', 'publication_date', 'regulation_id_number']:
+            'document_number', 'publication_date', 'regulation_id_numbers']:
         if fr_notice[field]:
             notice[field] = fr_notice[field]
 
@@ -25,7 +28,10 @@ def build_notice(cfr_title, cfr_part, fr_notice):
         notice['fr_citation'] = fr_notice['citation']
 
     if fr_notice['full_text_xml_url']:
-        notice_xml = etree.parse(fr_notice['full_text_xml_url'])
+        connection = urlopen(fr_notice['full_text_xml_url'])
+        notice_str = connection.read()
+        connection.close()
+        notice_xml = etree.fromstring(notice_str)
         process_xml(notice, notice_xml)
 
     return notice

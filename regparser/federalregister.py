@@ -18,10 +18,10 @@ def fetch_notices(cfr_title, cfr_part):
         "fields[]": ["abstract", "action", "agency_names", "citation",
             "comments_close_on", "dates", "document_number", "effective_on",
             "full_text_xml_url", "html_url", "publication_date",
-            "regulation_id_number"]
+            "regulation_id_numbers"]
         }, doseq=True)
     connection = urlopen(url)
-    results = json.loads(connection.read())
+    results = json.load(connection)
     connection.close()
 
     notices = []
