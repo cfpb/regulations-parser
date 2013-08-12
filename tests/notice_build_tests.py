@@ -5,21 +5,38 @@ from unittest import TestCase
 class NoticeBuildTest(TestCase):
 
     def test_build_notice(self):
-        """Integration test for the building of a notice from XML"""
+        fr = {
+            'abstract': 'sum sum sum',
+            'action': 'actact',
+            'agency_names': ['Agency 1', 'Agency 2'],
+            'citation': 'citation citation',
+            'comments_close_on': None,
+            'document_number': '7878-111',
+            'effective_on': '1956-09-09',
+            'full_text_xml_url': None,
+            'html_url': 'some url',
+            'publication_date': '1955-12-10',
+            'regulation_id_number': 'a231a-232q',
+        }
+        self.assertEqual(build_notice('5', '9292', fr), {
+            'abstract': 'sum sum sum',
+            'action': 'actact',
+            'agency_names': ['Agency 1', 'Agency 2'],
+            'cfr_part': '9292',
+            'cfr_title': '5',
+            'document_number': '7878-111',
+            'effective_on': '1956-09-09',
+            'fr_citation': 'citation citation',
+            'fr_url': 'some url',
+            'initial_effective_on': '1956-09-09',
+            'publication_date': '1955-12-10',
+            'regulation_id_number': 'a231a-232q',
+        })
+
+    def test_process_xml(self):
+        """Integration test for xml processing"""
         xml = """
         <ROOT>
-            <FRDOC>[FR Doc. 7878-111 Filed 2-3-78; 1:02 pm]</FRDOC>
-            <CFR>220 CFR Part 9292</CFR>
-            <RIN>RIN a231a-232q</RIN>
-            <AGENCY>Agag</AGENCY>
-            <ACT>
-                <HD>Some Title</HD>
-                <P>actact</P>
-            </ACT>
-            <SUM>
-                <HD>Another Title</HD>
-                <P>sum sum sum</P>
-            </SUM>
             <SUPLINF>
                 <FURINF>
                     <HD>CONTACT INFO:</HD>
@@ -41,46 +58,30 @@ class NoticeBuildTest(TestCase):
                 <P>Following Content</P>
             </SUPLINF>
         </ROOT>"""
-        self.assertEqual(build_notice(etree.fromstring(xml)), {
-            'document_number': '7878-111',
+        notice = {'cfr_part': '9292'}
+        self.assertEqual(process_xml(notice, etree.fromstring(xml)), {
             'cfr_part': '9292',
-            'rin': 'a231a-232q',
-            'agency': 'Agag',
-            'action': 'actact',
-            'contact': 'Extra contact info here',
-            'summary': 'sum sum sum',
-            'dates': { 'effective': ['1956-09-09'] },
             'addresses': { 
                 'methods': [('Email', 'example@example.com')],
                 'instructions': ['Extra instructions']
             },
+            'contact': 'Extra contact info here',
             'section_by_section': [{
                 'title': '8(q) Words',
                 'paragraphs': ['Content'],
                 'children': [],
                 'label': '9292-8-q'
-            }]
+            }],
         })
 
-    def test_build_notice_missing_fields(self):
+    def test_process_xml_missing_address(self):
         xml = """
         <ROOT>
-            <FRDOC>[FR Doc. 7878-111 Filed 2-3-78; 1:02 pm]</FRDOC>
-            <CFR>220 CFR Part 9292</CFR>
-            <AGENCY>Agag</AGENCY>
-            <FURINF>
-                <HD>CONTACT INFO:</HD>
-                <P>Extra contact info here</P>
-            </FURINF>
-            <ACT>
-                <HD>Some Title</HD>
-                <P>actact</P>
-            </ACT>
-            <SUM>
-                <HD>Another Title</HD>
-                <P>sum sum sum</P>
-            </SUM>
             <SUPLINF>
+                <FURINF>
+                    <HD>CONTACT INFO:</HD>
+                    <P>Extra contact info here</P>
+                </FURINF>
                 <HD SOURCE="HED">Supplementary Info</HD>
                 <HD SOURCE="HD1">V. Section-by-Section Analysis</HD>
                 <HD SOURCE="HD2">8(q) Words</HD>
@@ -89,18 +90,15 @@ class NoticeBuildTest(TestCase):
                 <P>Following Content</P>
             </SUPLINF>
         </ROOT>"""
-        self.assertEqual(build_notice(etree.fromstring(xml)), {
-            'document_number': '7878-111',
+        notice = {'cfr_part': '9292'}
+        self.assertEqual(process_xml(notice, etree.fromstring(xml)), {
             'cfr_part': '9292',
-            'agency': 'Agag',
-            'action': 'actact',
             'contact': 'Extra contact info here',
-            'summary': 'sum sum sum',
             'section_by_section': [{
                 'title': '8(q) Words',
                 'paragraphs': ['Content'],
                 'children': [],
                 'label': '9292-8-q'
-            }]
+            }],
         })
 

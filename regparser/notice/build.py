@@ -1,35 +1,54 @@
-from regparser.notice.diff import find_diffs, parse_amdpar
-from regparser.notice.fields import fetch_cfr_part, fetch_simple_fields
-from regparser.notice.fields import fetch_document_number, fetch_dates
-from regparser.notice.fields import fetch_addresses
+from regparser.notice.diff import parse_amdpar
+from regparser.notice.address import fetch_addresses
 from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
 
 from lxml import etree
 
-def build_notice(xml):
-    """Given xml alone, build up a corresponding notice structure"""
-    cfr_part = fetch_cfr_part(xml)
+def build_notice(cfr_title, cfr_part, fr_notice):
+    """Given JSON from the federal register, create our notice structure"""
+    notice = {'cfr_title': cfr_title, 'cfr_part': cfr_part}
+    #   Copy over most fields
+    for field in ['abstract', 'action', 'agency_names', 'comments_close_on',
+            'document_number', 'publication_date', 'regulation_id_number']:
+        if fr_notice[field]:
+            notice[field] = fr_notice[field]
 
-    sxs = find_section_by_section(xml)
-    sxs = build_section_by_section(sxs, cfr_part)
-    notice = fetch_simple_fields(xml)
-    notice['document_number'] = fetch_document_number(xml)
-    notice['cfr_part'] = cfr_part
-    notice['section_by_section'] = sxs
-    dates = fetch_dates(xml)
-    if dates:
-        notice['dates'] = dates
-    addresses = fetch_addresses(xml)
+    if fr_notice['effective_on']:
+        notice['effective_on'] = fr_notice['effective_on']
+        notice['initial_effective_on'] = fr_notice['effective_on']
+
+    if fr_notice['html_url']:
+        notice['fr_url'] = fr_notice['html_url']
+
+    if fr_notice['citation']:
+        notice['fr_citation'] = fr_notice['citation']
+
+    if fr_notice['full_text_xml_url']:
+        notice_xml = etree.parse(fr_notice['full_text_xml_url'])
+        process_xml(notice, notice_xml)
+
+    return notice
+
+def process_xml(notice, notice_xml):
+    """Pull out relevant fields from the xml and add them to the notice"""
+
+    notice['contact'] = notice_xml.xpath('//FURINF/P')[0].text
+
+    addresses = fetch_addresses(notice_xml)
     if addresses:
         notice['addresses'] = addresses
 
+    sxs = find_section_by_section(notice_xml)
+    sxs = build_section_by_section(sxs, notice['cfr_part'])
+    notice['section_by_section'] = sxs
+
     context = []
     amends = []
-    for par in xml.xpath('//AMDPAR'):
+    for par in notice_xml.xpath('//AMDPAR'):
         amend_set, context = parse_amdpar(par, context)
         amends.extend(amend_set)
     if amends:
         notice['amendments'] = amends
-    #find_diffs(xml, cfr_par)
+
     return notice

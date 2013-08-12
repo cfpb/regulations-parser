@@ -14,38 +14,17 @@ def fetch_notices(cfr_title, cfr_part):
         "conditions[cfr][title]": cfr_title,
         "conditions[cfr][part]": cfr_part,
         "per_page": 1000,
-        "order": "oldest"
-        })
+        "order": "oldest",
+        "fields[]": ["abstract", "action", "agency_names", "citation",
+            "comments_close_on", "dates", "document_number", "effective_on",
+            "full_text_xml_url", "html_url", "publication_date",
+            "regulation_id_number"]
+        }, doseq=True)
     connection = urlopen(url)
     results = json.loads(connection.read())
     connection.close()
 
     notices = []
-    for url in [r['html_url'] for r in results['results']]:
-        notice_xml = fetch_notice_xml(url)
-        if notice_xml:
-            notice_xml = etree.fromstring(notice_xml)
-            notices.append(build_notice(notice_xml))
+    for result in results['results']:
+        notices.append(build_notice(cfr_title, cfr_part, result))
     return notices
-
-def fetch_notice_xml(html_url):
-    """Unfortunately, the API doesn't link directly to the XML. We therefore
-    fetch the HTML and scrape it to find the correct XML"""
-    connection = urlopen(html_url)
-    html_str = connection.read()
-    connection.close()
-    #   This is fragile, but will work for now
-    json_start = html_str.find('{"formats"')
-    json_end = html_str.find(";", json_start)
-    dev_formats = json.loads(html_str[json_start:json_end])
-    
-    xml_url = None
-    for fmt in dev_formats['formats']:
-        if fmt['type'].lower() == 'xml':
-            xml_url = FR_BASE + fmt['url']
-
-    if xml_url:
-        connection = urlopen(xml_url)
-        xml_str = connection.read()
-        connection.close()
-        return xml_str
