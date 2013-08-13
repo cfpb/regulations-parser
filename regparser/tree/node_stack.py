@@ -18,7 +18,7 @@ class NodeStack(object):
         return self.m_stack[-1][-1]
 
     def add_to_bottom(self, m):
-        self.m_stack = [[m]] + self.m_stack 
+        self.m_stack = [[m]] + self.m_stack
 
     def size(self):
         return len(self.m_stack)

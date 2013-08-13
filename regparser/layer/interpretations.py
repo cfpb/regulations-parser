@@ -1,6 +1,7 @@
 from regparser.layer.layer import Layer
 from regparser.tree import struct
 
+
 class Interpretations(Layer):
     """Supplement I (interpretations) provides (sometimes very lengthy) extra
     information about particular paragraphs. This layer provides those
@@ -23,11 +24,11 @@ class Interpretations(Layer):
 
     def empty_interpretation(self, interp):
         """We don't want to include empty (e.g. \n\n) nodes as
-        interpretations unless their children are subparagraphs. We 
+        interpretations unless their children are subparagraphs. We
         distinguish subparagraphs from structural children by checking the
         location of the 'Interp' delimiter."""
         if interp.text.strip():
             return False
-        return all(not child.label 
-                or child.label[-1] == struct.Node.INTERP_MARK 
-                for child in interp.children)
+        return all(
+            not child.label or child.label[-1] == struct.Node.INTERP_MARK
+            for child in interp.children)

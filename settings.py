@@ -2,12 +2,13 @@ OUTPUT_DIR = ''
 API_BASE = ''
 META = {}
 #   Example usage: {'1': 'A', '8': 'B', 'Interpretations': None} leads to
-#   sections 1:8 in subpart A, 8:Interpretations in subpart B, and 
+#   sections 1:8 in subpart A, 8:Interpretations in subpart B, and
 #   Interpretations: without a subpart
 SUBPART_STARTS = {}
 
 #   All current, US CFR titles
-CFR_TITLES = [ None,
+CFR_TITLES = [
+    None,
     "General Provisions",
     "Grants and Agreements",
     "The President",
@@ -60,8 +61,9 @@ CFR_TITLES = [ None,
     "Wildlife and Fisheries",
 ]
 
-DEFAULT_IMAGE_URL = ('https://s3.amazonaws.com/images.federalregister.gov/'
-    +'%s/original.gif')
+DEFAULT_IMAGE_URL = (
+    'https://s3.amazonaws.com/images.federalregister.gov/' +
+    '%s/original.gif')
 
 # ImageId -> New URL (without placeholder)
 IMAGE_OVERRIDES = {}
@@ -70,6 +72,6 @@ IMAGE_OVERRIDES = {}
 IGNORE_DEFINITIONS_IN = []
 
 try:
-    from local_settings import * 
+    from local_settings import *
 except ImportError:
     pass

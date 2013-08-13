@@ -1,5 +1,6 @@
 from layer import Layer
 
+
 class SectionBySection(Layer):
 
     def __init__(self, tree, notices):
@@ -12,6 +13,7 @@ class SectionBySection(Layer):
         analyses = []
         for notice in self.notices:
             search_results = []
+
             def per_sxs(sxs):
                 if 'label' in sxs and sxs['label'] == node.label_id():
                     search_results.append(sxs)

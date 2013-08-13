@@ -6,5 +6,3 @@ reg_xml = open(reg_xml_file, 'r').read()
 
 tree = reg_text.build_tree(reg_xml)
 print NodeEncoder().encode(tree)
-
-

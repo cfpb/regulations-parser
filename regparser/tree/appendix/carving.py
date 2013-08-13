@@ -16,9 +16,9 @@ def find_next_appendix_offsets(text):
 
     start, end = offsets
     supplement_start = find_supplement_start(text)
-    if supplement_start != None and supplement_start < start:
+    if supplement_start is not None and supplement_start < start:
         return None
-    if supplement_start != None and supplement_start < end:
+    if supplement_start is not None and supplement_start < end:
         return (start, supplement_start)
     return (start, end)
 
@@ -39,8 +39,9 @@ def find_appendix_section_start(text, appendix):
 
 def find_next_appendix_section_offsets(text, appendix):
     """Find the start/end of the next appendix section."""
-    return search.find_offsets(text, lambda t:find_appendix_section_start(t,
-        appendix))
+    return search.find_offsets(
+        text, lambda t: find_appendix_section_start(
+            t, appendix))
 
 
 def appendix_sections(text, appendix):
@@ -52,7 +53,8 @@ def appendix_sections(text, appendix):
 
 def get_appendix_letter(title, part):
     """Pull out appendix letter from header. Assumes proper format"""
-    return re.match(ur'^Appendix ([A-Z]+) to Part %d.*$'%part, title).group(1)
+    return re.match(
+        ur'^Appendix ([A-Z]+) to Part %d.*$' % part, title).group(1)
 
 
 def get_appendix_section_number(title, appendix_letter):

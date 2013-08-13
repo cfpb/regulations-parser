@@ -8,33 +8,35 @@ def find_section_by_section(xml_tree):
     xml_children = xml_tree.xpath('//SUPLINF/*')
     sxs = dropwhile(lambda el: (
         el.tag != 'HD'
-        or el.get('SOURCE') != 'HD1' 
+        or el.get('SOURCE') != 'HD1'
         or 'section-by-section' not in el.text.lower()), xml_children)
 
     try:
-        sxs.next()  #   Ignore Header
-        sxs = takewhile(lambda e: e.tag != 'HD' or e.get('SOURCE') != 'HD1', 
-                sxs)
+        #Ignore Header
+        sxs.next()
+        sxs = takewhile(
+            lambda e: e.tag != 'HD' or e.get('SOURCE') != 'HD1', sxs)
 
         return list(sxs)
     except StopIteration:
         return []
-        
+
 
 def build_section_by_section(sxs, part, depth=2):
     """Given a list of xml nodes in the section by section analysis, pull
     out hierarchical data into a structure."""
     structures = []
-    while len(sxs): # while sxs: is deprecated
+    #while sxs: is deprecated
+    while len(sxs):
         title, text_els, sub_sections, sxs = split_into_ttsr(sxs, depth)
 
         paragraphs = [el.text for el in text_els if el.tag == 'P']
         children = build_section_by_section(sub_sections, part, depth+1)
 
         next_structure = {
-                'title': title.text,
-                'paragraphs': paragraphs,
-                'children': children
+            'title': title.text,
+            'paragraphs': paragraphs,
+            'children': children
             }
         label = parse_into_label(title.text, part)
         if label:
@@ -50,7 +52,8 @@ def split_into_ttsr(sxs, depth=2):
     sections of this header, and the remaining xml nodes"""
     title = sxs[0]
     next_section_marker = 'HD' + str(depth)
-    section = list(takewhile(lambda e: e.tag != 'HD'
+    section = list(takewhile(
+        lambda e: e.tag != 'HD'
         or e.get('SOURCE') != next_section_marker, sxs[1:]))
     text_elements = list(takewhile(lambda e: e.tag != 'HD', section))
     sub_sections = section[len(text_elements):]
@@ -65,6 +68,6 @@ def parse_into_label(txt, part):
 
     for match, _, _ in grammar.applicable.scanString(txt):
         paragraph_ids = []
-        paragraph_ids.extend(p for p in [match.level1, match.level2,
-            match.level3, match.level4] if p)
+        paragraph_ids.extend(p for p in [
+            match.level1, match.level2, match.level3, match.level4] if p)
         return "-".join([part, match.section] + paragraph_ids)

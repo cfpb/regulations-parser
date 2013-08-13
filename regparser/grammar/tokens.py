@@ -4,6 +4,7 @@
         p-level-2, p-level-3, p-level4, p-level5]
 """
 
+
 def _none_str(value):
     """Shorthand for displaying a variable as a string or the text None"""
     if value is None:
@@ -23,8 +24,10 @@ class Verb:
     def __init__(self, verb, active):
         self.verb = verb
         self.active = active
+
     def __repr__(self):
         return "Verb( '%s', active=%s )" % (self.verb, self.active)
+
     def __eq__(self, other):
         return repr(self) == repr(other)
 
@@ -39,9 +42,11 @@ class Context:
     def __init__(self, label, certain=False):
         self.label = label
         self.certain = certain
+
     def __repr__(self):
         return "Context([ %s , certain=%s ])" % (
             ', '.join(map(_none_str, self.label)), self.certain)
+
     def __eq__(self, other):
         return repr(self) == repr(other)
 
@@ -56,14 +61,17 @@ class Paragraph:
     HEADING_FIELD = 'title'
 
     def __init__(self, label, field=None):
-        self.label = [p or None for p in label] #   replace with Nones
-        #   Trim the right side of the list
+        # replace with Nones
+        self.label = [p or None for p in label]
+        # Trim the right side of the list
         while self.label and not self.label[-1]:
             self.label.pop()
         self.field = field
+
     def __repr__(self):
         return "Paragraph([ %s ], field = %s )" % (
-                ', '.join(map(_none_str, self.label)), _none_str(self.field))
+            ', '.join(map(_none_str, self.label)), _none_str(self.field))
+
     def label_text(self):
         """Converts self.label into a string"""
         label = [p or '?' for p in self.label]
@@ -71,6 +79,7 @@ class Paragraph:
             return '-'.join(label) + '[%s]' % self.field
         else:
             return '-'.join(label)
+
     def __eq__(self, other):
         return repr(self) == repr(other)
 
@@ -81,8 +90,9 @@ class TokenList:
 
     def __init__(self, tokens):
         self.tokens = tokens
+
     def __repr__(self):
         return "TokenList([ %s ])" % ', '.join(map(repr, self.tokens))
+
     def __eq__(self, other):
         return repr(self) == repr(other)
-

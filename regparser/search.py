@@ -1,5 +1,6 @@
 import re
 
+
 def find_start(text, heading, index):
     """Find the start of an appendix, supplement, etc."""
     match = re.search(r'^%s %s' % (heading, index), text, re.MULTILINE)
@@ -31,7 +32,7 @@ def segments(text, offsets_fn, exclude=[]):
     text_offset = 0
     offsets = offsets_fn(remaining_text, seg_id, exclude)
     while offsets:
-        begin,end = offsets
+        begin, end = offsets
         segs.append((begin+text_offset, end+text_offset))
         seg_id += 1
         text_offset += end

@@ -1,6 +1,7 @@
 from layer import Layer
 import settings
 
+
 class Meta(Layer):
 
     def __init__(self, tree, cfr_title, notices):

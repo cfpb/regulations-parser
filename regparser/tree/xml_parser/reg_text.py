@@ -9,10 +9,11 @@ from regparser.tree.node_stack import NodeStack
 from regparser.tree.xml_parser.appendices import build_non_reg_text
 from regparser.tree.xml_parser import tree_utils
 
+
 def determine_level(c, current_level):
-    """ Regulation paragraphs are hierarchical. This determines which level 
+    """ Regulation paragraphs are hierarchical. This determines which level
     the paragraph is at. """
-    if c in p_levels[2] and (current_level  > 1 or c not in p_levels[0]):
+    if c in p_levels[2] and (current_level > 1 or c not in p_levels[0]):
         p_level = 3
     elif c in p_levels[0]:
         p_level = 1
@@ -21,6 +22,7 @@ def determine_level(c, current_level):
     elif c in p_levels[3]:
         p_level = 4
     return p_level
+
 
 def build_tree(reg_xml):
     doc = etree.fromstring(reg_xml)
@@ -46,6 +48,7 @@ def build_tree(reg_xml):
     tree.children += non_reg_sections
 
     return tree
+
 
 def build_section(reg_part, section_xml):
     p_level = 1
@@ -86,8 +89,9 @@ def build_section(reg_part, section_xml):
     if section_number_match:
         section_number = section_number_match.group(1)
         section_text = ' '.join([section_xml.text] + section_texts)
-        sect_node = Node(section_text, label=[reg_part, section_number], 
-                title=section_title)
+        sect_node = Node(
+            section_text, label=[reg_part, section_number],
+            title=section_title)
 
         m_stack.add_to_bottom((1, sect_node))
 

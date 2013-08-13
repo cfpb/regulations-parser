@@ -12,17 +12,20 @@ from regparser.layer.paragraph_markers import ParagraphMarkers
 from regparser.tree import struct
 import settings
 
+
 class Ref(object):
     def __init__(self, term, label, position):
         self.term = term
         self.label = label
         self.position = position
+
     def __eq__(self, other):
         """Equality depends on equality of the fields"""
         return (hasattr(other, 'term') and hasattr(other, 'label')
                 and hasattr(other, 'position') and self.term == other.term
-                and self.label == other.label 
+                and self.label == other.label
                 and self.position == other.position)
+
 
 class Terms(Layer):
 
@@ -40,7 +43,8 @@ class Terms(Layer):
         self.current_subpart = None     # Need a reference for the closure
 
         def per_node(node):
-            if len(node.label) == 2:    #   Subparts
+            if len(node.label) == 2:
+                #Subparts
                 section = node.label[-1]
                 if section in settings.SUBPART_STARTS:
                     self.current_subpart = settings.SUBPART_STARTS[section]
@@ -65,7 +69,7 @@ class Terms(Layer):
                     self.scoped_terms['EXCLUDED'].extend(excluded)
 
         struct.walk(self.tree, per_node)
-        
+
         for scope in self.scoped_terms:
             for ref in self.scoped_terms[scope]:
                 self.layer['referenced'][ref.term + ":" + ref.label] = {
@@ -75,21 +79,21 @@ class Terms(Layer):
                     'text': struct.join_text(struct.find(self.tree, ref.label))
                 }
 
-
     def has_definitions(self, node):
         """Does this node have definitions?"""
         # Definitions cannot be in the top-most layer of the tree (the root)
         if len(node.label) < 2:
             return False
         # Definitions are only in the reg text (not appendices/interprs)
-        if not node.label[1].isdigit() or struct.Node.INTERP_MARK in node.label:
-            return False
+        if (not node.label[1].isdigit() or
+                struct.Node.INTERP_MARK in node.label):
+                return False
         stripped = node.text.strip(ParagraphMarkers.marker(node)).strip()
         return (
-                stripped.lower().startswith('definition')
-                or (node.title and 'definition' in node.title.lower())
-                or re.search('the term .* means', stripped.lower())
-                )
+            stripped.lower().startswith('definition')
+            or (node.title and 'definition' in node.title.lower())
+            or re.search('the term .* means', stripped.lower())
+            )
 
     def is_exclusion(self, term, text, previous_terms):
         """Some definitions are exceptions/exclusions of a previously
@@ -106,8 +110,9 @@ class Terms(Layer):
         citation."""
         included_defs = []
         excluded_defs = []
+
         def per_node(n):
-            for match in [m for m,_,_ in term_parser.scanString(n.text)]:
+            for match in [m for m, _, _ in term_parser.scanString(n.text)]:
                 term = match.term.tokens[0].lower()
                 pos = match.term.pos
 
@@ -162,7 +167,8 @@ class Terms(Layer):
 
         layer_el = []
         #   Remove any definitions defined in this paragraph
-        term_list = [(term,ref) for term, ref in applicable_terms.iteritems()
+        term_list = [
+            (term, ref) for term, ref in applicable_terms.iteritems()
             if ref.label != node.label_id()]
 
         exclusions = self.excluded_offsets(node.label_id(), node.text)
@@ -181,19 +187,22 @@ class Terms(Layer):
         term.) More will be added in the future"""
         exclusions = []
         for reflist in self.scoped_terms.values():
-            exclusions.extend(ref.position for ref in reflist 
-                if ref.label == label)
+            exclusions.extend(
+                ref.position for ref in reflist if ref.label == label)
         for ignore_term in settings.IGNORE_DEFINITIONS_IN:
-            exclusions.extend((match.start(), match.end()) for match in
+            exclusions.extend(
+                (match.start(), match.end()) for match in
                 re.finditer(r'\b' + re.escape(ignore_term) + r'\b', text))
         return exclusions
 
-    def calculate_offsets(self, text, applicable_terms, exclusions = []):
+    def calculate_offsets(self, text, applicable_terms, exclusions=[]):
         """Search for defined terms in this text, with a preference for all
         larger (i.e. containing) terms."""
-        exclusions = list(exclusions) # don't modify the original
 
-        #   add plurals to applicable terms
+        # don't modify the original
+        exclusions = list(exclusions)
+
+        # add plurals to applicable terms
         pluralized = [(pluralize(t[0]), t[1]) for t in applicable_terms]
         applicable_terms += pluralized
 
@@ -203,8 +212,9 @@ class Terms(Layer):
         matches = []
         for term, ref in applicable_terms:
             re_term = ur'\b' + re.escape(term) + ur'\b'
-            offsets = [(m.start(), m.end()) 
-                    for m in re.finditer(re_term, text.lower())]
+            offsets = [
+                (m.start(), m.end())
+                for m in re.finditer(re_term, text.lower())]
             safe_offsets = []
             for start, end in offsets:
                 #   Start is contained in an existing def
@@ -220,4 +230,3 @@ class Terms(Layer):
             exclusions.extend(safe_offsets)
             matches.append((term, ref, safe_offsets))
         return matches
-

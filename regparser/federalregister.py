@@ -7,6 +7,7 @@ from urllib import urlencode, urlopen
 FR_BASE = "https://www.federalregister.gov"
 API_BASE = FR_BASE + "/api/v1/"
 
+
 def fetch_notices(cfr_title, cfr_part):
     """Search through all articles associated with this part. Right now,
     limited to 1000; could use paging to fix this in the future."""
