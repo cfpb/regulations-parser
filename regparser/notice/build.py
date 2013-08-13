@@ -27,6 +27,10 @@ def build_notice(cfr_title, cfr_part, fr_notice):
     if fr_notice['citation']:
         notice['fr_citation'] = fr_notice['citation']
 
+    notice['meta'] = {}
+    for key in ('dates', 'end_page', 'start_page', 'type', 'volume'):
+        notice['meta'][key] = fr_notice[key]
+
     if fr_notice['full_text_xml_url']:
         connection = urlopen(fr_notice['full_text_xml_url'])
         notice_str = connection.read()
@@ -39,7 +43,9 @@ def build_notice(cfr_title, cfr_part, fr_notice):
 def process_xml(notice, notice_xml):
     """Pull out relevant fields from the xml and add them to the notice"""
 
-    notice['contact'] = notice_xml.xpath('//FURINF/P')[0].text
+    xml_chunk = notice_xml.xpath('//FURINF/P')
+    if xml_chunk:
+        notice['contact'] = xml_chunk[0].text
 
     addresses = fetch_addresses(notice_xml)
     if addresses:

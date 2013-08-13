@@ -11,12 +11,17 @@ class NoticeBuildTest(TestCase):
             'agency_names': ['Agency 1', 'Agency 2'],
             'citation': 'citation citation',
             'comments_close_on': None,
+            'dates': 'date info',
             'document_number': '7878-111',
             'effective_on': '1956-09-09',
+            'end_page': 9999,
             'full_text_xml_url': None,
             'html_url': 'some url',
             'publication_date': '1955-12-10',
             'regulation_id_numbers': ['a231a-232q'],
+            'start_page': 8888,
+            'type': 'Rule',
+            'volume': 66,
         }
         self.assertEqual(build_notice('5', '9292', fr), {
             'abstract': 'sum sum sum',
@@ -29,6 +34,13 @@ class NoticeBuildTest(TestCase):
             'fr_citation': 'citation citation',
             'fr_url': 'some url',
             'initial_effective_on': '1956-09-09',
+            'meta': {
+                'dates': 'date info',
+                'end_page': 9999,
+                'start_page': 8888,
+                'type': 'Rule',
+                'volume': 66
+            },
             'publication_date': '1955-12-10',
             'regulation_id_numbers': ['a231a-232q'],
         })
@@ -74,14 +86,10 @@ class NoticeBuildTest(TestCase):
             }],
         })
 
-    def test_process_xml_missing_address(self):
+    def test_process_xml_missing_fields(self):
         xml = """
         <ROOT>
             <SUPLINF>
-                <FURINF>
-                    <HD>CONTACT INFO:</HD>
-                    <P>Extra contact info here</P>
-                </FURINF>
                 <HD SOURCE="HED">Supplementary Info</HD>
                 <HD SOURCE="HD1">V. Section-by-Section Analysis</HD>
                 <HD SOURCE="HD2">8(q) Words</HD>
@@ -93,7 +101,6 @@ class NoticeBuildTest(TestCase):
         notice = {'cfr_part': '9292'}
         self.assertEqual(process_xml(notice, etree.fromstring(xml)), {
             'cfr_part': '9292',
-            'contact': 'Extra contact info here',
             'section_by_section': [{
                 'title': '8(q) Words',
                 'paragraphs': ['Content'],

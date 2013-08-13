@@ -17,8 +17,8 @@ def fetch_notices(cfr_title, cfr_part):
         "order": "oldest",
         "fields[]": ["abstract", "action", "agency_names", "citation",
             "comments_close_on", "dates", "document_number", "effective_on",
-            "full_text_xml_url", "html_url", "publication_date",
-            "regulation_id_numbers"]
+            "end_page", "full_text_xml_url", "html_url", "publication_date",
+            "regulation_id_numbers", "start_page", "type", "volume"]
         }, doseq=True)
     connection = urlopen(url)
     results = json.load(connection)
