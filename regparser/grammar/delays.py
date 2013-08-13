@@ -15,6 +15,8 @@ class Notice:
     def __repr__(self):
         return 'Notice( volume=%s, page=%s )' % (repr(self.volume),
             repr(self.page))
+    def __eq__(self, other):
+        return isinstance(other, Notice) and repr(self) == repr(other)
     
 class Delayed:
     pass

@@ -37,6 +37,7 @@ if __name__ == "__main__":
        print "Could not find notice_doc_#, %s" % doc_number 
        exit()
     for notice in notices:
+        del notice['meta']  #   No need to carry this around
         writer.notice(notice['document_number']).write(notice)
 
     writer.regulation(cfr_part, doc_number).write(reg_tree)
