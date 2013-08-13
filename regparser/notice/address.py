@@ -7,7 +7,7 @@ from lxml import etree
 
 def cleanup_address_p(paragraph):
     """Function for dealing with the somewhat messy paragraphs inside an
-    address block. This deals with the potential lack of spaces in the XML, 
+    address block. This deals with the potential lack of spaces in the XML,
     extra E tags, and strange characters up front."""
     if paragraph.text:
         ended_with_space = paragraph.text.endswith(' ')
@@ -46,19 +46,19 @@ def fetch_addresses(xml_tree):
 
             #   Instructions is the label
             if label.lower().strip() == 'instructions':
-                addresses['instructions'] = ([content.strip()] + 
-                        addresses.get('instructions', []))
+                addresses['instructions'] = ([content.strip()] +
+                                             addresses.get('instructions', []))
                 continue
 
-            if content.strip() and not (label.endswith('http') or 
-                    label.endswith('https')):
-                addresses['methods'] = (addresses.get('methods', []) +
-                    [(label.strip(), content.strip())])
+            if content.strip() and not (label.endswith('http') or
+                                        label.endswith('https')):
+                addresses['methods'] = (addresses.get('methods', [])
+                                        + [(label.strip(), content.strip())])
                 continue
         if not addresses:
             addresses['intro'] = p
         else:
-            addresses['instructions'] = (addresses.get('instructions', []) +
-                [p])
+            addresses['instructions'] = (addresses.get('instructions', [])
+                                         + [p])
     if addresses:
         return addresses

@@ -13,7 +13,8 @@ def build_notice(cfr_title, cfr_part, fr_notice):
     notice = {'cfr_title': cfr_title, 'cfr_part': cfr_part}
     #   Copy over most fields
     for field in ['abstract', 'action', 'agency_names', 'comments_close_on',
-            'document_number', 'publication_date', 'regulation_id_numbers']:
+                  'document_number', 'publication_date',
+                  'regulation_id_numbers']:
         if fr_notice[field]:
             notice[field] = fr_notice[field]
 
@@ -39,6 +40,7 @@ def build_notice(cfr_title, cfr_part, fr_notice):
         process_xml(notice, notice_xml)
 
     return notice
+
 
 def process_xml(notice, notice_xml):
     """Pull out relevant fields from the xml and add them to the notice"""

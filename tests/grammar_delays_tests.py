@@ -3,6 +3,7 @@ from unittest import TestCase
 
 from regparser.grammar.delays import *
 
+
 class GrammarDelaysTests(TestCase):
 
     def test_date_parser(self):

@@ -3,6 +3,7 @@ from lxml import etree
 from regparser.notice.address import *
 from unittest import TestCase
 
+
 class NoticeAddressTests(TestCase):
 
     def test_fetch_addreses_none(self):
@@ -44,7 +45,7 @@ class NoticeAddressTests(TestCase):
                 'Followed by more instructions.'
             ]
         })
-    
+
     def test_fetch_addresses_no_intro(self):
         xml = """
         <ROOT>
@@ -91,21 +92,20 @@ class NoticeAddressTests(TestCase):
 
     def test_cleanup_address_p_bullet(self):
         xml = u"""<P>• Bullet: value</P>"""
-        self.assertEqual(cleanup_address_p(etree.fromstring(xml)), 
-            'Bullet: value')
+        self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
+                         'Bullet: value')
 
     def test_cleanup_address_p_smushed_tag(self):
         xml = """<P>See<E T="03">This</E></P>"""
         self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
-            'See This')
+                         'See This')
 
     def test_cleanup_address_p_without_contents(self):
         xml = """<P>See<E /> here!</P>"""
         self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
-            'See here!')
+                         'See here!')
 
     def test_cleanup_address_p_subchildren(self):
         xml = """<P>Oh<E T="03">yeah</E>man</P>"""
         self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
-            'Oh yeah man')
-
+                         'Oh yeah man')

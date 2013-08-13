@@ -4,11 +4,12 @@ from regparser.layer.meta import Meta
 from regparser.tree.struct import Node
 import settings
 
+
 class LayerMetaTest(TestCase):
 
     def setUp(self):
         self.old_meta = settings.META
-        settings.META  = {}
+        settings.META = {}
 
     def tearDown(self):
         settings.META = self.old_meta

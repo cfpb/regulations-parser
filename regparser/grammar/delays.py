@@ -5,24 +5,29 @@ from pyparsing import Optional, Suppress, Word
 
 from regparser.grammar import common
 
+
 class EffectiveDate:
     pass
+
 
 class Notice:
     def __init__(self, volume, page):
         self.volume = volume
         self.page = page
+
     def __repr__(self):
         return 'Notice( volume=%s, page=%s )' % (repr(self.volume),
-            repr(self.page))
+                                                 repr(self.page))
+
     def __eq__(self, other):
         return isinstance(other, Notice) and repr(self) == repr(other)
-    
+
+
 class Delayed:
     pass
 
 
-effective_date = ( 
+effective_date = (
     common.Marker("effective") + common.Marker("date")
 ).setParseAction(lambda: EffectiveDate())
 

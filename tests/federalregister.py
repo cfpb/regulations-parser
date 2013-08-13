@@ -3,6 +3,7 @@ from mock import patch
 from regparser.federalregister import *
 from unittest import TestCase
 
+
 class FederalRegisterTest(TestCase):
 
     @patch('regparser.federalregister.urlopen')

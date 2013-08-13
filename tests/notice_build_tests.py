@@ -2,6 +2,7 @@ from lxml import etree
 from regparser.notice.build import *
 from unittest import TestCase
 
+
 class NoticeBuildTest(TestCase):
 
     def test_build_notice(self):
@@ -73,7 +74,7 @@ class NoticeBuildTest(TestCase):
         notice = {'cfr_part': '9292'}
         self.assertEqual(process_xml(notice, etree.fromstring(xml)), {
             'cfr_part': '9292',
-            'addresses': { 
+            'addresses': {
                 'methods': [('Email', 'example@example.com')],
                 'instructions': ['Extra instructions']
             },
@@ -108,4 +109,3 @@ class NoticeBuildTest(TestCase):
                 'label': '9292-8-q'
             }],
         })
-

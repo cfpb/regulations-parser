@@ -33,11 +33,13 @@ if __name__ == "__main__":
     notices = fetch_notices(cfr_title, cfr_part)
     modify_effective_dates(notices)
     notices = applicable_notices(notices, doc_number)
-    if not notices: #   Didn't include the provided version
-       print "Could not find notice_doc_#, %s" % doc_number 
-       exit()
+    #  Didn't include the provided version
+    if not notices:
+        print "Could not find notice_doc_#, %s" % doc_number
+        exit()
     for notice in notices:
-        del notice['meta']  #   No need to carry this around
+        #  No need to carry this around
+        del notice['meta']
         writer.notice(notice['document_number']).write(notice)
 
     writer.regulation(cfr_part, doc_number).write(reg_tree)
