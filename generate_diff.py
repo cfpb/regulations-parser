@@ -21,4 +21,7 @@ if __name__ == "__main__":
     old_tree = json_to_node(old.text)
     new_tree = json_to_node(new.text)
 
-    treediff.compare(old_tree, new_tree)
+    #treediff.compare(old_tree, new_tree)
+    comparer = treediff.Compare(old_tree, new_tree)
+    comparer.compare()
+    comparer.write()

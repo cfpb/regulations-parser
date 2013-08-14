@@ -41,5 +41,5 @@ class TreeDiffTest(TestCase):
         codes = treediff.get_opcodes(old, new)
         self.assertEquals(
             [[('delete', 0, 1),
-                ('insert', 0, 0, 0, 2)], ('insert', 25, 25, 26, 30)],
+                ('insert', 0, 'We')], ('insert', 25, ' now')],
             codes)
