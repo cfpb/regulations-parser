@@ -1,6 +1,5 @@
-from urllib import urlencode, urlopen
-
 from lxml import etree
+import requests
 
 from regparser.notice.diff import parse_amdpar
 from regparser.notice.address import fetch_addresses
@@ -33,9 +32,7 @@ def build_notice(cfr_title, cfr_part, fr_notice):
         notice['meta'][key] = fr_notice[key]
 
     if fr_notice['full_text_xml_url']:
-        connection = urlopen(fr_notice['full_text_xml_url'])
-        notice_str = connection.read()
-        connection.close()
+        notice_str = requests.get(fr_notice['full_text_xml_url']).content
         notice_xml = etree.fromstring(notice_str)
         process_xml(notice, notice_xml)
 
