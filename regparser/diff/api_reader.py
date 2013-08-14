@@ -3,6 +3,7 @@ import os
 
 import requests
 
+
 class Client:
     """A very simple client for accessing the regulation and meta data."""
 
