@@ -87,7 +87,7 @@ class NoticeHistoryTests(TestCase):
         future = {'document_number': 'future',
                   'effective_on': '2012-05-05',
                   'publication_date': '2011-10-10'}
-        notices = applicable([head, history, prefinal, future], 'head')
+        notices = applicable([history, head, prefinal, future], 'head')
         self.assertEqual([head, history, prefinal], notices)
 
     def test_applicable_proposal(self):

@@ -66,7 +66,7 @@ def applicable(notices, doc_number):
     """Given a list of notices and a specific notice number, determine which
     notices in the list are relevant to that doc number."""
 
-    final_notice = [n for n in notices if n['document_number']]
+    final_notice = [n for n in notices if n['document_number'] == doc_number]
     #   We need the notice for that doc_number
     if not final_notice:
         return []
