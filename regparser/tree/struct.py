@@ -1,7 +1,7 @@
 from json import JSONDecoder, JSONEncoder
 
 
-class Node:
+class Node(object):
     APPENDIX = u'appendix'
     INTERP = u'interp'
     REGTEXT = u'regtext'
