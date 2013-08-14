@@ -6,6 +6,7 @@ from lxml import etree
 from regparser.grammar import tokens
 from regparser.notice.diff import *
 
+
 class NoticeDiffTests(TestCase):
 
     def test_clear_between(self):
@@ -46,20 +47,25 @@ class NoticeDiffTests(TestCase):
             tokens.Paragraph(['777'])
         ]
         amends = make_amendments(tokenized)
-        self.assertEqual(amends, [ 
-            (tokens.Verb.PUT, '222'), (tokens.Verb.PUT, '333'), 
-            (tokens.Verb.PUT, '444'), (tokens.Verb.DELETE, '555'), 
-            (tokens.Verb.MOVE, ('666', '777'))
-        ])
+        self.assertEqual(amends,
+                         [(tokens.Verb.PUT, '222'), (tokens.Verb.PUT, '333'),
+                          (tokens.Verb.PUT, '444'),
+                          (tokens.Verb.DELETE, '555'),
+                          (tokens.Verb.MOVE, ('666', '777'))])
 
     def test_compress_context_simple(self):
         tokenized = [
             tokens.Verb(tokens.Verb.PUT, active=True),
-            tokens.Context(['9876', 'Subpart:A']),  #   part 9876, subpart A
-            tokens.Context([None, None, '12']), #   section 12
-            tokens.Paragraph([None, None, None, 'f', '4']),  # 12(f)(4)
-            tokens.Context([None, None, None, 'g']), # 12(f)
-            tokens.Paragraph([None, None, None, None, '1']),    #   12(g)(1)
+            #  part 9876, subpart A
+            tokens.Context(['9876', 'Subpart:A']),
+            #  section 12
+            tokens.Context([None, None, '12']),
+            #  12(f)(4)
+            tokens.Paragraph([None, None, None, 'f', '4']),
+            #  12(f)
+            tokens.Context([None, None, None, 'g']),
+            #  12(g)(1)
+            tokens.Paragraph([None, None, None, None, '1']),
         ]
         converted, final_ctx = compress_context(tokenized, [])
         self.assertEqual(converted, [
@@ -72,8 +78,8 @@ class NoticeDiffTests(TestCase):
     def test_compress_context_initial_context(self):
         tokenized = [tokens.Paragraph([None, None, None, 'q'])]
         converted, _ = compress_context(tokenized, ['111', None, '12'])
-        self.assertEqual(converted, 
-            [tokens.Paragraph(['111', None, '12', 'q'])])
+        self.assertEqual(converted,
+                         [tokens.Paragraph(['111', None, '12', 'q'])])
 
     def test_compress_context_interpretations(self):
         tokenized = [
@@ -86,16 +92,16 @@ class NoticeDiffTests(TestCase):
         converted, _ = compress_context(tokenized, [])
         self.assertEqual(converted, [
             tokens.Paragraph(['123', 'Interpretations', '12', '(a)(2)(iii)',
-                '3', 'v']),
+                              '3', 'v']),
             #   None because we are missing a layer
             tokens.Paragraph(['123', 'Interpretations', 'Appendix:R', None,
-                '5'])
+                              '5'])
         ])
 
     def test_compress(self):
-        self.assertEqual([1,2,3], compress([1,2,3], []))
-        self.assertEqual([1,6,3], compress([1,2,3,4,5], [None,6,None]))
-        self.assertEqual([2,2,5,6], compress([1,2], [2,None,5,6]))
+        self.assertEqual([1, 2, 3], compress([1, 2, 3], []))
+        self.assertEqual([1, 6, 3], compress([1, 2, 3, 4, 5], [None, 6, None]))
+        self.assertEqual([2, 2, 5, 6], compress([1, 2], [2, None, 5, 6]))
 
     def test_separate_tokenlist(self):
         tokenized = [

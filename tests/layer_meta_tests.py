@@ -4,11 +4,12 @@ from regparser.layer.meta import Meta
 from regparser.tree.struct import Node
 import settings
 
+
 class LayerMetaTest(TestCase):
 
     def setUp(self):
         self.old_meta = settings.META
-        settings.META  = {}
+        settings.META = {}
 
     def tearDown(self):
         settings.META = self.old_meta
@@ -24,12 +25,9 @@ class LayerMetaTest(TestCase):
 
     def test_process_effective_date(self):
         m = Meta(None, 8, [
-            {'dates': {'effective': ['2001-01-01']}},
+            {'effective_on': '2001-01-01'},
             {'something': 'else'},
-            {'dates': {
-                'effective': ['2002-02-02', '2003-03-03'],
-                'comment': ['2004-04-04']
-            }},
+            {'effective_on': '2003-03-03', 'comments_close_on': '2004-04-04'},
             {'dates': {'other': ['2005-05-05']}}])
         result = m.process(Node(label=['a']))
         self.assertEqual(1, len(result))
