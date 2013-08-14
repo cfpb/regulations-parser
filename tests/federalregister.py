@@ -1,82 +1,24 @@
-from mock import patch
-from regparser.federalregister import *
 from unittest import TestCase
+
+from mock import patch
+
+from regparser.federalregister import *
+
 
 class FederalRegisterTest(TestCase):
 
-    @patch('regparser.federalregister.urlopen')
-    def test_fetch_notice_xml(self, urlopen):
-        """We don't actually want to call out to federal register, so we use
-        a mock. Unfortunately, the mock is called twice with two very
-        different results, so we need to have a complicated return value."""
-        show_xml = [False]  # must use a container class
-        def read_response():
-            if show_xml[0]:
-                return "XML String"
-            else:
-                show_xml[0] = True
-                return """
-                <script text="javascript">
-                    var dev_formats = {"formats":[
-                        {"type":"xml","url":"url.xml",
-                            "title":"Original full text XML", "name":"XML"},
-                        {"type":"mods","url":"other_url/mods.xml",
-                            "title":"Government Printing Office metadata",
-                            "name":"MODS"},
-                        {"type":"json","url":"final",
-                            "title":"Normalized attributes and metadata",
-                            "name":"JSON"}]};
-                </script>"""
-        urlopen.return_value.read.side_effect = read_response
-        self.assertEqual('XML String', fetch_notice_xml('initial-url'))
+    @patch('regparser.federalregister.requests')
+    @patch('regparser.federalregister.build_notice')
+    def test_fetch_notices(self, build_note, requests):
+        requests.get.return_value.json.return_value = {
+            "results": [{"some": "thing"}, {"another": "thing"}]}
 
-    @patch('regparser.federalregister.urlopen')
-    def test_fetch_notice_xml_none(self, urlopen):
-        """Account for notices without an XML link"""
-        urlopen.return_value.read.return_value = """
-            <script text="javascript">
-                var dev_formats = {"formats":[
-                    {"type":"pdf","url":"url.pdf",
-                        "title":"Original full text PDF", "name":"PDF"},
-                    {"type":"mods","url":"other_url/mods.xml",
-                        "title":"Government Printing Office metadata",
-                        "name":"MODS"},
-                    {"type":"json","url":"final",
-                        "title":"Normalized attributes and metadata",
-                        "name":"JSON"}]};
-            </script>"""
-        self.assertEqual(None, fetch_notice_xml('initial-url'))
+        build_note.return_value = 'NOTICE!'
 
-    @patch('regparser.federalregister.urlopen')
-    def test_fetch_notices(self, urlopen):
-        """Fetch Notices combines data from a lot of places, so we will use
-        many mocks."""
-        with patch('regparser.federalregister.fetch_notice_xml') as fetch_xml:
-            with patch('regparser.federalregister.build_notice') as build_note:
-                urlopen.return_value.read.return_value = """
-                {"results": [{"html_url": "url1"}, {"html_url": "url2"}]}
-                """
+        notices = fetch_notices(23, 1222)
 
-                fetch_xml.return_value = '<ROOT />'
-                build_note.return_value = 'NOTICE!'
+        params = requests.get.call_args[1]['params']
+        self.assertTrue(23 in params.values())
+        self.assertTrue(1222 in params.values())
 
-                notices = fetch_notices(23, 1222)
-
-                self.assertTrue('23' in urlopen.call_args[0][0])
-                self.assertTrue('1222' in urlopen.call_args[0][0])
-
-                self.assertEqual(2, len(fetch_xml.call_args_list))
-                self.assertEqual('url1', fetch_xml.call_args_list[0][0][0])
-                self.assertEqual('url2', fetch_xml.call_args_list[1][0][0])
-
-                self.assertEqual(['NOTICE!', 'NOTICE!'], notices)
-
-    @patch('regparser.federalregister.urlopen')
-    def test_fetch_notices_no_xml(self, urlopen):
-        """Account for notices which has no XML"""
-        with patch('regparser.federalregister.fetch_notice_xml') as fetch_xml:
-            urlopen.return_value.read.return_value = """
-                {"results": [{"html_url": "url1"}, {"html_url": "url2"}]}
-                """
-            fetch_xml.return_value = None
-            self.assertEqual([], fetch_notices(23, 1222))
+        self.assertEqual(['NOTICE!', 'NOTICE!'], notices)

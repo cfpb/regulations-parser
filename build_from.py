@@ -4,13 +4,15 @@ from regparser.federalregister import fetch_notices
 from regparser.layer import external_citations, internal_citations, graphics
 from regparser.layer import table_of_contents, interpretations, terms
 from regparser.layer import section_by_section, paragraph_markers, meta
+from regparser.notice.history import applicable as applicable_notices
+from regparser.notice.history import modify_effective_dates
 from regparser.tree.build import build_whole_regtree
 import sys
 
 if __name__ == "__main__":
     if len(sys.argv) < 6:
         print("Usage: python build_from.py regulation.txt title " +
-              "doc_#/version act_title act_section")
+              "notice_doc_# act_title act_section")
         print "  e.g. python build_from.py rege.txt 12 2011-31725 15 1693"
         exit()
 
@@ -24,13 +26,23 @@ if __name__ == "__main__":
     cfr_part = reg_tree.label_id()
     cfr_title = sys.argv[2]
     doc_number = sys.argv[3]
-    writer.regulation(cfr_part, doc_number).write(reg_tree)
+    #   Hold off on writing the regulation until after we know we have a valid
+    #   doc number
 
     #   Next, notices
     notices = fetch_notices(cfr_title, cfr_part)
-    #   @todo: limit to the notices which came before doc_number
+    modify_effective_dates(notices)
+    notices = applicable_notices(notices, doc_number)
+    #  Didn't include the provided version
+    if not notices:
+        print "Could not find notice_doc_#, %s" % doc_number
+        exit()
     for notice in notices:
+        #  No need to carry this around
+        del notice['meta']
         writer.notice(notice['document_number']).write(notice)
+
+    writer.regulation(cfr_part, doc_number).write(reg_tree)
 
     #   Finally, all the layers
     layer = external_citations.ExternalCitationParser(
