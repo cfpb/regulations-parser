@@ -1,5 +1,4 @@
 import difflib
-import json
 from regparser.tree import struct
 
 INSERT = 'insert'
@@ -36,6 +35,8 @@ def convert_opcode(op, new_text):
         return [del_op, add_op]
   
 def get_opcodes(old_text, new_text):
+    """ Get the operation codes that convert old_text into 
+    new_text. """
     seqm = difflib.SequenceMatcher(
         lambda x: x in " \t\n", 
         old_text, 
@@ -43,7 +44,20 @@ def get_opcodes(old_text, new_text):
     opcodes = [convert_opcode(op, new_text) for op in seqm.get_opcodes() if op[0] != EQUAL]
     return opcodes
 
+def node_to_dict(node):
+    """ Convert a node to a dictionary representation. We skip the 
+    children, turning them instead into a list of labels instead. """
+    node.child_labels = [c.label_id() for c in node.children]
+
+    node_dict = {}
+    for k,v in node.__dict__.items():
+        if k != 'children':
+           node_dict[k] = v 
+    return node_dict
+
 class Compare(object):
+    """ Compare two regulation trees. """
+
     def __init__(self, older, newer):
         self.older = older
         self.newer = newer
@@ -52,21 +66,32 @@ class Compare(object):
 
         self.changes = {}
 
+
     def add_title_opcodes(self, label, opcodes):
+        """ If the title of a node has changed, add those operation codes. """
+
         if opcodes:
             if label in self.changes:
                 self.changes[label]["title"] = opcodes
             else:
                 self.changes[label] = {"op":"modified", "title":opcodes}
 
+
     def add_text_opcodes(self, label, opcodes):
+        """ If the text has changed, add those operation codes. """
+
         if opcodes:
             if label in self.changes:
                 self.changes[label]["text"] = opcodes
             else:
                 self.changes[label] = {"op":"modified", "text":opcodes}
-                
+ 
+
     def deleted_and_modified(self, node):
+        """ This method identifies nodes that were in the old tree that were
+        deletd in the new tree. It also how other nodes were modified. This
+        method is meant to be run per node in the old tree. """
+
         older_label = node.label_id()
 
         if older_label not in self.newer_tree_hash:
@@ -80,6 +105,7 @@ class Compare(object):
                 title_opcodes = get_opcodes(node.title, newer_node.title)
                 self.add_title_opcodes(older_label, title_opcodes)
 
+                
     def added(self):
         """ The newer regulation likely has paragraphs, sections that are
         added. We identify those here, and add each node individually, without
@@ -87,11 +113,12 @@ class Compare(object):
 
         for label in self.newer_tree_hash:
             if label not in self.older_tree_hash:
-                node = self.newer_tree_hash[label]
-                node.children = []
-                self.changes[label] = {"op":"added", "node":node}
+                node_dict = node_to_dict(self.newer_tree_hash[label])
+                self.changes[label] = {"op":"added", "node":node_dict}
 
     def compare(self):
+        """ Execute the actual comparison, generating the data structure 
+        that represents the diff. """
         struct.walk(self.older, self.deleted_and_modified)
         self.added()
 
