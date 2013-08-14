@@ -6,7 +6,6 @@ DELETE = 'delete'
 REPLACE = 'replace'
 EQUAL = 'equal'
 
-
 def hash_nodes(reg_tree):
     """ Create a hash map to the nodes of a regulation tree.  """
     tree_hash = {}
@@ -65,6 +64,11 @@ def node_to_dict(node):
 class Compare(object):
     """ Compare two regulation trees. """
 
+    #Operations on nodes. 
+    ADDED = 'added'
+    MODIFIED = 'modified'
+    DELETED = 'deleted'
+
     def __init__(self, older, newer):
         self.older = older
         self.newer = newer
@@ -80,7 +84,7 @@ class Compare(object):
             if label in self.changes:
                 self.changes[label]["title"] = opcodes
             else:
-                self.changes[label] = {"op": "modified", "title": opcodes}
+                self.changes[label] = {"op": Compare.MODIFIED, "title": opcodes}
 
     def add_text_opcodes(self, label, opcodes):
         """ If the text has changed, add those operation codes. """
@@ -89,7 +93,7 @@ class Compare(object):
             if label in self.changes:
                 self.changes[label]["text"] = opcodes
             else:
-                self.changes[label] = {"op": "modified", "text": opcodes}
+                self.changes[label] = {"op": Compare.MODIFIED, "text": opcodes}
 
     def deleted_and_modified(self, node):
         """ This method identifies nodes that were in the old tree that were
@@ -99,7 +103,7 @@ class Compare(object):
         older_label = node.label_id()
 
         if older_label not in self.newer_tree_hash:
-            self.changes[older_label] = {"op": "deleted"}
+            self.changes[older_label] = {"op": Compare.DELETED}
         else:
             newer_node = self.newer_tree_hash[older_label]
             text_opcodes = get_opcodes(node.text, newer_node.text)
@@ -117,7 +121,7 @@ class Compare(object):
         for label in self.newer_tree_hash:
             if label not in self.older_tree_hash:
                 node_dict = node_to_dict(self.newer_tree_hash[label])
-                self.changes[label] = {"op": "added", "node": node_dict}
+                self.changes[label] = {"op": Compare.ADDED, "node": node_dict}
 
     def compare(self):
         """ Execute the actual comparison, generating the data structure
