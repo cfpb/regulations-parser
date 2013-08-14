@@ -78,7 +78,7 @@ class Compare(object):
 
             if node.title:
                 title_opcodes = get_opcodes(node.title, newer_node.title)
-                self.add_title_opcodes(older_label, text_opcodes)
+                self.add_title_opcodes(older_label, title_opcodes)
 
     def added(self):
         """ The newer regulation likely has paragraphs, sections that are
