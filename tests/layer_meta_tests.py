@@ -24,7 +24,8 @@ class LayerMetaTest(TestCase):
         self.assertEqual('The President', result[0]['cfr_title_text'])
 
     def test_process_effective_date(self):
-        m = Meta(None,
+        m = Meta(
+            None,
             8,
             [{'effective_on': '2001-01-01', 'document_number': 'v1'},
              {'something': 'else', 'document_number': 'v2'},
