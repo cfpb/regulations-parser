@@ -1,8 +1,6 @@
 #vim: set encoding=utf-8
 from unittest import TestCase
 
-import difflib
-
 from regparser.tree import reg_text
 from regparser.diff import treediff
 
@@ -52,7 +50,6 @@ class TreeDiffTest(TestCase):
             [('delete', 0, 2)], codes)
 
     def test_convert_insert(self):
-        old = 'acbd'
         new = 'ac ef bd'
         op = ('insert', 2, 2, 2, 6)
         converted = treediff.convert_insert(op, new)
