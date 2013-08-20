@@ -67,7 +67,7 @@ if __name__ == "__main__":
     layer = section_by_section.SectionBySection(reg_tree, notices).build()
     writer.layer("analyses", cfr_part, doc_number).write(layer)
 
-    layer = meta.Meta(reg_tree, int(cfr_title), notices).build()
+    layer = meta.Meta(reg_tree, int(cfr_title), notices, doc_number).build()
     writer.layer("meta", cfr_part, doc_number).write(layer)
 
     layer = graphics.Graphics(reg_tree).build()
