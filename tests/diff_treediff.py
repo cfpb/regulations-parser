@@ -44,6 +44,13 @@ class TreeDiffTest(TestCase):
                 ('insert', 0, 'We')], ('insert', 25, ' now')],
             codes)
 
+    def test_del_opcodes(self):
+        old = "I have a string to change"
+        new = 'have a string to change'
+        codes = treediff.get_opcodes(old, new)
+        self.assertEquals(
+            [('delete', 0, 2)], codes)
+
     def test_convert_insert(self):
         old = 'acbd'
         new = 'ac ef bd'

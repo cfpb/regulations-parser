@@ -29,7 +29,9 @@ def convert_opcode(op, new_text):
     if code == INSERT:
         return convert_insert(op, new_text)
     elif code == DELETE:
-        return op
+        #Deletes have an extra set of co-ordinates which 
+        #we don't need.
+        return (DELETE, op[1], op[2])
     elif code == REPLACE:
         del_op = (DELETE, op[1], op[2])
         add_op = convert_insert(
