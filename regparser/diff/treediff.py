@@ -6,6 +6,7 @@ DELETE = 'delete'
 REPLACE = 'replace'
 EQUAL = 'equal'
 
+
 def hash_nodes(reg_tree):
     """ Create a hash map to the nodes of a regulation tree.  """
     tree_hash = {}
@@ -29,7 +30,9 @@ def convert_opcode(op, new_text):
     if code == INSERT:
         return convert_insert(op, new_text)
     elif code == DELETE:
-        return op
+        #Deletes have an extra set of co-ordinates which
+        #we don't need.
+        return (DELETE, op[1], op[2])
     elif code == REPLACE:
         del_op = (DELETE, op[1], op[2])
         add_op = convert_insert(
@@ -64,7 +67,7 @@ def node_to_dict(node):
 class Compare(object):
     """ Compare two regulation trees. """
 
-    #Operations on nodes. 
+    #Operations on nodes.
     ADDED = 'added'
     MODIFIED = 'modified'
     DELETED = 'deleted'
@@ -84,7 +87,9 @@ class Compare(object):
             if label in self.changes:
                 self.changes[label]["title"] = opcodes
             else:
-                self.changes[label] = {"op": Compare.MODIFIED, "title": opcodes}
+                self.changes[label] = {
+                    "op": Compare.MODIFIED,
+                    "title": opcodes}
 
     def add_text_opcodes(self, label, opcodes):
         """ If the text has changed, add those operation codes. """
