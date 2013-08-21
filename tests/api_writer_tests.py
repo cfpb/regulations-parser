@@ -31,7 +31,8 @@ class FSWriteContentTest(TestCase):
         writer = FSWriteContent("existing/thing")
         writer.write({"testing": ["body", 1, 2]})
 
-        wrote = json.loads(open(settings.OUTPUT_DIR + '/existing/thing').read())
+        wrote = json.loads(open(settings.OUTPUT_DIR
+                                + '/existing/thing').read())
         self.assertEqual(wrote, {'testing': ['body', 1, 2]})
 
     def test_write_overwrite(self):
@@ -43,6 +44,7 @@ class FSWriteContentTest(TestCase):
 
         wrote = json.loads(open(settings.OUTPUT_DIR + '/replace/it').read())
         self.assertEqual(wrote, {'key': 'value'})
+
 
 class APIWriteContentTest(TestCase):
 
@@ -64,7 +66,7 @@ class APIWriteContentTest(TestCase):
         self.assertTrue('headers' in kwargs)
         self.assertTrue('content-type' in kwargs['headers'])
         self.assertEqual('application/json',
-            kwargs['headers']['content-type'])
+                         kwargs['headers']['content-type'])
         self.assertTrue('data' in kwargs)
         self.assertEqual(data, json.loads(kwargs['data']))
 

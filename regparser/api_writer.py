@@ -62,4 +62,4 @@ class Client:
 
     def diff(self, label, old_version, new_version):
         return self.writer_class("diff/%s/%s/%s" % (label, old_version,
-            new_version))
+                                                    new_version))
