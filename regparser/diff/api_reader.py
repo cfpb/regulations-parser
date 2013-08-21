@@ -3,25 +3,23 @@ import os
 
 import requests
 
+from regparser.tree.struct import node_decode_hook
+import settings
+
 
 class Client:
     """A very simple client for accessing the regulation and meta data."""
 
-    def _dfs_search(self, reg_tree, index):
-        """Find the matching node in the tree (if it exists)"""
-        if '-'.join(reg_tree['label']) == index:
-            return reg_tree
-        for child in reg_tree['children']:
-            child_search = self._dfs_search(child, index)
-            if child_search:
-                return child_search
-
-    def __init__(self, base_url):
-        self.base_url = base_url
+    def __init__(self):
+        self.base_url = settings.API_BASE
 
     def regulation(self, label, version):
         """End point for regulation JSON. Return the result as a dict"""
         return self._get("regulation/%s/%s" % (label, version))
+
+    def regversions(self, label):
+        """End point for versions of a given reg."""
+        return self._get("regulation/%s" % label)
 
     def layer(self, layer_name, label, version):
         """End point for layer JSON. Return the result as a list"""
@@ -39,11 +37,11 @@ class Client:
         """Actually make the GET request. Assume the result is JSON. Right
         now, there is no error handling"""
         if self.base_url.startswith('http'):    # API
-            return requests.get(self.base_url + suffix)
+            json_str = requests.get(self.base_url + suffix).text
         else:   # file system
             if os.path.isdir(self.base_url + suffix):
                 suffix = suffix + "/index.html"
             f = open(self.base_url + suffix)
-            content = f.read()
+            json_str = f.read()
             f.close()
-            return json.loads(content)
+        return json.loads(json_str, object_hook=node_decode_hook)

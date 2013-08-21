@@ -59,3 +59,7 @@ class Client:
 
     def notice(self, doc_number):
         return self.writer_class("notice/%s" % doc_number)
+
+    def diff(self, label, old_version, new_version):
+        return self.writer_class("diff/%s/%s/%s" % (label, old_version,
+            new_version))
