@@ -44,8 +44,8 @@ def get_opcodes(old_text, new_text):
     """ Get the operation codes that convert old_text into
     new_text. """
 
-    old_word_list =  old_text.split(' ')
-    new_word_list =  new_text.split(' ')
+    old_word_list = old_text.split(' ')
+    new_word_list = new_text.split(' ')
 
     seqm = difflib.SequenceMatcher(
         lambda x: x in " \t\n",
