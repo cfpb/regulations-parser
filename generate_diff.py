@@ -16,7 +16,7 @@ def get_regulation(regulation, version):
 
 if __name__ == "__main__":
     old = get_regulation('1005', '2011-31725')
-    new = get_regulation('1005', '2013-10604-eregs')
+    new = get_regulation('1005', '2013-10604')
 
     old_tree = json_to_node(old.text)
     new_tree = json_to_node(new.text)

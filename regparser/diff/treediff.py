@@ -21,7 +21,7 @@ def hash_nodes(reg_tree):
 def convert_insert(ins_op, new_text):
     """ The insert operation returned by difflib assumes we have access to both
     texts. We re-write the op, so that we don't make the same assumption. """
-    return (INSERT, ins_op[1], new_text[ins_op[3]:ins_op[4]])
+    return (INSERT, ins_op[1], ' '.join(new_text[ins_op[3]:ins_op[4]]))
 
 
 def convert_opcode(op, new_text):
@@ -43,11 +43,16 @@ def convert_opcode(op, new_text):
 def get_opcodes(old_text, new_text):
     """ Get the operation codes that convert old_text into
     new_text. """
+
+    old_word_list =  old_text.split(' ')
+    new_word_list =  new_text.split(' ')
+
     seqm = difflib.SequenceMatcher(
         lambda x: x in " \t\n",
-        old_text,
-        new_text)
-    opcodes = [convert_opcode(op, new_text) for op in seqm.get_opcodes()
+        old_word_list,
+        new_word_list)
+
+    opcodes = [convert_opcode(op, new_word_list) for op in seqm.get_opcodes()
                if op[0] != EQUAL]
     return opcodes
 
