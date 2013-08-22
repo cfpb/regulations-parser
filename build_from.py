@@ -69,6 +69,7 @@ if __name__ == "__main__":
         layer = layer_class(reg_tree).build()
         writer.layer(ident, cfr_part, doc_number).write(layer)
 
+    # Use the seventh value or default to True for building diffs
     if len(sys.argv) < 7 or bool(sys.argv[6]):
         new_version = doc_number
 
