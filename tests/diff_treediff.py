@@ -39,7 +39,7 @@ class TreeDiffTest(TestCase):
         codes = treediff.get_opcodes(old, new)
         self.assertEquals(
             [[('delete', 0, 1),
-                ('insert', 0, 'We')], ('insert', 25, ' now')],
+                ('insert', 0, 'We')], ('insert', 6, 'now')],
             codes)
 
     def test_del_opcodes(self):
@@ -47,13 +47,13 @@ class TreeDiffTest(TestCase):
         new = 'have a string to change'
         codes = treediff.get_opcodes(old, new)
         self.assertEquals(
-            [('delete', 0, 2)], codes)
+            [('delete', 0, 1)], codes)
 
     def test_convert_insert(self):
-        new = 'ac ef bd'
-        op = ('insert', 2, 2, 2, 6)
+        new = ['ac', 'ef', 'bd']
+        op = ('insert', 2, 2, 0, 1)
         converted = treediff.convert_insert(op, new)
-        self.assertEquals(('insert', 2, ' ef '), converted)
+        self.assertEquals(('insert', 2, 'ac'), converted)
 
     def test_subparts(self):
         """ Create a tree with no subparts, then add subparts. """
