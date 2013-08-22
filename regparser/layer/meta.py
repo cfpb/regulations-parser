@@ -4,10 +4,11 @@ import settings
 
 class Meta(Layer):
 
-    def __init__(self, tree, cfr_title, notices):
+    def __init__(self, tree, cfr_title, notices, version):
         Layer.__init__(self, tree)
         self.cfr_title = cfr_title
         self.notices = notices
+        self.version = version
 
     def process(self, node):
         """If this is the root element, add some 'meta' information about
@@ -20,7 +21,9 @@ class Meta(Layer):
             'cfr_title_number': self.cfr_title,
             'cfr_title_text': settings.CFR_TITLES[self.cfr_title]
         }
-        for notice in self.notices:
-            if 'effective_on' in notice:
-                layer['effective_date'] = notice['effective_on']
+
+        last_notice = filter(lambda n: n['document_number'] == self.version,
+                             self.notices)
+        if last_notice and 'effective_on' in last_notice[0]:
+            layer['effective_date'] = last_notice[0]['effective_on']
         return [dict(layer.items() + settings.META.items())]
