@@ -38,9 +38,16 @@ class TreeDiffTest(TestCase):
         new = 'We have a string to change now'
         codes = treediff.get_opcodes(old, new)
         self.assertEquals(
-            [[('delete', 0, 1),
-                ('insert', 0, 'We')], ('insert', 25, ' now')],
-            codes)
+            [
+                [('delete', 0, 2), ('insert', 0, 'We')],
+                ('insert', 25, 'now')], codes)
+
+    def test_ins_opcodes(self):
+        old = "I a string to change"
+        new = "I have a string to change"
+        codes = treediff.get_opcodes(old, new)
+        self.assertEquals(
+            [('insert', 1, 'have')], codes)
 
     def test_del_opcodes(self):
         old = "I have a string to change"
@@ -49,11 +56,19 @@ class TreeDiffTest(TestCase):
         self.assertEquals(
             [('delete', 0, 2)], codes)
 
+    def test_del_opcodes_middle(self):
+        old = "I have a string to change"
+        new = 'I have a change'
+        codes = treediff.get_opcodes(old, new)
+        self.assertEquals(
+            [('delete', 8, 18)], codes)
+
     def test_convert_insert(self):
-        new = 'ac ef bd'
-        op = ('insert', 2, 2, 2, 6)
-        converted = treediff.convert_insert(op, new)
-        self.assertEquals(('insert', 2, ' ef '), converted)
+        old = ['gg']
+        new = ['ac', 'ef', 'bd']
+        op = ('insert', 2, 2, 0, 1)
+        converted = treediff.convert_insert(op, old, new)
+        self.assertEquals(('insert', 2, 'ac'), converted)
 
     def test_subparts(self):
         """ Create a tree with no subparts, then add subparts. """
