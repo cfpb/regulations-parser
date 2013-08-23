@@ -37,7 +37,7 @@ def convert_insert(ins_op, old_text_list, new_text_list):
     return (
         INSERT,
         char_offset_start,
-        ' '.join(new_text_list[ins_op[3]:ins_op[4]]))
+        reconstruct_text(new_text_list[ins_op[3]:ins_op[4]]))
 
 
 def convert_delete(op, old_text_list):
