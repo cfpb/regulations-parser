@@ -38,15 +38,15 @@ class TreeDiffTest(TestCase):
         new = 'We have a string to change now'
         codes = treediff.get_opcodes(old, new)
         self.assertEquals(
-            [[('delete', 0, 2),
-                ('insert', 0, 'We')], ('insert', 25, 'now')],
-                codes)
+            [
+                [('delete', 0, 2), ('insert', 0, 'We')],
+                ('insert', 25, 'now')], codes)
 
     def test_ins_opcodes(self):
-       old = "I a string to change"
-       new = "I have a string to change"
-       codes = treediff.get_opcodes(old, new)
-       self.assertEquals(
+        old = "I a string to change"
+        new = "I have a string to change"
+        codes = treediff.get_opcodes(old, new)
+        self.assertEquals(
             [('insert', 1, 'have')], codes)
 
     def test_del_opcodes(self):

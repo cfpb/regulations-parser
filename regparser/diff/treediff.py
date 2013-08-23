@@ -17,25 +17,32 @@ def hash_nodes(reg_tree):
     struct.walk(reg_tree, per_node)
     return tree_hash
 
+
 def deconstruct_text(text):
     """ Split the text into a list of words. """
     return text.split(' ')
 
+
 def reconstruct_text(text_list):
-    """ We split the text into a list of words, reconstruct that 
+    """ We split the text into a list of words, reconstruct that
     text back from the list. """
     return ' '.join(text_list)
+
 
 def convert_insert(ins_op, old_text_list, new_text_list):
     """ The insert operation returned by difflib assumes we have access to both
     texts. We re-write the op, so that we don't make the same assumption. """
 
     char_offset_start = len(reconstruct_text(old_text_list[0:ins_op[1]]))
-    return (INSERT, char_offset_start, ' '.join(new_text_list[ins_op[3]:ins_op[4]]))
+    return (
+        INSERT,
+        char_offset_start,
+        ' '.join(new_text_list[ins_op[3]:ins_op[4]]))
+
 
 def convert_delete(op, old_text_list):
-    """ Convert the delete opcode from a word based offset, to a character based
-    offset. """
+    """ Convert the delete opcode from a word based offset, to a character
+    based offset. """
 
     opcode, s, e = op
     prefix = reconstruct_text(old_text_list[0:s])
@@ -44,7 +51,7 @@ def convert_delete(op, old_text_list):
     text_length = len(text)
 
     char_offset_start = prefix_length
-    char_offset_end =  prefix_length + text_length + 1
+    char_offset_end = prefix_length + text_length + 1
 
     return (opcode, char_offset_start, char_offset_end)
 
@@ -77,8 +84,9 @@ def get_opcodes(old_text, new_text):
         old_word_list,
         new_word_list)
 
-    opcodes = [convert_opcode(op, new_word_list, old_word_list) for op in seqm.get_opcodes()
-               if op[0] != EQUAL]
+    opcodes = [
+        convert_opcode(op, new_word_list, old_word_list)
+        for op in seqm.get_opcodes() if op[0] != EQUAL]
     return opcodes
 
 
