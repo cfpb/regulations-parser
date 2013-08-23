@@ -134,6 +134,6 @@ class Compare(object):
         struct.walk(self.older, self.deleted_and_modified)
         self.added()
 
-    def write(self):
+    def as_json(self):
         """ Write out the changes. """
-        print struct.NodeEncoder().encode(self.changes)
+        return struct.NodeEncoder().encode(self.changes)

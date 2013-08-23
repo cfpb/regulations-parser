@@ -1,5 +1,8 @@
 import codecs
-from regparser.api_writer import Client
+import sys
+
+from regparser import api_writer
+from regparser.diff import api_reader, treediff
 from regparser.federalregister import fetch_notices
 from regparser.layer import external_citations, internal_citations, graphics
 from regparser.layer import table_of_contents, interpretations, terms
@@ -7,16 +10,17 @@ from regparser.layer import section_by_section, paragraph_markers, meta
 from regparser.notice.history import applicable as applicable_notices
 from regparser.notice.history import modify_effective_dates
 from regparser.tree.build import build_whole_regtree
-import sys
 
 if __name__ == "__main__":
     if len(sys.argv) < 6:
-        print("Usage: python build_from.py regulation.txt title " +
-              "notice_doc_# act_title act_section")
-        print "  e.g. python build_from.py rege.txt 12 2011-31725 15 1693"
+        print("Usage: python build_from.py regulation.txt title "
+              + "notice_doc_# act_title act_section (Generate diffs? "
+              + "True/False)")
+        print("  e.g. python build_from.py rege.txt 12 2011-31725 15 1693 "
+              + "False")
         exit()
 
-    writer = Client()
+    writer = api_writer.Client()
 
     with codecs.open(sys.argv[1], encoding='utf-8') as f:
         reg = unicode(f.read())
@@ -49,26 +53,34 @@ if __name__ == "__main__":
         reg_tree, sys.argv[4:]).build()
     writer.layer("external-citations", cfr_part, doc_number).write(layer)
 
-    layer = internal_citations.InternalCitationParser(reg_tree).build()
-    writer.layer("internal-citations", cfr_part, doc_number).write(layer)
-
-    layer = table_of_contents.TableOfContentsLayer(reg_tree).build()
-    writer.layer("toc", cfr_part, doc_number).write(layer)
-
-    layer = interpretations.Interpretations(reg_tree).build()
-    writer.layer("interpretations", cfr_part, doc_number).write(layer)
-
-    layer = terms.Terms(reg_tree).build()
-    writer.layer("terms", cfr_part, doc_number).write(layer)
-
-    layer = paragraph_markers.ParagraphMarkers(reg_tree).build()
-    writer.layer("paragraph-markers", cfr_part, doc_number).write(layer)
+    layer = meta.Meta(reg_tree, int(cfr_title), notices, doc_number).build()
+    writer.layer("meta", cfr_part, doc_number).write(layer)
 
     layer = section_by_section.SectionBySection(reg_tree, notices).build()
     writer.layer("analyses", cfr_part, doc_number).write(layer)
 
-    layer = meta.Meta(reg_tree, int(cfr_title), notices, doc_number).build()
-    writer.layer("meta", cfr_part, doc_number).write(layer)
+    for ident, layer_class in (
+            ('internal-citations', internal_citations.InternalCitationParser),
+            ('toc', table_of_contents.TableOfContentsLayer),
+            ('interpretations', interpretations.Interpretations),
+            ('terms', terms.Terms),
+            ('paragraph-markers', paragraph_markers.ParagraphMarkers),
+            ('graphics', graphics.Graphics)):
+        layer = layer_class(reg_tree).build()
+        writer.layer(ident, cfr_part, doc_number).write(layer)
 
-    layer = graphics.Graphics(reg_tree).build()
-    writer.layer("graphics", cfr_part, doc_number).write(layer)
+    # Use the seventh value or default to True for building diffs
+    if len(sys.argv) < 7 or bool(sys.argv[6]):
+        new_version = doc_number
+
+        reader = api_reader.Client()
+        #   We perform diffs with all other versions -- not all make sense, but
+        #   they can't hurt
+        for old_version in (v['version']
+                            for v in reader.regversions(cfr_part)['versions']
+                            if v['version'] != new_version):
+            old_tree = reader.regulation(cfr_part, old_version)
+            comparer = treediff.Compare(old_tree, reg_tree)
+            comparer.compare()
+            writer.diff(cfr_part, old_version, new_version).write(
+                comparer.as_json())

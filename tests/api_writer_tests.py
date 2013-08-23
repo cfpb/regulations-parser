@@ -9,6 +9,7 @@ from mock import patch
 from regparser.api_writer import *
 import settings
 
+
 class FSWriteContentTest(TestCase):
     def setUp(self):
         settings.OUTPUT_DIR = tempfile.mkdtemp() + '/'
@@ -18,10 +19,11 @@ class FSWriteContentTest(TestCase):
         settings.OUTPUT_DIR = ''
 
     def test_write_new_dir(self):
-        writer = FSWriteContent("a/path")
+        writer = FSWriteContent("a/path/to/something")
         writer.write({"testing": ["body", 1, 2]})
 
-        wrote = json.loads(open(settings.OUTPUT_DIR + '/a/path').read())
+        wrote = json.loads(open(settings.OUTPUT_DIR
+                                + '/a/path/to/something').read())
         self.assertEqual(wrote, {'testing': ['body', 1, 2]})
 
     def test_write_existing_dir(self):
@@ -29,7 +31,8 @@ class FSWriteContentTest(TestCase):
         writer = FSWriteContent("existing/thing")
         writer.write({"testing": ["body", 1, 2]})
 
-        wrote = json.loads(open(settings.OUTPUT_DIR + '/existing/thing').read())
+        wrote = json.loads(open(settings.OUTPUT_DIR
+                                + '/existing/thing').read())
         self.assertEqual(wrote, {'testing': ['body', 1, 2]})
 
     def test_write_overwrite(self):
@@ -41,6 +44,7 @@ class FSWriteContentTest(TestCase):
 
         wrote = json.loads(open(settings.OUTPUT_DIR + '/replace/it').read())
         self.assertEqual(wrote, {'key': 'value'})
+
 
 class APIWriteContentTest(TestCase):
 
@@ -62,9 +66,10 @@ class APIWriteContentTest(TestCase):
         self.assertTrue('headers' in kwargs)
         self.assertTrue('content-type' in kwargs['headers'])
         self.assertEqual('application/json',
-            kwargs['headers']['content-type'])
+                         kwargs['headers']['content-type'])
         self.assertTrue('data' in kwargs)
         self.assertEqual(data, json.loads(kwargs['data']))
+
 
 class ClientTest(TestCase):
 
@@ -88,6 +93,11 @@ class ClientTest(TestCase):
         client = Client()
         reg_writer = client.notice("docdoc")
         self.assertEqual("notice/docdoc", reg_writer.path)
+
+    def test_diff(self):
+        client = Client()
+        reg_writer = client.diff("lablab", "oldold", "newnew")
+        self.assertEqual("diff/lablab/oldold/newnew", reg_writer.path)
 
     def test_writer_class(self):
         settings.API_BASE = ''
