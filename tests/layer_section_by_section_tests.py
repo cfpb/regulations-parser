@@ -44,6 +44,45 @@ class LayerSectionBySectionTest(TestCase):
             {"text": 'CCC', "reference": ('111-23', '100-22-b-2')}
             ])
 
+    def test_process_empty(self):
+        notice = {
+            "document_number": "111-22",
+            "cfr_part": "100",
+            "section_by_section": [{
+                "title": "",
+                "label": "100-22-a",
+                "paragraphs": [],
+                "children": []
+            }, {
+                "title": "",
+                "label": "100-22-b",
+                "paragraphs": ["BBB"],
+                "children": []
+            }, {
+                "title": "",
+                "label": "100-22-c",
+                "paragraphs": [],
+                "children": [{
+                    "label": "100-22-c-1",
+                    "title": "",
+                    "paragraphs": ["123"],
+                    "children": []
+                }]
+            }, {
+                "title": "",
+                "label": "100-22-d",
+                "paragraphs": [],
+                "children": [{
+                    "title": "",
+                    "paragraphs": ["234"],
+                    "children": []
+                }]
+            }]
+        }
+        s = SectionBySection(None, [notice])
+        self.assertEqual(None, s.process(Node(label=['100-22-b-2'])))
+        self.assertEqual(None, s.process(Node(label=['100-22-c'])))
+
     def test_concat_one_level(self):
         s = SectionBySection(None, None)
         self.assertEqual("AAA\nBBB\nCCC", s.concat({

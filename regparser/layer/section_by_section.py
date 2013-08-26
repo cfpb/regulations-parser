@@ -15,7 +15,10 @@ class SectionBySection(Layer):
             search_results = []
 
             def per_sxs(sxs):
-                if 'label' in sxs and sxs['label'] == node.label_id():
+                if ('label' in sxs and sxs['label'] == node.label_id()
+                    # Determine if this is non-empty
+                    and (sxs['paragraphs'] 
+                         or [c for c in sxs['children'] if not 'label' in c])):
                     search_results.append(sxs)
                 for child in sxs['children']:
                     per_sxs(child)
