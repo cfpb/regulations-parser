@@ -3,6 +3,7 @@ from itertools import dropwhile, takewhile
 from lxml import etree
 
 import regparser.grammar.rules as grammar
+from regparser.tree.struct import Node
 
 
 def find_section_by_section(xml_tree):
@@ -84,6 +85,15 @@ def parse_into_label(txt, part):
     only the first match. Currently only accounts for references to
     regulation text."""
 
+    for match, _, _ in grammar.applicable_interp.scanString(txt):
+        label = [part, match.section]
+        label.extend(p for p in list(match.p_head))
+        label.append(Node.INTERP_MARK)
+        if match.comment_levels:
+            label.append(match.comment_levels.level1)
+            label.append(match.comment_levels.level2)
+            label.append(match.comment_levels.level3)
+        return "-".join(filter(bool, label)) # remove empty strings
     for match, _, _ in grammar.applicable_section.scanString(txt):
         paragraph_ids = []
         paragraph_ids.extend(p for p in [
