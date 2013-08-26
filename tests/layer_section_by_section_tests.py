@@ -38,10 +38,10 @@ class LayerSectionBySectionTest(TestCase):
         s = SectionBySection(None, [notice1, notice2])
         self.assertEqual(None, s.process(Node(label=['100', '55'])))
         self.assertEqual(s.process(Node(label=['100', '22', 'b'])),
-            [{"text": 'BBB', "reference": ('111-22', '100-22-b')}])
+            [{"reference": ('111-22', '100-22-b')}])
         self.assertEqual(s.process(Node(label=['100', '22', 'b', '2'])), [
-            {"text": 'AAA', "reference": ('111-22', '100-22-b-2')},
-            {"text": 'CCC', "reference": ('111-23', '100-22-b-2')}
+            {"reference": ('111-22', '100-22-b-2')},
+            {"reference": ('111-23', '100-22-b-2')}
             ])
 
     def test_process_empty(self):
@@ -82,28 +82,3 @@ class LayerSectionBySectionTest(TestCase):
         s = SectionBySection(None, [notice])
         self.assertEqual(None, s.process(Node(label=['100-22-b-2'])))
         self.assertEqual(None, s.process(Node(label=['100-22-c'])))
-
-    def test_concat_one_level(self):
-        s = SectionBySection(None, None)
-        self.assertEqual("AAA\nBBB\nCCC", s.concat({
-            "title": "",
-            "paragraphs": ["AAA", "BBB", "CCC"],
-            "children": []
-        }))
-
-    def test_concat_multiple_levels(self):
-        s = SectionBySection(None, None)
-        self.assertEqual("AAA\nBBB\n\nCCC\nDDD\n\nEEE", s.concat({
-            "title": "",
-            "paragraphs": ["AAA", "BBB"],
-            "children": [{
-                "title": "",
-                "paragraphs": ["CCC", "DDD"],
-                "children": []
-            }, {
-                "title": "",
-                "paragraphs": ["EEE"],
-                "children": []
-            }]
-        }))
-
