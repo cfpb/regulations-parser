@@ -131,12 +131,14 @@ class NoticeSxsTests(TestCase):
             }]
         })
 
-    def test_build_section_by_section_prtpage(self):
+    def test_build_section_by_section_extra_tags(self):
         """Check that labels are being added correctly"""
         xml = """
         <ROOT>
             <HD SOURCE="HD2">Section 99.3 Info</HD>
             <P>Content <PRTPAGE P="50249"/> 1</P>
+            <P>Content <SU>99</SU><FTREF /> 2</P>
+            <P>Content <E T="03">Emph</E></P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
         structures = build_section_by_section(sxs, '99')
@@ -144,7 +146,8 @@ class NoticeSxsTests(TestCase):
         self.assertEqual(structures[0], {
             'title': 'Section 99.3 Info',
             'label': '99-3',
-            'paragraphs': ['Content  1'],
+            'paragraphs': ['Content  1', 'Content  2', 
+                           'Content <E T="03">Emph</E>'],
             'children': []
         })
 

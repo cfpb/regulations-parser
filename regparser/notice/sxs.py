@@ -34,8 +34,15 @@ def build_section_by_section(sxs, part):
 
         paragraph_xmls = [el for el in text_els if el.tag == 'P']
         for paragraph_xml in paragraph_xmls:
-            etree.strip_tags(paragraph_xml, 'PRTPAGE')
-        paragraphs = [el.text for el in paragraph_xmls]
+            # Remove unneeded tags
+            etree.strip_tags(paragraph_xml, 'PRTPAGE', 'FTREF')
+            # Anything inside a SU can also be ignored
+            for su in paragraph_xml.xpath('./SU'):
+                su.getparent().text = su.getparent().text + su.tail
+                su.getparent().remove(su)
+
+        paragraphs = [el.text + ''.join(etree.tostring(c) for c in el)
+                      for el in paragraph_xmls]
         children = build_section_by_section(sub_sections, part)
 
         next_structure = {
