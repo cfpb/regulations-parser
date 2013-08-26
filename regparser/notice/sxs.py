@@ -1,5 +1,7 @@
 from itertools import dropwhile, takewhile
 
+from lxml import etree
+
 import regparser.grammar.rules as grammar
 
 
@@ -30,7 +32,10 @@ def build_section_by_section(sxs, part, depth=2):
     while len(sxs):
         title, text_els, sub_sections, sxs = split_into_ttsr(sxs, depth)
 
-        paragraphs = [el.text for el in text_els if el.tag == 'P']
+        paragraph_xmls = [el for el in text_els if el.tag == 'P']
+        for paragraph_xml in paragraph_xmls:
+            etree.strip_tags(paragraph_xml, 'PRTPAGE')
+        paragraphs = [el.text for el in paragraph_xmls]
         children = build_section_by_section(sub_sections, part, depth+1)
 
         next_structure = {
