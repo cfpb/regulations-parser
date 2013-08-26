@@ -1,14 +1,14 @@
 #vim: set encoding=utf-8
-import string
 
-from pyparsing import CaselessLiteral, Literal, OneOrMore, Optional, Regex
-from pyparsing import Suppress, Word, WordEnd, WordStart
-
-from regparser.grammar import common, tokens
-from regparser.grammar.common import WordBoundaries
-from regparser.tree.paragraph import p_levels
+from regparser.grammar import common
 
 
-applicable = (
+applicable_section = (
     common.marker_part_section
     | (common.section + common.depth1_p))
+
+
+applicable_appendix = common.appendix_marker + common.appendix_letter
+
+
+applicable = applicable_section | applicable_appendix

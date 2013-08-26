@@ -84,8 +84,10 @@ def parse_into_label(txt, part):
     only the first match. Currently only accounts for references to
     regulation text."""
 
-    for match, _, _ in grammar.applicable.scanString(txt):
+    for match, _, _ in grammar.applicable_section.scanString(txt):
         paragraph_ids = []
         paragraph_ids.extend(p for p in [
             match.level1, match.level2, match.level3, match.level4] if p)
         return "-".join([part, match.section] + paragraph_ids)
+    for match, _, _ in grammar.applicable_appendix.scanString(txt):
+        return "%s-%s" % (part, match.letter)
