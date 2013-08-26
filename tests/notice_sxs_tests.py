@@ -55,11 +55,11 @@ class NoticeSxsTests(TestCase):
             <P>Content 3</P>
             <HD SOURCE="HD4">Another</HD>
             <P>Content 4</P>
-            <HD SOURCE="HD3">Next Section</HD>
+            <HD SOURCE="HD3">4(b) Header</HD>
             <P>Content 5</P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, '100', 3)
+        structures = build_section_by_section(sxs, '100')
         self.assertEqual(2, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section Header',
@@ -80,8 +80,9 @@ class NoticeSxsTests(TestCase):
                 }]
             })
         self.assertEqual(structures[1], {
-            'title': 'Next Section',
+            'title': '4(b) Header',
             'paragraphs': ['Content 5'],
+            'label': '100-4-b',
             'children': []
             })
 
@@ -95,7 +96,7 @@ class NoticeSxsTests(TestCase):
             <P>Content 2</P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, '100', 3)
+        structures = build_section_by_section(sxs, '100')
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section Header',
@@ -147,6 +148,35 @@ class NoticeSxsTests(TestCase):
             'children': []
         })
 
+    def test_build_section_by_section_same_level(self):
+        """Check that labels are being added correctly"""
+        xml = """
+        <ROOT>
+            <HD SOURCE="HD2">Section 99.3 Something Here</HD>
+            <HD SOURCE="HD3">3(q)(4) More Info</HD>
+            <P>Content 1</P>
+            <HD SOURCE="HD3">Subheader, Really</HD>
+            <P>Content 2</P>
+        </ROOT>"""
+        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = build_section_by_section(sxs, '99')
+        self.assertEqual(1, len(structures))
+        self.assertEqual(structures[0], {
+            'title': 'Section 99.3 Something Here',
+            'label': '99-3',
+            'paragraphs': [],
+            'children': [{
+                'title': '3(q)(4) More Info',
+                'label': '99-3-q-4',
+                'paragraphs': ['Content 1'],
+                'children': [{
+                    'title': 'Subheader, Really',
+                    'paragraphs': ['Content 2'],
+                    'children': []
+                }]
+            }]
+        })
+
     def test_split_into_ttsr(self):
         xml = """
         <ROOT>
@@ -161,7 +191,7 @@ class NoticeSxsTests(TestCase):
             <P>Content 5</P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        title, text_els, sub_sects, remaining = split_into_ttsr(sxs, 3)
+        title, text_els, sub_sects, remaining = split_into_ttsr(sxs)
         self.assertEqual("Section Header", title.text)
         self.assertEqual(2, len(text_els))
         self.assertEqual("Content 1", text_els[0].text)
@@ -189,3 +219,19 @@ class NoticeSxsTests(TestCase):
 
         self.assertEqual(None,
                          parse_into_label("Application of this rule", "101"))
+
+    def test_is_child_of(self):
+        parent = """<HD SOURCE="H2">Section 22.1</HD>"""
+        parent = etree.fromstring(parent)
+
+        child = """<P>Something</P>"""
+        self.assertTrue(is_child_of(etree.fromstring(child), parent))
+
+        child = """<HD SOURCE="H3">Something</HD>"""
+        self.assertTrue(is_child_of(etree.fromstring(child), parent))
+
+        child = """<HD SOURCE="H1">Section 22.2</HD>"""
+        self.assertFalse(is_child_of(etree.fromstring(child), parent))
+
+        child = """<HD SOURCE="H2">Header without Citation</HD>"""
+        self.assertTrue(is_child_of(etree.fromstring(child), parent))
