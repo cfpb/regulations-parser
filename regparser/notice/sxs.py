@@ -1,6 +1,9 @@
 from itertools import dropwhile, takewhile
 
+from lxml import etree
+
 import regparser.grammar.rules as grammar
+from regparser.tree.struct import Node
 
 
 def find_section_by_section(xml_tree):
@@ -22,16 +25,26 @@ def find_section_by_section(xml_tree):
         return []
 
 
-def build_section_by_section(sxs, part, depth=2):
+def build_section_by_section(sxs, part):
     """Given a list of xml nodes in the section by section analysis, pull
     out hierarchical data into a structure."""
     structures = []
     #while sxs: is deprecated
     while len(sxs):
-        title, text_els, sub_sections, sxs = split_into_ttsr(sxs, depth)
+        title, text_els, sub_sections, sxs = split_into_ttsr(sxs)
 
-        paragraphs = [el.text for el in text_els if el.tag == 'P']
-        children = build_section_by_section(sub_sections, part, depth+1)
+        paragraph_xmls = [el for el in text_els if el.tag == 'P']
+        for paragraph_xml in paragraph_xmls:
+            # Remove unneeded tags
+            etree.strip_tags(paragraph_xml, 'PRTPAGE', 'FTREF')
+            # Anything inside a SU can also be ignored
+            for su in paragraph_xml.xpath('./SU'):
+                su.getparent().text = su.getparent().text + su.tail
+                su.getparent().remove(su)
+
+        paragraphs = [el.text + ''.join(etree.tostring(c) for c in el)
+                      for el in paragraph_xmls]
+        children = build_section_by_section(sub_sections, part)
 
         next_structure = {
             'title': title.text,
@@ -46,15 +59,21 @@ def build_section_by_section(sxs, part, depth=2):
     return structures
 
 
-def split_into_ttsr(sxs, depth=2):
+def is_child_of(child_xml, header_xml):
+    """Children are paragraphs, have lower 'source' or the header has
+    citations and the child does not"""
+    return (child_xml.tag != 'HD'
+            or child_xml.get('SOURCE') > header_xml.get('SOURCE')
+            or (list(grammar.applicable.scanString(header_xml.text))
+                and not list(grammar.applicable.scanString(child_xml.text))))
+
+
+def split_into_ttsr(sxs):
     """Split the provided list of xml nodes into a node with a title, a
     sequence of text nodes, a sequence of nodes associated with the sub
     sections of this header, and the remaining xml nodes"""
     title = sxs[0]
-    next_section_marker = 'HD' + str(depth)
-    section = list(takewhile(
-        lambda e: e.tag != 'HD'
-        or e.get('SOURCE') != next_section_marker, sxs[1:]))
+    section = list(takewhile(lambda e: is_child_of(e, title), sxs[1:]))
     text_elements = list(takewhile(lambda e: e.tag != 'HD', section))
     sub_sections = section[len(text_elements):]
     remaining = sxs[1+len(text_elements)+len(sub_sections):]
@@ -66,8 +85,19 @@ def parse_into_label(txt, part):
     only the first match. Currently only accounts for references to
     regulation text."""
 
-    for match, _, _ in grammar.applicable.scanString(txt):
+    for match, _, _ in grammar.applicable_interp.scanString(txt):
+        label = [part, match.section]
+        label.extend(p for p in list(match.p_head))
+        label.append(Node.INTERP_MARK)
+        if match.comment_levels:
+            label.append(match.comment_levels.level1)
+            label.append(match.comment_levels.level2)
+            label.append(match.comment_levels.level3)
+        return "-".join(filter(bool, label)) # remove empty strings
+    for match, _, _ in grammar.applicable_section.scanString(txt):
         paragraph_ids = []
         paragraph_ids.extend(p for p in [
             match.level1, match.level2, match.level3, match.level4] if p)
         return "-".join([part, match.section] + paragraph_ids)
+    for match, _, _ in grammar.applicable_appendix.scanString(txt):
+        return "%s-%s" % (part, match.letter)

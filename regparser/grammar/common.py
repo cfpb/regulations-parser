@@ -55,6 +55,9 @@ part_markers = Marker("parts")
 
 subpart_marker = Marker("subpart")
 
+comment_marker = Marker("comment")
+comment_markers = Marker("comments")
+
 through = WordBoundaries(CaselessLiteral("through"))
 
 conj_phrases = (
@@ -131,10 +134,13 @@ subpart = (
 
 intro_text = Marker("introductory") + WordBoundaries(CaselessLiteral("text"))
 
-comment_p = (
-    Word(string.digits).setResultsName("level2")
-    + Optional(
-        Suppress(".") + Word("ivxlcdm").setResultsName('level3')
-        + Optional(
-            Suppress(".")
-            + Word(string.ascii_uppercase).setResultsName("level4"))))
+single_comment = (
+    Word(string.digits).setResultsName("section")
+    + depth1_p.copy().setResultsName('p_head')
+    + Optional("-" + (
+        Word(string.digits).setResultsName('level1')
+        + Optional(roman_dec + Optional(upper_dec))
+        # Exclude any period + space (end of sentence)
+        ).leaveWhitespace()
+    ).setResultsName("comment_levels")
+)

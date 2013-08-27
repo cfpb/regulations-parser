@@ -95,6 +95,14 @@ intro_text = common.intro_text.copy().setParseAction(
 
 
 #   Paragraphs
+comment_p = (
+    Word(string.digits).setResultsName("level2")
+    + Optional(
+        Suppress(".") + Word("ivxlcdm").setResultsName('level3')
+        + Optional(
+            Suppress(".")
+            + Word(string.ascii_uppercase).setResultsName("level4"))))
+
 section_heading_of = (
     common.Marker("heading") + common.Marker("of")
     + common.marker_part_section
@@ -122,7 +130,7 @@ section_single_par = (
         field=(tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
 single_comment_par=(
     common.paragraph_marker
-    + common.comment_p
+    + comment_p
     ).setParseAction(lambda m: tokens.Paragraph([None,
         'Interpretations', None, None, m.level2, m.level3,
         m.level4]))
@@ -189,7 +197,7 @@ multiple_appendices = make_multiple(common.appendix_shorthand).setParseAction(
 
 multiple_comment_pars = (
     common.paragraph_markers
-    + make_multiple(common.comment_p)
+    + make_multiple(comment_p)
     ).setParseAction(make_par_list(lambda m: [None, 'Interpretations', None,
         None, m.level2, m.level3, m.level4]))
 

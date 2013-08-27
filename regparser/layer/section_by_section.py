@@ -15,7 +15,10 @@ class SectionBySection(Layer):
             search_results = []
 
             def per_sxs(sxs):
-                if 'label' in sxs and sxs['label'] == node.label_id():
+                if ('label' in sxs and sxs['label'] == node.label_id()
+                    # Determine if this is non-empty
+                    and (sxs['paragraphs'] 
+                         or [c for c in sxs['children'] if not 'label' in c])):
                     search_results.append(sxs)
                 for child in sxs['children']:
                     per_sxs(child)
@@ -25,20 +28,9 @@ class SectionBySection(Layer):
 
             for found in search_results:
                 analyses.append({
-                    'text': self.concat(found),
                     'reference': (
                         notice['document_number'], found['label']
                     )
                 })
         if analyses:
             return analyses
-
-    def concat(self, sxs_node):
-        """Given a node in a section-by-section analysis, concatenate all
-        paragraphs and sub-sections."""
-        result = "\n".join(sxs_node['paragraphs'])
-        child_text = []
-        for child in sxs_node['children']:
-            child_text.append(self.concat(child))
-
-        return "\n\n".join([result] + child_text)
