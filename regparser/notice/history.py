@@ -29,7 +29,7 @@ def modify_effective_dates(notices):
 
 def overlaps_with(fr, notice):
     """Calculate whether the fr citation is within the provided notice"""
-    return (notice['meta']['volume'] == fr.volume
+    return (notice['fr_volume'] == fr.volume
             and notice['meta']['start_page'] <= fr.page
             and notice['meta']['end_page'] >= fr.page)
 

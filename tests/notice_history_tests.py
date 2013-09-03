@@ -9,8 +9,8 @@ class NoticeHistoryTests(TestCase):
         outdated = {'document_number': 'outdated',
                     'effective_on': '2001-01-01',
                     'publication_date': '2000-12-12',
-                    'meta': {'volume': 12,
-                             'start_page': 500,
+                    'fr_volume': 12,
+                    'meta': {'start_page': 500,
                              'end_page': 600,
                              'type': 'Rule',
                              'dates': 'Has an effective date of January 1, '
@@ -18,15 +18,15 @@ class NoticeHistoryTests(TestCase):
         unaltered = {'document_number': 'unaltered',
                      'effective_on': '2001-01-01',
                      'publication_date': '2000-12-20',
-                     'meta': {'volume': 12,
-                              'start_page': 800,
+                     'fr_volume': 12,
+                     'meta': {'start_page': 800,
                               'end_page': 900,
                               'type': 'Rule',
                               'dates': 'Effective date of January 1, 2001'}}
         proposal = {'document_number': 'proposal',
                     'publication_date': '2000-12-21',
+                    'fr_volume': 12,
                     'meta': {
-                        'volume': 12,
                         'start_page': 1100,
                         'end_page': 1200,
                         'type': 'Proposed Rule',
@@ -36,8 +36,8 @@ class NoticeHistoryTests(TestCase):
         changer = {'document_number': 'changer',
                    'publication_date': '2000-12-31',
                    'effective_on': '2000-12-31',
-                   'meta': {'volume': 12,
-                            'start_page': 9000,
+                   'fr_volume': 12,
+                   'meta': {'start_page': 9000,
                             'end_page': 9005,
                             'type': 'Rule',
                             'dates': 'The effective date of 12 FR 501 has ' +
@@ -52,8 +52,8 @@ class NoticeHistoryTests(TestCase):
 
     def test_overlaps_with(self):
         fr = Notice(10, 225)
-        meta = lambda v, s, e: {'meta': {'volume': v, 'start_page': s,
-                                         'end_page': e}}
+        meta = lambda v, s, e: {'fr_volume': v, 'meta': {'start_page': s,
+                                                         'end_page': e}}
         self.assertTrue(overlaps_with(fr, meta(10, 220, 230)))
         self.assertTrue(overlaps_with(fr, meta(10, 225, 230)))
         self.assertTrue(overlaps_with(fr, meta(10, 220, 225)))

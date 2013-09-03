@@ -34,13 +34,13 @@ class NoticeBuildTest(TestCase):
             'effective_on': '1956-09-09',
             'fr_citation': 'citation citation',
             'fr_url': 'some url',
+            'fr_volume': 66,
             'initial_effective_on': '1956-09-09',
             'meta': {
                 'dates': 'date info',
                 'end_page': 9999,
                 'start_page': 8888,
-                'type': 'Rule',
-                'volume': 66
+                'type': 'Rule'
             },
             'publication_date': '1955-12-10',
             'regulation_id_numbers': ['a231a-232q'],

@@ -27,8 +27,9 @@ def build_notice(cfr_title, cfr_part, fr_notice):
     if fr_notice['citation']:
         notice['fr_citation'] = fr_notice['citation']
 
+    notice['fr_volume'] = fr_notice['volume']
     notice['meta'] = {}
-    for key in ('dates', 'end_page', 'start_page', 'type', 'volume'):
+    for key in ('dates', 'end_page', 'start_page', 'type'):
         notice['meta'][key] = fr_notice[key]
 
     if fr_notice['full_text_xml_url']:
