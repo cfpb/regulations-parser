@@ -1,3 +1,4 @@
+from copy import deepcopy
 from itertools import dropwhile, takewhile
 
 from lxml import etree
@@ -43,7 +44,8 @@ def build_section_by_section(sxs, part, fr_start_page):
     while len(sxs):
         title, text_els, sub_sections, sxs = split_into_ttsr(sxs)
 
-        paragraph_xmls = [el for el in text_els if el.tag == 'P']
+        page = find_page(title, title.sourceline, fr_start_page)
+        paragraph_xmls = [deepcopy(el) for el in text_els if el.tag == 'P']
         for paragraph_xml in paragraph_xmls:
             # Remove unneeded tags
             etree.strip_tags(paragraph_xml, 'PRTPAGE', 'FTREF')
@@ -54,10 +56,10 @@ def build_section_by_section(sxs, part, fr_start_page):
 
         paragraphs = [el.text + ''.join(etree.tostring(c) for c in el)
                       for el in paragraph_xmls]
-        children = build_section_by_section(sub_sections, part,
-                                            fr_start_page)
+        children = build_section_by_section(sub_sections, part, page)
 
         next_structure = {
+            'page': page,
             'title': title.text,
             'paragraphs': paragraphs,
             'children': children
@@ -65,8 +67,6 @@ def build_section_by_section(sxs, part, fr_start_page):
         label = parse_into_label(title.text, part)
         if label:
             next_structure['label'] = label
-            next_structure['page'] = find_page(title, title.sourceline,
-                                               fr_start_page)
 
         structures.append(next_structure)
     return structures

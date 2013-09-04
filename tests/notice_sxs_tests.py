@@ -89,13 +89,16 @@ class NoticeSxsTests(TestCase):
                 {
                     'title': 'Sub Section Header',
                     'paragraphs': ['Content 3'],
-                    'children': []
+                    'children': [],
+                    'page': 83
                 },
                 {
                     'title': 'Another',
                     'paragraphs': ['Content 4'],
-                    'children': []
-                }]
+                    'children': [],
+                    'page': 83
+                }],
+            'page': 83
             })
         self.assertEqual(structures[1], {
             'title': '4(b) Header',
@@ -115,7 +118,7 @@ class NoticeSxsTests(TestCase):
             <P>Content 2</P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, '100', 0)
+        structures = build_section_by_section(sxs, '100', 21)
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section Header',
@@ -123,7 +126,8 @@ class NoticeSxsTests(TestCase):
                 'Content 1',
                 'Content 2',
                 ],
-            'children': []
+            'children': [],
+            'page': 21
             })
 
     def test_build_section_by_section_label(self):
@@ -199,7 +203,8 @@ class NoticeSxsTests(TestCase):
                 'children': [{
                     'title': 'Subheader, Really',
                     'paragraphs': ['Content 2'],
-                    'children': []
+                    'children': [],
+                    'page': 765
                 }]
             }]
         })
