@@ -17,7 +17,7 @@ class SectionBySection(Layer):
             def per_sxs(sxs):
                 if ('label' in sxs and sxs['label'] == node.label_id()
                     # Determine if this is non-empty
-                    and (sxs['paragraphs'] 
+                    and (sxs['paragraphs']
                          or [c for c in sxs['children'] if not 'label' in c])):
                     search_results.append(sxs)
                 for child in sxs['children']:
@@ -27,10 +27,13 @@ class SectionBySection(Layer):
                 per_sxs(sxs)
 
             for found in search_results:
-                analyses.append({
-                    'reference': (
-                        notice['document_number'], found['label']
-                    )
-                })
+                analyses.append((
+                    notice['publication_date'], notice['document_number'],
+                    found['label']
+                ))
         if analyses:
+            #   Sort by publication date
+            analyses = sorted(analyses)
+            #   Don't need publication date now
+            analyses = [{'reference': (a[1], a[2])} for a in analyses]
             return analyses
