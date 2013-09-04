@@ -194,3 +194,14 @@ class DepthRegTextTest(TestCase):
         tree = build_section_tree(line1+line2, 201)
         self.assertEqual(tree.text, "\n")
         self.assertEqual(1, len(tree.children))
+
+    def test_build_subparts_tree_reserver(self):
+        text = u"Subpart C—[Reserved]"
+
+        tree, _ = build_subparts_tree(text, 8888,
+            lambda p: build_subpart(text, 8888))
+        self.assertEqual('', tree.text)
+        self.assertEqual('subpart', tree.node_type)
+        self.assertEqual(['8888', 'Subpart', 'C'], tree.label)
+        self.assertEqual([], tree.children)
+        self.assertEqual('[Reserved]', tree.title)
