@@ -25,7 +25,17 @@ def find_section_by_section(xml_tree):
         return []
 
 
-def build_section_by_section(sxs, part):
+def find_page(xml, index_line, page_number):
+    """Find the FR page that includes the indexed line"""
+    for prtpage in takewhile(lambda p: p.sourceline < index_line,
+                             xml.xpath('//PRTPAGE')):
+        if prtpage.get('P'):
+            page_number = int(prtpage.get('P'))
+
+    return page_number
+
+
+def build_section_by_section(sxs, part, fr_start_page):
     """Given a list of xml nodes in the section by section analysis, pull
     out hierarchical data into a structure."""
     structures = []
@@ -44,7 +54,8 @@ def build_section_by_section(sxs, part):
 
         paragraphs = [el.text + ''.join(etree.tostring(c) for c in el)
                       for el in paragraph_xmls]
-        children = build_section_by_section(sub_sections, part)
+        children = build_section_by_section(sub_sections, part,
+                                            fr_start_page)
 
         next_structure = {
             'title': title.text,
@@ -54,6 +65,8 @@ def build_section_by_section(sxs, part):
         label = parse_into_label(title.text, part)
         if label:
             next_structure['label'] = label
+            next_structure['page'] = find_page(title, title.sourceline,
+                                               fr_start_page)
 
         structures.append(next_structure)
     return structures

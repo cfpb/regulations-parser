@@ -52,7 +52,8 @@ def process_xml(notice, notice_xml):
         notice['addresses'] = addresses
 
     sxs = find_section_by_section(notice_xml)
-    sxs = build_section_by_section(sxs, notice['cfr_part'])
+    sxs = build_section_by_section(sxs, notice['cfr_part'],
+                                   notice['meta']['start_page'])
     notice['section_by_section'] = sxs
 
     context = []
