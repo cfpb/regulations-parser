@@ -28,10 +28,11 @@ def trees_from(text, part, parent_label):
 
 
 def letter_for(index):
+    """Convert an index into a letter (or letter pair). a-z, then aa-az-zz"""
     if index < 26:
         return string.ascii_lowercase[index]
-    return (string.ascii_lowercase[index // 26]
-            + string.ascii_lowercase[index % 26])
+    return (string.ascii_lowercase[(index // 26) - 1]  # First letter in pair
+            + string.ascii_lowercase[index % 26])      # Second letter
 
 
 def generic_tree(text, label, title=None):
