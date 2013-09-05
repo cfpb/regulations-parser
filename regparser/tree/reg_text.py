@@ -156,7 +156,7 @@ def build_section_tree(text, part):
 
     exclude += [(start, end) for _, start, end in
                 appendix_citation.scanString(text)]
-    section = re.search(r'%d\.(\d+) ' % part, title).group(1)
+    section = re.search(r'%d\.(\d+)\b' % part, title).group(1)
     label = [str(part), section]
     p_tree = regParser.build_tree(
         text, exclude=exclude, label=label, title=title)

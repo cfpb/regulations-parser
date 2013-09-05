@@ -195,6 +195,16 @@ class DepthRegTextTest(TestCase):
         self.assertEqual(tree.text, "\n")
         self.assertEqual(1, len(tree.children))
 
+    def test_build_section_tree_nonspace(self):
+        line1 = u"§ 201.20. Super Awesome Section"
+        line2 = "\nContents contents"
+
+        tree = build_section_tree(line1+line2, 201)
+        self.assertEqual(line2, tree.text)
+        self.assertEqual(['201', '20'], tree.label)
+        self.assertEqual(line1, tree.title)
+        self.assertEqual(0, len(tree.children))
+
     def test_build_subparts_tree_reserver(self):
         text = u"Subpart C—[Reserved]"
 
