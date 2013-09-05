@@ -38,7 +38,11 @@ def generic_tree(text, label, title=None):
     for index, seg in enumerate(segments):
         start, end = seg
         seg_title, body = utils.title_body(text[start:end])
-        label_character = string.ascii_lowercase[index]
+        label_letters = (list(string.ascii_lowercase) + 
+            # Double char
+            map(lambda pair: pair[0] + pair[1],
+                zip(string.ascii_lowercase, string.ascii_lowercase)))
+        label_character = label_letters[index]
         children.append(
             Node(body, label=(
                 label + [label_character]),
