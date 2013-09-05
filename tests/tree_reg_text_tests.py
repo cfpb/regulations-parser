@@ -97,7 +97,7 @@ class DepthRegTextTest(TestCase):
         text += u"\n\nSomething else\nSubpart B—Model Forms for Application\n\n"
         self.assertEqual((56,111), next_subpart_offsets(text))
 
-        text = u"\n\nSomething\nSubpart A—Application\nAppendix A"
+        text = u"\n\nSomething\nSubpart A—Application\nAppendix A to Part 201"
         self.assertEqual((12, 34), next_subpart_offsets(text))
 
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection"
@@ -123,7 +123,7 @@ class DepthRegTextTest(TestCase):
         text += u"201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa"
         self.assertEqual((2,len(text)), next_section_offsets(text, 201))
 
-        text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \nAppendix A"
+        text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \nAppendix A to Part 201"
         self.assertEqual((2,29), next_section_offsets(text, 201))
 
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \nSupplement I"
@@ -132,7 +132,7 @@ class DepthRegTextTest(TestCase):
     def test_sections(self):
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection\n"
         text += u"§ 201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa\n"
-        text += u"Appendix A bssds \n sdsdsad \nsadad \ndsada"
+        text += u"Appendix A to Part 201 bssds \n sdsdsad \nsadad \ndsada"
         self.assertEqual([(2,45), (45,93)], sections(text, 201))
 
     #def test_sections_stop_at_subpart(self):
