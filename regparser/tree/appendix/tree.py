@@ -27,6 +27,14 @@ def trees_from(text, part, parent_label):
     return children
 
 
+def letter_for(index):
+    """Convert an index into a letter (or letter pair). a-z, then aa-az-zz"""
+    if index < 26:
+        return string.ascii_lowercase[index]
+    return (string.ascii_lowercase[(index // 26) - 1]  # First letter in pair
+            + string.ascii_lowercase[index % 26])      # Second letter
+
+
 def generic_tree(text, label, title=None):
     """Use the "generic" parser to build a tree. The "generic" parser simply
     splits on Title Case and treats body text as the node content."""
@@ -38,7 +46,7 @@ def generic_tree(text, label, title=None):
     for index, seg in enumerate(segments):
         start, end = seg
         seg_title, body = utils.title_body(text[start:end])
-        label_character = string.ascii_lowercase[index]
+        label_character = letter_for(index)
         children.append(
             Node(body, label=(
                 label + [label_character]),

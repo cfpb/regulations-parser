@@ -83,4 +83,4 @@ if __name__ == "__main__":
             comparer = treediff.Compare(old_tree, reg_tree)
             comparer.compare()
             writer.diff(cfr_part, old_version, new_version).write(
-                comparer.as_json())
+                comparer.changes)

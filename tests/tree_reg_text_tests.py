@@ -97,7 +97,7 @@ class DepthRegTextTest(TestCase):
         text += u"\n\nSomething else\nSubpart B—Model Forms for Application\n\n"
         self.assertEqual((56,111), next_subpart_offsets(text))
 
-        text = u"\n\nSomething\nSubpart A—Application\nAppendix A"
+        text = u"\n\nSomething\nSubpart A—Application\nAppendix A to Part 201"
         self.assertEqual((12, 34), next_subpart_offsets(text))
 
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection"
@@ -123,7 +123,7 @@ class DepthRegTextTest(TestCase):
         text += u"201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa"
         self.assertEqual((2,len(text)), next_section_offsets(text, 201))
 
-        text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \nAppendix A"
+        text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \nAppendix A to Part 201"
         self.assertEqual((2,29), next_section_offsets(text, 201))
 
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \nSupplement I"
@@ -132,7 +132,7 @@ class DepthRegTextTest(TestCase):
     def test_sections(self):
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection\n"
         text += u"§ 201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa\n"
-        text += u"Appendix A bssds \n sdsdsad \nsadad \ndsada"
+        text += u"Appendix A to Part 201 bssds \n sdsdsad \nsadad \ndsada"
         self.assertEqual([(2,45), (45,93)], sections(text, 201))
 
     #def test_sections_stop_at_subpart(self):
@@ -194,3 +194,24 @@ class DepthRegTextTest(TestCase):
         tree = build_section_tree(line1+line2, 201)
         self.assertEqual(tree.text, "\n")
         self.assertEqual(1, len(tree.children))
+
+    def test_build_section_tree_nonspace(self):
+        line1 = u"§ 201.20. Super Awesome Section"
+        line2 = "\nContents contents"
+
+        tree = build_section_tree(line1+line2, 201)
+        self.assertEqual(line2, tree.text)
+        self.assertEqual(['201', '20'], tree.label)
+        self.assertEqual(line1, tree.title)
+        self.assertEqual(0, len(tree.children))
+
+    def test_build_subparts_tree_reserver(self):
+        text = u"Subpart C—[Reserved]"
+
+        tree, _ = build_subparts_tree(text, 8888,
+            lambda p: build_subpart(text, 8888))
+        self.assertEqual('', tree.text)
+        self.assertEqual('subpart', tree.node_type)
+        self.assertEqual(['8888', 'Subpart', 'C'], tree.label)
+        self.assertEqual([], tree.children)
+        self.assertEqual('[Reserved]', tree.title)

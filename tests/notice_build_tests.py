@@ -34,13 +34,13 @@ class NoticeBuildTest(TestCase):
             'effective_on': '1956-09-09',
             'fr_citation': 'citation citation',
             'fr_url': 'some url',
+            'fr_volume': 66,
             'initial_effective_on': '1956-09-09',
             'meta': {
                 'dates': 'date info',
                 'end_page': 9999,
                 'start_page': 8888,
-                'type': 'Rule',
-                'volume': 66
+                'type': 'Rule'
             },
             'publication_date': '1955-12-10',
             'regulation_id_numbers': ['a231a-232q'],
@@ -71,9 +71,10 @@ class NoticeBuildTest(TestCase):
                 <P>Following Content</P>
             </SUPLINF>
         </ROOT>"""
-        notice = {'cfr_part': '9292'}
+        notice = {'cfr_part': '9292', 'meta': {'start_page': 100}}
         self.assertEqual(process_xml(notice, etree.fromstring(xml)), {
             'cfr_part': '9292',
+            'meta': {'start_page': 100},
             'addresses': {
                 'methods': [('Email', 'example@example.com')],
                 'instructions': ['Extra instructions']
@@ -83,6 +84,7 @@ class NoticeBuildTest(TestCase):
                 'title': '8(q) Words',
                 'paragraphs': ['Content'],
                 'children': [],
+                'page': 100,
                 'label': '9292-8-q'
             }],
         })
@@ -99,13 +101,15 @@ class NoticeBuildTest(TestCase):
                 <P>Following Content</P>
             </SUPLINF>
         </ROOT>"""
-        notice = {'cfr_part': '9292'}
+        notice = {'cfr_part': '9292', 'meta': {'start_page': 210}}
         self.assertEqual(process_xml(notice, etree.fromstring(xml)), {
             'cfr_part': '9292',
+            'meta': {'start_page': 210},
             'section_by_section': [{
                 'title': '8(q) Words',
                 'paragraphs': ['Content'],
                 'children': [],
+                'page': 210,
                 'label': '9292-8-q'
             }],
         })

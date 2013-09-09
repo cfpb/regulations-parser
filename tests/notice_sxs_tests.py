@@ -4,6 +4,24 @@ from unittest import TestCase
 
 
 class NoticeSxsTests(TestCase):
+    def test_find_page(self):
+        xml = """<ROOT>
+            <P />
+            Text
+            <P />
+            <PRTPAGE P="333" />
+            <P />
+            <PRTPAGE />
+            <P />
+            <PRTPAGE P="334" />
+        </ROOT>"""
+        xml = etree.fromstring(xml)
+        for l in range(0, 6):
+            self.assertEqual(332, find_page(xml, l, 332))
+        for l in range(6, 10):
+            self.assertEqual(333, find_page(xml, l, 332))
+        for l in range(10, 15):
+            self.assertEqual(334, find_page(xml, l, 332))
 
     def test_find_section_by_section(self):
         sxs_xml = """
@@ -59,7 +77,7 @@ class NoticeSxsTests(TestCase):
             <P>Content 5</P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, '100')
+        structures = build_section_by_section(sxs, '100', 83)
         self.assertEqual(2, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section Header',
@@ -71,18 +89,22 @@ class NoticeSxsTests(TestCase):
                 {
                     'title': 'Sub Section Header',
                     'paragraphs': ['Content 3'],
-                    'children': []
+                    'children': [],
+                    'page': 83
                 },
                 {
                     'title': 'Another',
                     'paragraphs': ['Content 4'],
-                    'children': []
-                }]
+                    'children': [],
+                    'page': 83
+                }],
+            'page': 83
             })
         self.assertEqual(structures[1], {
             'title': '4(b) Header',
             'paragraphs': ['Content 5'],
             'label': '100-4-b',
+            'page': 83,
             'children': []
             })
 
@@ -96,7 +118,7 @@ class NoticeSxsTests(TestCase):
             <P>Content 2</P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, '100')
+        structures = build_section_by_section(sxs, '100', 21)
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section Header',
@@ -104,7 +126,8 @@ class NoticeSxsTests(TestCase):
                 'Content 1',
                 'Content 2',
                 ],
-            'children': []
+            'children': [],
+            'page': 21
             })
 
     def test_build_section_by_section_label(self):
@@ -117,16 +140,18 @@ class NoticeSxsTests(TestCase):
             <P>Content 2</P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, '99')
+        structures = build_section_by_section(sxs, '99', 2323)
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section 99.3 Info',
             'label': '99-3',
             'paragraphs': ['Content 1'],
+            'page': 2323,
             'children': [{
                 'title': '3(q)(4) More Info',
                 'label': '99-3-q-4',
                 'paragraphs': ['Content 2'],
+                'page': 2323,
                 'children': []
             }]
         })
@@ -141,11 +166,12 @@ class NoticeSxsTests(TestCase):
             <P>Content <E T="03">Emph</E></P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, '99')
+        structures = build_section_by_section(sxs, '99', 939)
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section 99.3 Info',
             'label': '99-3',
+            'page': 939,
             'paragraphs': ['Content  1', 'Content  2', 
                            'Content <E T="03">Emph</E>'],
             'children': []
@@ -162,20 +188,23 @@ class NoticeSxsTests(TestCase):
             <P>Content 2</P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, '99')
+        structures = build_section_by_section(sxs, '99', 765)
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section 99.3 Something Here',
             'label': '99-3',
             'paragraphs': [],
+            'page': 765,
             'children': [{
                 'title': '3(q)(4) More Info',
                 'label': '99-3-q-4',
                 'paragraphs': ['Content 1'],
+                'page': 765,
                 'children': [{
                     'title': 'Subheader, Really',
                     'paragraphs': ['Content 2'],
-                    'children': []
+                    'children': [],
+                    'page': 765
                 }]
             }]
         })

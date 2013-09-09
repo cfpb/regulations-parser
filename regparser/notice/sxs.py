@@ -1,3 +1,4 @@
+from copy import deepcopy
 from itertools import dropwhile, takewhile
 
 from lxml import etree
@@ -25,7 +26,17 @@ def find_section_by_section(xml_tree):
         return []
 
 
-def build_section_by_section(sxs, part):
+def find_page(xml, index_line, page_number):
+    """Find the FR page that includes the indexed line"""
+    for prtpage in takewhile(lambda p: p.sourceline < index_line,
+                             xml.xpath('//PRTPAGE')):
+        if prtpage.get('P'):
+            page_number = int(prtpage.get('P'))
+
+    return page_number
+
+
+def build_section_by_section(sxs, part, fr_start_page):
     """Given a list of xml nodes in the section by section analysis, pull
     out hierarchical data into a structure."""
     structures = []
@@ -33,7 +44,8 @@ def build_section_by_section(sxs, part):
     while len(sxs):
         title, text_els, sub_sections, sxs = split_into_ttsr(sxs)
 
-        paragraph_xmls = [el for el in text_els if el.tag == 'P']
+        page = find_page(title, title.sourceline, fr_start_page)
+        paragraph_xmls = [deepcopy(el) for el in text_els if el.tag == 'P']
         for paragraph_xml in paragraph_xmls:
             # Remove unneeded tags
             etree.strip_tags(paragraph_xml, 'PRTPAGE', 'FTREF')
@@ -44,9 +56,10 @@ def build_section_by_section(sxs, part):
 
         paragraphs = [el.text + ''.join(etree.tostring(c) for c in el)
                       for el in paragraph_xmls]
-        children = build_section_by_section(sub_sections, part)
+        children = build_section_by_section(sub_sections, part, page)
 
         next_structure = {
+            'page': page,
             'title': title.text,
             'paragraphs': paragraphs,
             'children': children

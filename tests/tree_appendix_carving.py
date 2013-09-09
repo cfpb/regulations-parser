@@ -5,15 +5,17 @@ from unittest import TestCase
 class DepthAppendixCarvingTest(TestCase):
 
     def test_find_appendix_start(self):
-        text = "Some \nAppendix C Other\n\n Thing Appendix A\nAppendix B"
+        text = "Some \nAppendix C to Part 111 Other\n\n "
+        text += "Thing Appendix A to Part 111"
+        text += "\nAppendix B to Part 111"
         self.assertEqual(6, find_appendix_start(text))
-        self.assertEqual(35, find_appendix_start(text[7:]))
-        self.assertEqual(None, find_appendix_start(text[7 + 36:]))
+        self.assertEqual(59, find_appendix_start(text[7:]))
+        self.assertEqual(None, find_appendix_start(text[7 + 60:]))
 
     def test_find_next_appendix_offsets(self):
         sect1 = "Some \n"
-        appa = "Appendix A Title\nContent\ncontent\n\n"
-        appb = "Appendix Q More Info\n\nContent content\n"
+        appa = "Appendix A to Part 111 Title\nContent\ncontent\n\n"
+        appb = "Appendix Q to Part 111 More Info\n\nContent content\n"
         supp = "Supplement I The Interpretations\n\nAppendix Q\n"
         supp += "Interpretations about appendix Q"
         self.assertEqual((len(sect1), len(sect1+appa)),
@@ -25,8 +27,8 @@ class DepthAppendixCarvingTest(TestCase):
 
     def test_appendices(self):
         sect1 = "Some \n"
-        appa = "Appendix A Title\nContent\ncontent\n\n"
-        appb = "Appendix Q More Info\n\nContent content\n"
+        appa = "Appendix A to Part 222 Title\nContent\ncontent\n\n"
+        appb = "Appendix Q to Part 222 More Info\n\nContent content\n"
         supp = "Supplement I The Interpretations\n\nAppendix Q\n"
         supp += "Interpretations about appendix Q"
 

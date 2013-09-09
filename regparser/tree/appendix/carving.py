@@ -5,7 +5,7 @@ from regparser.tree.supplement import find_supplement_start
 
 def find_appendix_start(text):
     """Find the start of the appendix (e.g. Appendix A)"""
-    return search.find_start(text, u'Appendix', ur'[A-Z]')
+    return search.find_start(text, u'Appendix', ur'[A-Z] to Part')
 
 
 def find_next_appendix_offsets(text):

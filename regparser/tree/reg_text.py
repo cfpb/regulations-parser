@@ -17,16 +17,16 @@ def build_subparts_tree(text, part, subpart_builder):
     subpart_builder can be a builder that builds a subpart or an
     emptypart. """
 
+    subpart = subpart_builder(part)
     sects = sections(text, part)
     if sects:
-        subpart = subpart_builder(part)
         children = []
         for s, e in sects:
             section_text = text[s:e]
             children.append(build_section_tree(section_text, part))
         subpart.children = children
         return (subpart, text[:sects[0][0]])
-    return (None, None)
+    return (subpart, text)
 
 
 def build_reg_text_tree(text, part):
@@ -43,7 +43,7 @@ def build_reg_text_tree(text, part):
         pre_subpart = body[:subpart_locations[0][0]]
         first_emptypart, children_text = build_subparts_tree(
             pre_subpart, part, build_empty_part)
-        if first_emptypart:
+        if pre_subpart.strip() and first_emptypart.children:
             subparts_list.append(first_emptypart)
         else:
             children_text = pre_subpart
@@ -56,7 +56,7 @@ def build_reg_text_tree(text, part):
     else:
         emptypart, children_text = build_subparts_tree(
             body, part, build_empty_part)
-        if emptypart:
+        if emptypart.children:
             subparts_list.append(emptypart)
         else:
             return struct.Node(
@@ -156,7 +156,7 @@ def build_section_tree(text, part):
 
     exclude += [(start, end) for _, start, end in
                 appendix_citation.scanString(text)]
-    section = re.search(r'%d\.(\d+) ' % part, title).group(1)
+    section = re.search(r'%d\.(\d+)\b' % part, title).group(1)
     label = [str(part), section]
     p_tree = regParser.build_tree(
         text, exclude=exclude, label=label, title=title)
