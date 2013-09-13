@@ -34,6 +34,12 @@ em_digit_p = (
     Suppress(Regex(r"\(<E[^>]*>"))
     + Word(string.digits).setResultsName("level5")
     + Suppress("</E>)"))
+# Our support for italicized paragraph markers isn't quite up to par yet;
+# allow a plaintext version of italic paragraph markers
+plaintext_level5_p = (
+    Suppress("(")
+    + Word(string.digits).setResultsName("plaintext_level5")
+    + Suppress(")"))
 
 upper_dec = "." + Word(string.ascii_uppercase).setResultsName('level3')
 roman_dec = "." + Word("ivxlcdm").setResultsName('level2')
@@ -75,7 +81,7 @@ interpretation_marker = (
 )
 
 #   Minimally composed
-depth4_p = upper_p + Optional(em_digit_p)
+depth4_p = upper_p + Optional(em_digit_p) + Optional(plaintext_level5_p)
 depth3_p = roman_p + Optional(depth4_p)
 depth2_p = digit_p + Optional(depth3_p)
 depth1_p = lower_p + Optional(depth2_p)

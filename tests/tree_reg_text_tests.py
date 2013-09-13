@@ -205,6 +205,23 @@ class DepthRegTextTest(TestCase):
         self.assertEqual(line1, tree.title)
         self.assertEqual(0, len(tree.children))
 
+    def test_build_section_tree_italics_as_plaintext(self):
+        line1 = u"§ 201.20 Super Awesome Section"
+        line2 = "\n(a)(1)(i) paragraphs (c)(2)(ii)(A)(1) and (B) content"
+
+        tree = build_section_tree(line1+line2, 201)
+        self.assertEqual(1, len(tree.children))
+        self.assertEqual(['201', '20'], tree.label)
+        tree = tree.children[0]
+        self.assertEqual(1, len(tree.children))
+        self.assertEqual(['201', '20', 'a'], tree.label)
+        tree = tree.children[0]
+        self.assertEqual(1, len(tree.children))
+        self.assertEqual(['201', '20', 'a', '1'], tree.label)
+        tree = tree.children[0]
+        self.assertEqual(0, len(tree.children))
+        self.assertEqual(['201', '20', 'a', '1', 'i'], tree.label)
+
     def test_build_subparts_tree_reserver(self):
         text = u"Subpart C—[Reserved]"
 
