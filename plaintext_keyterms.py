@@ -1,4 +1,11 @@
+#vim: set encoding=utf-8
+import re
+
+from pyparsing import Literal
+
 from regparser import api_stub
+from regparser.grammar.external_citations import regtext_external_citation
+from regparser.grammar.internal_citations import regtext_citation
 from regparser.layer import key_terms
 from regparser.tree import struct
 
@@ -14,29 +21,67 @@ real_key_terms_layer = generate_key_terms_layer(xml_based_reg)
 
 layer = {}
 part_end = '1005.'
+exclude_parser = (
+    regtext_external_citation
+    | regtext_citation
+    | Literal("U.S.")
+)
+period = re.compile(r'\.(?!,)')  # Not followed by a comma
 
 
 def generate_keyterm(node):
-    if node.label_id() not in real_key_terms_layer:
-        node_text = key_terms.KeyTerms.process_node_text(node).encode('utf-8')
-        d = '.'
-        sentences = [e+d for e in node_text.split(d) if e != '']
+    label_id = node.label_id()
+    if label_id in real_key_terms_layer:
+        layer[label_id] = real_key_terms_layer[label_id]
+    else:
+        node_text = key_terms.KeyTerms.process_node_text(node)
+        if not node_text:
+            return
 
-        if len(sentences) > 1:
-            #Ignore any paragraph that has only one sentence
-            first_sentence = sentences[0]
-            words = first_sentence.split()
-            if (not words[-1] == part_end and
-                    not first_sentence.startswith('![')):
-                num_words = len(words)
+        # Our Appendix parsing isn't particularly accurate -- avoid keyterms
+        if node.node_type == struct.Node.APPENDIX:
+            return
 
-                #key terms are short
-                if num_words <= 15:
-                    layer_element = {
-                        "key_term": first_sentence,
-                        "locations": [0]
-                    }
-                    layer[node.label_id()] = [layer_element]
+        exclude = [(start, end) for _, start, end in
+                   exclude_parser.scanString(node_text)]
+
+        periods = [m.start() for m in period.finditer(node_text)]
+        # Remove any periods which are part of a citation
+        periods = filter(lambda p: all(p < start or p > end
+                                       for start, end in exclude), periods)
+
+        # Key terms must either have a full "sentence" or end with a hyphen
+        if not periods and node_text[-1] != u'—':
+            return
+
+        if periods:
+            first_p = periods[0]
+            # Check for cases where the period is "inside" something;
+            # include the period
+            next_char = node_text[first_p + 1: first_p + 2]
+            if next_char in (')', u'”'):
+                first_sentence = node_text[:first_p + 2]
+            else:
+                first_sentence = node_text[:first_p + 1]
+        else:
+            first_sentence = node_text
+
+        # Key terms can't be the entire text of a leaf node
+        if first_sentence == node_text and not node.children:
+            return
+
+        words = first_sentence.split()
+        if (not words[-1] == part_end and
+                not first_sentence.startswith('![')):
+            num_words = len(words)
+
+            #key terms are short
+            if num_words <= 15:
+                layer_element = {
+                    "key_term": first_sentence,
+                    "locations": [0]
+                }
+                layer[label_id] = [layer_element]
 
 if __name__ == "__main__":
     #Use the plain text based JSON for the regulation.
