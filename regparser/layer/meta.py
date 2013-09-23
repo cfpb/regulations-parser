@@ -1,3 +1,5 @@
+import re
+
 from layer import Layer
 import settings
 
@@ -21,6 +23,15 @@ class Meta(Layer):
             'cfr_title_number': self.cfr_title,
             'cfr_title_text': settings.CFR_TITLES[self.cfr_title]
         }
+
+        if node.title:
+            # up till the paren
+            match = re.search('part \d+[^\w]*([^\(]*)', node.title, re.I)
+            if match:
+                layer['statutory_name'] = match.group(1).strip()
+            match = re.search('\(regulation (\w+)\)', node.title, re.I)
+            if match:
+                layer['reg_letter'] = match.group(1)
 
         last_notice = filter(lambda n: n['document_number'] == self.version,
                              self.notices)
