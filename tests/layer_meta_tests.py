@@ -1,3 +1,4 @@
+#vim: set encoding=utf-8
 from unittest import TestCase
 
 from regparser.layer.meta import Meta
@@ -67,3 +68,14 @@ class LayerMetaTest(TestCase):
         m = Meta(None, 19, [], None)
         result = m.process(Node(label=['111', '22']))
         self.assertEqual(None, result)
+
+    def test_process_statutory_letter(self):
+        m = Meta(None, 19, [], None)
+        result = m.process(Node(label=['1111']))
+        self.assertFalse('statutory_name' in result[0])
+        self.assertFalse('reg_letter' in result[0])
+
+        result = m.process(Node(label=['1111'],
+                           title=u"PART 1111—RAGGEDY REG (REGULATION R)"))
+        self.assertEqual('RAGGEDY REG', result[0]['statutory_name'])
+        self.assertEqual('R', result[0]['reg_letter'])
