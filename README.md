@@ -1,7 +1,7 @@
 Regulations Parser
 ==================
 
-[![Build Status](https://travis-ci.org/eregs/regulations-parser.png)](https://travis-ci.org/eregs/regulations-parser)
+[![Build Status](https://travis-ci.org/cfpb/regulations-parser.png)](https://travis-ci.org/cfpb/regulations-parser)
 
 Parse a regulation (plain text) into a well-formated JSON tree (along with
 associated layers, such as links and definitions). This works hand-in-hand
