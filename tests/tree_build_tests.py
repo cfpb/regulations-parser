@@ -7,15 +7,15 @@ from regparser.tree.build import *
 class TreeBuildTest(TestCase):
 
     def test_find_cfr_part(self):
-        text = "Some text here\n"
+        text = "PART 202-Content\nSome text here\n"
         text += "This has 201.44 in it. But also 203.33\n"
         text += "But then, 201.33 returns."
 
-        self.assertEqual(201, find_cfr_part(text))
+        self.assertEqual(202, find_cfr_part(text))
 
     def test_build_whole_regtree(self):
         """Integration test for the plain-text regulation tree parser"""
-        text = "Regulation Q\n"
+        text = "PART 200-Regulation Q\n"
         text += u"§ 200.1 First section.\n"
         text += "(a) First par\n"
         text += "(b) Second par\n"
@@ -80,6 +80,6 @@ class TreeBuildTest(TestCase):
         enc = NodeEncoder(sort_keys=True)
         self.assertEqual(
             enc.encode(build_whole_regtree(text)), 
-            enc.encode(Node("\n", label=["200"], title="Regulation Q", 
+            enc.encode(Node("\n", label=["200"], title="PART 200-Regulation Q", 
                 children=[ nodeEP, nodeA, nodeI ]))
         )
