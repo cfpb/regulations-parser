@@ -15,13 +15,13 @@ def find_cfr_part(text):
 def build_whole_regtree(text):
     """Combine the output of numerous functions to get to a whole regulation
     tree."""
-    interp = text[find_supplement_start(text):]
-
     part = find_cfr_part(text)
     reg_tree = build_reg_text_tree(text, part)
-    interps = build_interp_tree(interp, part)
     appendices = appendix_trees(text, part, reg_tree.label)
 
     reg_tree.children.extend(appendices)
-    reg_tree.children.append(interps)
+    supplement_start = find_supplement_start(text)
+    if supplement_start is not None:
+        interps = build_interp_tree(text[supplement_start:], part)
+        reg_tree.children.append(interps)
     return reg_tree
