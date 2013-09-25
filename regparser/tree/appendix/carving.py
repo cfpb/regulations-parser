@@ -32,7 +32,7 @@ def appendices(text):
 
 def find_appendix_section_start(text, appendix):
     """Find the start of an appendix section (e.g. A-1 -- Something"""
-    match = re.search(ur'%s-\d+' % appendix, text, re.MULTILINE)
+    match = re.search(ur'^%s-\d+' % appendix, text, re.MULTILINE)
     if match:
         return match.start()
 

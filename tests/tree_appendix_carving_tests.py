@@ -38,10 +38,12 @@ class DepthAppendixCarvingTest(TestCase):
         self.assertEqual((len(sect1+appa), len(sect1+appa+appb)), apps[1])
 
     def test_find_appendix_section_start(self):
-        text = "Some \nA-4--Section here\nB-99--Section here\nContent"
+        """Only find appendix sections that start a line"""
+        text = "Some \nA-4--Section here\nB-99--Section C-3 here\nContent"
         self.assertEqual(6, find_appendix_section_start(text, 'A'))
         self.assertEqual(24, find_appendix_section_start(text, 'B'))
         self.assertEqual(None, find_appendix_section_start(text, 'C'))
+        self.assertEqual(None, find_appendix_section_start(text, 'D'))
 
     def test_find_next_appendix_section_offsets(self):
         head = "More\n"
