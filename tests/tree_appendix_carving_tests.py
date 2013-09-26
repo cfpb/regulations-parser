@@ -79,3 +79,5 @@ class DepthAppendixCarvingTest(TestCase):
                 get_appendix_section_number("QQ-50--Title Stuff", 'QQ'))
         self.assertEqual("21(b)",
                 get_appendix_section_number(u"A-21(b)—A Model form", 'A'))
+        self.assertEqual("21(B)",
+                get_appendix_section_number(u"A-21(B)—A Model form", 'A'))

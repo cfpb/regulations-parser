@@ -111,6 +111,13 @@ class DepthRegTextTest(TestCase):
         text += u"§ 2015 dfds \n sdfds § 20132 saddsa \n\n sdsadsa\n"
         self.assertEqual((72,143), next_subpart_offsets(text))
 
+        text = u"Supplement I\n\nSomething else\n"
+        text += u"Subpart B—Model Forms for Application\n\n"
+        self.assertEqual(None, next_subpart_offsets(text))
+
+        text = u"Appendix Q to Part 201\n\nSomething else\n"
+        text += u"Subpart B—Model Forms for Application\n\n"
+        self.assertEqual(None, next_subpart_offsets(text))
        
     def test_next_section_offsets(self):
         """Should get the start and end of each section, even if it is
@@ -128,6 +135,12 @@ class DepthRegTextTest(TestCase):
 
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \nSupplement I"
         self.assertEqual((2,29), next_section_offsets(text, 201))
+
+        text = u"Appendix A to Part 201\n\n§ 201.3 sdsa\nsdd dsdsadsa"
+        self.assertEqual(None, next_section_offsets(text, 201))
+
+        text = u"Supplement I\n\n§ 201.3 sdsa\nsdd dsdsadsa"
+        self.assertEqual(None, next_section_offsets(text, 201))
 
     def test_sections(self):
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection\n"

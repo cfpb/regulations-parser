@@ -83,3 +83,29 @@ class TreeBuildTest(TestCase):
             enc.encode(Node("\n", label=["200"], title="PART 200-Regulation Q", 
                 children=[ nodeEP, nodeA, nodeI ]))
         )
+
+    def test_build_whole_regtree_missing_interp(self):
+        """Not all regs have an interpretation section."""
+        text = "PART 200-Regulation Q\n"
+        text += u"§ 200.1 First section.\n"
+        text += "Section content\n"
+        text += "Appendix A to Part 200 - Appendix Title\n"
+        text += "Appendix content"
+
+        node200_1 = Node("\nSection content\n", label=['200', '1'],
+            title=u"§ 200.1 First section.", children=[],
+            node_type=Node.REGTEXT)
+        nodeA = Node("\nAppendix content", label=["200","A"],
+            title="Appendix A to Part 200 - Appendix Title", children=[],
+            node_type=Node.APPENDIX)
+        nodeEP = Node('', label=['200', 'Subpart'], title='', 
+                    children=[node200_1], node_type=Node.EMPTYPART)
+
+        res = build_whole_regtree(text)
+        #   Convert to JSON so we can ignore some unicode issues
+        enc = NodeEncoder(sort_keys=True)
+        self.assertEqual(
+            enc.encode(build_whole_regtree(text)), 
+            enc.encode(Node("\n", label=["200"], title="PART 200-Regulation Q", 
+                children=[ nodeEP, nodeA ]))
+        )
