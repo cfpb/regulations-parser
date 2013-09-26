@@ -51,7 +51,7 @@ class TreeBuildTest(TestCase):
             ]
         )
         nodeI1 = Node('1. Commentary 1\n', node_type=Node.INTERP,
-                      label=['200', '2', 'a', '5', Node.INTERP_MARK, '1']),
+                      label=['200', '2', 'a', '5', Node.INTERP_MARK, '1'])
         nodeI2 = Node('2. Commentary 2\n', node_type=Node.INTERP,
                       label=['200', '2', 'a', '5', Node.INTERP_MARK, '2'])
         nodeI = Node(

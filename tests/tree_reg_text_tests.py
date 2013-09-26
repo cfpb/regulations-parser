@@ -105,7 +105,7 @@ class DepthRegTextTest(TestCase):
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection"
         text += u"\n\nSomething\nubpart A—Procedures for Application\n\n"
         text += u"\n\nSomething else\nSubpart B—Model Forms for Application\n"
-        self.assertEqual((110, 149), next_subpart_offsets(text))
+        self.assertEqual((110, 148), next_subpart_offsets(text))
 
         text = u"ubpart A—First subpart\n"
         text += u"§ 201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa\n"
