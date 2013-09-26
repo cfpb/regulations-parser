@@ -59,5 +59,5 @@ def get_appendix_letter(title, part):
 
 def get_appendix_section_number(title, appendix_letter):
     """Pull out appendix section number from header. Assumes proper format"""
-    pattern = ur'^%s-(\d+(\([a-z]+\))*).*$' % appendix_letter
+    pattern = ur'^%s-(\d+(\([a-zA-Z]+\))*).*$' % appendix_letter
     return re.match(pattern, title).group(1)
