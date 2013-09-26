@@ -1,6 +1,7 @@
 from regparser.tree.supplement import *
 from unittest import TestCase
 
+
 class DepthSupplementTest(TestCase):
 
     def test_find_supplement_start(self):
