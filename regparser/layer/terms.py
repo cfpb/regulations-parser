@@ -43,7 +43,8 @@ class Terms(Layer):
         self.current_subpart = None     # Need a reference for the closure
 
         def per_node(node):
-            if len(node.label) == 2:
+            if (len(node.label) == 2 and
+                node.node_type in (struct.Node.REGTEXT, struct.Node.APPENDIX)):
                 #Subparts
                 section = node.label[-1]
                 if section in settings.SUBPART_STARTS:
@@ -85,9 +86,8 @@ class Terms(Layer):
         if len(node.label) < 2:
             return False
         # Definitions are only in the reg text (not appendices/interprs)
-        if (not node.label[1].isdigit() or
-                struct.Node.INTERP_MARK in node.label):
-                return False
+        if node.node_type != struct.Node.REGTEXT:
+            return False
         stripped = node.text.strip(ParagraphMarkers.marker(node)).strip()
         return (
             stripped.lower().startswith('definition')
