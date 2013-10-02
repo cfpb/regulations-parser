@@ -7,13 +7,10 @@ from unittest import TestCase
 class LayerTermTest(TestCase):
 
     def setUp(self):
-        self.original_subpart = settings.SUBPART_STARTS
-        settings.SUBPART_STARTS = {'1': None}
         self.original_ignores = settings.IGNORE_DEFINITIONS_IN
         settings.IGNORE_DEFINITIONS_IN = []
 
     def tearDown(self):
-        settings.SUBPART_STARTS = self.original_subpart
         settings.IGNORE_DEFINITIONS_IN = self.original_ignores
 
     def test_has_definitions(self):
@@ -161,7 +158,6 @@ class LayerTermTest(TestCase):
             t.definitions_scopes(node))
 
     def test_pre_process(self):
-        settings.SUBPART_STARTS = {'2': 'XQXQ'}
         noname_subpart = Node('', label=['88', 'Subpart'],
             node_type=Node.EMPTYPART, children=[
                 Node(u"Definition. For the purposes of this part, "

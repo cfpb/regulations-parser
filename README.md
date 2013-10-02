@@ -112,12 +112,7 @@ written. Only useful if the JSON files are to be written to disk.
 * ```API_BASE``` - a string defining the url root of an API (if the output
 files are to be written to an API instead)
 * ```META``` - a dictionary of extra info which will be included in the
-"meta" layer. Useful fields include "contact_info" (an html string),
-"effective" (a dictionary with "url":string, "title":string,
-"date":date-string), and "last_notice" (a dictionary with "url":string,
-"title":string, "action":string, "published":date-string,
-"effective":date-string)
-* ```SUBPART_STARTS``` - a dictionary describing when subparts begin. See
+"meta" layer. 
 ```settings.py``` for an example.
 * ```CFR_TITLE``` - array of CFR Title names (used in the meta layer)
 * ```DEFAULT_IMAGE_URL``` - string format used in the graphics layer
