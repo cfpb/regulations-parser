@@ -10,6 +10,9 @@ representations for them. The parser works hand-in-hand with
 regulations-site, a front-end for the data structures generated, and
 regulations-core, an API for hosting the data.
 
+For an overview of the eRegs project (not just the parser), see our
+[landing page](http://eregs.github.io/eregulations/).
+
 ## Features
 
 * Split regulation into paragraph-level chunks
@@ -106,7 +109,6 @@ The syntax is
 
 ```bash
 $ python build_from.py regulation.txt title notice_doc_# act_title act_section
-act_section
 ```
 
 So, for the regulation we copy-pasted above, we could run
@@ -121,7 +123,10 @@ title of "the Act" and ```1693``` is the relevant section. Wherever the
 phrase "the Act" is used in the regulation, the external link parser will
 treat it as "15 U.S.C. 1693".  The final rule number is used to pull in
 section-by-section analyses and deduce which notices were used to create
-this version of the regulation.
+this version of the regulation. To find this, use the 
+[Federal Register](https://www.federalregister.gov/), finding the last,
+effective final rule for your version of the regulation and copying the
+document number from the meta data (currently in a table on the right side).
 
 This will generate four folders, ```regulation```, ```notice```, ``layer``
 and possibly ``diff`` in the ```OUTPUT_DIR``` (current directory by default).
@@ -139,8 +144,7 @@ All of the settings listed in ```settings.py``` can be overridden in a
 * ```API_BASE``` - a string defining the url root of an API (if the output
   files are to be written to an API instead)
 * ```META``` - a dictionary of extra info which will be included in the
-  "meta" layer. 
-```settings.py``` for an example.
+  "meta" layer. This is free-form.
 * ```CFR_TITLE``` - array of CFR Title names (used in the meta layer); not
   required as those provided are current
 * ```DEFAULT_IMAGE_URL``` - string format used in the graphics layer; not
@@ -151,8 +155,8 @@ All of the settings listed in ```settings.py``` can be overridden in a
 ### Keyterms Layer
 
 Unlike our other layers (at the moment), the Keyterms layer (which indicates
-pseudo titles used as headers in the regulation paragraphs) is build using
-XML from the Federal Register rather than plain text. Right now, this is a
+pseudo titles used as headers in regulation paragraphs) is built using XML
+from the Federal Register rather than plain text. Right now, this is a
 particularly manual process which involves manually retrieving each notice's
 XML, generating a layer, and merging the results with the existing layer.
 This is not a problem if the regulation is completely re-issued.
@@ -183,7 +187,7 @@ like to represent model forms and the like. We use Markdown style image
 inclusion in the plaintext:
 
 ```
-\!\[Appendix A9](ER27DE11.000)
+![Appendix A9](ER27DE11.000)
 ```
 
 This will be converted to an img tag by the graphics layer, pointing to the
@@ -201,7 +205,7 @@ $ cd docs
 $ make dirhtml
 ```
 
-The output will be in ``docs/_build/dirhtml```.
+The output will be in ```docs/_build/dirhtml```.
 
 If you are adding new modules, you may need to re-run the skeleton build
 script first:
