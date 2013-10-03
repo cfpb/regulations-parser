@@ -61,7 +61,7 @@ class APIWriteContentTest(TestCase):
         data = {"testing": ["body", 1, 2]}
         writer.write(data)
 
-        args, kwargs = requests.put.call_args
+        args, kwargs = requests.post.call_args
         self.assertEqual("http://example.com/a/path", args[0])
         self.assertTrue('headers' in kwargs)
         self.assertTrue('content-type' in kwargs['headers'])

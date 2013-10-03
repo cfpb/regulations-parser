@@ -35,7 +35,7 @@ class APIWriteContent:
 
     def write(self, python_obj):
         """Write the object (as json) to the API"""
-        requests.put(
+        requests.post(
             settings.API_BASE + self.path,
             data=NodeEncoder().encode(python_obj),
             headers={'content-type': 'application/json'})
