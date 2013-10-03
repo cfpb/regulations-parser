@@ -107,12 +107,14 @@ def next_section_offsets(text, part):
     supplement_start = find_supplement_start(text)
     if subpart_start is not None \
             and subpart_start > start and subpart_start < end:
-        return (start, subpart_start)
-    if appendix_start is not None and appendix_start < end:
-        return (start, appendix_start)
-    if supplement_start is not None and supplement_start < end:
-        return (start, supplement_start)
-    return (start, end)
+        end = subpart_start
+    elif appendix_start is not None and appendix_start < end:
+        end = appendix_start
+    elif supplement_start is not None and supplement_start < end:
+        end = supplement_start
+
+    if end >= start:
+        return (start, end)
 
 
 def next_subpart_offsets(text):
@@ -124,10 +126,12 @@ def next_subpart_offsets(text):
     appendix_start = find_appendix_start(text)
     supplement_start = find_supplement_start(text)
     if appendix_start is not None and appendix_start < end:
-        return (start, appendix_start)
-    if supplement_start is not None and supplement_start < end:
-        return (start, supplement_start)
-    return (start, end)
+        end = appendix_start
+    elif supplement_start is not None and supplement_start < end:
+        end = supplement_start
+
+    if end >= start:
+        return (start, end)
 
 
 def sections(text, part):
