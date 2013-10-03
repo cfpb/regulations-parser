@@ -4,28 +4,33 @@ Regulations Parser
 [![Build Status](https://travis-ci.org/cfpb/regulations-parser.png)](https://travis-ci.org/cfpb/regulations-parser)
 
 Parse a regulation (plain text) into a well-formated JSON tree (along with
-associated layers, such as links and definitions). This works hand-in-hand
-with regulations-site, a front-end for the data structures generated.
+associated layers, such as links and definitions) with this tool. It also
+pulls in notice content from the Federal Register and creates JSON
+representations for them. The parser works hand-in-hand with
+regulations-site, a front-end for the data structures generated, and
+regulations-core, an API for hosting the data.
 
 ## Features
 
 * Split regulation into paragraph-level chunks
 * Create a tree which defines the hierarchical relationship between these
-chunks
+  chunks
 * Layer for external citations -- links to Acts, Public Law, etc.
 * Layer for graphics -- converting image references into federal register
-urls
+  urls
 * Layer for internal citations -- links between parts of this regulation
 * Layer for interpretations -- connecting regulation text to the
-interpretations associated with it
+  interpretations associated with it
 * Layer for key terms -- pseudo headers for certain paragraphs
 * Layer for meta info -- custom data (some pulled from federal notices)
 * Layer for paragraph markers -- specifying where the initial paragraph
-marker begins and ends for each paragraph
+  marker begins and ends for each paragraph
 * Layer for section-by-section analysis -- associated analyses (from FR
-notices) with the text they are analyzing
+  notices) with the text they are analyzing
 * Layer for table of contents -- a listing of headers
 * Layer for terms -- defined terms, including their scope
+* Create diffs between versions of the regulations (if those versions are
+  available from an API)
 
 ## Requirements
 
@@ -33,6 +38,14 @@ notices) with the text they are analyzing
 * pyparsing (1.5.7) - Used to do generic parsing on the plain text
 * inflection (0.1.2) - Helps determine pluralization (for terms layer)
 * requests (1.2.3) - Client library for writing output to an API
+
+If running tests:
+
+* nose (1.2.1) - A pluggable test runner
+* mock (1.0.1) - Makes constructing mock objects/functions easy
+* coverage (3.6) - Reports on test coverage
+* cov-core (1.7) - Needed by coverage
+* nose-cov (1.6) - Connects nose to coverage
 
 ## API Docs
 
@@ -81,7 +94,9 @@ the non-helpful info e-CFR puts in. Delete lines of the form
 * ^Link to an amendment .*$
 * Back to Top
 
-Also, delete any table of contents which contain the section character.
+We've also found that tables of contents can cause random issues with the
+parser, so we recommend removing them. The parser will most likely generate
+the same content in a layer.
 
 Save that file as a text file (e.g. reg.txt).
 
@@ -90,17 +105,29 @@ Save that file as a text file (e.g. reg.txt).
 The syntax is 
 
 ```bash
-$ python build_from.py regulation.txt title doc_#/version act_title
+$ python build_from.py regulation.txt title notice_doc_# act_title act_section
 act_section
 ```
 
 So, for the regulation we copy-pasted above, we could run
 ```bash
-$ python build_from.py reg.txt 12 `date +"%Y%m%d"` 15 1693
+$ python build_from.py reg.txt 12 2013-06861 15 1693
 ```
 
-This will generate three folders, ```regulation```, ```notice```, and
-```layer``` in the ```OUTPUT_DIR``` (current directory by default).
+Here ```12``` is the CFR title number (in our case, for "Banks and
+Banking"), ```2013-06861``` is the last notice used to create this version
+(i.e. the last "final rule" which is currently in effect), ```15``` is the
+title of "the Act" and ```1693``` is the relevant section. Wherever the
+phrase "the Act" is used in the regulation, the external link parser will
+treat it as "15 U.S.C. 1693".  The final rule number is used to pull in
+section-by-section analyses and deduce which notices were used to create
+this version of the regulation.
+
+This will generate four folders, ```regulation```, ```notice```, ``layer``
+and possibly ``diff`` in the ```OUTPUT_DIR``` (current directory by default).
+
+If you'd like to write the data to an api instead (most likely, one running
+regulations-core), you can set the ```API_BASE``` setting (described below).
 
 ### Settings
 
@@ -108,22 +135,25 @@ All of the settings listed in ```settings.py``` can be overridden in a
 ```local_settings.py``` file. Current settings include:
 
 * ```OUTPUT_DIR``` - a string with the path where the output files should be
-written. Only useful if the JSON files are to be written to disk.
+  written. Only useful if the JSON files are to be written to disk.
 * ```API_BASE``` - a string defining the url root of an API (if the output
-files are to be written to an API instead)
+  files are to be written to an API instead)
 * ```META``` - a dictionary of extra info which will be included in the
-"meta" layer. 
+  "meta" layer. 
 ```settings.py``` for an example.
-* ```CFR_TITLE``` - array of CFR Title names (used in the meta layer)
-* ```DEFAULT_IMAGE_URL``` - string format used in the graphics layer
+* ```CFR_TITLE``` - array of CFR Title names (used in the meta layer); not
+  required as those provided are current
+* ```DEFAULT_IMAGE_URL``` - string format used in the graphics layer; not
+  required as the default should be adequate 
 * ```IMAGE_OVERRIDES``` - a dictionary between specific image ids and unique
-urls for them
+  urls for them -- useful if the Federal Register versions aren't pretty
 
 ### Keyterms Layer
 
-Unlike our other layers (at the moment), the Keyterms layer is build using
+Unlike our other layers (at the moment), the Keyterms layer (which indicates
+pseudo titles used as headers in the regulation paragraphs) is build using
 XML from the Federal Register rather than plain text. Right now, this is a
-particularly manual process which involves manually retrieving each notice's 
+particularly manual process which involves manually retrieving each notice's
 XML, generating a layer, and merging the results with the existing layer.
 This is not a problem if the regulation is completely re-issued.
 
@@ -137,6 +167,28 @@ text version does not.
 Save this JSON to ```/tmp/xtree.json```, then run ```generate_layers.py```.
 The output *should* be a complete layer; so combine information from
 multiple rules, simply copy-paste the fields of the newly generated layer.
+
+An alternative (or additional option) is to use the
+```plaintext_keyterms.py``` script, which adds best-guesses for the
+keyterms. If you do not have the ```/tmp/xtree.json``` from before, create a
+file with ```{}``` in its place. Modify ```plaintext_keyterms.py``` so that
+the ```api_stub.get_regulation_as_json``` line uses the regulation output of
+```build_from.py``` as described above. Running ```plaintext_keyterms.py```
+will generate a keyterm layer.
+
+### Graphics Layer
+
+For obvious reasons, plain text does not include images, but we would still
+like to represent model forms and the like. We use Markdown style image
+inclusion in the plaintext:
+
+```
+\!\[Appendix A9](ER27DE11.000)
+```
+
+This will be converted to an img tag by the graphics layer, pointing to the
+image as included in the Federal Register. Note that you can override each
+image via the ```IMAGE_OVERRIDES``` setting (see above).
 
 ### Building the documentation
 
