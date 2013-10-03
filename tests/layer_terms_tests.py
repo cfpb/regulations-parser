@@ -7,13 +7,10 @@ from unittest import TestCase
 class LayerTermTest(TestCase):
 
     def setUp(self):
-        self.original_subpart = settings.SUBPART_STARTS
-        settings.SUBPART_STARTS = {'1': None}
         self.original_ignores = settings.IGNORE_DEFINITIONS_IN
         settings.IGNORE_DEFINITIONS_IN = []
 
     def tearDown(self):
-        settings.SUBPART_STARTS = self.original_subpart
         settings.IGNORE_DEFINITIONS_IN = self.original_ignores
 
     def test_has_definitions(self):
@@ -26,9 +23,9 @@ class LayerTermTest(TestCase):
             Node("Tomatoes do not meet the definition 'vegetable'",
                 label=['101', '22', 'c'])))
         self.assertFalse(t.has_definitions(Node("Definition",
-            label=['101', 'A', '1'])))
+            label=['101', 'A', '1'], node_type=Node.APPENDIX)))
         self.assertFalse(t.has_definitions(Node("Definition",
-            label=['101', '11', Node.INTERP_MARK])))
+            label=['101', '11', Node.INTERP_MARK], node_type=Node.INTERP)))
         self.assertTrue(t.has_definitions(
             Node("Definition. This has a definition.",
                 label=['101', '22', 'c'])))
@@ -161,22 +158,26 @@ class LayerTermTest(TestCase):
             t.definitions_scopes(node))
 
     def test_pre_process(self):
-        settings.SUBPART_STARTS = {'2': 'XQXQ'}
-        tree = Node(children=[
-            Node(u"Definition. For the purposes of this part, “abcd” is "
-                + "an alphabet", label=['88', '1']),
-            Node(children=[
-                Node("Definitions come later for the purposes of this "
-                    + "section ", children=[
-                        Node(u"“AXAX” means axe-cop", label=["88","2","a","1"])
-                    ],
-                    label=["88","2","a"]),
-                Node(children=[Node(children=[Node(
-                    u"Definition. “Awesome sauce” means great for the " +
-                    "purposes of this paragraph", 
-                    label=["88","2","b","i","A"])])])
-            ], label=['88','2'])
-        ])
+        noname_subpart = Node('', label=['88', 'Subpart'],
+            node_type=Node.EMPTYPART, children=[
+                Node(u"Definition. For the purposes of this part, "
+                     + u"“abcd” is an alphabet", label=['88', '1'])])
+        xqxq_subpart = Node('', title='Subpart XQXQ: The unreadable',
+            label=['88', 'Subpart', 'XQXQ'], node_type=Node.SUBPART,
+            children=[
+                Node(label=['88', '2'], children=[
+                    Node(label=['88', '2', 'a'],
+                         text="Definitions come later for the purposes of "
+                              + "this section ", children=[
+                            Node(u"“AXAX” means axe-cop",
+                                 label=['88', '2', 'a', '1'])]),
+                    Node(label=['88', '2', 'b'], children=[
+                        Node(label=['88', '2', 'b', 'i'], children=[
+                            Node(label=['88', '2', 'b', 'i', 'A'],
+                                 text=u"Definition. “Awesome sauce” means "
+                                      +"great for the purposes of this "
+                                      + "paragraph",)])])])])
+        tree = Node(label=['88'], children=[noname_subpart, xqxq_subpart])
         t = Terms(tree)
         t.pre_process()
 

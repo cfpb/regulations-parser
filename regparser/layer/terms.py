@@ -40,19 +40,20 @@ class Terms(Layer):
     def add_subparts(self):
         """Document the relationship between sections and subparts"""
 
-        self.current_subpart = None     # Need a reference for the closure
+        current_subpart = [None]    # Need a reference for the closure
 
         def per_node(node):
-            if len(node.label) == 2:
+            if node.node_type == struct.Node.SUBPART:
+                current_subpart[0] = node.label[2]
+            elif node.node_type == struct.Node.EMPTYPART:
+                current_subpart[0] = None
+            if (len(node.label) == 2 and
+                node.node_type in (struct.Node.REGTEXT, struct.Node.APPENDIX)):
                 #Subparts
                 section = node.label[-1]
-                if section in settings.SUBPART_STARTS:
-                    self.current_subpart = settings.SUBPART_STARTS[section]
-                self.subpart_map[self.current_subpart].append(section)
+                self.subpart_map[current_subpart[0]].append(section)
 
         struct.walk(self.tree, per_node)
-
-        del self.current_subpart    # can now remove it
 
     def pre_process(self):
         """Step through every node in the tree, finding definitions. Add
@@ -85,9 +86,8 @@ class Terms(Layer):
         if len(node.label) < 2:
             return False
         # Definitions are only in the reg text (not appendices/interprs)
-        if (not node.label[1].isdigit() or
-                struct.Node.INTERP_MARK in node.label):
-                return False
+        if node.node_type != struct.Node.REGTEXT:
+            return False
         stripped = node.text.strip(ParagraphMarkers.marker(node)).strip()
         return (
             stripped.lower().startswith('definition')
