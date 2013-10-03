@@ -1,7 +1,7 @@
 """ Set of Tokens to be used when parsing.
     @label is a list describing the depth of a paragraph/context. It follows:
-        [ Part, Subpart/Appendix/Interpretations, Section, p-level-1,
-        p-level-2, p-level-3, p-level4, p-level5]
+    [ Part, Subpart/Appendix/Interpretations, Section, p-level-1, p-level-2,
+    p-level-3, p-level4, p-level5 ]
 """
 
 
