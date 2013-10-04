@@ -10,8 +10,8 @@ representations for them. The parser works hand-in-hand with
 regulations-site, a front-end for the data structures generated, and
 regulations-core, an API for hosting the data.
 
-For an overview of the eRegs project (not just the parser), see our
-[landing page](http://eregs.github.io/eregulations/).
+This repository is part of a larger project. To read about it, please see 
+[http://eregs.github.io/eregulations/](http://eregs.github.io/eregulations/).
 
 ## Features
 
