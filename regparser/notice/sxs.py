@@ -1,5 +1,5 @@
 from copy import deepcopy
-from itertools import dropwhile, takewhile
+from itertools import chain, dropwhile, takewhile
 
 from lxml import etree
 
@@ -47,6 +47,10 @@ def build_section_by_section(sxs, part, fr_start_page):
         page = find_page(title, title.sourceline, fr_start_page)
         paragraph_xmls = [deepcopy(el) for el in text_els if el.tag == 'P']
         for paragraph_xml in paragraph_xmls:
+            # Add space to unneeded tags (so they leave one when deleted)
+            for tag in chain(paragraph_xml.xpath('.//PRTPAGE'),
+                             paragraph_xml.xpath('.//FTREF')):
+                tag.text = ' '
             # Remove unneeded tags
             etree.strip_tags(paragraph_xml, 'PRTPAGE', 'FTREF')
             # Anything inside a SU can also be ignored
