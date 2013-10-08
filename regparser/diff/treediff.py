@@ -1,4 +1,7 @@
 import difflib
+
+
+from regparser.layer.graphics import Graphics
 from regparser.tree import struct
 
 INSERT = 'insert'
@@ -19,8 +22,28 @@ def hash_nodes(reg_tree):
 
 
 def deconstruct_text(text):
-    """ Split the text into a list of words. """
-    return text.split(' ')
+    """ Split the text into a list of words, but avoid graphics markers """
+    excludes = [(m.start(), m.end()) for m in Graphics.gid.finditer(text)]
+    next_word, words = '', []
+    next_space = text.find(' ')
+    while text:
+        if next_space < 0:
+            next_space = len(text)
+        next_word += text[:next_space]
+        # Excluded space
+        if any(e[0] <= next_space and e[1] > next_space for e in excludes):
+            next_word += text[next_space]
+        else:
+            words.append(next_word)
+            next_word = ''
+
+        # Shift excludes accordingly
+        excludes = [(e[0] - next_space - 1, e[1] - next_space - 1) 
+                    for e in excludes]
+        text = text[next_space + 1:]
+        next_space = text.find(' ')
+
+    return words
 
 
 def reconstruct_text(text_list):

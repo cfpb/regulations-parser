@@ -107,3 +107,13 @@ class TreeDiffTest(TestCase):
                 "op": "added"})
         self.assertTrue('204-Subpart-B' in comparer.changes)
         self.assertEquals(comparer.changes['204-Subpart'], {"op": "deleted"})
+
+    def test_deconstruct_text(self):
+        words = treediff.deconstruct_text("Single-word")
+        self.assertEqual(['Single-word'], words)
+        words = treediff.deconstruct_text("This is a sentence.")
+        self.assertEqual(['This', 'is', 'a', 'sentence.'], words)
+        words = treediff.deconstruct_text("An image: "
+                                          + "![Appendix A9](ER27DE11.000)")
+        self.assertEqual(['An', 'image:', '![Appendix A9](ER27DE11.000)'],
+                         words)
