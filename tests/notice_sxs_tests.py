@@ -161,8 +161,8 @@ class NoticeSxsTests(TestCase):
         xml = """
         <ROOT>
             <HD SOURCE="HD2">Section 99.3 Info</HD>
-            <P>Content <PRTPAGE P="50249"/> 1</P>
-            <P>Content <SU>99</SU><FTREF /> 2</P>
+            <P>Content<PRTPAGE P="50249"/>1</P>
+            <P>Content <SU>99</SU><FTREF />2</P>
             <P>Content <E T="03">Emph</E></P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
@@ -172,7 +172,7 @@ class NoticeSxsTests(TestCase):
             'title': 'Section 99.3 Info',
             'label': '99-3',
             'page': 939,
-            'paragraphs': ['Content  1', 'Content  2', 
+            'paragraphs': ['Content 1', 'Content  2', 
                            'Content <E T="03">Emph</E>'],
             'children': []
         })
