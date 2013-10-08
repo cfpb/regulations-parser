@@ -1,99 +1,110 @@
-layer Package
-=============
+regparser.layer package
+=======================
 
-:mod:`external_citations` Module
---------------------------------
+Submodules
+----------
+
+regparser.layer.external_citations module
+-----------------------------------------
 
 .. automodule:: regparser.layer.external_citations
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`graphics` Module
-----------------------
+regparser.layer.graphics module
+-------------------------------
 
 .. automodule:: regparser.layer.graphics
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`internal_citations` Module
---------------------------------
+regparser.layer.internal_citations module
+-----------------------------------------
 
 .. automodule:: regparser.layer.internal_citations
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`interpretations` Module
------------------------------
+regparser.layer.interpretations module
+--------------------------------------
 
 .. automodule:: regparser.layer.interpretations
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`key_terms` Module
------------------------
+regparser.layer.key_terms module
+--------------------------------
 
 .. automodule:: regparser.layer.key_terms
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`layer` Module
--------------------
+regparser.layer.layer module
+----------------------------
 
 .. automodule:: regparser.layer.layer
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`meta` Module
-------------------
+regparser.layer.meta module
+---------------------------
 
 .. automodule:: regparser.layer.meta
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`model_forms_text` Module
-------------------------------
+regparser.layer.model_forms_text module
+---------------------------------------
 
 .. automodule:: regparser.layer.model_forms_text
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`paragraph_markers` Module
--------------------------------
+regparser.layer.paragraph_markers module
+----------------------------------------
 
 .. automodule:: regparser.layer.paragraph_markers
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`section_by_section` Module
---------------------------------
+regparser.layer.section_by_section module
+-----------------------------------------
 
 .. automodule:: regparser.layer.section_by_section
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`table_of_contents` Module
--------------------------------
+regparser.layer.table_of_contents module
+----------------------------------------
 
 .. automodule:: regparser.layer.table_of_contents
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`terms` Module
--------------------
+regparser.layer.terms module
+----------------------------
 
 .. automodule:: regparser.layer.terms
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: regparser.layer
+    :members:
+    :undoc-members:
+    :show-inheritance:

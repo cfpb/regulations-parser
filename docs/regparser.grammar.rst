@@ -1,51 +1,94 @@
-grammar Package
-===============
+regparser.grammar package
+=========================
 
-:mod:`external_citations` Module
---------------------------------
+Submodules
+----------
+
+regparser.grammar.amdpar module
+-------------------------------
+
+.. automodule:: regparser.grammar.amdpar
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+regparser.grammar.common module
+-------------------------------
+
+.. automodule:: regparser.grammar.common
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+regparser.grammar.delays module
+-------------------------------
+
+.. automodule:: regparser.grammar.delays
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+regparser.grammar.external_citations module
+-------------------------------------------
 
 .. automodule:: regparser.grammar.external_citations
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`internal_citations` Module
---------------------------------
+regparser.grammar.internal_citations module
+-------------------------------------------
 
 .. automodule:: regparser.grammar.internal_citations
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`interpretation_headers` Module
-------------------------------------
+regparser.grammar.interpretation_headers module
+-----------------------------------------------
 
 .. automodule:: regparser.grammar.interpretation_headers
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`rule_headers` Module
---------------------------
+regparser.grammar.rules module
+------------------------------
 
-.. automodule:: regparser.grammar.rule_headers
+.. automodule:: regparser.grammar.rules
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`terms` Module
--------------------
+regparser.grammar.terms module
+------------------------------
 
 .. automodule:: regparser.grammar.terms
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`utils` Module
--------------------
+regparser.grammar.tokens module
+-------------------------------
+
+.. automodule:: regparser.grammar.tokens
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+regparser.grammar.utils module
+------------------------------
 
 .. automodule:: regparser.grammar.utils
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: regparser.grammar
+    :members:
+    :undoc-members:
+    :show-inheritance:
