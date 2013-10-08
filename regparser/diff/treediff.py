@@ -1,4 +1,5 @@
 import difflib
+import re
 
 
 from regparser.layer.graphics import Graphics
@@ -24,24 +25,18 @@ def hash_nodes(reg_tree):
 def deconstruct_text(text):
     """ Split the text into a list of words, but avoid graphics markers """
     excludes = [(m.start(), m.end()) for m in Graphics.gid.finditer(text)]
-    next_word, words = '', []
-    next_space = text.find(' ')
-    while text:
-        if next_space < 0:
-            next_space = len(text)
-        next_word += text[:next_space]
-        # Excluded space
-        if any(e[0] <= next_space and e[1] > next_space for e in excludes):
-            next_word += text[next_space]
-        else:
-            words.append(next_word)
-            next_word = ''
+    spaces = [(m.start(), m.end()) for m in re.finditer(r'\s+', text)]
+    spaces = [(s[0], s[1]) for s in spaces
+              if not any(e[0] <= s[0] and e[1] >= s[1] for e in excludes)]
 
-        # Shift excludes accordingly
-        excludes = [(e[0] - next_space - 1, e[1] - next_space - 1) 
-                    for e in excludes]
-        text = text[next_space + 1:]
-        next_space = text.find(' ')
+    last_space, words = 0, []
+    for s in spaces:
+        words.append(text[last_space:s[0]])
+        # Also add the space as a word
+        words.append(text[s[0]:s[1]])
+        # Update position
+        last_space = s[1]
+    words.append(text[last_space:])
 
     return words
 
@@ -49,7 +44,7 @@ def deconstruct_text(text):
 def reconstruct_text(text_list):
     """ We split the text into a list of words, reconstruct that
     text back from the list. """
-    return ' '.join(text_list)
+    return ''.join(text_list)
 
 
 def convert_insert(ins_op, old_text_list, new_text_list):
@@ -74,7 +69,7 @@ def convert_delete(op, old_text_list):
     text_length = len(text)
 
     char_offset_start = prefix_length
-    char_offset_end = prefix_length + text_length + 1
+    char_offset_end = prefix_length + text_length
 
     return (opcode, char_offset_start, char_offset_end)
 
