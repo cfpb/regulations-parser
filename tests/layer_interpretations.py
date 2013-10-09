@@ -35,8 +35,6 @@ class LayerInterpretationTest(TestCase):
         self.assertEqual('102-11-c-5-v-Interp', interp11c5v[0]['reference'])
         self.assertEqual('102-B-5-ii-Interp', interpB5ii[0]['reference'])
         self.assertEqual('102-9-c-1-Interp', interp9c1[0]['reference'])
-        self.assertEqual("Interp11achild1child2", interp11a[0]['text'])
-        self.assertEqual("Interp9c1", interp9c1[0]['text'])
         self.assertEqual(None, interp.process(Node(
             label=["102", "10", "a"])))
 

@@ -76,8 +76,7 @@ class Terms(Layer):
                 self.layer['referenced'][ref.term + ":" + ref.label] = {
                     'term': ref.term,
                     'reference': ref.label,
-                    'position': ref.position,
-                    'text': struct.join_text(struct.find(self.tree, ref.label))
+                    'position': ref.position
                 }
 
     def has_definitions(self, node):

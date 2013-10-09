@@ -18,7 +18,6 @@ class Interpretations(Layer):
         interpretation = struct.find(self.tree, interp_label)
         if interpretation and not self.empty_interpretation(interpretation):
             return [{
-                    'text': struct.join_text(interpretation),
                     'reference': interpretation.label_id()
                     }]  # list as we will eventually match parents as well
 
