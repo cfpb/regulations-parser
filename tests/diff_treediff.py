@@ -39,15 +39,15 @@ class TreeDiffTest(TestCase):
         codes = treediff.get_opcodes(old, new)
         self.assertEquals(
             [
-                [('delete', 0, 2), ('insert', 0, 'We')],
-                ('insert', 25, 'now')], codes)
+                [('delete', 0, 1), ('insert', 0, 'We')],
+                ('insert', 25, ' now')], codes)
 
     def test_ins_opcodes(self):
         old = "I a string to change"
         new = "I have a string to change"
         codes = treediff.get_opcodes(old, new)
         self.assertEquals(
-            [('insert', 1, 'have')], codes)
+            [('insert', 2, 'have ')], codes)
 
     def test_del_opcodes(self):
         old = "I have a string to change"
@@ -61,7 +61,7 @@ class TreeDiffTest(TestCase):
         new = 'I have a change'
         codes = treediff.get_opcodes(old, new)
         self.assertEquals(
-            [('delete', 8, 18)], codes)
+            [('delete', 9, 19)], codes)
 
     def test_convert_insert(self):
         old = ['gg']
@@ -107,3 +107,16 @@ class TreeDiffTest(TestCase):
                 "op": "added"})
         self.assertTrue('204-Subpart-B' in comparer.changes)
         self.assertEquals(comparer.changes['204-Subpart'], {"op": "deleted"})
+
+    def test_deconstruct_text(self):
+        words = treediff.deconstruct_text("Single-word")
+        self.assertEqual(['Single-word'], words)
+        words = treediff.deconstruct_text("This is a sentence.")
+        self.assertEqual(['This', ' ', 'is', ' ', 'a', ' ', 'sentence.'], words)
+        words = treediff.deconstruct_text("An image: "
+                                          + "![Appendix A9](ER27DE11.000)")
+        self.assertEqual(['An', ' ', 'image:', ' ',
+                          '![Appendix A9](ER27DE11.000)'], words)
+        words = treediff.deconstruct_text("This\nis\t\ta test\n\tpattern")
+        self.assertEqual(['This', '\n', 'is', '\t\t', 'a', ' ', 'test', '\n\t',
+            'pattern'], words)
