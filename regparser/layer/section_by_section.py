@@ -28,12 +28,13 @@ class SectionBySection(Layer):
 
             for found in search_results:
                 analyses.append((
-                    notice['publication_date'], notice['document_number'],
-                    found['label']
-                ))
+                    notice['publication_date'], notice, found))
         if analyses:
             #   Sort by publication date
             analyses = sorted(analyses)
-            #   Don't need publication date now
-            analyses = [{'reference': (a[1], a[2])} for a in analyses]
+            analyses = [{'reference': (notice['document_number'], sxs['label']),
+                         'publication_date': pub_date,
+                         'fr_volume': notice['fr_volume'],
+                         'fr_page': sxs['page'],
+                        } for pub_date, notice, sxs in analyses]
             return analyses
