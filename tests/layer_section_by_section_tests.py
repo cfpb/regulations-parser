@@ -49,20 +49,16 @@ class LayerSectionBySectionTest(TestCase):
                          [{"reference": ('111-22', '100-22-b'),
                            "publication_date": "2008-08-08",
                            "fr_volume": 22,
-                           "fr_page": 7676
-                         }])
+                           "fr_page": 7676}])
         self.assertEqual(s.process(Node(label=['100', '22', 'b', '2'])), [
             {"reference": ('111-22', '100-22-b-2'),
              "publication_date": "2008-08-08",
              "fr_volume": 22,
-             "fr_page": 7677
-            },
+             "fr_page": 7677},
             {"reference": ('111-23', '100-22-b-2'),
              "publication_date": "2009-09-09",
              "fr_volume": 23,
-             "fr_page": 5454
-            }
-            ])
+             "fr_page": 5454}])
 
     def test_process_empty(self):
         notice = {
@@ -143,10 +139,8 @@ class LayerSectionBySectionTest(TestCase):
             {"reference": ('111-23', '100-22-b-2'),
              "publication_date": "2009-09-09",
              "fr_volume": 23,
-             "fr_page": 5454
-            },
+             "fr_page": 5454},
             {"reference": ('111-22', '100-22-b-2'),
              "publication_date": "2010-10-10",
              "fr_volume": 22,
-             "fr_page": 7676
-            } ])
+             "fr_page": 7676}])

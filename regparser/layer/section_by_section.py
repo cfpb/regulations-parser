@@ -32,9 +32,9 @@ class SectionBySection(Layer):
         if analyses:
             #   Sort by publication date
             analyses = sorted(analyses)
-            analyses = [{'reference': (notice['document_number'], sxs['label']),
+            analyses = [{'reference': (n['document_number'], sxs['label']),
                          'publication_date': pub_date,
-                         'fr_volume': notice['fr_volume'],
-                         'fr_page': sxs['page'],
-                        } for pub_date, notice, sxs in analyses]
+                         'fr_volume': n['fr_volume'],
+                         'fr_page': sxs['page']}
+                        for pub_date, n, sxs in analyses]
             return analyses
