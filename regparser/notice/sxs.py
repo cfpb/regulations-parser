@@ -80,9 +80,8 @@ def add_spaces_to_title(title):
     """Federal Register often seems to miss spaces in the title of SxS
     sections. Make sure spaces get added if appropriate"""
     for _, _, end in grammar.applicable.scanString(title):
-        if (end < len(title) and title[end].isalpha()
-            # Also account for parsing which grabs the whitespace
-            and title[end-1] != ' '):
+        # Next char is an alpha and last char isn't a space
+        if end < len(title) and title[end].isalpha() and title[end-1] != ' ':
             title = title[:end] + ' ' + title[end:]
             break   # Assumes there is only one paragraph in a title
     return title
@@ -122,7 +121,7 @@ def parse_into_label(txt, part):
             label.append(match.comment_levels.level1)
             label.append(match.comment_levels.level2)
             label.append(match.comment_levels.level3)
-        return "-".join(filter(bool, label)) # remove empty strings
+        return "-".join(filter(bool, label))    # remove empty strings
     for match, _, _ in grammar.applicable_section.scanString(txt):
         paragraph_ids = []
         paragraph_ids.extend(p for p in [
