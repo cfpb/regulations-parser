@@ -172,7 +172,7 @@ class NoticeSxsTests(TestCase):
             'title': 'Section 99.3 Info',
             'label': '99-3',
             'page': 939,
-            'paragraphs': ['Content 1', 'Content  2', 
+            'paragraphs': ['Content 1', 'Content  2',
                            'Content <em data-original="E-03">Emph</em>'],
             'children': []
         })

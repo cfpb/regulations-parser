@@ -120,7 +120,7 @@ def parse_into_label(txt, part):
             label.append(match.comment_levels.level1)
             label.append(match.comment_levels.level2)
             label.append(match.comment_levels.level3)
-        return "-".join(filter(bool, label)) # remove empty strings
+        return "-".join(filter(bool, label))  # remove empty strings
     for match, _, _ in grammar.applicable_section.scanString(txt):
         paragraph_ids = []
         paragraph_ids.extend(p for p in [
