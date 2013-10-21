@@ -4,6 +4,7 @@ from itertools import chain, dropwhile, takewhile
 from lxml import etree
 
 import regparser.grammar.rules as grammar
+from regparser.notice.util import prepost_pend_spaces
 from regparser.tree.struct import Node
 
 
@@ -57,6 +58,15 @@ def build_section_by_section(sxs, part, fr_start_page):
             for su in paragraph_xml.xpath('./SU'):
                 su.getparent().text = su.getparent().text + su.tail
                 su.getparent().remove(su)
+            # Swap emphasis tags
+            for e in paragraph_xml.xpath('.//E'):
+                original = 'E'
+                if 'T' in e.attrib:
+                    original = original + '-' + e.attrib['T']
+                    del e.attrib['T']
+                e.tag = 'em'
+                e.attrib['data-original'] = original
+                prepost_pend_spaces(e)
 
         paragraphs = [el.text + ''.join(etree.tostring(c) for c in el)
                       for el in paragraph_xmls]

@@ -173,7 +173,7 @@ class NoticeSxsTests(TestCase):
             'label': '99-3',
             'page': 939,
             'paragraphs': ['Content 1', 'Content  2', 
-                           'Content <E T="03">Emph</E>'],
+                           'Content <em data-original="E-03">Emph</em>'],
             'children': []
         })
 
@@ -208,6 +208,23 @@ class NoticeSxsTests(TestCase):
                 }]
             }]
         })
+
+    def test_build_section_by_section_emphasis(self):
+        xml = """
+        <ROOT>
+            <HD SOURCE="H2">Section 876.23 Title Here</HD>
+            <P>This sentence has<E T="03">emphasis</E>!</P>
+            <P>Non emph,<E T="03">emph</E>then more.</P>
+            <P>This one has an <E T="03">emph</E> with spaces.</P>
+        </ROOT>"""
+        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = build_section_by_section(sxs, '876', 23)
+        paragraphs = structures[0]['paragraphs']
+        self.assertEqual(paragraphs, [
+            'This sentence has <em data-original="E-03">emphasis</em>!',
+            'Non emph, <em data-original="E-03">emph</em> then more.',
+            'This one has an <em data-original="E-03">emph</em> with spaces.'
+        ])
 
     def test_split_into_ttsr(self):
         xml = """
