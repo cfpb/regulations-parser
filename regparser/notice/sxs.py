@@ -64,7 +64,7 @@ def build_section_by_section(sxs, part, fr_start_page):
 
         next_structure = {
             'page': page,
-            'title': title.text,
+            'title': add_spaces_to_title(title.text),
             'paragraphs': paragraphs,
             'children': children
             }
@@ -74,6 +74,18 @@ def build_section_by_section(sxs, part, fr_start_page):
 
         structures.append(next_structure)
     return structures
+
+
+def add_spaces_to_title(title):
+    """Federal Register often seems to miss spaces in the title of SxS
+    sections. Make sure spaces get added if appropriate"""
+    for _, _, end in grammar.applicable.scanString(title):
+        if (end < len(title) and title[end].isalpha()
+            # Also account for parsing which grabs the whitespace
+            and title[end-1] != ' '):
+            title = title[:end] + ' ' + title[end:]
+            break   # Assumes there is only one paragraph in a title
+    return title
 
 
 def is_child_of(child_xml, header_xml):
