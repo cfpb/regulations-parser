@@ -254,6 +254,19 @@ class NoticeSxsTests(TestCase):
         self.assertEqual("Next Section", remaining[0].text)
         self.assertEqual("Content 5", remaining[1].text)
 
+    def test_add_spaces_to_title(self):
+        """Account for wonky titles without proper spacing"""
+        self.assertEqual('Section 101.23 Some Title',
+                         add_spaces_to_title('Section 101.23 Some Title'))
+        self.assertEqual('Section 101.23 Some Title',
+                         add_spaces_to_title('Section 101.23Some Title'))
+        self.assertEqual('Section 101.23:Some Title',
+                         add_spaces_to_title('Section 101.23:Some Title'))
+        self.assertEqual('Appendix A-Some Title',
+                         add_spaces_to_title('Appendix A-Some Title'))
+        self.assertEqual('Comment 29(b)(1)-1 Some Title',
+                         add_spaces_to_title('Comment 29(b)(1)-1Some Title'))
+
     def test_parse_into_label(self):
         self.assertEqual("101-22",
                          parse_into_label("Section 101.22Stuff", "101"))
