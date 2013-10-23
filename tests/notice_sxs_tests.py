@@ -285,6 +285,9 @@ class NoticeSxsTests(TestCase):
                          parse_into_label("Appendix A Heading", "101"))
         self.assertEqual("101-21-c-Interp-1",
                          parse_into_label("Comment 21(c)-1 Heading", "101"))
+        text = u'Official Interpretations of § 101.33(c)(2)'
+        self.assertEqual('101-33-c-2-Interp',
+                         parse_into_label(text, '101'))
 
         self.assertEqual(None,
                          parse_into_label("Application of this rule", "101"))
