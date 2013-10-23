@@ -1,3 +1,4 @@
+#vim: set encoding=utf-8
 from lxml import etree
 from regparser.notice.sxs import *
 from unittest import TestCase
@@ -276,12 +277,17 @@ class NoticeSxsTests(TestCase):
                          parse_into_label("22(d)(5) Content", "101"))
         self.assertEqual("101-22-d-5-x",
                          parse_into_label("22(d)(5)(x) Content", "101"))
+        self.assertEqual("101-22-d-5-x",
+                         parse_into_label(u"§ 101.22(d)(5)(x) Content", "101"))
         self.assertEqual("101-22-d-5-x-Q",
                          parse_into_label("22(d)(5)(x)(Q) Content", "101"))
         self.assertEqual("101-A",
                          parse_into_label("Appendix A Heading", "101"))
         self.assertEqual("101-21-c-Interp-1",
                          parse_into_label("Comment 21(c)-1 Heading", "101"))
+        text = u'Official Interpretations of § 101.33(c)(2)'
+        self.assertEqual('101-33-c-2-Interp',
+                         parse_into_label(text, '101'))
 
         self.assertEqual(None,
                          parse_into_label("Application of this rule", "101"))
