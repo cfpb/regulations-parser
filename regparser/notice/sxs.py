@@ -137,5 +137,10 @@ def parse_into_label(txt, part):
         paragraph_ids.extend(p for p in [
             match.level1, match.level2, match.level3, match.level4] if p)
         return "-".join([part, match.section] + paragraph_ids)
+    for match, _, _ in grammar.applicable_paragraph.scanString(txt):
+        paragraph_ids = []
+        paragraph_ids.extend(p for p in [
+            match.level1, match.level2, match.level3, match.level4] if p)
+        return "-".join([part, match.section] + paragraph_ids)
     for match, _, _ in grammar.applicable_appendix.scanString(txt):
         return "%s-%s" % (part, match.letter)
