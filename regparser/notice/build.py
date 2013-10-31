@@ -64,4 +64,19 @@ def process_xml(notice, notice_xml):
     if amends:
         notice['amendments'] = amends
 
+    add_footnotes(notice, notice_xml)
+
     return notice
+
+
+def add_footnotes(notice, notice_xml):
+    notice['footnotes'] = {}
+    for child in notice_xml.xpath('//FTNT/*'):
+        ref = child.xpath('.//SU')
+        child.text = ref[0].tail
+        child.remove(ref[0])
+        content = child.text
+        for cc in child:
+            content += etree.tostring(cc)
+        content += child.tail
+        notice['footnotes'][ref[0].text] = content.strip()

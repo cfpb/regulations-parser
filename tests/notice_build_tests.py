@@ -74,6 +74,7 @@ class NoticeBuildTest(TestCase):
         notice = {'cfr_part': '9292', 'meta': {'start_page': 100}}
         self.assertEqual(process_xml(notice, etree.fromstring(xml)), {
             'cfr_part': '9292',
+            'footnotes': {},
             'meta': {'start_page': 100},
             'addresses': {
                 'methods': [('Email', 'example@example.com')],
@@ -104,6 +105,7 @@ class NoticeBuildTest(TestCase):
         notice = {'cfr_part': '9292', 'meta': {'start_page': 210}}
         self.assertEqual(process_xml(notice, etree.fromstring(xml)), {
             'cfr_part': '9292',
+            'footnotes': {},
             'meta': {'start_page': 210},
             'section_by_section': [{
                 'title': '8(q) Words',
@@ -113,3 +115,15 @@ class NoticeBuildTest(TestCase):
                 'label': '9292-8-q'
             }],
         })
+
+    def test_add_footnotes(self):
+        xml = """
+        <ROOT>
+            <P>Some text</P>
+            <FTNT>
+                <P><SU>43</SU>Footnote text</P>
+            </FTNT>
+        </ROOT>"""
+        notice = {}
+        add_footnotes(notice, etree.fromstring(xml))
+        self.assertEqual(notice, {'footnotes': {'43': 'Footnote text'}})
