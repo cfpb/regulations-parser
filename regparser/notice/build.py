@@ -5,6 +5,7 @@ from regparser.notice.diff import parse_amdpar
 from regparser.notice.address import fetch_addresses
 from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
+from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
 
 
 def build_notice(cfr_title, cfr_part, fr_notice):
@@ -72,6 +73,9 @@ def process_xml(notice, notice_xml):
 def add_footnotes(notice, notice_xml):
     notice['footnotes'] = {}
     for child in notice_xml.xpath('//FTNT/*'):
+        spaces_then_remove(child, 'PRTPAGE')
+        swap_emphasis_tags(child)
+
         ref = child.xpath('.//SU')
         child.text = ref[0].tail
         child.remove(ref[0])

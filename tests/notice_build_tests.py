@@ -121,9 +121,19 @@ class NoticeBuildTest(TestCase):
         <ROOT>
             <P>Some text</P>
             <FTNT>
-                <P><SU>43</SU>Footnote text</P>
+                <P><SU>21</SU>Footnote text</P>
+            </FTNT>
+            <FTNT>
+                <P><SU>43</SU>This has a<PRTPAGE P="2222" />break</P>
+            </FTNT>
+            <FTNT>
+                <P><SU>98</SU>This one has<E T="03">emph</E>tags</P>
             </FTNT>
         </ROOT>"""
         notice = {}
         add_footnotes(notice, etree.fromstring(xml))
-        self.assertEqual(notice, {'footnotes': {'43': 'Footnote text'}})
+        self.assertEqual(notice, {'footnotes': {
+            '21': 'Footnote text',
+            '43': 'This has a break',
+            '98': 'This one has <em data-original="E-03">emph</em> tags'
+        }})

@@ -4,7 +4,7 @@ from itertools import chain, dropwhile, takewhile
 from lxml import etree
 
 import regparser.grammar.rules as grammar
-from regparser.notice.util import prepost_pend_spaces
+from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
 from regparser.tree.struct import Node
 
 
@@ -48,25 +48,13 @@ def build_section_by_section(sxs, part, fr_start_page):
         page = find_page(title, title.sourceline, fr_start_page)
         paragraph_xmls = [deepcopy(el) for el in text_els if el.tag == 'P']
         for paragraph_xml in paragraph_xmls:
-            # Add space to unneeded tags (so they leave one when deleted)
-            for tag in chain(paragraph_xml.xpath('.//PRTPAGE'),
-                             paragraph_xml.xpath('.//FTREF')):
-                tag.text = ' '
-            # Remove unneeded tags
-            etree.strip_tags(paragraph_xml, 'PRTPAGE', 'FTREF')
+            spaces_then_remove(paragraph_xml, 'PRTPAGE')
+            spaces_then_remove(paragraph_xml, 'FTREF')
             # Anything inside a SU can also be ignored
             for su in paragraph_xml.xpath('./SU'):
                 su.getparent().text = su.getparent().text + su.tail
                 su.getparent().remove(su)
-            # Swap emphasis tags
-            for e in paragraph_xml.xpath('.//E'):
-                original = 'E'
-                if 'T' in e.attrib:
-                    original = original + '-' + e.attrib['T']
-                    del e.attrib['T']
-                e.tag = 'em'
-                e.attrib['data-original'] = original
-                prepost_pend_spaces(e)
+            swap_emphasis_tags(paragraph_xml)
 
         paragraphs = [el.text + ''.join(etree.tostring(c) for c in el)
                       for el in paragraph_xmls]
