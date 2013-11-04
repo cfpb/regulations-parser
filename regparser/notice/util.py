@@ -43,3 +43,11 @@ def spaces_then_remove(el, tag_str):
         prepost_pend_spaces(tag)
     etree.strip_tags(el, tag_str)
     return el
+
+
+def body_to_string(xml_node):
+    """Create a string from the text of this node and its children (without
+    the outer tag)"""
+    return (xml_node.text.lstrip()
+            + ''.join(etree.tostring(c) for c in xml_node)
+            + xml_node.tail.rstrip())
