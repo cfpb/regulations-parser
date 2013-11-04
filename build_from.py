@@ -70,7 +70,7 @@ if __name__ == "__main__":
         writer.layer(ident, cfr_part, doc_number).write(layer)
 
     # Use the seventh value or default to True for building diffs
-    if len(sys.argv) < 7 or bool(sys.argv[6]):
+    if len(sys.argv) < 7 or sys.argv[6].lower() == 'true':
         new_version = doc_number
 
         reader = api_reader.Client()
