@@ -58,7 +58,7 @@ def build_section_by_section(sxs, part, fr_start_page):
                 su_text = etree.tostring(su)
                 footnotes.append((p_idx, su.text,
                                   body_to_string(paragraph_xml).find(su_text)))
-                if su.tail and su.getprevious() is not None: 
+                if su.tail and su.getprevious() is not None:
                     su.getprevious().tail = (su.getprevious().tail or '')
                     su.getprevious().tail += su.tail
                 elif su.tail:
@@ -67,7 +67,6 @@ def build_section_by_section(sxs, part, fr_start_page):
                 su.getparent().remove(su)
 
         paragraphs = [body_to_string(el) for el in paragraph_xmls]
-            
         children = build_section_by_section(sub_sections, part, page)
 
         next_structure = {

@@ -19,7 +19,7 @@ def prepost_pend_spaces(el):
         space_added = True
 
     if (el.tail and el.tail[0] not in not_prepend_space
-        and (el.text or el.getchildren() or not space_added)):
+       and (el.text or el.getchildren() or not space_added)):
         el.tail = ' ' + el.tail
 
 
