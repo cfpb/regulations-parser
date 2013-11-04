@@ -182,7 +182,9 @@ class NoticeSxsTests(TestCase):
             'page': 939,
             'paragraphs': ['Content 1', 'Content  2',
                            'Content <em data-original="E-03">Emph</em>'],
-            'footnote_refs': [(1, '99', 8)],
+            'footnote_refs': [{'paragraph': 1,
+                               'reference': '99',
+                               'offset': 8}],
             'children': []
         })
 
@@ -253,7 +255,9 @@ class NoticeSxsTests(TestCase):
             sometimes_txt, 'Are rather complicated'
         ])
         self.assertEqual(structures[0]['footnote_refs'],
-                         [(0, '5', len(sometimes_txt))])
+                         [{'paragraph': 0,
+                           'reference': '5',
+                           'offset': len(sometimes_txt)}])
 
     def test_split_into_ttsr(self):
         xml = """

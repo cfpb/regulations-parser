@@ -56,8 +56,10 @@ def build_section_by_section(sxs, part, fr_start_page):
             # Anything inside a SU can also be ignored
             for su in paragraph_xml.xpath('./SU'):
                 su_text = etree.tostring(su)
-                footnotes.append((p_idx, su.text,
-                                  body_to_string(paragraph_xml).find(su_text)))
+                footnotes.append({
+                    'paragraph': p_idx,
+                    'reference': su.text,
+                    'offset': body_to_string(paragraph_xml).find(su_text)})
                 if su.tail and su.getprevious() is not None:
                     su.getprevious().tail = (su.getprevious().tail or '')
                     su.getprevious().tail += su.tail
