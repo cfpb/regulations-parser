@@ -75,7 +75,7 @@ def build_section_by_section(sxs, part, fr_start_page):
             'title': add_spaces_to_title(title.text),
             'paragraphs': paragraphs,
             'children': children,
-            'footnotes': footnotes
+            'footnote_refs': footnotes
             }
         label = parse_into_label(title.text, part)
         if label:

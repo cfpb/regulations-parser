@@ -85,7 +85,7 @@ class NoticeBuildTest(TestCase):
                 'title': '8(q) Words',
                 'paragraphs': ['Content'],
                 'children': [],
-                'footnotes': [],
+                'footnote_refs': [],
                 'page': 100,
                 'label': '9292-8-q'
             }],
@@ -112,7 +112,7 @@ class NoticeBuildTest(TestCase):
                 'title': '8(q) Words',
                 'paragraphs': ['Content'],
                 'children': [],
-                'footnotes': [],
+                'footnote_refs': [],
                 'page': 210,
                 'label': '9292-8-q'
             }],

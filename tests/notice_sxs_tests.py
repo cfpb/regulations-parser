@@ -86,20 +86,20 @@ class NoticeSxsTests(TestCase):
                 'Content 1',
                 'Content 2'
                 ],
-            'footnotes': [],
+            'footnote_refs': [],
             'children': [
                 {
                     'title': 'Sub Section Header',
                     'paragraphs': ['Content 3'],
                     'children': [],
-                    'footnotes': [],
+                    'footnote_refs': [],
                     'page': 83
                 },
                 {
                     'title': 'Another',
                     'paragraphs': ['Content 4'],
                     'children': [],
-                    'footnotes': [],
+                    'footnote_refs': [],
                     'page': 83
                 }],
             'page': 83
@@ -109,7 +109,7 @@ class NoticeSxsTests(TestCase):
             'paragraphs': ['Content 5'],
             'label': '100-4-b',
             'page': 83,
-            'footnotes': [],
+            'footnote_refs': [],
             'children': []
             })
 
@@ -132,7 +132,7 @@ class NoticeSxsTests(TestCase):
                 'Content 2',
                 ],
             'children': [],
-            'footnotes': [],
+            'footnote_refs': [],
             'page': 21
             })
 
@@ -153,13 +153,13 @@ class NoticeSxsTests(TestCase):
             'label': '99-3',
             'paragraphs': ['Content 1'],
             'page': 2323,
-            'footnotes': [],
+            'footnote_refs': [],
             'children': [{
                 'title': '3(q)(4) More Info',
                 'label': '99-3-q-4',
                 'paragraphs': ['Content 2'],
                 'page': 2323,
-                'footnotes': [],
+                'footnote_refs': [],
                 'children': []
             }]
         })
@@ -182,7 +182,7 @@ class NoticeSxsTests(TestCase):
             'page': 939,
             'paragraphs': ['Content 1', 'Content  2',
                            'Content <em data-original="E-03">Emph</em>'],
-            'footnotes': [(1, '99', 8)],
+            'footnote_refs': [(1, '99', 8)],
             'children': []
         })
 
@@ -204,17 +204,17 @@ class NoticeSxsTests(TestCase):
             'label': '99-3',
             'paragraphs': [],
             'page': 765,
-            'footnotes': [],
+            'footnote_refs': [],
             'children': [{
                 'title': '3(q)(4) More Info',
                 'label': '99-3-q-4',
                 'paragraphs': ['Content 1'],
                 'page': 765,
-                'footnotes': [],
+                'footnote_refs': [],
                 'children': [{
                     'title': 'Subheader, Really',
                     'paragraphs': ['Content 2'],
-                    'footnotes': [],
+                    'footnote_refs': [],
                     'children': [],
                     'page': 765
                 }]
@@ -252,7 +252,7 @@ class NoticeSxsTests(TestCase):
         self.assertEqual(structures[0]['paragraphs'], [
             sometimes_txt, 'Are rather complicated'
         ])
-        self.assertEqual(structures[0]['footnotes'],
+        self.assertEqual(structures[0]['footnote_refs'],
                          [(0, '5', len(sometimes_txt))])
 
     def test_split_into_ttsr(self):
