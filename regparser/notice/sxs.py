@@ -4,7 +4,8 @@ from itertools import chain, dropwhile, takewhile
 from lxml import etree
 
 import regparser.grammar.rules as grammar
-from regparser.notice.util import prepost_pend_spaces
+from regparser.notice.util import body_to_string, spaces_then_remove
+from regparser.notice.util import swap_emphasis_tags
 from regparser.tree.struct import Node
 
 
@@ -47,36 +48,35 @@ def build_section_by_section(sxs, part, fr_start_page):
 
         page = find_page(title, title.sourceline, fr_start_page)
         paragraph_xmls = [deepcopy(el) for el in text_els if el.tag == 'P']
-        for paragraph_xml in paragraph_xmls:
-            # Add space to unneeded tags (so they leave one when deleted)
-            for tag in chain(paragraph_xml.xpath('.//PRTPAGE'),
-                             paragraph_xml.xpath('.//FTREF')):
-                tag.text = ' '
-            # Remove unneeded tags
-            etree.strip_tags(paragraph_xml, 'PRTPAGE', 'FTREF')
+        footnotes = []
+        for p_idx, paragraph_xml in enumerate(paragraph_xmls):
+            spaces_then_remove(paragraph_xml, 'PRTPAGE')
+            spaces_then_remove(paragraph_xml, 'FTREF')
+            swap_emphasis_tags(paragraph_xml)
             # Anything inside a SU can also be ignored
             for su in paragraph_xml.xpath('./SU'):
-                su.getparent().text = su.getparent().text + su.tail
+                su_text = etree.tostring(su)
+                footnotes.append({
+                    'paragraph': p_idx,
+                    'reference': su.text,
+                    'offset': body_to_string(paragraph_xml).find(su_text)})
+                if su.tail and su.getprevious() is not None:
+                    su.getprevious().tail = (su.getprevious().tail or '')
+                    su.getprevious().tail += su.tail
+                elif su.tail:
+                    su.getparent().text = (su.getparent().text or '')
+                    su.getparent().text += su.tail
                 su.getparent().remove(su)
-            # Swap emphasis tags
-            for e in paragraph_xml.xpath('.//E'):
-                original = 'E'
-                if 'T' in e.attrib:
-                    original = original + '-' + e.attrib['T']
-                    del e.attrib['T']
-                e.tag = 'em'
-                e.attrib['data-original'] = original
-                prepost_pend_spaces(e)
 
-        paragraphs = [el.text + ''.join(etree.tostring(c) for c in el)
-                      for el in paragraph_xmls]
+        paragraphs = [body_to_string(el) for el in paragraph_xmls]
         children = build_section_by_section(sub_sections, part, page)
 
         next_structure = {
             'page': page,
             'title': add_spaces_to_title(title.text),
             'paragraphs': paragraphs,
-            'children': children
+            'children': children,
+            'footnote_refs': footnotes
             }
         label = parse_into_label(title.text, part)
         if label:
