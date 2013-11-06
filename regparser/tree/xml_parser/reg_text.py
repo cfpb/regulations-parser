@@ -24,17 +24,38 @@ def determine_level(c, current_level):
     return p_level
 
 
+def get_reg_part(reg_doc):
+    """ 
+    The CFR Part number for a regulation is contained within
+    an EAR tag, for a Federal Register notice it's in a REGTEXT tag. Get the 
+    part number of the regulation. 
+    """
+    
+    #FR notice
+    reg_text = reg_doc.xpath('//REGTEXT')
+    if reg_text:
+        return reg_text[0].attrib['PART']
+
+    #e-CFR XML
+    reg_ear = reg_doc.xpath('//PART/EAR')
+    if reg_ear:
+        return reg_ear[0].text.split('Pt.')[1].strip()
+
+def get_title(reg_doc):
+    """ Extract the title of the regulation. """
+    parent = reg_doc.xpath('//PART/HD')[0]
+    title = parent.text
+    return title
+
 def build_tree(reg_xml):
     doc = etree.fromstring(reg_xml)
 
-    reg_part = doc.xpath('//REGTEXT')[0].attrib['PART']
-
-    parent = doc.xpath('//REGTEXT/PART/HD')[0]
-    title = parent.text
+    reg_part = get_reg_part(doc)
+    title = get_title(doc)
 
     tree = Node("", [], [reg_part], title)
 
-    part = doc.xpath('//REGTEXT/PART')[0]
+    part = doc.xpath('//PART')[0]
 
     html_parser = HTMLParser.HTMLParser()
 
@@ -44,8 +65,9 @@ def build_tree(reg_xml):
             sections.append(build_section(reg_part, child))
 
     tree.children = sections
-    non_reg_sections = build_non_reg_text(reg_xml)
-    tree.children += non_reg_sections
+    #XXX We need to build these back in
+    #non_reg_sections = build_non_reg_text(reg_xml, int(reg_part))
+    #tree.children += non_reg_sections
 
     return tree
 
