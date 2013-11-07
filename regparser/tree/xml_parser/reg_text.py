@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 import re
-import HTMLParser
 from lxml import etree
 from regparser.tree.struct import Node
-from regparser.grammar.common import any_depth_p
 from regparser.tree.paragraph import p_levels
 from regparser.tree.node_stack import NodeStack
 from regparser.tree.xml_parser.appendices import build_non_reg_text
@@ -26,27 +24,29 @@ def determine_level(c, current_level):
 
 
 def get_reg_part(reg_doc):
-    """ 
-    The CFR Part number for a regulation is contained within
-    an EAR tag, for a Federal Register notice it's in a REGTEXT tag. Get the 
-    part number of the regulation. 
     """
-    
+    The CFR Part number for a regulation is contained within
+    an EAR tag, for a Federal Register notice it's in a REGTEXT tag. Get the
+    part number of the regulation.
+    """
+
     #FR notice
-    reg_text = reg_doc.xpath('//REGTEXT')
-    if reg_text:
-        return reg_text[0].attrib['PART']
+    reg_text_xml  = reg_doc.xpath('//REGTEXT')
+    if reg_text_xml:
+        return reg_text_xml[0].attrib['PART']
 
     #e-CFR XML
     reg_ear = reg_doc.xpath('//PART/EAR')
     if reg_ear:
         return reg_ear[0].text.split('Pt.')[1].strip()
 
+
 def get_title(reg_doc):
     """ Extract the title of the regulation. """
     parent = reg_doc.xpath('//PART/HD')[0]
     title = parent.text
     return title
+
 
 def build_tree(reg_xml):
     doc = etree.fromstring(reg_xml)
@@ -71,9 +71,11 @@ def build_tree(reg_xml):
 
     return tree
 
+
 def get_subpart_title(subpart_xml):
     hds = subpart_xml.xpath('./HD')
     return [hd.text for hd in hds][0]
+
 
 def build_subpart(reg_part, subpart_xml):
     subpart_title = get_subpart_title(subpart_xml)
@@ -86,6 +88,7 @@ def build_subpart(reg_part, subpart_xml):
 
     subpart.children = sections
     return subpart
+
 
 def build_section(reg_part, section_xml):
     p_level = 1

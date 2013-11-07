@@ -5,6 +5,7 @@ from lxml import etree
 
 from regparser.tree.xml_parser.reg_text import *
 
+
 class RegTextTest(TestCase):
 
     def test_build_section_intro_text(self):
@@ -52,7 +53,6 @@ class RegTextTest(TestCase):
         """
         part = get_reg_part(etree.fromstring(xml))
         self.assertEqual(part, '204')
-
 
     def test_get_subpart_title(self):
         xml = u"""
