@@ -58,26 +58,16 @@ def build_tree(reg_xml):
 
     part = doc.xpath('//PART')[0]
 
-    html_parser = HTMLParser.HTMLParser()
-
-    sections = []
-    use_empty_part = False
-    for child in part.getchildren():
-        if child.tag == 'SUBPART':
-            sections.append(build_subpart(reg_part, child))
-        elif child.tag == 'SECTION':
-            sections.append(build_section(reg_part, child))
-            use_empty_part = True
-
-    if use_empty_part:
+    subpart_xmls = [c for c in part.getchildren() if c.tag == 'SUBPART']
+    if len(subpart_xmls) > 0:
+        subparts = [build_subpart(reg_part, s) for s in subpart_xmls]
+        tree.children = subparts
+    else:
+        section_xmls = [c for c in part.getchildren() if c.tag == 'SECTION']
+        sections = [build_section(reg_part, s) for s in section_xmls]
         empty_part = reg_text.build_empty_part(reg_part)
         empty_part.children = sections
         tree.children = [empty_part]
-    else:
-        tree.children = sections
-    #XXX We need to build these back in
-    #non_reg_sections = build_non_reg_text(reg_xml, int(reg_part))
-    #tree.children += non_reg_sections
 
     return tree
 
