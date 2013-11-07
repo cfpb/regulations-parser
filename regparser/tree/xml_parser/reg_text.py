@@ -7,6 +7,7 @@ from regparser.grammar.common import any_depth_p
 from regparser.tree.paragraph import p_levels
 from regparser.tree.node_stack import NodeStack
 from regparser.tree.xml_parser.appendices import build_non_reg_text
+from regparser.tree import reg_text
 from regparser.tree.xml_parser import tree_utils
 
 
@@ -60,17 +61,41 @@ def build_tree(reg_xml):
     html_parser = HTMLParser.HTMLParser()
 
     sections = []
+    use_empty_part = False
     for child in part.getchildren():
-        if child.tag == 'SECTION':
+        if child.tag == 'SUBPART':
+            sections.append(build_subpart(reg_part, child))
+        elif child.tag == 'SECTION':
             sections.append(build_section(reg_part, child))
+            use_empty_part = True
 
-    tree.children = sections
+    if use_empty_part:
+        empty_part = reg_text.build_empty_part(reg_part)
+        empty_part.children = sections
+        tree.children = [empty_part]
+    else:
+        tree.children = sections
     #XXX We need to build these back in
     #non_reg_sections = build_non_reg_text(reg_xml, int(reg_part))
     #tree.children += non_reg_sections
 
     return tree
 
+def get_subpart_title(subpart_xml):
+    hds = subpart_xml.xpath('./HD')
+    return [hd.text for hd in hds][0]
+
+def build_subpart(reg_part, subpart_xml):
+    subpart_title = get_subpart_title(subpart_xml)
+    subpart = reg_text.build_subpart(subpart_title, reg_part)
+
+    sections = []
+    for ch in subpart_xml.getchildren():
+        if ch.tag == 'SECTION':
+            sections.append(build_section(reg_part, ch))
+
+    subpart.children = sections
+    return subpart
 
 def build_section(reg_part, section_xml):
     p_level = 1
