@@ -53,7 +53,7 @@ def split_text(text, tokens):
 
 
 def get_collapsed_markers(text):
-    """ We have collapsed markers that look something like this: 
+    """ We have collapsed markers that look something like this:
     (a) some text -(1) more text. We pull out -(1) type markers here. """
     return [c[0][0] for c, s, e in xml_collapsed_paragraph.scanString(text)]
 

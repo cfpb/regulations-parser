@@ -32,7 +32,7 @@ class RegTextTest(TestCase):
             <SECTION>
                 <SECTNO>§ 8675.309</SECTNO>
                 <SUBJECT>Definitions.</SUBJECT>
-                <P>(a) <E T="03">Transfers </E>—(1) <E T="03">Notice.</E> follow 
+                <P>(a) <E T="03">Transfers </E>—(1) <E T="03">Notice.</E> follow
                 </P>
             </SECTION>
         """
@@ -43,7 +43,6 @@ class RegTextTest(TestCase):
 
         lowest_label = node.children[0].children[0].label
         self.assertEqual(['8675', '309', 'a', '1'], lowest_label)
-
 
     def test_get_title(self):
         xml = u"""

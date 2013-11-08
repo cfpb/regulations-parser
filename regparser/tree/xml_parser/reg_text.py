@@ -31,7 +31,7 @@ def get_reg_part(reg_doc):
     """
 
     #FR notice
-    reg_text_xml  = reg_doc.xpath('//REGTEXT')
+    reg_text_xml = reg_doc.xpath('//REGTEXT')
     if reg_text_xml:
         return reg_text_xml[0].attrib['PART']
 
@@ -99,7 +99,8 @@ def build_section(reg_part, section_xml):
             text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
             markers = tree_utils.get_paragraph_markers(text)
             collapsed_markers = tree_utils.get_collapsed_markers(text)
-            markers_list = [m for m in markers] + [m for m in collapsed_markers]
+            markers_list = [m for m in markers] +\
+                [m for m in collapsed_markers]
             node_text = tree_utils.get_node_text(ch)
 
             if len(markers_list) > 1:
