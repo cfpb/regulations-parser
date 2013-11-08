@@ -97,7 +97,9 @@ def build_section(reg_part, section_xml):
     for ch in section_xml.getchildren():
         if ch.tag == 'P':
             text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
-            markers_list = tree_utils.get_paragraph_markers(text)
+            markers = tree_utils.get_paragraph_markers(text)
+            collapsed_markers = tree_utils.get_collapsed_markers(text)
+            markers_list = [m for m in markers] + [m for m in collapsed_markers]
             node_text = tree_utils.get_node_text(ch)
 
             if len(markers_list) > 1:

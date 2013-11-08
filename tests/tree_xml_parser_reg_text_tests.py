@@ -27,6 +27,24 @@ class RegTextTest(TestCase):
         self.assertEqual([], child.children)
         self.assertEqual(['8675', '309', 'a'], child.label)
 
+    def test_build_section_collapsed_level(self):
+        xml = u"""
+            <SECTION>
+                <SECTNO>§ 8675.309</SECTNO>
+                <SUBJECT>Definitions.</SUBJECT>
+                <P>(a) <E T="03">Transfers </E>—(1) <E T="03">Notice.</E> follow 
+                </P>
+            </SECTION>
+        """
+        node = build_section('8675', etree.fromstring(xml))
+        self.assertEqual(node.label, ['8675', '309'])
+        self.assertEqual(
+            [c.label for c in node.children], [['8675', '309', 'a']])
+
+        lowest_label = node.children[0].children[0].label
+        self.assertEqual(['8675', '309', 'a', '1'], lowest_label)
+
+
     def test_get_title(self):
         xml = u"""
             <PART>
