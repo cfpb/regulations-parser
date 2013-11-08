@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from regparser.history.delays import *
 
+
 class HistoryDelaysTests(TestCase):
     def test_modify_effective_dates(self):
         outdated = {'document_number': 'outdated',
