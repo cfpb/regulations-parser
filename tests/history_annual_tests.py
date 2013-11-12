@@ -60,25 +60,41 @@ class HistoryAnnualVolumeTests(TestCase):
 
     @patch('regparser.history.annual.requests')
     def test_should_contain(self, requests):
-        response = Response()
-        response.status_code = 200
-        response._content = """
-        <CFRDOC>
-            <AMDDATE>Jan 1, 2001</AMDDATE>
-            <PARTS>Part 111 to 222</PARTS>
-            <PART>
-                <EAR>Pt. 111</EAR>
-                <HD SOURCE="HED">PART 111-Something</HD>
-                <FIELD>111 Content</FIELD>
-            </PART>
-            <PART>
-                <EAR>Pt. 112</EAR>
-                <HD SOURCE="HED">PART 112-Something</HD>
-                <FIELD>112 Content</FIELD>
-            </PART>
-        </CFRDOC>"""
-        response._content_consumed = True
-        requests.get.return_value = response
+        pt111 = """
+                    <PART>
+                        <EAR>Pt. 111</EAR>
+                        <HD SOURCE="HED">PART 111-Something</HD>
+                        <FIELD>111 Content</FIELD>
+                    </PART>
+                """
+        pt112 = """
+                    <PART>
+                        <EAR>Pt. 112</EAR>
+                        <HD SOURCE="HED">PART 112-Something</HD>
+                        <FIELD>112 Content</FIELD>
+                    </PART>
+                """
+
+        def side_effect(url, stream=False):
+            response = Response()
+            response.status_code = 200
+            response._content_consumed = True
+            if 'bulkdata' in url:
+                response._content = """
+                <CFRDOC>
+                    <AMDDATE>Jan 1, 2001</AMDDATE>
+                    <PARTS>Part 111 to 222</PARTS>
+                    %s
+                    %s
+                </CFRDOC>""" % (pt111, pt112)
+            elif url.endswith('part111.xml'):
+                response._content = pt111
+            elif url.endswith('part112.xml'):
+                response._content = pt112
+            else:
+                response.status_code = 404
+            return response
+        requests.get.side_effect = side_effect
 
         volume = Volume(2001, 12, 2)
 

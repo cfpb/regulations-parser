@@ -8,14 +8,19 @@ from regparser.history.delays import modify_effective_dates
 from regparser.notice.build import build_notice
 
 
-CFR_URL = "http://www.gpo.gov/fdsys/bulkdata/CFR/{year}/title-{title}"
-CFR_URL += "/CFR-{year}-title{title}-vol{volume}.xml"
+CFR_BULK_URL = ("http://www.gpo.gov/fdsys/bulkdata/CFR/{year}/title-{title}/"
+                + "CFR-{year}-title{title}-vol{volume}.xml")
+CFR_PART_URL = ("http://www.gpo.gov/fdsys/pkg/"
+                + "CFR-{year}-title{title}-vol{volume}/xml/"
+                + "CFR-{year}-title{title}-vol{volume}-part{part}.xml")
 
 
 class Volume(object):
     def __init__(self, year, title, vol_num):
+        self.year = year
+        self.title = title
         self.vol_num = vol_num
-        self.url = CFR_URL.format(year=year, title=title, volume=vol_num)
+        self.url = CFR_BULK_URL.format(year=year, title=title, volume=vol_num)
         self._response = requests.get(self.url, stream=True)
         self.exists = self._response.status_code == 200
 
@@ -42,16 +47,11 @@ class Volume(object):
             return False
 
     def find_part_xml(self, part):
-        part_str = ''
-        found = False
-        for line in self._response.iter_lines():
-            part_str += line
-            if '<PART>' in line:
-                part_str = line
-            if ('part %d' % part) in line.lower():
-                found = True
-            if '</PART>' in line and found:
-                return etree.fromstring(part_str)
+        url = CFR_PART_URL.format(year=self.year, title=self.title,
+                                  volume=self.vol_num, part=part)
+        response = requests.get(url)
+        if response.status_code == 200:
+            return etree.fromstring(response.content)
 
 
 def annual_edition_for(title, notice):
