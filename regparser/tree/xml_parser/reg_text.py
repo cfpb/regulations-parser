@@ -89,6 +89,22 @@ def build_subpart(reg_part, subpart_xml):
     subpart.children = sections
     return subpart
 
+def get_markers(text):
+    """ Extract all the paragraph markers from text  """
+    markers = tree_utils.get_paragraph_markers(text)
+    collapsed_markers = tree_utils.get_collapsed_markers(text)
+    markers_list = [m for m in markers] + [m for m in collapsed_markers]
+    return markers_list
+
+def get_markers_and_text(node, markers_list):
+    node_text = tree_utils.get_node_text(node)
+
+    if len(markers_list) > 1:
+        actual_markers = ['(%s)' % m for m in markers_list]
+        node_text = tree_utils.split_text(node_text, actual_markers)
+    elif markers_list:
+        node_text = [node_text]
+    return zip(markers_list, node_text)
 
 def build_section(reg_part, section_xml):
     p_level = 1
@@ -97,30 +113,24 @@ def build_section(reg_part, section_xml):
     for ch in section_xml.getchildren():
         if ch.tag == 'P':
             text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
-            markers = tree_utils.get_paragraph_markers(text)
-            collapsed_markers = tree_utils.get_collapsed_markers(text)
-            markers_list = [m for m in markers] +\
-                [m for m in collapsed_markers]
+            markers_list = get_markers(text)
             node_text = tree_utils.get_node_text(ch)
 
-            if len(markers_list) > 1:
-                actual_markers = ['(%s)' % m for m in markers_list]
-                node_text = tree_utils.split_text(node_text, actual_markers)
-            elif markers_list:
-                node_text = [node_text]
-            else:   # Does not contain paragraph markers
+            if not markers_list:
                 section_texts.append(node_text)
+            else:
+                markers_and_text = get_markers_and_text(ch, markers_list)
 
-            for m, node_text in zip(markers_list, node_text):
-                n = Node(node_text, [], [str(m)])
+                for m, node_text in markers_and_text:
+                    n = Node(node_text, [], [str(m)])
 
-                new_p_level = determine_level(m, p_level)
-                last = m_stack.peek()
-                if len(last) == 0:
-                    m_stack.push_last((new_p_level, n))
-                else:
-                    tree_utils.add_to_stack(m_stack, new_p_level, n)
-                p_level = new_p_level
+                    new_p_level = determine_level(m, p_level)
+                    last = m_stack.peek()
+                    if len(last) == 0:
+                        m_stack.push_last((new_p_level, n))
+                    else:
+                        tree_utils.add_to_stack(m_stack, new_p_level, n)
+                    p_level = new_p_level
 
     section_title = section_xml.xpath('SECTNO')[0].text
     subject_text = section_xml.xpath('SUBJECT')[0].text

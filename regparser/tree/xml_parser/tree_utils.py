@@ -1,6 +1,7 @@
 import HTMLParser
 from lxml import etree
 from regparser.grammar.common import any_depth_p, xml_collapsed_paragraph
+from itertools import chain
 
 
 def prepend_parts(parts_prefix, n):
@@ -67,8 +68,15 @@ def get_paragraph_markers(text):
             return citation[0][0]
     return []
 
-
 def get_node_text(node):
+    """ Extract all the text from an XML node (including the 
+    text of it's children). """
+    parts = [node.text] +\
+        list(chain(*([c.text, c.tail] for c in node.getchildren()))) +\
+        [node.tail]
+    return ''.join(filter(None, parts))
+
+def get_node_text_tags_preserved(node):
     """ Given an XML node, generate text from the node, skipping the PRTPAGE
     tag. """
 
