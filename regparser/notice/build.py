@@ -77,10 +77,11 @@ def add_footnotes(notice, notice_xml):
         swap_emphasis_tags(child)
 
         ref = child.xpath('.//SU')
-        child.text = ref[0].tail
-        child.remove(ref[0])
-        content = child.text
-        for cc in child:
-            content += etree.tostring(cc)
-        content += child.tail
-        notice['footnotes'][ref[0].text] = content.strip()
+        if ref:
+            child.text = ref[0].tail
+            child.remove(ref[0])
+            content = child.text
+            for cc in child:
+                content += etree.tostring(cc)
+            content += child.tail
+            notice['footnotes'][ref[0].text] = content.strip()
