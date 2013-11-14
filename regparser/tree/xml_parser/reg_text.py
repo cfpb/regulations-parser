@@ -103,7 +103,7 @@ def get_markers_and_text(node, markers_list):
     if len(markers_list) > 1:
         actual_markers = ['(%s)' % m for m in markers_list]
         node_texts = tree_utils.split_text(node_text, actual_markers)
-        tagged_texts = tree_utils.split_text(node_text, actual_markers)
+        tagged_texts = tree_utils.split_text(text_with_tags, actual_markers)
         node_text_list = zip(node_texts, tagged_texts)
     elif markers_list:
         node_text_list = [(node_text, text_with_tags)]

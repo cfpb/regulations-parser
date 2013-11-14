@@ -1,8 +1,6 @@
 #vim: set encoding=utf-8
 from unittest import TestCase
-
 from lxml import etree
-
 from regparser.tree.xml_parser.reg_text import *
 
 
@@ -103,3 +101,27 @@ class RegTextTest(TestCase):
         self.assertEqual(subpart.label, ['8675', 'Subpart', 'A'])
         child_labels = [c.label for c in subpart.children]
         self.assertEqual([['8675', '309'], ['8675', '310']], child_labels)
+
+    def test_get_markers(self):
+        text = u'(a) <E T="03">Transfer </E>—(1) <E T="03">Notice.</E> follow'
+        markers = get_markers(text)
+        self.assertEqual(markers, [u'a',u'1'])
+
+    def test_get_markers_and_text(self):
+        text = u'(a) <E T="03">Transfer </E>—(1) <E T="03">Notice.</E> follow'
+        wrap = '<P>%s</P>' % text
+
+        doc = etree.fromstring(wrap)
+        markers = get_markers(text)
+        result = get_markers_and_text(doc, markers)
+
+        markers = [r[0] for r in result]
+        self.assertEqual(markers, [u'a', u'1'])
+
+        text = [r[1][0] for r in result]
+        self.assertEqual(text, [u'(a) Transfer —', u'(1) Notice. follow'])
+
+        tagged = [r[1][1] for r in result]
+        self.assertEqual(
+            tagged, 
+            [u'(a) <E T="03">Transfer </E>—', u'(1) <E T="03">Notice.</E> follow'])

@@ -91,7 +91,7 @@ def get_node_text_tags_preserved(node):
         if c.tag == 'E':
             #xlmns non-sense makes me do this. 
             e_tag = '<E T="03">%s</E>' % c.text
-            node_text += ' ' + e_tag
+            node_text += e_tag
         if c.tail is not None:
             node_text += c.tail
 
