@@ -71,8 +71,7 @@ class AppendicesTest(TestCase):
 
     def test_process_supplement_header(self):
         xml = """
-                <P>i. The red panda escaped.</P>
-        """
+                <P>i. The red panda escaped.</P>"""
         node = html.fragment_fromstring(xml, create_parent='DIV')
         m_stack = NodeStack()
         m_stack.push_last((1, None))
