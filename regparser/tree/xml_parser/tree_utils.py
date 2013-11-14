@@ -1,5 +1,5 @@
 import HTMLParser
-from lxml import etree
+from lxml import etree, objectify
 from regparser.grammar.common import any_depth_p, xml_collapsed_paragraph
 from itertools import chain
 
@@ -89,8 +89,10 @@ def get_node_text_tags_preserved(node):
 
     for c in node:
         if c.tag == 'E':
-            node_text += ' ' + etree.tostring(c)
-        elif c.tail is not None:
+            #xlmns non-sense makes me do this. 
+            e_tag = '<E T="03">%s</E>' % c.text
+            node_text += ' ' + e_tag
+        if c.tail is not None:
             node_text += c.tail
 
     node_text = html_parser.unescape(node_text)

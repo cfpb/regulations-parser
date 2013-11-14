@@ -98,13 +98,16 @@ def get_markers(text):
 
 def get_markers_and_text(node, markers_list):
     node_text = tree_utils.get_node_text(node)
+    text_with_tags = tree_utils.get_node_text_tags_preserved(node)
 
     if len(markers_list) > 1:
         actual_markers = ['(%s)' % m for m in markers_list]
-        node_text = tree_utils.split_text(node_text, actual_markers)
+        node_texts = tree_utils.split_text(node_text, actual_markers)
+        tagged_texts = tree_utils.split_text(node_text, actual_markers)
+        node_text_list = zip(node_texts, tagged_texts)
     elif markers_list:
-        node_text = [node_text]
-    return zip(markers_list, node_text)
+        node_text_list = [(node_text, text_with_tags)]
+    return zip(markers_list, node_text_list)
 
 def build_section(reg_part, section_xml):
     p_level = 1
@@ -114,15 +117,17 @@ def build_section(reg_part, section_xml):
         if ch.tag == 'P':
             text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
             markers_list = get_markers(text)
-            node_text = tree_utils.get_node_text(ch)
 
             if not markers_list:
-                section_texts.append(node_text)
+                node_text = tree_utils.get_node_text(ch)
+                tagged_text = tree_utils.get_node_text_tags_preserved(ch)
+                section_texts.append((node_text, tagged_text))
             else:
                 markers_and_text = get_markers_and_text(ch, markers_list)
 
                 for m, node_text in markers_and_text:
-                    n = Node(node_text, [], [str(m)])
+                    n = Node(node_text[0], [], [str(m)])
+                    n.tagged_text = unicode(node_text[1])
 
                     new_p_level = determine_level(m, p_level)
                     last = m_stack.peek()
@@ -141,10 +146,16 @@ def build_section(reg_part, section_xml):
     #   Sometimes not reg text sections get mixed in
     if section_number_match:
         section_number = section_number_match.group(1)
-        section_text = ' '.join([section_xml.text] + section_texts)
+
+        plain_sect_texts = [s[0] for s in section_texts]
+        tagged_sect_texts = [s[1] for s in section_texts]
+
+        section_text = ' '.join([section_xml.text] + plain_sect_texts)
+        tagged_section_text = ' '.join([section_xml.text] + tagged_sect_texts)
         sect_node = Node(
             section_text, label=[reg_part, section_number],
             title=section_title)
+        sect_node.tagged_text = tagged_section_text
 
         m_stack.add_to_bottom((1, sect_node))
 
