@@ -7,8 +7,9 @@ from regparser.tree.struct import Node
 from regparser.tree.xml_parser import tree_utils
 from regparser.tree.node_stack import NodeStack
 
+
 class TreeUtilsTest(unittest.TestCase):
-    def test_split_text(self):  
+    def test_split_text(self):
         text = "(A) Apples (B) Bananas (Z) Zebras"
         tokens = ['(A)', '(B)']
 
@@ -33,14 +34,14 @@ class TreeUtilsTest(unittest.TestCase):
         doc = etree.fromstring(text)
         result = tree_utils.get_node_text_tags_preserved(doc)
 
-        self.assertEquals('(a)<E T="03">Fruit.</E>Apples, and Pineapples', result)
+        self.assertEquals(
+            '(a)<E T="03">Fruit.</E>Apples, and Pineapples', result)
 
     def test_no_tags(self):
         text = '<P>(a) Fruit. Apples, and Pineapples</P>'
         doc = etree.fromstring(text)
         result = tree_utils.get_node_text_tags_preserved(doc)
         self.assertEqual('(a) Fruit. Apples, and Pineapples', result)
-        
 
     def test_get_node_text(self):
         text = '<P>(a)<E T="03">Fruit.</E>Apps,<PRTPAGE P="102"/> and pins</P>'
@@ -48,7 +49,6 @@ class TreeUtilsTest(unittest.TestCase):
         result = tree_utils.get_node_text(doc)
 
         self.assertEquals('(a)Fruit.Apps, and pins', result)
-
 
     def test_unwind_stack(self):
         level_one_n = Node(label=['272'])

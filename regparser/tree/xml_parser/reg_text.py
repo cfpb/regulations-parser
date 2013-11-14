@@ -89,12 +89,14 @@ def build_subpart(reg_part, subpart_xml):
     subpart.children = sections
     return subpart
 
+
 def get_markers(text):
     """ Extract all the paragraph markers from text  """
     markers = tree_utils.get_paragraph_markers(text)
     collapsed_markers = tree_utils.get_collapsed_markers(text)
     markers_list = [m for m in markers] + [m for m in collapsed_markers]
     return markers_list
+
 
 def get_markers_and_text(node, markers_list):
     node_text = tree_utils.get_node_text(node)
@@ -108,6 +110,7 @@ def get_markers_and_text(node, markers_list):
     elif markers_list:
         node_text_list = [(node_text, text_with_tags)]
     return zip(markers_list, node_text_list)
+
 
 def build_section(reg_part, section_xml):
     p_level = 1

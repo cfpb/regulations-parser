@@ -105,7 +105,7 @@ class RegTextTest(TestCase):
     def test_get_markers(self):
         text = u'(a) <E T="03">Transfer </E>—(1) <E T="03">Notice.</E> follow'
         markers = get_markers(text)
-        self.assertEqual(markers, [u'a',u'1'])
+        self.assertEqual(markers, [u'a', u'1'])
 
     def test_get_markers_and_text(self):
         text = u'(a) <E T="03">Transfer </E>—(1) <E T="03">Notice.</E> follow'
@@ -123,5 +123,5 @@ class RegTextTest(TestCase):
 
         tagged = [r[1][1] for r in result]
         self.assertEqual(
-            tagged, 
+            tagged,
             [u'(a) <E T="03">Transfer </E>—', u'(1) <E T="03">Notice.</E> follow'])
