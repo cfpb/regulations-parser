@@ -13,7 +13,7 @@ class KeyTerms(Layer):
         """
 
         marker = ParagraphMarkers.marker(node)
-        text = node.text
+        text = node.tagged_text
 
         text = text.replace(marker, '', 1).strip()
         return text
@@ -30,15 +30,18 @@ class KeyTerms(Layer):
     @staticmethod
     def get_keyterm(node):
         pattern = re.compile(ur'.*?<E T="03">([^<]*?)</E>.*?', re.UNICODE)
-        matches = pattern.match(node.text)
+        matches = pattern.match(node.tagged_text)
         if matches and KeyTerms.keyterm_is_first(node, matches.groups()[0]):
             return matches.groups()[0]
 
     def process(self, node):
-        keyterm = KeyTerms.get_keyterm(node)
-        if keyterm:
-            layer_el = [{
-                "key_term": keyterm,
-                #The first instance of the key term is right one.
-                "locations": [0]}]
-            return layer_el
+        """ Get keyterms if we have text in the node that preserves the 
+        <E> tags. """
+        if hasattr(node, 'tagged_text'):
+            keyterm = KeyTerms.get_keyterm(node)
+            if keyterm:
+                layer_el = [{
+                    "key_term": keyterm,
+                    #The first instance of the key term is right one.
+                    "locations": [0]}]
+                return layer_el
