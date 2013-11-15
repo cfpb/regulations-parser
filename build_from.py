@@ -1,8 +1,6 @@
 import codecs
 import sys
 
-from lxml import etree
-
 from regparser import api_writer
 from regparser.diff import api_reader, treediff
 from regparser.federalregister import fetch_notices
@@ -11,7 +9,6 @@ from regparser.layer import table_of_contents, interpretations, terms
 from regparser.layer import section_by_section, paragraph_markers, meta
 from regparser.notice.history import applicable as applicable_notices
 from regparser.notice.history import modify_effective_dates
-from regparser.tree.build import build_whole_regtree
 from regparser.tree.xml_parser import reg_text
 
 if __name__ == "__main__":
