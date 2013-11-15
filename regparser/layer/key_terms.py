@@ -35,7 +35,7 @@ class KeyTerms(Layer):
             return matches.groups()[0]
 
     def process(self, node):
-        """ Get keyterms if we have text in the node that preserves the 
+        """ Get keyterms if we have text in the node that preserves the
         <E> tags. """
         if hasattr(node, 'tagged_text'):
             keyterm = KeyTerms.get_keyterm(node)
