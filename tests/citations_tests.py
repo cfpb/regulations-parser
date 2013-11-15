@@ -3,8 +3,14 @@ from unittest import TestCase
 
 from regparser.citations import *
 
+
 def to_text(citation, original_text):
     return original_text[citation.start:citation.end].strip()
+
+
+def to_full_text(citation, original_text):
+    return original_text[citation.full_start:citation.full_end].strip()
+
 
 class CitationsTest(TestCase):
 
@@ -46,7 +52,7 @@ class CitationsTest(TestCase):
             self.assertEqual(1, len(citations))
             citation = citations[0]
             self.assertEqual(citation.label.to_list(), label)
-            self.assertEqual(link, to_text(citation, text))
+            self.assertEqual(link, to_full_text(citation, text))
 
     def test_multiple_matches(self):
         text = "Please see A-5 and Q-2(r) and Z-12(g)(2)(ii) then more text"
@@ -134,7 +140,7 @@ class CitationsTest(TestCase):
         self.assertEqual(2, len(citations))
         citation = citations[0]
         self.assertEqual(['1005', '10', 'a'], citation.label.to_list())
-        self.assertEqual(to_text(citation, text), u'§ 1005.10(a)')
+        self.assertEqual(to_text(citation, text), '1005.10(a)')
         citation = citations[1]
         self.assertEqual(['1005', '10', 'd'], citation.label.to_list())
         self.assertEqual(to_text(citation, text), '(d)')
@@ -251,3 +257,22 @@ class CitationsLabelTest(TestCase):
 
         label = label.copy(p1='c', p2='3')
         self.assertEqual(['222', 'D', '4', 'c', '3'], label.to_list())
+
+    def test_from_node(self):
+        for lst, typ in [(['111'], Node.REGTEXT),
+                         (['111', '31', 'a', '3'], Node.REGTEXT),
+                         (['111', 'A', 'b'], Node.APPENDIX),
+                         (['111', 'A', '4', 'a'], Node.APPENDIX),
+                         (['111', '21', 'Interp'], Node.INTERP),
+                         (['111', '21', 'Interp', '1'], Node.INTERP),
+                         (['111', '21', 'r', 'Interp'], Node.INTERP),
+                         (['111', '21', 'r', 'Interp', '2'], Node.INTERP),
+                         (['111', 'G', 'Interp'], Node.INTERP),
+                         (['111', 'G3', 'r', 'Interp'], Node.INTERP),
+                         (['111', 'G', '2', 'Interp'], Node.INTERP),
+                         (['111', 'G3', 'r', 'Interp', '3'], Node.INTERP),
+                         (['111', 'G', '2', 'Interp', '5'], Node.INTERP),
+                         (['111', 'Subpart', 'A'], Node.SUBPART),
+                         (['111', 'Subpart'], Node.EMPTYPART)]:
+            n = Node(label=lst, node_type=typ)
+            self.assertEqual(Label.from_node(n).to_list(), lst)

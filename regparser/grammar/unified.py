@@ -6,7 +6,9 @@ from regparser.grammar.utils import keep_pos
 
 
 part_section = part + Suppress(".") + section
-marker_part_section = section_marker + part_section
+marker_part_section = (
+    section_marker.copy().setParseAction(keep_pos).setResultsName("marker")
+    + part_section)
 
 depth5_p = em_digit_p | plaintext_level5_p
 depth4_p = upper_p + Optional(depth5_p)
@@ -22,9 +24,13 @@ section_paragraph = section + depth1_p
 
 mps_paragraph = marker_part_section + Optional(depth1_p)
 
-marker_paragraph = paragraph_marker + depth1_p
+marker_paragraph = (
+    paragraph_marker.copy().setParseAction(keep_pos).setResultsName("marker")
+    + depth1_p)
 
-marker_appendix = appendix_marker + appendix
+marker_appendix = (
+    appendix_marker.copy().setParseAction(keep_pos).setResultsName("marker")
+    + appendix)
 
 appendix_with_section = (
     appendix
@@ -32,7 +38,7 @@ appendix_with_section = (
     + Optional(depth1_p))
 
 marker_comment = (
-    comment_marker
+    comment_marker.copy().setParseAction(keep_pos).setResultsName("marker")
     + (section_paragraph | mps_paragraph) 
     + Optional(depth1_c))
 
@@ -46,7 +52,8 @@ marker_paragraphs = (
         + any_depth_p.copy().setParseAction(keep_pos).setResultsName(
             "tail", listAllMatches=True)))
 mps_paragraphs = (
-    (marker_part_section + depth1_p).setParseAction(keep_pos).setResultsName(
+    section_marker
+    + (part_section + depth1_p).setParseAction(keep_pos).setResultsName(
         "head")
     + OneOrMore(
         conj_phrases

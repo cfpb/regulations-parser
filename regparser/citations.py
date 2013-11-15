@@ -5,6 +5,7 @@ from regparser.tree.struct import Node
 
 
 class Label(object):
+    #   @TODO: subparts
     app_sect_schema = ('part', 'appendix', 'appendix_section', 'p1', 'p2',
                        'p3', 'p4', 'p5', 'p6')
     app_schema = ('part', 'appendix', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6')
@@ -12,6 +13,30 @@ class Label(object):
 
     comment_schema = ('comment', 'c1', 'c2', 'c3')
 
+    @staticmethod
+    def from_node(node):
+        """Best guess for schema based on the provided
+           regparser.tree.struct.Node"""
+        if node.node_type == Node.APPENDIX:
+            if len(node.label) > 2 and node.label[2].isdigit():
+                schema = Label.app_sect_schema
+            else:
+                schema = Label.app_schema
+        else:
+            schema = Label.sect_schema
+
+        settings = {'comment': node.node_type == Node.INTERP}
+        for idx, value in enumerate(node.label):
+            if value == 'Interp':
+                #   Add remaining bits as comment fields
+                for cidx in range(idx+1, len(node.label)):
+                    comment_field = Label.comment_schema[cidx - idx]
+                    settings[comment_field] = node.label[cidx]
+                #   Stop processing the prefix fields
+                break
+            settings[schema[idx]] = value
+        return Label(**settings)
+            
     @staticmethod
     def determine_schema(settings):
         if 'appendix_section' in settings:
@@ -115,9 +140,14 @@ def internal_citations(text, initial_label):
 
     def single_citations(matches, comment):
         for match, start, end in matches:
+            full_start = start
+            if match.marker is not '':
+                #   Remove the marker from the beginning of the string
+                start = match.marker.pos[1]
             citations.append(ParagraphCitation(
                 start, end, match_to_label(match, initial_label,
-                                           comment=comment)))
+                                           comment=comment),
+                full_start=full_start))
 
     multiple_citations(grammar.marker_comments.scanString(text), True)
     single_citations(grammar.marker_comment.scanString(text), True)
