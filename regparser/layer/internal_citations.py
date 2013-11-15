@@ -4,7 +4,6 @@ import re
 import string
 
 from regparser.citations import internal_citations, Label
-from regparser.grammar import internal_citations as grammar
 from regparser.layer.layer import Layer
 from regparser.tree.struct import Node
 

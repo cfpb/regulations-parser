@@ -58,7 +58,7 @@ def get_paragraph_markers(text):
 
     for citation, start, end in any_depth_p.scanString(text):
         if start == 0:
-            return citation[0][0]
+            return list(citation)
     return []
 
 
