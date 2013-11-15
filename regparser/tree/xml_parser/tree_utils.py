@@ -1,6 +1,7 @@
 import HTMLParser
-from lxml import etree
-from regparser.grammar.common import any_depth_p
+from lxml import etree, objectify
+from regparser.grammar.common import any_depth_p, xml_collapsed_paragraph
+from itertools import chain
 
 
 def prepend_parts(parts_prefix, n):
@@ -52,6 +53,12 @@ def split_text(text, tokens):
     return texts
 
 
+def get_collapsed_markers(text):
+    """ We have collapsed markers that look something like this:
+    (a) some text -(1) more text. We pull out -(1) type markers here. """
+    return [c[0][0] for c, s, e in xml_collapsed_paragraph.scanString(text)]
+
+
 def get_paragraph_markers(text):
     """ From a body of text that contains paragraph markers, extract the
     markers. """
@@ -63,6 +70,15 @@ def get_paragraph_markers(text):
 
 
 def get_node_text(node):
+    """ Extract all the text from an XML node (including the
+    text of it's children). """
+    parts = [node.text] +\
+        list(chain(*([c.text, c.tail] for c in node.getchildren()))) +\
+        [node.tail]
+    return ''.join(filter(None, parts))
+
+
+def get_node_text_tags_preserved(node):
     """ Given an XML node, generate text from the node, skipping the PRTPAGE
     tag. """
 
@@ -75,8 +91,10 @@ def get_node_text(node):
 
     for c in node:
         if c.tag == 'E':
-            node_text += ' ' + etree.tostring(c)
-        elif c.tail is not None:
+            #xlmns non-sense makes me do this.
+            e_tag = '<E T="03">%s</E>' % c.text
+            node_text += e_tag
+        if c.tail is not None:
             node_text += c.tail
 
     node_text = html_parser.unescape(node_text)

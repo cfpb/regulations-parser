@@ -95,6 +95,7 @@ any_depth_p = (
 
 any_p = lower_p | digit_p | roman_p | upper_p | em_digit_p
 
+xml_collapsed_paragraph = Suppress(Literal(u'—')) + any_p
 part_section = part + Suppress(".") + section
 
 marker_part_section = section_marker + part_section
