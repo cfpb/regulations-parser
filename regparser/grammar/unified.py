@@ -45,7 +45,7 @@ marker_comment = (
 
 # Multiple
 marker_paragraphs = (
-    paragraphs_marker
+    (paragraph_marker | paragraphs_marker)
     + any_depth_p.copy().setParseAction(keep_pos).setResultsName("head")
     + OneOrMore(
         conj_phrases

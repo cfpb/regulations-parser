@@ -4,8 +4,8 @@ import re
 from pyparsing import Literal
 
 from regparser import api_stub
+from regparser.citations import internal_citations, Label
 from regparser.grammar.external_citations import regtext_external_citation
-from regparser.grammar.internal_citations import regtext_citation
 from regparser.layer import key_terms
 from regparser.tree import struct
 
@@ -23,7 +23,6 @@ layer = {}
 part_end = '1005.'
 exclude_parser = (
     regtext_external_citation
-    | regtext_citation
     | Literal("U.S.")
 )
 period = re.compile(r'\.(?!,)')  # Not followed by a comma
@@ -44,6 +43,8 @@ def generate_keyterm(node):
 
         exclude = [(start, end) for _, start, end in
                    exclude_parser.scanString(node_text)]
+        exclude.extend((pc.full_start, pc.full_end) for pc in
+                       internal_citations(node_text, Label()))
 
         periods = [m.start() for m in period.finditer(node_text)]
         # Remove any periods which are part of a citation

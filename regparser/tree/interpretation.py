@@ -1,5 +1,5 @@
 from regparser import utils
-from regparser.grammar.internal_citations import comment_citation
+from regparser.citations import internal_citations, Label
 import regparser.grammar.interpretation_headers as grammar
 from regparser.tree.paragraph import ParagraphParser
 from regparser.tree.struct import Node, treeify
@@ -43,7 +43,8 @@ def segment_tree(text, part, parent_label):
     """Build a tree representing the interpretation of a section, paragraph,
     or appendix."""
     title, body = utils.title_body(text)
-    exclude = [(s, e) for _, s, e in comment_citation.scanString(body)]
+    exclude = [(pc.full_start, pc.full_end) for pc in
+               internal_citations(body, Label(part=parent_label[0]))]
 
     label = text_to_label(title, part)
     return interpParser.build_tree(body, 1, exclude, label, title)

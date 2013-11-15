@@ -65,8 +65,6 @@ comments_marker = Marker("comments")
 appendix_marker = Marker("appendix")
 
 conj_phrases = (
-    Regex(",|and|or")
-    + Optional("and")
-    + Optional("or")
+    Regex(",|and|or|through")
+    + Optional(Marker("and") | Marker("or") | Marker("through"))
 )
-through = WordBoundaries(CaselessLiteral("through"))

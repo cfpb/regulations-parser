@@ -2,8 +2,7 @@
 import re
 
 from regparser import utils
-from regparser.grammar.internal_citations import appendix_citation
-from regparser.grammar.internal_citations import regtext_citation
+from regparser.citations import internal_citations, Label
 from regparser.grammar.common import subpart
 from regparser.search import find_offsets, find_start, segments
 from regparser.tree import struct
@@ -155,11 +154,8 @@ def build_section_tree(text, part):
     with an identifier"""
     title, text = utils.title_body(text)
 
-    exclude = [(start, end) for _, start, end in
-               regtext_citation.scanString(text)]
-
-    exclude += [(start, end) for _, start, end in
-                appendix_citation.scanString(text)]
+    exclude = [(pc.full_start, pc.full_end) for pc in
+               internal_citations(text, Label(part=part))]
     section = re.search(r'%d\.(\d+)\b' % part, title).group(1)
     label = [str(part), section]
     p_tree = regParser.build_tree(
