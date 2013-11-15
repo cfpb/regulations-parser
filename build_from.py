@@ -1,6 +1,8 @@
 import codecs
 import sys
 
+from lxml import etree
+
 from regparser import api_writer
 from regparser.diff import api_reader, treediff
 from regparser.federalregister import fetch_notices
@@ -10,10 +12,11 @@ from regparser.layer import section_by_section, paragraph_markers, meta
 from regparser.notice.history import applicable as applicable_notices
 from regparser.notice.history import modify_effective_dates
 from regparser.tree.build import build_whole_regtree
+from regparser.tree.xml_parser import reg_text
 
 if __name__ == "__main__":
     if len(sys.argv) < 6:
-        print("Usage: python build_from.py regulation.txt title "
+        print("Usage: python build_from.py regulation.xml title "
               + "notice_doc_# act_title act_section (Generate diffs? "
               + "True/False)")
         print("  e.g. python build_from.py rege.txt 12 2011-31725 15 1693 "
@@ -22,11 +25,11 @@ if __name__ == "__main__":
 
     writer = api_writer.Client()
 
-    with codecs.open(sys.argv[1], encoding='utf-8') as f:
-        reg = unicode(f.read())
+    with codecs.open(sys.argv[1], 'r', 'utf-8') as f:
+        reg_xml = f.read()
 
     #   First, the regulation tree
-    reg_tree = build_whole_regtree(reg)
+    reg_tree = reg_text.build_tree(reg_xml)
     cfr_part = reg_tree.label_id()
     cfr_title = sys.argv[2]
     doc_number = sys.argv[3]
