@@ -225,6 +225,3 @@ class GrammarAmdParTests(TestCase):
             tokens.Paragraph([None, 'Interpretations', None, None, '2', 'xi']),
             tokens.Verb(tokens.Verb.POST, active=False)
         ])
-
-
-

@@ -36,6 +36,7 @@ plaintext_level5_p = (
 
 upper_c = "." + Word(string.ascii_uppercase).setResultsName('c3')
 roman_c = "." + Word("ivxlcdm").setResultsName('c2')
+digit_c = "-" + Word(string.digits).setResultsName('c1')
 
 part = Word(string.digits).setResultsName("part")
 
@@ -44,6 +45,7 @@ section = Word(string.digits).setResultsName("section")
 appendix = Regex("[A-Z]+[0-9]*").setResultsName("appendix")
 appendix_section = Word(string.digits).setResultsName("appendix_section")
 
+subpart = Word(string.ascii_uppercase).setResultsName("subpart")
 
 section_marker = Suppress(Regex(u"§|Section|section"))
 sections_marker = Suppress(Regex(u"§§|Sections|sections"))
@@ -58,13 +60,16 @@ subpart_marker = Marker("subpart")
 
 comment_marker = (
     (Marker("comment")
-     | (Marker("official") + Marker("interpretations")))
-    + Optional(Marker("of")))
+     | (Marker("official") + Marker("interpretations"))
+     | (Marker("supplement") + Suppress(WordBoundaries("I")))
+    )
+    + Optional(Marker("of") | Marker("to")))
 comments_marker = Marker("comments")
 
 appendix_marker = Marker("appendix")
 
 conj_phrases = (
-    Regex(",|and|or|through")
-    + Optional(Marker("and") | Marker("or") | Marker("through"))
-)
+    (Suppress(",") + Optional(Marker("and") | Marker("or")))
+    | Marker("and")
+    | Marker("or") 
+    | WordBoundaries(CaselessLiteral("through")).setResultsName("through"))

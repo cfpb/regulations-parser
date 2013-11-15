@@ -1,78 +1,91 @@
 """Some common combinations"""
-from pyparsing import OneOrMore, Optional
+from pyparsing import OneOrMore, Optional, Suppress
 
-from regparser.grammar.atomic import *
+from regparser.grammar import atomic
 from regparser.grammar.utils import keep_pos
 
 
-part_section = part + Suppress(".") + section
+part_section = atomic.part + Suppress(".") + atomic.section
 marker_part_section = (
-    section_marker.copy().setParseAction(keep_pos).setResultsName("marker")
+    atomic.section_marker.copy().setParseAction(keep_pos).setResultsName(
+        "marker")
     + part_section)
 
-depth5_p = em_digit_p | plaintext_level5_p
-depth4_p = upper_p + Optional(depth5_p)
-depth3_p = roman_p + Optional(depth4_p)
-depth2_p = digit_p + Optional(depth3_p)
-depth1_p = lower_p + Optional(depth2_p)
+depth5_p = atomic.em_digit_p | atomic.plaintext_level5_p
+depth4_p = atomic.upper_p + Optional(depth5_p)
+depth3_p = atomic.roman_p + Optional(depth4_p)
+depth2_p = atomic.digit_p + Optional(depth3_p)
+depth1_p = atomic.lower_p + Optional(depth2_p)
 any_depth_p = (depth1_p | depth2_p | depth3_p | depth4_p | depth5_p)
 
-depth2_c = roman_c + Optional(upper_c)
-depth1_c = "-" + Word(string.digits).setResultsName("c1") + Optional(depth2_c)
+depth2_c = atomic.roman_c + Optional(atomic.upper_c)
+depth1_c = atomic.digit_c + Optional(depth2_c)
 
-section_paragraph = section + depth1_p
+section_paragraph = atomic.section + depth1_p
 
 mps_paragraph = marker_part_section + Optional(depth1_p)
 
 marker_paragraph = (
-    paragraph_marker.copy().setParseAction(keep_pos).setResultsName("marker")
+    atomic.paragraph_marker.copy().setParseAction(keep_pos).setResultsName(
+        "marker")
     + depth1_p)
 
 marker_appendix = (
-    appendix_marker.copy().setParseAction(keep_pos).setResultsName("marker")
-    + appendix)
+    atomic.appendix_marker.copy().setParseAction(keep_pos).setResultsName(
+        "marker")
+    + atomic.appendix)
+
+marker_part = (
+    atomic.part_marker.copy().setParseAction(keep_pos).setResultsName("marker")
+    + atomic.part)
+
+marker_subpart = (
+    atomic.subpart_marker.copy().setParseAction(keep_pos).setResultsName(
+        "marker")
+    + atomic.subpart)
 
 appendix_with_section = (
-    appendix
-    + '-' + appendix_section
+    atomic.appendix
+    + '-' + atomic.appendix_section
     + Optional(depth1_p))
 
 marker_comment = (
-    comment_marker.copy().setParseAction(keep_pos).setResultsName("marker")
-    + (section_paragraph | mps_paragraph) 
+    atomic.comment_marker.copy().setParseAction(keep_pos).setResultsName(
+        "marker")
+    + (section_paragraph | mps_paragraph)
     + Optional(depth1_c))
 
 
 # Multiple
 marker_paragraphs = (
-    (paragraph_marker | paragraphs_marker)
+    (atomic.paragraph_marker | atomic.paragraphs_marker)
     + any_depth_p.copy().setParseAction(keep_pos).setResultsName("head")
     + OneOrMore(
-        conj_phrases
+        atomic.conj_phrases
         + any_depth_p.copy().setParseAction(keep_pos).setResultsName(
             "tail", listAllMatches=True)))
 mps_paragraphs = (
-    section_marker
+    atomic.section_marker
     + (part_section + depth1_p).setParseAction(keep_pos).setResultsName(
         "head")
     + OneOrMore(
-        conj_phrases
+        atomic.conj_phrases
         + any_depth_p.copy().setParseAction(keep_pos).setResultsName(
             "tail", listAllMatches=True)))
 appendix_with_sections = (
     appendix_with_section.copy().setParseAction(keep_pos).setResultsName(
         "head")
     + OneOrMore(
-        conj_phrases
+        atomic.conj_phrases
         + any_depth_p.copy().setParseAction(keep_pos).setResultsName(
             "tail", listAllMatches=True)))
 
 _part_section_p = (part_section + Optional(depth1_p)).setParseAction(keep_pos)
 marker_sections = (
-    sections_marker
+    atomic.sections_marker
     + _part_section_p.copy().setResultsName("head")
     + OneOrMore(
-        conj_phrases
+        atomic.conj_phrases
         + _part_section_p.copy().setResultsName("tail", listAllMatches=True)))
 
 _comment = (
@@ -80,8 +93,8 @@ _comment = (
 ).setParseAction(keep_pos)
 
 marker_comments = (
-    comments_marker
+    atomic.comments_marker
     + _comment.copy().setResultsName("head")
     + OneOrMore(
-        conj_phrases
+        atomic.conj_phrases
         + _comment.copy().setResultsName("tail", listAllMatches=True)))
