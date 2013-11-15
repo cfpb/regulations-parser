@@ -7,6 +7,7 @@ from regparser.federalregister import fetch_notices
 from regparser.layer import external_citations, internal_citations, graphics
 from regparser.layer import table_of_contents, interpretations, terms
 from regparser.layer import section_by_section, paragraph_markers, meta
+from regparser.layer import key_terms
 from regparser.notice.history import applicable as applicable_notices
 from regparser.notice.history import modify_effective_dates
 from regparser.tree.xml_parser import reg_text
@@ -65,6 +66,7 @@ if __name__ == "__main__":
             ('interpretations', interpretations.Interpretations),
             ('terms', terms.Terms),
             ('paragraph-markers', paragraph_markers.ParagraphMarkers),
+            ('keyterms', key_terms.KeyTerms),
             ('graphics', graphics.Graphics)):
         layer = layer_class(reg_tree).build()
         writer.layer(ident, cfr_part, doc_number).write(layer)
