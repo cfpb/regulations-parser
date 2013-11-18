@@ -3,7 +3,6 @@ import re
 import HTMLParser
 from lxml import etree
 from regparser.tree.struct import Node
-from regparser.grammar.common import any_depth_p
 from regparser.tree.paragraph import p_levels
 from regparser.tree.node_stack import NodeStack
 from regparser.tree.xml_parser.appendices import build_non_reg_text

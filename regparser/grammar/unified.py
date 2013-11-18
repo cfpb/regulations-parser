@@ -1,5 +1,6 @@
+#vim: set encoding=utf-8
 """Some common combinations"""
-from pyparsing import OneOrMore, Optional, Suppress
+from pyparsing import LineEnd, Literal, OneOrMore, Optional, Suppress, SkipTo
 
 from regparser.grammar import atomic
 from regparser.grammar.utils import keep_pos
@@ -43,6 +44,13 @@ marker_subpart = (
     atomic.subpart_marker.copy().setParseAction(keep_pos).setResultsName(
         "marker")
     + atomic.subpart)
+marker_subpart_title = (
+    atomic.subpart_marker.copy().setParseAction(keep_pos).setResultsName(
+        "marker")
+    + atomic.subpart
+    + Suppress(Literal(u"—"))
+    + SkipTo(LineEnd()).setResultsName("subpart_title")
+)
 
 appendix_with_section = (
     atomic.appendix

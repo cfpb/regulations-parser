@@ -3,7 +3,7 @@ import re
 
 from regparser import utils
 from regparser.citations import internal_citations, Label
-from regparser.grammar.common import subpart
+from regparser.grammar.unified import marker_subpart_title
 from regparser.search import find_offsets, find_start, segments
 from regparser.tree import struct
 from regparser.tree.appendix.carving import find_appendix_start
@@ -75,8 +75,8 @@ def build_empty_part(part):
 
 
 def build_subpart(text, part):
-    results = subpart.parseString(text)
-    subpart_letter = results.subpart_letter
+    results = marker_subpart_title.parseString(text)
+    subpart_letter = results.subpart
     subpart_title = results.subpart_title
     label = [str(part), 'Subpart', subpart_letter]
 
