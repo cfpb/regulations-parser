@@ -64,45 +64,36 @@ marker_comment = (
     + Optional(depth1_c))
 
 
-# Multiple
-marker_paragraphs = (
-    (atomic.paragraph_marker | atomic.paragraphs_marker)
-    + any_depth_p.copy().setParseAction(keep_pos).setResultsName("head")
+_inner_non_comment = ( 
+    any_depth_p
+    | (part_section + Optional(depth1_p))
+    | (atomic.section + depth1_p)
+    | appendix_with_section | marker_appendix)
+multiple_non_comments = (
+    (   atomic.paragraphs_marker | atomic.paragraph_marker
+        | atomic.sections_marker | atomic.section_marker)
+    + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName("head")
     + OneOrMore(
         atomic.conj_phrases
-        + any_depth_p.copy().setParseAction(keep_pos).setResultsName(
+        + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName(
             "tail", listAllMatches=True)))
-mps_paragraphs = (
-    atomic.section_marker
-    + (part_section + depth1_p).setParseAction(keep_pos).setResultsName(
-        "head")
-    + OneOrMore(
-        atomic.conj_phrases
-        + any_depth_p.copy().setParseAction(keep_pos).setResultsName(
-            "tail", listAllMatches=True)))
-appendix_with_sections = (
+multiple_appendix_section = (
     appendix_with_section.copy().setParseAction(keep_pos).setResultsName(
         "head")
     + OneOrMore(
         atomic.conj_phrases
-        + any_depth_p.copy().setParseAction(keep_pos).setResultsName(
+        + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName(
             "tail", listAllMatches=True)))
 
-_part_section_p = (part_section + Optional(depth1_p)).setParseAction(keep_pos)
-marker_sections = (
-    atomic.sections_marker
-    + _part_section_p.copy().setResultsName("head")
+multiple_comments = (
+    (atomic.comments_marker | atomic.comment_marker)
+    + ( Optional(atomic.section_marker)
+        + _inner_non_comment
+        + Optional(depth1_c)
+      ).copy().setParseAction(keep_pos).setResultsName("head")
     + OneOrMore(
         atomic.conj_phrases
-        + _part_section_p.copy().setResultsName("tail", listAllMatches=True)))
-
-_comment = (
-    (section_paragraph | mps_paragraph) + Optional(depth1_c)
-).setParseAction(keep_pos)
-
-marker_comments = (
-    atomic.comments_marker
-    + _comment.copy().setResultsName("head")
-    + OneOrMore(
-        atomic.conj_phrases
-        + _comment.copy().setResultsName("tail", listAllMatches=True)))
+        + ( _inner_non_comment
+            + Optional(depth1_c)
+          ).copy().setParseAction(keep_pos).setResultsName(
+              "tail", listAllMatches=True)))

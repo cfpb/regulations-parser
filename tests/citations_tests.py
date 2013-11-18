@@ -181,6 +181,11 @@ class CitationsTest(TestCase):
         self.assertEqual(['1005', '11', 'a', '1', 'vii'],
                          citations[1].label.to_list())
 
+        text = u'§§ 1005.3(b)(2) and (3), 1005.10(b), (d), and (e), 1005.13, '
+        text += 'and 1005.20'
+        citations = internal_citations(text, Label(part='222', section='5'))
+        self.assertEqual(7, len(citations))
+
     def test_single_match_multiple_paragraphs3(self):
         text = "Please see E-9(a)(1), (2) and (d)(3)(v) for more"
         citations = internal_citations(text, Label(part='222', section='5'))

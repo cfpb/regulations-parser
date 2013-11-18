@@ -149,13 +149,12 @@ def internal_citations(text, initial_label):
                                            comment=comment),
                 full_start=full_start))
 
-    multiple_citations(grammar.marker_comments.scanString(text), True)
     single_citations(grammar.marker_comment.scanString(text), True)
 
-    multiple_citations(grammar.marker_paragraphs.scanString(text), False)
-    multiple_citations(grammar.mps_paragraphs.scanString(text), False)
-    multiple_citations(grammar.marker_sections.scanString(text), False)
-    multiple_citations(grammar.appendix_with_sections.scanString(text), False)
+    multiple_citations(grammar.multiple_non_comments.scanString(text), False)
+    multiple_citations(grammar.multiple_appendix_section.scanString(text),
+                       False)
+    multiple_citations(grammar.multiple_comments.scanString(text), True)
 
     single_citations(grammar.marker_appendix.scanString(text), False)
     single_citations(grammar.appendix_with_section.scanString(text), False)
