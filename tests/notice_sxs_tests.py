@@ -300,29 +300,32 @@ class NoticeSxsTests(TestCase):
         self.assertEqual('Comment 29(b)(1)-1 Some Title',
                          add_spaces_to_title('Comment 29(b)(1)-1Some Title'))
 
-    def test_parse_into_label(self):
-        self.assertEqual("101-22",
-                         parse_into_label("Section 101.22Stuff", "101"))
-        self.assertEqual("101-22-d",
-                         parse_into_label("22(d) Content", "101"))
-        self.assertEqual("101-22-d-5",
-                         parse_into_label("22(d)(5) Content", "101"))
-        self.assertEqual("101-22-d-5-x",
-                         parse_into_label("22(d)(5)(x) Content", "101"))
-        self.assertEqual("101-22-d-5-x",
-                         parse_into_label(u"§ 101.22(d)(5)(x) Content", "101"))
-        self.assertEqual("101-22-d-5-x-Q",
-                         parse_into_label("22(d)(5)(x)(Q) Content", "101"))
-        self.assertEqual("101-A",
-                         parse_into_label("Appendix A Heading", "101"))
-        self.assertEqual("101-21-c-Interp-1",
-                         parse_into_label("Comment 21(c)-1 Heading", "101"))
+    def test_parse_into_labels(self):
+        self.assertEqual(["101-22"],
+                         parse_into_labels("Section 101.22Stuff", "101"))
+        self.assertEqual(["101-22-d"],
+                         parse_into_labels("22(d) Content", "101"))
+        self.assertEqual(["101-22-d-5"],
+                         parse_into_labels("22(d)(5) Content", "101"))
+        self.assertEqual(["101-22-d-5-x"],
+                         parse_into_labels("22(d)(5)(x) Content", "101"))
+        self.assertEqual(["101-22-d-5-x"],
+                         parse_into_labels(u"§ 101.22(d)(5)(x) Content", "101"))
+        self.assertEqual(["101-22-d-5-x-Q"],
+                         parse_into_labels("22(d)(5)(x)(Q) Content", "101"))
+        self.assertEqual(["101-A"],
+                         parse_into_labels("Appendix A Heading", "101"))
+        self.assertEqual(["101-21-c-Interp-1"],
+                         parse_into_labels("Comment 21(c)-1 Heading", "101"))
         text = u'Official Interpretations of § 101.33(c)(2)'
-        self.assertEqual('101-33-c-2-Interp',
-                         parse_into_label(text, '101'))
+        self.assertEqual(['101-33-c-2-Interp'],
+                         parse_into_labels(text, '101'))
+        text = 'Comments 33(a)-8 and 33(a)-9'
+        self.assertEqual(['101-33-a-Interp-8', '101-33-a-Interp-9'],
+                         parse_into_labels(text, '101'))
 
-        self.assertEqual(None,
-                         parse_into_label("Application of this rule", "101"))
+        self.assertEqual([],
+                         parse_into_labels("Application of this rule", "101"))
 
     def test_is_child_of(self):
         parent = """<HD SOURCE="H2">Section 22.1</HD>"""

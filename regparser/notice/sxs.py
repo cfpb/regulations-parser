@@ -3,6 +3,7 @@ from itertools import chain, dropwhile, takewhile
 
 from lxml import etree
 
+from regparser.citations import internal_citations, Label
 import regparser.grammar.rules as grammar
 from regparser.notice.util import body_to_string, spaces_then_remove
 from regparser.notice.util import swap_emphasis_tags
@@ -78,9 +79,9 @@ def build_section_by_section(sxs, part, fr_start_page):
             'children': children,
             'footnote_refs': footnotes
             }
-        label = parse_into_label(title.text, part)
-        if label:
-            next_structure['label'] = label
+        labels = parse_into_labels(title.text, part)
+        if labels:
+            next_structure['label'] = labels[0]
 
         structures.append(next_structure)
     return structures
@@ -118,29 +119,10 @@ def split_into_ttsr(sxs):
     return (title, text_elements, sub_sections, remaining)
 
 
-def parse_into_label(txt, part):
-    """Find what part+section+(paragraph) this text is related to. Returns
-    only the first match. Currently only accounts for references to
-    regulation text."""
+def parse_into_labels(txt, part):
+    """Find what part+section+(paragraph) (could be multiple) this text is 
+    related to."""
 
-    for match, _, _ in grammar.applicable_interp.scanString(txt):
-        label = [part, match.section]
-        label.extend(p for p in list(match.p_head))
-        label.append(Node.INTERP_MARK)
-        if match.comment_levels:
-            label.append(match.comment_levels.level1)
-            label.append(match.comment_levels.level2)
-            label.append(match.comment_levels.level3)
-        return "-".join(filter(bool, label))  # remove empty strings
-    for match, _, _ in grammar.applicable_section.scanString(txt):
-        paragraph_ids = []
-        paragraph_ids.extend(p for p in [
-            match.level1, match.level2, match.level3, match.level4] if p)
-        return "-".join([part, match.section] + paragraph_ids)
-    for match, _, _ in grammar.applicable_paragraph.scanString(txt):
-        paragraph_ids = []
-        paragraph_ids.extend(p for p in [
-            match.level1, match.level2, match.level3, match.level4] if p)
-        return "-".join([part, match.section] + paragraph_ids)
-    for match, _, _ in grammar.applicable_appendix.scanString(txt):
-        return "%s-%s" % (part, match.letter)
+    citations = internal_citations(txt, Label(part=part))
+    labels =  ['-'.join(cit.label.to_list()) for cit in citations]
+    return labels
