@@ -259,6 +259,19 @@ class NoticeSxsTests(TestCase):
                            'reference': '5',
                            'offset': len(sometimes_txt)}])
 
+    def test_build_section_by_section_multiple(self):
+        xml = """
+        <ROOT>
+            <HD SOURCE="H2">Comments 22(a)-5, 22(a)-6, and 22(b)</HD>
+            <P>Content</P>
+        </ROOT>"""
+        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = build_section_by_section(sxs, '876', 23)
+        self.assertEqual(len(structures), 3)
+        self.assertEqual(structures[0]['label'], '876-22-a-Interp-5')
+        self.assertEqual(structures[1]['label'], '876-22-a-Interp-6')
+        self.assertEqual(structures[2]['label'], '876-22-b-Interp')
+
     def test_split_into_ttsr(self):
         xml = """
         <ROOT>
