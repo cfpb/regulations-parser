@@ -2,33 +2,33 @@ import string
 
 from pyparsing import LineEnd, LineStart, SkipTo
 
-from regparser.grammar import common
+from regparser.grammar import atomic, unified
 
 
 section = (
-    common.Marker("section").copy().leaveWhitespace()
-    + common.part_section
+    atomic.section_marker.copy().leaveWhitespace()
+    + unified.part_section
     + SkipTo(LineEnd())
 )
 
 
 par = (
-    common.section.copy().leaveWhitespace()
-    + common.depth1_p
+    atomic.section.copy().leaveWhitespace()
+    + unified.depth1_p
     + SkipTo(LineEnd())
 )
 
 
 marker_par = (
-    common.paragraph_marker.copy().leaveWhitespace()
-    + common.section
-    + common.depth1_p
+    atomic.paragraph_marker.copy().leaveWhitespace()
+    + atomic.section
+    + unified.depth1_p
 )
 
 
 appendix = (
-    common.appendix_marker.copy().leaveWhitespace()
-    + common.appendix_letter
+    atomic.appendix_marker.copy().leaveWhitespace()
+    + atomic.appendix
     + SkipTo(LineEnd())
 )
 

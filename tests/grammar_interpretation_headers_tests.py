@@ -7,8 +7,8 @@ class GrammarInterpretationHeadersTest(TestCase):
     def test_par(self):
         match = parser.parseString("3(c)(4) Pandas")
         self.assertEqual('3', match.section)
-        self.assertEqual('c', match.level1)
-        self.assertEqual('4', match.level2)
+        self.assertEqual('c', match.p1)
+        self.assertEqual('4', match.p2)
 
     def test_section(self):
         match = parser.parseString("Section 105.11")
@@ -16,6 +16,8 @@ class GrammarInterpretationHeadersTest(TestCase):
         self.assertEqual('11', match.section)
 
     def test_newline(self):
+        for m,s,e in parser.scanString("\nSection 100.22"):
+            print m, s, e
         starts = [start for _,start,_ in 
             parser.scanString("\nSection 100.22")]
         self.assertEqual(1, starts[0])
@@ -26,8 +28,8 @@ class GrammarInterpretationHeadersTest(TestCase):
     def test_marker_par(self):
         match = parser.parseString("Paragraph 3(b)")
         self.assertEqual('3', match.section)
-        self.assertEqual('b', match.level1)
+        self.assertEqual('b', match.p1)
 
     def test_appendix(self):
         match = parser.parseString("Appendix M - More Info")
-        self.assertEqual('M', match.letter)
+        self.assertEqual('M', match.appendix)
