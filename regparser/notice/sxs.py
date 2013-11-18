@@ -4,7 +4,6 @@ from itertools import chain, dropwhile, takewhile
 from lxml import etree
 
 from regparser.citations import internal_citations, Label
-import regparser.grammar.rules as grammar
 from regparser.notice.util import body_to_string, spaces_then_remove
 from regparser.notice.util import swap_emphasis_tags
 from regparser.tree.struct import Node
@@ -90,7 +89,8 @@ def build_section_by_section(sxs, part, fr_start_page):
 def add_spaces_to_title(title):
     """Federal Register often seems to miss spaces in the title of SxS
     sections. Make sure spaces get added if appropriate"""
-    for _, _, end in grammar.applicable.scanString(title):
+    for citation in internal_citations(title, Label()):
+        end = citation.end
         # Next char is an alpha and last char isn't a space
         if end < len(title) and title[end].isalpha() and title[end-1] != ' ':
             title = title[:end] + ' ' + title[end:]
@@ -103,8 +103,8 @@ def is_child_of(child_xml, header_xml):
     citations and the child does not"""
     return (child_xml.tag != 'HD'
             or child_xml.get('SOURCE') > header_xml.get('SOURCE')
-            or (list(grammar.applicable.scanString(header_xml.text))
-                and not list(grammar.applicable.scanString(child_xml.text))))
+            or (internal_citations(header_xml.text, Label())
+                and not internal_citations(child_xml.text, Label())))
 
 
 def split_into_ttsr(sxs):
