@@ -37,7 +37,7 @@ class Label(object):
                 break
             settings[schema[idx]] = value
         return Label(**settings)
-            
+
     @staticmethod
     def determine_schema(settings):
         if 'appendix_section' in settings:
@@ -47,7 +47,7 @@ class Label(object):
         elif 'section' in settings:
             return Label.sect_schema
 
-    def __init__(self, schema = None, **kwargs):
+    def __init__(self, schema=None, **kwargs):
         self.using_default_schema = False
         if schema is None:
             schema = Label.determine_schema(kwargs)
@@ -59,7 +59,7 @@ class Label(object):
         self.comment = any(kwargs.get(field) for field in
                            Label.comment_schema)
 
-    def copy(self, schema = None, **kwargs):
+    def copy(self, schema=None, **kwargs):
         """Keep any relevant prefix when copying"""
         kwschema = Label.determine_schema(kwargs)
         set_schema = bool(schema or kwschema
@@ -96,9 +96,8 @@ class Label(object):
         return filter(bool, lst)
 
 
-
 class ParagraphCitation(object):
-    def __init__(self, start, end, label, full_start = None, full_end = None):
+    def __init__(self, start, end, label, full_start=None, full_end=None):
         if full_start is None:
             full_start = start
         if full_end is None:

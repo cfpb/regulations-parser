@@ -20,7 +20,7 @@ class CitationsTest(TestCase):
             ("22(d) Content", ['101', '22', 'd']),
             ("22(d)(5) Content", ['101', '22', 'd', '5']),
             ("22(d)(5)(x) Content", ['101', '22', 'd', '5', 'x']),
-            (u"§ 102.22(d)(5)(x) Content", ['102', '22', 'd', '5' , 'x']),
+            (u"§ 102.22(d)(5)(x) Content", ['102', '22', 'd', '5', 'x']),
             ("22(d)(5)(x)(Q) Content", ['101', '22', 'd', '5', 'x', 'Q']),
             ("Appendix A Heading", ['101', 'A']),
             ("Comment 21(c)-1 Heading", ['101', '21', 'c', 'Interp', '1']),
@@ -33,7 +33,7 @@ class CitationsTest(TestCase):
 
     def test_single_references(self):
         for text, link, label in [
-            ("The requirements in paragraph (a)(4)(iii) of", 
+            ("The requirements in paragraph (a)(4)(iii) of",
              'paragraph (a)(4)(iii)', ['102', '6', 'a', '4', 'iii']),
             (u"date in § 1005.20(h)(1) must disclose", u'§ 1005.20(h)(1)',
              ['1005', '20', 'h', '1']),
@@ -51,7 +51,8 @@ class CitationsTest(TestCase):
             ("See comment 3(b)(1)-1.v.", 'comment 3(b)(1)-1.v',
              ['102', '3', 'b', '1', 'Interp', '1', 'v'])]:
 
-            citations = internal_citations(text, Label(part='102', section='6'))
+            citations = internal_citations(text, Label(part='102',
+                                                       section='6'))
             self.assertEqual(1, len(citations))
             citation = citations[0]
             self.assertEqual(citation.label.to_list(), label)
@@ -101,7 +102,7 @@ class CitationsTest(TestCase):
         self.assertEqual(['222', '5', 'f'], citation.label.to_list())
         self.assertEqual(to_text(citation, text), '(f)')
 
-        text = "set forth in paragraphs (b)(1) or (b)(2)" 
+        text = "set forth in paragraphs (b)(1) or (b)(2)"
         citations = internal_citations(text, Label(part='222', section='5'))
         self.assertEqual(2, len(citations))
         citation = citations[0]
@@ -238,6 +239,7 @@ class CitationsTest(TestCase):
                          citation.label.to_list())
         self.assertEqual(to_text(citation, text), '31(b)(1)(vi)-1')
 
+
 class CitationsLabelTest(TestCase):
     def test_using_default_schema(self):
         label = Label(part='111')
@@ -262,7 +264,7 @@ class CitationsLabelTest(TestCase):
         self.assertEqual(Label.sect_schema,
                          Label.determine_schema({'section': '12'}))
         self.assertEqual(None, Label.determine_schema({}))
-    
+
     def test_to_list(self):
         label = Label(part='222', section='11', p1='c', p2='2')
         self.assertEqual(['222', '11', 'c', '2'], label.to_list())

@@ -35,8 +35,8 @@ plaintext_level5_p = (
     + Suppress(")"))
 
 # Leave whitespace; if there's a space we assume the comment is broken
-upper_c = "." + Word(string.ascii_uppercase).setResultsName('c3'
-        ).leaveWhitespace()
+upper_c = "." + Word(string.ascii_uppercase).setResultsName(
+    'c3').leaveWhitespace()
 roman_c = "." + Word("ivxlcdm").setResultsName('c2').leaveWhitespace()
 digit_c = "-" + Word(string.digits).setResultsName('c1').leaveWhitespace()
 
@@ -63,8 +63,7 @@ subpart_marker = Marker("subpart")
 comment_marker = (
     (Marker("comment")
      | (Marker("official") + Marker("interpretations"))
-     | (Marker("supplement") + Suppress(WordBoundaries("I")))
-    )
+     | (Marker("supplement") + Suppress(WordBoundaries("I"))))
     + Optional(Marker("of") | Marker("to")))
 comments_marker = Marker("comments")
 
@@ -73,5 +72,5 @@ appendix_marker = Marker("appendix")
 conj_phrases = (
     (Suppress(",") + Optional(Marker("and") | Marker("or")))
     | Marker("and")
-    | Marker("or") 
+    | Marker("or")
     | WordBoundaries(CaselessLiteral("through")).setResultsName("through"))

@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from regparser.grammar.unified import *
 
+
 class GrammarCommonTests(TestCase):
 
     def test_depth1_p(self):
@@ -12,4 +13,3 @@ class GrammarCommonTests(TestCase):
         self.assertEqual('ii', result.p3)
         self.assertEqual('A', result.p4)
         self.assertEqual('2', result.p5)
-

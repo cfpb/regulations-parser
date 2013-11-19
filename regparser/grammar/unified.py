@@ -64,13 +64,13 @@ marker_comment = (
     + Optional(depth1_c))
 
 
-_inner_non_comment = ( 
+_inner_non_comment = (
     any_depth_p
     | (part_section + Optional(depth1_p))
     | (atomic.section + depth1_p)
     | appendix_with_section | marker_appendix)
 multiple_non_comments = (
-    (   atomic.paragraphs_marker | atomic.paragraph_marker
+    (atomic.paragraphs_marker | atomic.paragraph_marker
         | atomic.sections_marker | atomic.section_marker)
     + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName("head")
     + OneOrMore(
@@ -87,13 +87,12 @@ multiple_appendix_section = (
 
 multiple_comments = (
     (atomic.comments_marker | atomic.comment_marker)
-    + ( Optional(atomic.section_marker)
+    + (Optional(atomic.section_marker)
         + _inner_non_comment
-        + Optional(depth1_c)
-      ).copy().setParseAction(keep_pos).setResultsName("head")
+        + Optional(depth1_c)).copy().setParseAction(
+        keep_pos).setResultsName("head")
     + OneOrMore(
         atomic.conj_phrases
-        + ( _inner_non_comment
-            + Optional(depth1_c)
-          ).copy().setParseAction(keep_pos).setResultsName(
-              "tail", listAllMatches=True)))
+        + (_inner_non_comment
+            + Optional(depth1_c).copy().setParseAction(
+                keep_pos).setResultsName("tail", listAllMatches=True))))
