@@ -89,10 +89,9 @@ multiple_comments = (
     (atomic.comments_marker | atomic.comment_marker)
     + (Optional(atomic.section_marker)
         + _inner_non_comment
-        + Optional(depth1_c)).copy().setParseAction(
-        keep_pos).setResultsName("head")
+        + Optional(depth1_c)).setParseAction(keep_pos).setResultsName("head")
     + OneOrMore(
         atomic.conj_phrases
         + (_inner_non_comment
-            + Optional(depth1_c).copy().setParseAction(
-                keep_pos).setResultsName("tail", listAllMatches=True))))
+            + Optional(depth1_c)).setParseAction(keep_pos).setResultsName(
+            "tail", listAllMatches=True)))
