@@ -21,7 +21,8 @@ class InternalCitationParser(Layer):
 
         to_layer = lambda pc: {'offsets': [(pc.start, pc.end)],
                                'citation': pc.label.to_list()}
-        all_citations = list(map(to_layer, internal_citations(text, label)))
+        all_citations = list(map(to_layer,
+            internal_citations(text, label, require_marker=True)))
 
         return self.strip_whitespace(text, all_citations)
 

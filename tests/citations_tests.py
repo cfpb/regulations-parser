@@ -45,6 +45,9 @@ class CitationsTest(TestCase):
              ['102', '32', 'b', '3', 'Interp']),
             ("refer to comment 36(a)(2)-3 of thing", 'comment 36(a)(2)-3',
              ['102', '36', 'a', '2', 'Interp', '3']),
+            ("See Appendix A-5", "Appendix A-5", ['102', 'A', '5']),
+            ("See comment 3(v)-1.v. Another", "comment 3(v)-1.v",
+             ['102', '3', 'v', 'Interp', '1', 'v']),
             ("See comment 3(b)(1)-1.v.", 'comment 3(b)(1)-1.v',
              ['102', '3', 'b', '1', 'Interp', '1', 'v'])]:
 
@@ -53,6 +56,14 @@ class CitationsTest(TestCase):
             citation = citations[0]
             self.assertEqual(citation.label.to_list(), label)
             self.assertEqual(link, to_full_text(citation, text))
+
+    def test_section_ref_in_appendix(self):
+        text = u"""(a) Something something § 1005.7(b)(1)."""
+        citations = internal_citations(
+            text, Label(part='1005', appendix='A', appendix_section='2',
+                        p1='a'))
+        self.assertEqual(citations[0].label.to_list(),
+                         ['1005', '7', 'b', '1'])
 
     def test_multiple_matches(self):
         text = "Please see A-5 and Q-2(r) and Z-12(g)(2)(ii) then more text"
@@ -228,13 +239,29 @@ class CitationsTest(TestCase):
         self.assertEqual(to_text(citation, text), '31(b)(1)(vi)-1')
 
 class CitationsLabelTest(TestCase):
+    def test_using_default_schema(self):
+        label = Label(part='111')
+        self.assertTrue(label.using_default_schema)
+        label = Label(part='111', p1='b')
+        self.assertTrue(label.using_default_schema)
+        label = Label(part='111', c2='r')
+        self.assertTrue(label.using_default_schema)
+
+        label = Label(part='111', section='21')
+        self.assertFalse(label.using_default_schema)
+        label = Label(part='111', appendix='B3')
+        self.assertFalse(label.using_default_schema)
+        label = Label(part='111', appendix_section='3')
+        self.assertFalse(label.using_default_schema)
+
     def test_determine_schema(self):
         self.assertEqual(Label.app_sect_schema,
                          Label.determine_schema({'appendix_section': '1'}))
         self.assertEqual(Label.app_schema,
                          Label.determine_schema({'appendix': 'A'}))
         self.assertEqual(Label.sect_schema,
-                         Label.determine_schema({}))
+                         Label.determine_schema({'section': '12'}))
+        self.assertEqual(None, Label.determine_schema({}))
     
     def test_to_list(self):
         label = Label(part='222', section='11', p1='c', p2='2')

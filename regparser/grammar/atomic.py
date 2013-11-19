@@ -34,9 +34,11 @@ plaintext_level5_p = (
     + Word(string.digits).setResultsName("plaintext_p5")
     + Suppress(")"))
 
-upper_c = "." + Word(string.ascii_uppercase).setResultsName('c3')
-roman_c = "." + Word("ivxlcdm").setResultsName('c2')
-digit_c = "-" + Word(string.digits).setResultsName('c1')
+# Leave whitespace; if there's a space we assume the comment is broken
+upper_c = "." + Word(string.ascii_uppercase).setResultsName('c3'
+        ).leaveWhitespace()
+roman_c = "." + Word("ivxlcdm").setResultsName('c2').leaveWhitespace()
+digit_c = "-" + Word(string.digits).setResultsName('c1').leaveWhitespace()
 
 part = Word(string.digits).setResultsName("part")
 

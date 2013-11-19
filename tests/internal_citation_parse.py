@@ -285,3 +285,9 @@ class ParseTest(TestCase):
         self.assertEqual(['222', '87', 'd', '3', 'i'], result[0]['citation'])
         offsets = result[0]['offsets'][0]
         self.assertEqual('(d)(3)(i)', text[offsets[0]:offsets[1]])
+
+    def test_cfr_format(self):
+        """We aren't processing this form yet"""
+        text = "12 CFR 1026.3(d)"
+        result = self.parser.process(Node(text, label=['1111']))
+        self.assertEqual(None, result)

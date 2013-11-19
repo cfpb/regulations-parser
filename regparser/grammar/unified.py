@@ -31,10 +31,15 @@ marker_paragraph = (
         "marker")
     + depth1_p)
 
+appendix_with_section = (
+    atomic.appendix
+    + '-' + atomic.appendix_section
+    + Optional(depth1_p))
+
 marker_appendix = (
     atomic.appendix_marker.copy().setParseAction(keep_pos).setResultsName(
         "marker")
-    + atomic.appendix)
+    + (appendix_with_section | atomic.appendix))
 
 marker_part = (
     atomic.part_marker.copy().setParseAction(keep_pos).setResultsName("marker")
@@ -51,11 +56,6 @@ marker_subpart_title = (
     + Suppress(Literal(u"—"))
     + SkipTo(LineEnd()).setResultsName("subpart_title")
 )
-
-appendix_with_section = (
-    atomic.appendix
-    + '-' + atomic.appendix_section
-    + Optional(depth1_p))
 
 marker_comment = (
     atomic.comment_marker.copy().setParseAction(keep_pos).setResultsName(

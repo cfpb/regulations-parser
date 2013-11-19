@@ -10,6 +10,7 @@ class Label(object):
                        'p3', 'p4', 'p5', 'p6')
     app_schema = ('part', 'appendix', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6')
     sect_schema = ('part', 'section', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6')
+    default_schema = sect_schema
 
     comment_schema = ('comment', 'c1', 'c2', 'c3')
 
@@ -43,12 +44,16 @@ class Label(object):
             return Label.app_sect_schema
         elif 'appendix' in settings:
             return Label.app_schema
-        else:
+        elif 'section' in settings:
             return Label.sect_schema
 
     def __init__(self, schema = None, **kwargs):
+        self.using_default_schema = False
         if schema is None:
             schema = Label.determine_schema(kwargs)
+        if schema is None:
+            self.using_default_schema = True
+            schema = Label.default_schema
         self.settings = kwargs
         self.schema = schema
         self.comment = any(kwargs.get(field) for field in
@@ -57,12 +62,20 @@ class Label(object):
     def copy(self, schema = None, **kwargs):
         """Keep any relevant prefix when copying"""
         kwschema = Label.determine_schema(kwargs)
-        if schema is None and kwschema != Label.sect_schema:
-            schema = kwschema
-        elif schema is None:
-            schema = self.schema
+        set_schema = bool(schema or kwschema
+                          or not self.using_default_schema)
 
-        new_settings = {}
+        if schema is None:
+            if kwschema:
+                schema = kwschema
+            else:
+                schema = self.schema
+
+        if set_schema:
+            new_settings = {'schema': schema}
+        else:
+            new_settings = {}
+
         found_start = False
         for field in (schema + Label.comment_schema):
             if field in kwargs:
@@ -122,7 +135,9 @@ def match_to_label(match, initial_label, comment=False):
     return label
 
 
-def internal_citations(text, initial_label):
+def internal_citations(text, initial_label, require_marker=False):
+    """List of all internal citations in the text. require_marker helps by
+    requiring text be prepended by 'comment'/'paragraphs'/etc."""
     citations = []
 
     def multiple_citations(matches, comment):
@@ -160,7 +175,8 @@ def internal_citations(text, initial_label):
     single_citations(grammar.appendix_with_section.scanString(text), False)
     single_citations(grammar.marker_paragraph.scanString(text), False)
     single_citations(grammar.mps_paragraph.scanString(text), False)
-    single_citations(grammar.section_paragraph.scanString(text), False)
+    if not require_marker:
+        single_citations(grammar.section_paragraph.scanString(text), False)
 
     # Remove any sub-citations
     final_citations = []
