@@ -1,5 +1,5 @@
 from regparser import utils
-from regparser.grammar.internal_citations import regtext_citation
+from regparser.citations import internal_citations, Label
 from regparser.tree.appendix import carving, generic
 from regparser.tree.paragraph import ParagraphParser
 from regparser.tree.struct import Node
@@ -65,9 +65,8 @@ def paragraph_tree(appendix_letter, sections, text, label, title=None):
         seg_title, section_text = utils.title_body(text[begin:end])
         sec_num = carving.get_appendix_section_number(
             seg_title, appendix_letter)
-        exclude = [
-            (start, end) for _, start, end in
-            regtext_citation.scanString(section_text)]
+        exclude = [(pc.full_start, pc.full_end) for pc in
+                   internal_citations(section_text, Label(part=label[0]))]
 
         child = parParser.build_tree(
             section_text, exclude=exclude, label=label + [sec_num],

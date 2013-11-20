@@ -4,10 +4,13 @@ import string
 from pyparsing import CaselessLiteral, Literal, OneOrMore, Optional, Regex
 from pyparsing import Suppress, Word, WordEnd, WordStart
 
-from regparser.grammar import common, tokens
-from regparser.grammar.common import WordBoundaries
+from regparser.grammar import atomic, tokens, unified
+from regparser.grammar.utils import Marker, WordBoundaries
 from regparser.tree.paragraph import p_levels
 
+
+intro_text_marker = (
+    Marker("introductory") + WordBoundaries(CaselessLiteral("text")))
 
 #Verbs
 def generate_verb(word_list, verb, active):
@@ -42,55 +45,53 @@ move_passive = generate_verb(['redesignated'], tokens.Verb.MOVE, active=False)
 
 #   Context
 context_certainty = Optional(
-    common.Marker("in") | (
-        common.Marker("under") + Optional(
-            common.Marker("subheading")))).setResultsName("certain")
+    Marker("in") | (
+        Marker("under") + Optional(
+            Marker("subheading")))).setResultsName("certain")
 
 interp = (
-    context_certainty
-    + common.marker_interpretation
-    ).setParseAction(lambda m: tokens.Context(
-    [m.part, 'Interpretations'], bool(m.certain)))
+    context_certainty + atomic.comment_marker + unified.marker_part
+).setParseAction(lambda m: tokens.Context([m.part, 'Interpretations'],
+                                          bool(m.certain)))
 
 marker_subpart = (
     context_certainty
-    + common.marker_subpart
+    + unified.marker_subpart
     ).setParseAction(lambda m: tokens.Context(
     [None, 'Subpart:' + m.subpart], bool(m.certain)))
 comment_context_with_section = (
     context_certainty
     #   Confusingly, these are sometimes "comments", sometimes "paragraphs"
-    + (common.Marker("comment") | common.Marker("paragraph"))
-    + common.section
-    + common.depth1_p
+    + (Marker("comment") | Marker("paragraph"))
+    + atomic.section
+    + unified.depth1_p
     ).setParseAction(lambda m: tokens.Context([None, 'Interpretations', 
-        m.section, '(' + ')('.join(p for p in [m.level1, m.level2, m.level3, 
-            m.level4, m.level5] if p) + ')'], bool(m.certain)))
+        m.section, '(' + ')('.join(p for p in [m.p1, m.p2, m.p3, m.p4, m.p5] 
+                                   if p) + ')'], bool(m.certain)))
 comment_context_without_section = (
     context_certainty
-    + common.paragraph_marker
-    + common.depth2_p
+    + atomic.paragraph_marker
+    + unified.depth2_p
     ).setParseAction(lambda m: tokens.Context([None, 'Interpretations', None, 
-        '(' + ')('.join(p for p in [m.level2, m.level3, m.level4, m.level5] 
+        '(' + ')('.join(p for p in [m.p2, m.p3, m.p4, m.p5] 
             if p) + ')'], bool(m.certain)))
 appendix = (
     context_certainty
-    + common.appendix_marker
-    + common.appendix_letter
-    + Optional(common.Marker("to") + common.marker_part)
+    + unified.marker_appendix
+    + Optional(Marker("to") + unified.marker_part)
     ).setParseAction(lambda m: tokens.Context(
-        [m.part, 'Appendix:' + m.letter], bool(m.certain)))
+        [m.part, 'Appendix:' + m.appendix], bool(m.certain)))
 section = (
     context_certainty
-    + common.section_marker 
-    + common.part_section).setParseAction(lambda m: tokens.Context(
+    + atomic.section_marker 
+    + unified.part_section).setParseAction(lambda m: tokens.Context(
         [m.part, None, m.section], bool(m.certain)))
 
 
 #   Paragraph components (used when not replacing the whole paragraph)
-section_heading = common.Marker("heading").setParseAction(lambda _: 
+section_heading = Marker("heading").setParseAction(lambda _: 
     tokens.Paragraph([], field=tokens.Paragraph.HEADING_FIELD))
-intro_text = common.intro_text.copy().setParseAction(
+intro_text = intro_text_marker.copy().setParseAction(
     lambda _: tokens.Paragraph([], field=tokens.Paragraph.TEXT_FIELD))
 
 
@@ -104,32 +105,31 @@ comment_p = (
             + Word(string.ascii_uppercase).setResultsName("level4"))))
 
 section_heading_of = (
-    common.Marker("heading") + common.Marker("of")
-    + common.marker_part_section
+    Marker("heading") + Marker("of")
+    + unified.marker_part_section
     ).setParseAction(lambda m: tokens.Paragraph([m.part, None, m.section], 
         field=tokens.Paragraph.TEXT_FIELD))
 intro_text_of = (
-    common.intro_text + common.Marker("of")
-    + common.marker_paragraph.copy()
+    intro_text_marker + Marker("of")
+    + unified.marker_paragraph.copy()
     ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
-        m.level1, m.level2, m.level3, m.level4, m.level5], 
+        m.p1, m.p2, m.p3, m.p4, m.p5], 
         field=tokens.Paragraph.TEXT_FIELD))
 single_par = (
-    common.marker_paragraph
-    + Optional(common.intro_text)
+    unified.marker_paragraph
+    + Optional(intro_text_marker)
     ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
-        m.level1, m.level2, m.level3, m.level4, m.level5], 
+        m.p1, m.p2, m.p3, m.p4, m.p5], 
         field=(tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
 section_single_par = (
-    common.marker_part_section
-    + common.depth1_p
-    + Optional(common.intro_text)
+    unified.marker_part_section
+    + unified.depth1_p
+    + Optional(intro_text_marker)
     ).setParseAction(lambda m: tokens.Paragraph([m.part, None,
-        m.section, m.level1, m.level2, m.level3,
-        m.level4, m.level5],
+        m.section, m.p1, m.p2, m.p3, m.p4, m.p5],
         field=(tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
 single_comment_par=(
-    common.paragraph_marker
+    atomic.paragraph_marker
     + comment_p
     ).setParseAction(lambda m: tokens.Paragraph([None,
         'Interpretations', None, None, m.level2, m.level3,
@@ -140,11 +140,11 @@ single_comment_par=(
 def make_multiple(to_repeat):
     """Shorthand for handling repeated tokens ('and', ',', 'through')"""
     return (
-        (to_repeat + Optional(common.intro_text)).setResultsName("head")
+        (to_repeat + Optional(intro_text_marker)).setResultsName("head")
         + OneOrMore((
-            (common.conj_phrases | common.through).setResultsName("conj")
+            atomic.conj_phrases
             + to_repeat
-            + Optional(common.intro_text)
+            + Optional(intro_text_marker)
         ).setResultsName("tail", listAllMatches=True))
     )
 
@@ -159,7 +159,7 @@ def make_par_list(listify):
             next_par = tokens.Paragraph(match_as_list)
             if match[-1] == 'text':
                 next_par.field = tokens.Paragraph.TEXT_FIELD
-            if match.conj == 'through':
+            if match.through:
                 #   Iterate through, creating paragraph tokens
                 prev = pars[-1]
                 if len(prev.label) == 3:
@@ -181,33 +181,34 @@ def make_par_list(listify):
     return curried
 
 multiple_sections = (
-    common.section_markers
-    + make_multiple(common.part_section)
+    atomic.sections_marker
+    + make_multiple(unified.part_section)
     ).setParseAction(make_par_list(lambda m: [m.part, None, m.section]))
 
 multiple_pars = (
-    common.paragraph_markers
-    + make_multiple(common.depth1_p)
+    atomic.paragraphs_marker
+    + make_multiple(unified.depth1_p)
     ).setParseAction(make_par_list(lambda m: [m.part, None, m.section,
-        m.level1, m.level2, m.level3, m.level4, m.level5]))
+        m.p1, m.p2, m.p3, m.p4, m.p5]))
 
-multiple_appendices = make_multiple(common.appendix_shorthand).setParseAction(
-    make_par_list(lambda m: [None, 'Appendix:' + m.letter, m.section,
-        m.level1, m.level2, m.level3, m.level4, m.level5]))
+multiple_appendices = make_multiple(unified.appendix_with_section
+    ).setParseAction(make_par_list(
+        lambda m: [None, 'Appendix:' + m.appendix, m.appendix_section, m.p1,
+                   m.p2, m.p3, m.p4, m.p5]))
 
 multiple_comment_pars = (
-    common.paragraph_markers
+    atomic.paragraphs_marker
     + make_multiple(comment_p)
     ).setParseAction(make_par_list(lambda m: [None, 'Interpretations', None,
         None, m.level2, m.level3, m.level4]))
 
 #   Not a context as one wouldn't list these for contextual purposes
 multiple_comments = (
-    common.Marker("comments")
-    + make_multiple(common.section + common.depth1_p)
+    Marker("comments")
+    + make_multiple(atomic.section + unified.depth1_p)
     ).setParseAction(make_par_list(lambda m: [None, 'Interpretations',
-        m.section, '(' + ')('.join(p for p in [m.level1, m.level2, m.level3,
-            m.level4, m.level5] if p) + ')']))
+        m.section, '(' + ')('.join(p for p in [m.p1, m.p2, m.p3, m.p4, m.p5]
+                                   if p) + ')']))
 
 
 #   grammar which captures all of these possibilities

@@ -1,4 +1,5 @@
-from pyparsing import getTokensEndLoc, Literal
+from pyparsing import alphanums, CaselessLiteral, getTokensEndLoc, Literal
+from pyparsing import Suppress, WordEnd, WordStart
 
 
 def keep_pos(source, location, tokens):
@@ -24,3 +25,11 @@ class DocLiteral(Literal):
     def __init__(self, literal, ascii_text):
         super(DocLiteral, self).__init__(literal)
         self.name = ascii_text
+
+
+def WordBoundaries(grammar):
+    return WordStart(alphanums) + grammar + WordEnd(alphanums)
+
+
+def Marker(txt):
+    return Suppress(WordBoundaries(CaselessLiteral(txt)))

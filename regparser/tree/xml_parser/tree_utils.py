@@ -1,6 +1,6 @@
 import HTMLParser
 from lxml import etree
-from regparser.grammar.common import any_depth_p
+from regparser.grammar.unified import any_depth_p
 
 
 def prepend_parts(parts_prefix, n):
@@ -58,7 +58,7 @@ def get_paragraph_markers(text):
 
     for citation, start, end in any_depth_p.scanString(text):
         if start == 0:
-            return citation[0][0]
+            return list(citation)
     return []
 
 

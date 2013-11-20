@@ -3,7 +3,7 @@ import string
 
 from pyparsing import Optional, Suppress, Word
 
-from regparser.grammar import common
+from regparser.grammar import utils
 
 
 class EffectiveDate:
@@ -28,24 +28,24 @@ class Delayed:
 
 
 effective_date = (
-    common.Marker("effective") + common.Marker("date")
+    utils.Marker("effective") + utils.Marker("date")
 ).setParseAction(lambda: EffectiveDate())
 
 
 notice_citation = (
     Word(string.digits)
-    + common.Marker('FR')
+    + utils.Marker('FR')
     + Word(string.digits)
 ).setParseAction(lambda m: Notice(int(m[0]), int(m[1])))
 
 
-delayed = common.Marker("delayed").setParseAction(lambda: Delayed())
+delayed = utils.Marker("delayed").setParseAction(lambda: Delayed())
 
 
 def int2Month(m):
     month = date(2000, m, 1)
     month = month.strftime('%B')
-    token = common.Marker(month)
+    token = utils.Marker(month)
     return token.setParseAction(lambda: m)
 
 
