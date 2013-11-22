@@ -33,3 +33,7 @@ def WordBoundaries(grammar):
 
 def Marker(txt):
     return Suppress(WordBoundaries(CaselessLiteral(txt)))
+
+
+def SuffixMarker(txt):
+    return Suppress(CaselessLiteral(txt) + WordEnd(alphanums))

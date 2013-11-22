@@ -4,7 +4,7 @@ import string
 
 from pyparsing import CaselessLiteral, Optional, Regex, Suppress, Word
 
-from regparser.grammar.utils import Marker, WordBoundaries
+from regparser.grammar.utils import Marker, SuffixMarker, WordBoundaries
 
 
 lower_p = (
@@ -52,8 +52,11 @@ subpart = Word(string.ascii_uppercase).setResultsName("subpart")
 section_marker = Suppress(Regex(u"§|Section|section"))
 sections_marker = Suppress(Regex(u"§§|Sections|sections"))
 
+# Most of these markers could be SuffixMarkers (which arise due to errors in
+# the regulation text). We'll wait until we see explicit examples before
+# converting them though, to limit false matches
 paragraph_marker = Marker("paragraph")
-paragraphs_marker = Marker("paragraphs")
+paragraphs_marker = SuffixMarker("paragraphs")
 
 part_marker = Marker("part")
 parts_marker = Marker("parts")

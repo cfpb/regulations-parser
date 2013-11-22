@@ -14,6 +14,11 @@ class ParseTest(TestCase):
         citations = self.parser.process(node)
         self.assertEqual(len(citations), 1)
 
+    def test_underparagraph(self):
+        text = 'Something something underparagraphs (a)(4) through (5)'
+        citations = self.parser.process(Node(text, label=['1005', '6']))
+        self.assertEqual(len(citations), 2)
+
     def test_multiple_paragraphs(self):
         """ Ensure that offsets work correctly in a simple multiple paragraph scenario. """
 
