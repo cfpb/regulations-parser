@@ -8,7 +8,7 @@ from regparser.notice.sxs import build_section_by_section
 from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
 
 
-def build_notice(cfr_title, cfr_part, fr_notice):
+def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     """Given JSON from the federal register, create our notice structure"""
     notice = {'cfr_title': cfr_title, 'cfr_part': cfr_part}
     #   Copy over most fields
@@ -33,7 +33,7 @@ def build_notice(cfr_title, cfr_part, fr_notice):
     for key in ('dates', 'end_page', 'start_page', 'type'):
         notice['meta'][key] = fr_notice[key]
 
-    if fr_notice['full_text_xml_url']:
+    if fr_notice['full_text_xml_url'] and do_process_xml:
         notice_str = requests.get(fr_notice['full_text_xml_url']).content
         notice_xml = etree.fromstring(notice_str)
         process_xml(notice, notice_xml)
@@ -77,10 +77,11 @@ def add_footnotes(notice, notice_xml):
         swap_emphasis_tags(child)
 
         ref = child.xpath('.//SU')
-        child.text = ref[0].tail
-        child.remove(ref[0])
-        content = child.text
-        for cc in child:
-            content += etree.tostring(cc)
-        content += child.tail
-        notice['footnotes'][ref[0].text] = content.strip()
+        if ref:
+            child.text = ref[0].tail
+            child.remove(ref[0])
+            content = child.text
+            for cc in child:
+                content += etree.tostring(cc)
+            content += child.tail
+            notice['footnotes'][ref[0].text] = content.strip()

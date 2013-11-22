@@ -1,10 +1,9 @@
 from unittest import TestCase
 
-from regparser.notice.history import *
+from regparser.history.delays import *
 
 
-class NoticeHistoryTests(TestCase):
-
+class HistoryDelaysTests(TestCase):
     def test_modify_effective_dates(self):
         outdated = {'document_number': 'outdated',
                     'effective_on': '2001-01-01',
@@ -73,29 +72,3 @@ class NoticeHistoryTests(TestCase):
         sent += "January 7, 2008; rather I mean March 4 2008"
         self.assertEqual(altered_frs(sent),
                          ([Notice(9, 765)], date(2008, 3, 4)))
-
-    def test_applicable(self):
-        head = {'document_number': 'head',
-                'effective_on': '2012-05-05',
-                'publication_date': '2011-09-09'}
-        history = {'document_number': 'history',
-                   'effective_on': '2012-01-01',
-                   'publication_date': '2011-04-04'}
-        prefinal = {'document_number': 'pre_final',
-                    'effective_on': '2012-05-05',
-                    'publication_date': '2011-08-08'}
-        future = {'document_number': 'future',
-                  'effective_on': '2012-05-05',
-                  'publication_date': '2011-10-10'}
-        notices = applicable([history, head, prefinal, future], 'head')
-        self.assertEqual([head, history, prefinal], notices)
-
-    def test_applicable_proposal(self):
-        """For now, we ignore proposals"""
-        head = {'document_number': 'head',
-                'effective_on': '2012-05-05',
-                'publication_date': '2011-09-09'}
-        proposal = {'document_number': 'proposal',
-                    'publication_date': '2011-08-18'}
-        notices = applicable([head, proposal], 'head')
-        self.assertEqual([head], notices)

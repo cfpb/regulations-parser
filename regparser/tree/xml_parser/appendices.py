@@ -207,14 +207,14 @@ def build_non_reg_text(reg_xml, reg_part):
             if 'Appendix' in child.text and 'Part' in child.text:
                 section_type = 'APPENDIX'
                 node_type = Node.APPENDIX
-                current_section = headers.parseString(child.text).letter
+                current_section = headers.parseString(child.text).appendix
             elif 'Supplement' in child.text and 'Part' in child.text:
                 section_type = 'SUPPLEMENT'
                 node_type = Node.INTERP
             else:
                 p_level = 2
                 if section_type == 'SUPPLEMENT' and 'Appendix' in child.text:
-                    current_section = headers.parseString(child.text).letter
+                    current_section = headers.parseString(child.text).appendix
                 else:
                     current_section = determine_next_section(m_stack, p_level)
 
