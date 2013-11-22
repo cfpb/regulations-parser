@@ -9,18 +9,33 @@ from regparser.tree import reg_text
 from regparser.tree.xml_parser import tree_utils
 
 
-def determine_level(c, current_level):
+def determine_level(c, current_level, next_marker=None):
     """ Regulation paragraphs are hierarchical. This determines which level
-    the paragraph is at. """
-    if c in p_levels[2] and (current_level > 1 or c not in p_levels[0]):
-        p_level = 3
-    elif c in p_levels[0]:
-        p_level = 1
-    elif c in p_levels[1]:
-        p_level = 2
-    elif c in p_levels[3]:
-        p_level = 4
-    return p_level
+    the paragraph is at. Convert between p_level indexing and depth here by
+    adding one"""
+    potential = [i for i in range(len(p_levels)) if c in p_levels[i]]
+
+    if len(potential) > 1 and next_marker:     # resolve ambiguity
+        following = [i for i in range(len(p_levels))
+                     if next_marker in p_levels[i]]
+
+        #   Add character index
+        potential = [(level, p_levels[level].index(c)) for level in potential]
+        following = [(level, p_levels[level].index(next_marker))
+                     for level in following]
+
+        #   Check if we can be certain using the following marker
+        for pot_level, pot_idx in potential:
+            for next_level, next_idx in following:
+                if (    #   E.g. i followed by A or i followed by 1
+                    (next_idx == 0 and next_level == pot_level + 1)
+                    or  #   E.g. i followed by ii
+                    (next_level == pot_level and next_idx == pot_idx + 1)
+                    or  #   E.g. i followed by 3
+                    (next_level < pot_level and next_idx > 0)):
+                    return pot_level + 1
+    else:
+        return potential[0] + 1
 
 
 def get_reg_part(reg_doc):
@@ -112,33 +127,54 @@ def get_markers_and_text(node, markers_list):
     return zip(markers_list, node_text_list)
 
 
+def next_marker(xml_node, remaining_markers):
+    """Try to determine the marker following the current xml_node. Remaining
+    markers is a list of other marks *within* the xml_node. May return
+    None"""
+    #   More markers in this xml node
+    if remaining_markers:
+        return remaining_markers[0][0]
+
+    #   Check the next xml node
+    sib = xml_node.getnext()
+    if sib is not None:
+        next_text = tree_utils.get_node_text(sib)
+        next_markers = get_markers(next_text)
+        if next_markers:
+            return next_markers[0]
+
+
 def build_section(reg_part, section_xml):
     p_level = 1
     m_stack = NodeStack()
     section_texts = []
-    for ch in section_xml.getchildren():
-        if ch.tag == 'P':
-            text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
-            markers_list = get_markers(text)
+    for ch in (ch for ch in section_xml.getchildren() if ch.tag == 'P'):
+        text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
+        markers_list = get_markers(text)
 
-            if not markers_list:
-                node_text = tree_utils.get_node_text(ch)
-                tagged_text = tree_utils.get_node_text_tags_preserved(ch)
-                section_texts.append((node_text, tagged_text))
-            else:
-                markers_and_text = get_markers_and_text(ch, markers_list)
+        if not markers_list:
+            node_text = tree_utils.get_node_text(ch)
+            tagged_text = tree_utils.get_node_text_tags_preserved(ch)
+            section_texts.append((node_text, tagged_text))
+        else:
+            markers_and_text = get_markers_and_text(ch, markers_list)
 
-                for m, node_text in markers_and_text:
-                    n = Node(node_text[0], [], [str(m)])
-                    n.tagged_text = unicode(node_text[1])
+            #   Easier to reason if we view the list as a stack
+            markers_and_text = list(reversed(markers_and_text))
+            while markers_and_text:
+                m, node_text = markers_and_text.pop()
+                n = Node(node_text[0], [], [str(m)])
+                n.tagged_text = unicode(node_text[1])
 
-                    new_p_level = determine_level(m, p_level)
-                    last = m_stack.peek()
-                    if len(last) == 0:
-                        m_stack.push_last((new_p_level, n))
-                    else:
-                        tree_utils.add_to_stack(m_stack, new_p_level, n)
-                    p_level = new_p_level
+                new_p_level = determine_level(
+                    m, p_level, next_marker(ch, markers_and_text))
+
+                last = m_stack.peek()
+                if len(last) == 0:
+                    m_stack.push_last((new_p_level, n))
+                else:
+                    tree_utils.add_to_stack(m_stack, new_p_level, n)
+                p_level = new_p_level
 
     section_title = section_xml.xpath('SECTNO')[0].text
     subject_xml = section_xml.xpath('SUBJECT')
