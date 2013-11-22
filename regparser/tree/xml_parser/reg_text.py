@@ -141,7 +141,10 @@ def build_section(reg_part, section_xml):
                     p_level = new_p_level
 
     section_title = section_xml.xpath('SECTNO')[0].text
-    subject_text = section_xml.xpath('SUBJECT')[0].text
+    subject_xml = section_xml.xpath('SUBJECT')
+    if not subject_xml:
+        subject_xml = section_xml.xpath('RESERVED')
+    subject_text = subject_xml[0].text
     if subject_text:
         section_title += " " + subject_text
 

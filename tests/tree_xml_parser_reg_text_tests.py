@@ -44,6 +44,17 @@ class RegTextTest(TestCase):
         lowest_label = node.children[0].children[0].label
         self.assertEqual(['8675', '309', 'a', '1'], lowest_label)
 
+    def test_build_section_reserved(self):
+        xml = u"""
+            <SECTION>
+                <SECTNO>§ 8675.309</SECTNO>
+                <RESERVED>[Reserved]</RESERVED>
+            </SECTION>"""
+        node = build_section('8675', etree.fromstring(xml))
+        self.assertEqual(node.label, ['8675', '309'])
+        self.assertEqual(u'§ 8675.309 [Reserved]', node.title)
+        self.assertEqual([], node.children)
+
     def test_get_title(self):
         xml = u"""
             <PART>
