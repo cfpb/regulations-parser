@@ -66,7 +66,13 @@ class TreeUtilsTest(unittest.TestCase):
         n = m_stack.pop()[0][1]
         self.assertEqual(n.children[0].label, ['272', 'a'])
 
-    def test_get_paragraph_markers(self):
+    def test_get_collapsed_markers(self):
         text = u'(a) <E T="03">Transfer </E>—(1) <E T="03">Notice.</E> follow'
         markers = tree_utils.get_collapsed_markers(text)
         self.assertEqual(markers, [u'1'])
+
+        text = '(1) See paragraph (a) for more'
+        self.assertEqual([], tree_utils.get_collapsed_markers(text))
+
+        text = '(a) (1) More content'
+        self.assertEqual([], tree_utils.get_collapsed_markers(text))

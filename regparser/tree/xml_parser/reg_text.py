@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import re
+import logging
+
 from lxml import etree
+
 from regparser.tree.struct import Node
 from regparser.tree.paragraph import p_levels
 from regparser.tree.node_stack import NodeStack
@@ -34,6 +37,10 @@ def determine_level(c, current_level, next_marker=None):
                     or  #   E.g. i followed by 3
                     (next_level < pot_level and next_idx > 0)):
                     return pot_level + 1
+        logging.warning("Ambiguous marker (%s) not followed by something "
+                        + "disambiguating (%s)", c, next_marker)
+        return potential[0][0] + 1
+
     else:
         return potential[0] + 1
 

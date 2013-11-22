@@ -1,9 +1,13 @@
-from itertools import chain
+#vim: set encoding=utf-8
 import HTMLParser
+from itertools import chain
+import re
 
 from lxml import etree
 
-from regparser.grammar.unified import any_depth_p, xml_collapsed_paragraph
+from regparser.citations import internal_citations
+from regparser.grammar.unified import any_depth_p
+from regparser.tree.paragraph import p_levels
 
 
 def prepend_parts(parts_prefix, n):
@@ -55,15 +59,38 @@ def split_text(text, tokens):
     return texts
 
 
+first_markers = [re.compile(ur'[\s|^|,|-|—]\((' 
+                            + re.escape(level[0]) + ')\)')
+                 for level in p_levels]
+
+
 def get_collapsed_markers(text):
-    """ We have collapsed markers that look something like this:
-    (a) some text -(1) more text. We pull out -(1) type markers here. """
-    return [c[0][0] for c, s, e in xml_collapsed_paragraph.scanString(text)]
+    """Not all paragraph markers are at the beginning of of the text. This
+    grabs inner markers like (1) and (i) here: 
+    (c) cContent —(1) 1Content (i) iContent"""
+    matches = []
+    for marker in first_markers:
+        lst = [m for m in marker.finditer(text) if m.start() > 0]
+        matches.extend([m for m in marker.finditer(text) if m.start() > 0])
+
+    #   remove matches at the beginning
+    start = text.find(')') + 1
+    while matches and matches[0].start() == start:
+        start = matches[0].end()
+        matches = matches[1:]
+
+    #   remove any that overlap with citations
+    matches = [m for m in matches
+               if not any(e.start <= m.start() and e.end >= m.end()
+               for e in internal_citations(text))]
+
+    #   get the letters
+    return [match.group(1) for match in matches]
 
 
 def get_paragraph_markers(text):
     """ From a body of text that contains paragraph markers, extract the
-    markers. """
+    initial markers. """
 
     for citation, start, end in any_depth_p.scanString(text):
         if start == 0:

@@ -19,11 +19,6 @@ depth2_p = atomic.digit_p + Optional(depth3_p)
 depth1_p = atomic.lower_p + Optional(depth2_p)
 any_depth_p = (depth1_p | depth2_p | depth3_p | depth4_p | depth5_p)
 
-xml_collapsed_paragraph = (
-    Suppress(Literal(u'—'))
-    + (atomic.lower_p | atomic.digit_p | atomic.roman_p | atomic.upper_p
-        | atomic.em_digit_p))
-
 depth2_c = atomic.roman_c + Optional(atomic.upper_c)
 depth1_c = atomic.digit_c + Optional(depth2_c)
 
