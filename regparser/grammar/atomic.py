@@ -76,4 +76,5 @@ conj_phrases = (
     (Suppress(",") + Optional(Marker("and") | Marker("or")))
     | Marker("and")
     | Marker("or")
+    | (Marker("except") + Marker("for"))
     | WordBoundaries(CaselessLiteral("through")).setResultsName("through"))

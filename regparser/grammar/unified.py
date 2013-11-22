@@ -79,16 +79,20 @@ multiple_non_comments = (
         | atomic.sections_marker | atomic.section_marker)
     + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName("head")
     + OneOrMore(
-        atomic.conj_phrases
+        Optional(Suppress('('))
+        + atomic.conj_phrases
         + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName(
-            "tail", listAllMatches=True)))
+            "tail", listAllMatches=True)
+        + Optional(Suppress(')'))))
 multiple_appendix_section = (
     appendix_with_section.copy().setParseAction(keep_pos).setResultsName(
         "head")
     + OneOrMore(
-        atomic.conj_phrases
+        Optional(Suppress('('))
+        + atomic.conj_phrases
         + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName(
-            "tail", listAllMatches=True)))
+            "tail", listAllMatches=True)
+        + Optional(Suppress(')'))))
 
 multiple_comments = (
     (atomic.comments_marker | atomic.comment_marker)
@@ -96,7 +100,9 @@ multiple_comments = (
         + _inner_non_comment
         + Optional(depth1_c)).setParseAction(keep_pos).setResultsName("head")
     + OneOrMore(
-        atomic.conj_phrases
+        Optional(Suppress('('))
+        + atomic.conj_phrases
         + (_inner_non_comment
             + Optional(depth1_c)).setParseAction(keep_pos).setResultsName(
-            "tail", listAllMatches=True)))
+            "tail", listAllMatches=True)
+        + Optional(Suppress(')'))))
