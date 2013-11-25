@@ -117,6 +117,7 @@ def get_markers(text):
     markers = tree_utils.get_paragraph_markers(text)
     collapsed_markers = tree_utils.get_collapsed_markers(text)
     markers_list = [m for m in markers] + [m for m in collapsed_markers]
+
     return markers_list
 
 
@@ -156,7 +157,7 @@ def build_section(reg_part, section_xml):
     m_stack = NodeStack()
     section_texts = []
     for ch in (ch for ch in section_xml.getchildren() if ch.tag == 'P'):
-        text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
+        text = tree_utils.get_node_text(ch)
         markers_list = get_markers(text)
 
         if not markers_list:

@@ -34,15 +34,19 @@ class RegTextTest(TestCase):
                 <SUBJECT>Definitions.</SUBJECT>
                 <P>(a) <E T="03">Transfers </E>—(1) <E T="03">Notice.</E> follow
                 </P>
+                <P>(b) <E T="03">Contents</E> (1) Here</P>
             </SECTION>
         """
         node = build_section('8675', etree.fromstring(xml))
         self.assertEqual(node.label, ['8675', '309'])
-        self.assertEqual(
-            [c.label for c in node.children], [['8675', '309', 'a']])
+        self.assertEqual(2, len(node.children))
+        self.assertEqual(node.children[0].label, ['8675', '309', 'a'])
+        self.assertEqual(node.children[1].label, ['8675', '309', 'b'])
 
-        lowest_label = node.children[0].children[0].label
-        self.assertEqual(['8675', '309', 'a', '1'], lowest_label)
+        a1_label = node.children[0].children[0].label
+        self.assertEqual(['8675', '309', 'a', '1'], a1_label)
+
+        self.assertEqual(1, len(node.children[1].children))
 
     def test_build_section_reserved(self):
         xml = u"""
