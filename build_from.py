@@ -4,12 +4,12 @@ import sys
 from regparser import api_writer
 from regparser.diff import api_reader, treediff
 from regparser.federalregister import fetch_notices
+from regparser.history.notices import applicable as applicable_notices
+from regparser.history.delays import modify_effective_dates
 from regparser.layer import external_citations, internal_citations, graphics
 from regparser.layer import table_of_contents, interpretations, terms
 from regparser.layer import section_by_section, paragraph_markers, meta
 from regparser.layer import key_terms
-from regparser.notice.history import applicable as applicable_notices
-from regparser.notice.history import modify_effective_dates
 from regparser.tree.xml_parser import reg_text
 
 if __name__ == "__main__":
