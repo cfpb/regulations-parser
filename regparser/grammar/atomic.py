@@ -23,15 +23,24 @@ upper_p = (
     Suppress("(")
     + Word(string.ascii_uppercase).setResultsName("p4")
     + Suppress(")"))
+
 em_digit_p = (
     Suppress(Regex(r"\(<E[^>]*>"))
     + Word(string.digits).setResultsName("p5")
     + Suppress("</E>)"))
-# Our support for italicized paragraph markers isn't quite up to par yet;
-# allow a plaintext version of italic paragraph markers
+em_roman_p = (
+    Suppress(Regex(r"\(<E[^>]*>"))
+    + Word("ivxlcdm").setResultsName("p5")
+    + Suppress("</E>)"))
+
+# Allow a plaintext version of italic paragraph markers
 plaintext_level5_p = (
     Suppress("(")
     + Word(string.digits).setResultsName("plaintext_p5")
+    + Suppress(")"))
+plaintext_level6_p = (
+    Suppress("(")
+    + Word("ivxlcdm").setResultsName("plaintext_p6")
     + Suppress(")"))
 
 # Leave whitespace; if there's a space we assume the comment is broken

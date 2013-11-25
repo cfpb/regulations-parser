@@ -12,12 +12,15 @@ marker_part_section = (
         "marker")
     + part_section)
 
-depth5_p = atomic.em_digit_p | atomic.plaintext_level5_p
+depth6_p = atomic.em_roman_p | atomic.plaintext_level6_p
+depth5_p = (
+    (atomic.em_digit_p | atomic.plaintext_level5_p) 
+    + Optional(depth6_p))
 depth4_p = atomic.upper_p + Optional(depth5_p)
 depth3_p = atomic.roman_p + Optional(depth4_p)
 depth2_p = atomic.digit_p + Optional(depth3_p)
 depth1_p = atomic.lower_p + Optional(depth2_p)
-any_depth_p = (depth1_p | depth2_p | depth3_p | depth4_p | depth5_p)
+any_depth_p = depth1_p | depth2_p | depth3_p | depth4_p | depth5_p | depth6_p
 
 depth2_c = atomic.roman_c + Optional(atomic.upper_c)
 depth1_c = atomic.digit_c + Optional(depth2_c)

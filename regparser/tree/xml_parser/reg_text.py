@@ -158,7 +158,8 @@ def build_section(reg_part, section_xml):
     section_texts = []
     for ch in (ch for ch in section_xml.getchildren() if ch.tag == 'P'):
         text = tree_utils.get_node_text(ch)
-        markers_list = get_markers(text)
+        tagged_text = tree_utils.get_node_text_tags_preserved(ch)
+        markers_list = get_markers(tagged_text)
 
         if not markers_list:
             node_text = tree_utils.get_node_text(ch)
@@ -171,7 +172,8 @@ def build_section(reg_part, section_xml):
             markers_and_text = list(reversed(markers_and_text))
             while markers_and_text:
                 m, node_text = markers_and_text.pop()
-                n = Node(node_text[0], [], [str(m)])
+                m_sans_markup = m.replace('<E T="03">', '').replace('</E>', '')
+                n = Node(node_text[0], [], [str(m_sans_markup)])
                 n.tagged_text = unicode(node_text[1])
 
                 new_p_level = determine_level(

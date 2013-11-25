@@ -94,7 +94,13 @@ def get_paragraph_markers(text):
 
     for citation, start, end in any_depth_p.scanString(text):
         if start == 0:
-            return list(citation)
+            markers = [citation.p1, citation.p2, citation.p3, citation.p4,
+                       citation.p5, citation.p6]
+            if markers[4]:
+                markers[4] = '<E T="03">' + markers[4] + '</E>'
+            if markers[5]:
+                markers[5] = '<E T="03">' + markers[5] + '</E>'
+            return list(filter(bool, markers))
     return []
 
 
