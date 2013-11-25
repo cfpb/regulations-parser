@@ -26,8 +26,13 @@ class TreeUtilsTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_get_paragraph_marker(self):
-        result = [m for m in tree_utils.get_paragraph_markers('(k)(2)(iii) abc (j)')]
+        text = '(k)(2)(iii) abc (j)'
+        result = [m for m in tree_utils.get_paragraph_markers(text)]
         self.assertEqual(['k', '2', 'iii'], result)
+
+        text = '(i)(A) The minimum period payment'
+        result = [m for m in tree_utils.get_paragraph_markers(text)]
+        self.assertEqual(['i', 'A'], result)
 
     def test_get_node_text_tags(self):
         text = '<P>(a)<E T="03">Fruit.</E>Apples,<PRTPAGE P="102"/> and Pineapples</P>'

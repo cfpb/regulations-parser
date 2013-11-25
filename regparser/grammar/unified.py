@@ -1,6 +1,7 @@
 #vim: set encoding=utf-8
 """Some common combinations"""
-from pyparsing import LineEnd, Literal, OneOrMore, Optional, Suppress, SkipTo
+from pyparsing import FollowedBy, LineEnd, Literal, OneOrMore, Optional
+from pyparsing import Suppress, SkipTo
 
 from regparser.grammar import atomic
 from regparser.grammar.utils import keep_pos
@@ -19,7 +20,7 @@ depth5_p = (
 depth4_p = atomic.upper_p + Optional(depth5_p)
 depth3_p = atomic.roman_p + Optional(depth4_p)
 depth2_p = atomic.digit_p + Optional(depth3_p)
-depth1_p = atomic.lower_p + Optional(depth2_p)
+depth1_p = atomic.lower_p + ~FollowedBy(atomic.upper_p) + Optional(depth2_p)
 any_depth_p = depth1_p | depth2_p | depth3_p | depth4_p | depth5_p | depth6_p
 
 depth2_c = atomic.roman_c + Optional(atomic.upper_c)
