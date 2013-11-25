@@ -4,17 +4,13 @@ from regparser.tree.struct import Node
 
 
 class TableOfContentsLayer(Layer):
-
-    def node_is_subpart(self, n):
-        return n.node_type == Node.SUBPART or n.node_type == Node.EMPTYPART
-
     def check_toc_candidacy(self, node):
         """ To be eligible to contain a table of contents, all of a node's
-        children must have a title element. If one of the children is a
-        subpart, we check all it's children.  """
+        children must have a title element. If one of the children is an
+        empty subpart, we check all it's children.  """
 
         for c in node.children:
-            if self.node_is_subpart(c):
+            if c.node_type == Node.EMPTYPART:
                 for s in c.children:
                     if not s.title:
                         return False
@@ -29,7 +25,7 @@ class TableOfContentsLayer(Layer):
         if self.check_toc_candidacy(node):
             layer_element = []
             for c in node.children:
-                if self.node_is_subpart(c):
+                if c.node_type == Node.EMPTYPART:
                     for s in c.children:
                         layer_element.append(
                             {'index': s.label, 'title': s.title})
