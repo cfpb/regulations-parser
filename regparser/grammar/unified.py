@@ -30,8 +30,8 @@ section_paragraph = atomic.section + depth1_p
 mps_paragraph = marker_part_section + Optional(depth1_p)
 
 marker_paragraph = (
-    atomic.paragraph_marker.copy().setParseAction(keep_pos).setResultsName(
-        "marker")
+    (atomic.paragraph_marker | atomic.paragraphs_marker).setParseAction(
+        keep_pos).setResultsName("marker")
     + depth1_p)
 
 appendix_with_section = (
