@@ -49,7 +49,7 @@ class CitationsTest(TestCase):
             ("See comment 3(v)-1.v. Another", "comment 3(v)-1.v",
              ['102', '3', 'v', 'Interp', '1', 'v']),
             ("See the commentary to 3(b)(1)", 'commentary to 3(b)(1)',
-             ['102', '3', 'b', '1']),
+             ['102', '3', 'b', '1', 'Interp']),
             ("See comment 3(b)(1)-1.v.", 'comment 3(b)(1)-1.v',
              ['102', '3', 'b', '1', 'Interp', '1', 'v'])]:
 
