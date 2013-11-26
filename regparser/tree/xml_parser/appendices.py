@@ -1,8 +1,9 @@
+import copy
 import itertools
 import re
 import string
 import HTMLParser
-from lxml import etree
+from lxml import etree, objectify
 from pyparsing import Optional, Word, LineStart, Suppress
 
 from regparser.grammar.interpretation_headers import parser as headers
@@ -188,12 +189,64 @@ def process_appendix(m_stack, current_section, child):
                 last[1].text = last[1].text + '\n %s' % node_text
 
 
+def appendix_tag(appendix, part):
+    m_stack = NodeStack()
+
+    counter = 0
+    header = 0
+    depth = 3
+    last_hd_level = 0
+    for child in appendix.getchildren():
+        # escape clause for interpretations
+        if child.tag == 'HD' and 'Supplement I to Part' in child.text:
+            break
+        if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
+            or child.tag == 'RESERVED'):
+            letter = headers.parseString(child.text).appendix
+            n = Node(node_type=Node.APPENDIX, label=[part, letter],
+                    title=child.text)
+            m_stack.push_last((2, n))
+            counter = 0
+            depth = 3
+        elif child.tag == 'HD':
+            header += 1
+            source = child.attrib.get('SOURCE', 'HD0')
+            hd_level = int(source[2:])
+            if hd_level > last_hd_level:
+                depth += 1
+            elif hd_level < last_hd_level:
+                depth = hd_level + 3
+            last_hd_level = hd_level
+            n = Node(node_type=Node.APPENDIX, label=['h' + str(header)],
+                     title=child.text)
+            tree_utils.add_to_stack(m_stack, depth - 1, n)
+        elif child.tag == 'P' or child.tag == 'FP':
+            counter += 1
+            text = tree_utils.get_node_text(child)
+            n = Node(text, node_type=Node.APPENDIX, label=['p' + str(counter)])
+            tree_utils.add_to_stack(m_stack, depth, n)
+
+    while m_stack.size() > 1:
+        tree_utils.unwind_stack(m_stack)
+
+    if m_stack.m_stack[0]:
+        return m_stack.m_stack[0][0][1]
+
 def build_non_reg_text(reg_xml, reg_part):
     """ This builds the tree for the non-regulation text such as Appendices
     and the Supplement section. """
     doc_root = etree.fromstring(reg_xml)
 
-    #reg_part = int(doc_root.xpath('//REGTEXT')[0].attrib['PART'])
+    appendices = []
+    for appendix in doc_root.xpath('//APPENDIX'):
+        if appendix is not None:
+            node = appendix_tag(appendix, reg_part)
+            if node:
+                appendices.append(node)
+    return appendices
+
+    #   For now, not reached -- much of this was copied into the above
+    #   "appendix_tag". We'll consolidate with the interpretations shortly
     last_section = doc_root.xpath('//REGTEXT/PART/SECTION[last()]')[0]
 
     section_type = None
@@ -231,13 +284,11 @@ def build_non_reg_text(reg_xml, reg_part):
             else:
                 tree_utils.add_to_stack(m_stack, p_level, n)
         elif current_section and section_type == 'APPENDIX':
-            if child.tag == 'EXTRACT':
-                process_appendix(m_stack, current_section, child)
-                tree_utils.unwind_stack(m_stack)
+            process_appendix(m_stack, current_section, child)
+            tree_utils.unwind_stack(m_stack)
         elif current_section and section_type == 'SUPPLEMENT':
-            if child.tag == 'EXTRACT':
-                process_supplement(reg_part, m_stack, child)
-                tree_utils.unwind_stack(m_stack)
+            process_supplement(reg_part, m_stack, child)
+            tree_utils.unwind_stack(m_stack)
 
     while m_stack.size() > 1:
         tree_utils.unwind_stack(m_stack)
