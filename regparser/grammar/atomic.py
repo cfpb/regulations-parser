@@ -62,6 +62,7 @@ subpart_marker = Marker("subpart")
 
 comment_marker = (
     (Marker("comment")
+     | Marker("commentary")
      | (Marker("official") + Marker("interpretations"))
      | (Marker("supplement") + Suppress(WordBoundaries("I"))))
     + Optional(Marker("of") | Marker("to")))
