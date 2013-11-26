@@ -60,6 +60,12 @@ class CitationsTest(TestCase):
             self.assertEqual(citation.label.to_list(), label)
             self.assertEqual(link, to_full_text(citation, text))
 
+    def test_single_ref_like_paragraph(self):
+        text = "See the commentary. (a) child paragraph"
+        citations = internal_citations(
+            text, Label(part='102', section='1'))
+        self.assertEqual(0, len(citations))
+
     def test_section_ref_in_appendix(self):
         text = u"""(a) Something something § 1005.7(b)(1)."""
         citations = internal_citations(
