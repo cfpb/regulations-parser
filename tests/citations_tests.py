@@ -60,7 +60,7 @@ class CitationsTest(TestCase):
             self.assertEqual(citation.label.to_list(), label)
             self.assertEqual(link, to_full_text(citation, text))
 
-    def test_single_ref_like_paragraph(self):
+    def test_single_reference_false_positives(self):
         text = "See the commentary. (a) child paragraph"
         citations = internal_citations(
             text, Label(part='102', section='1'))
