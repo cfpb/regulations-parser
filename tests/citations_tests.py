@@ -247,6 +247,45 @@ class CitationsTest(TestCase):
                          citation.label.to_list())
         self.assertEqual(to_text(citation, text), '31(b)(1)(vi)-1')
 
+    def test_single_match_multiple_paragraphs6(self):
+        text = "comments 5(b)(3)-1 through -3"
+        citations = internal_citations(text, Label(part='100', section='5'))
+        citation = citations[0]
+        self.assertEqual(2, len(citations))
+        self.assertEqual(['100', '5', 'b', '3', 'Interp', '1'],
+                         citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '5(b)(3)-1')
+        citation = citations[1]
+        self.assertEqual(['100', '5', 'b', '3', 'Interp', '3'],
+                         citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '-3')
+
+    def test_single_match_multiple_paragraphs7(self):
+        text = "comments 5(b)(3)-1, 5(b)(3)-3, or 5(d)-1 through -3."
+        citations = internal_citations(text, Label(part='100', section='5'))
+        citation = citations[0]
+        self.assertEqual(4, len(citations))
+        self.assertEqual(['100', '5', 'b', '3', 'Interp', '1'],
+                         citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '5(b)(3)-1')
+        citation = citations[1]
+        self.assertEqual(['100', '5', 'b', '3', 'Interp', '3'],
+                         citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '5(b)(3)-3')
+        citation = citations[2]
+        self.assertEqual(['100', '5', 'd', 'Interp', '1'],
+                         citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '5(d)-1')
+        citation = citations[3]
+        self.assertEqual(['100', '5', 'd', 'Interp', '3'],
+                         citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '-3')
+
+    def test_single_match_multiple_p_false_positives(self):
+        text = "-9 text and stuff -2. (b) new thing"
+        citations = internal_citations(text, Label(part='100', section='4'))
+        self.assertEqual(0, len(citations))
+
 
 class CitationsLabelTest(TestCase):
     def test_using_default_schema(self):
