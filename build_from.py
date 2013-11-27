@@ -11,6 +11,7 @@ from regparser.layer import table_of_contents, interpretations, terms
 from regparser.layer import section_by_section, paragraph_markers, meta
 from regparser.layer import key_terms
 from regparser.tree.xml_parser import reg_text
+from regparser.tree.build import build_whole_regtree
 
 if __name__ == "__main__":
     if len(sys.argv) < 6:
@@ -24,10 +25,13 @@ if __name__ == "__main__":
     writer = api_writer.Client()
 
     with codecs.open(sys.argv[1], 'r', 'utf-8') as f:
-        reg_xml = f.read()
+        reg = f.read()
 
     #   First, the regulation tree
-    reg_tree = reg_text.build_tree(reg_xml)
+    if reg[:1] == '<':  # XML
+        reg_tree = reg_text.build_tree(reg)
+    else:
+        reg_tree = build_whole_regtree(reg)
     cfr_part = reg_tree.label_id()
     cfr_title = sys.argv[2]
     doc_number = sys.argv[3]
