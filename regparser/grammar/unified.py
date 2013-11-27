@@ -94,6 +94,6 @@ multiple_comments = (
         + Optional(depth1_c)).setParseAction(keep_pos).setResultsName("head")
     + OneOrMore(
         atomic.conj_phrases
-        + (Optional(_inner_non_comment)
-            + Optional(depth1_c)).setParseAction(keep_pos).setResultsName(
+        + ( (_inner_non_comment + Optional(depth1_c))
+            | depth1_c).setParseAction(keep_pos).setResultsName(
             "tail", listAllMatches=True)))
