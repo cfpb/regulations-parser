@@ -22,6 +22,8 @@ any_depth_p = (depth1_p | depth2_p | depth3_p | depth4_p | depth5_p)
 depth2_c = atomic.roman_c + Optional(atomic.upper_c)
 depth1_c = atomic.digit_c + Optional(depth2_c)
 
+section_comment = atomic.section + depth1_c
+
 section_paragraph = atomic.section + depth1_p
 
 mps_paragraph = marker_part_section + Optional(depth1_p)
@@ -60,8 +62,10 @@ marker_subpart_title = (
 marker_comment = (
     atomic.comment_marker.copy().setParseAction(keep_pos).setResultsName(
         "marker")
-    + (section_paragraph | mps_paragraph)
-    + Optional(depth1_c))
+    + (section_comment
+       | (section_paragraph | mps_paragraph)
+       + Optional(depth1_c))
+)
 
 
 _inner_non_comment = (
