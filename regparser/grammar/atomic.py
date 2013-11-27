@@ -62,6 +62,7 @@ subpart_marker = Marker("subpart")
 
 comment_marker = (
     (Marker("comment")
+     | Marker("commentary")
      | (Marker("official") + Marker("interpretations"))
      | (Marker("supplement") + Suppress(WordBoundaries("I"))))
     + Optional(Marker("of") | Marker("to")))
@@ -73,4 +74,5 @@ conj_phrases = (
     (Suppress(",") + Optional(Marker("and") | Marker("or")))
     | Marker("and")
     | Marker("or")
+    | Suppress("-")
     | WordBoundaries(CaselessLiteral("through")).setResultsName("through"))
