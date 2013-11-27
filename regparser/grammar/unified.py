@@ -66,7 +66,6 @@ marker_comment = (
     + Optional(depth1_c)
 )
 
-
 _inner_non_comment = (
     any_depth_p
     | (part_section + Optional(depth1_p))
