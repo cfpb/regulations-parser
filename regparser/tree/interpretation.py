@@ -51,20 +51,8 @@ def segment_tree(text, part, parent_label):
 
 
 def text_to_label(text, part):
-    parsed = grammar.parser.parseString(text)
-    if parsed.appendix:
-        #Appendix
-        label = [part, parsed.appendix]
-    elif parsed.p1:
-        #Paragraph
-        label = [
-            part, parsed.section, parsed.p1, parsed.p2,
-            parsed.p3, parsed.p4, parsed.p5]
-        while not label[-1]:
-            #Remove training empty strings
-            label.pop()
-    else:
-        #Section only
-        label = [part, parsed.section]
-    label = label + [Node.INTERP_MARK]
+    citations = internal_citations(text, Label(part=part))
+    #   Assumes a citation is present
+    label = citations[0].label.to_list()
+    label.append(Node.INTERP_MARK)
     return label
