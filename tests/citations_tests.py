@@ -283,6 +283,11 @@ class CitationsTest(TestCase):
                          citation.label.to_list())
         self.assertEqual(to_text(citation, text), '-3')
 
+    def test_single_match_multiple_paragraphs8(self):
+        text = u'§ 105.2(a)(1)-(3)'
+        citations = internal_citations(text, Label(part='100', section='2'))
+        self.assertEqual(2, len(citations))
+
     def test_single_match_multiple_p_false_positives(self):
         text = "-9 text and stuff -2. (b) new thing"
         citations = internal_citations(text, Label(part='100', section='4'))
