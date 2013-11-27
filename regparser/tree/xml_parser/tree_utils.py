@@ -1,6 +1,13 @@
+#vim: set encoding=utf-8
 import HTMLParser
+from itertools import chain
+import re
+
 from lxml import etree
+
+from regparser.citations import internal_citations
 from regparser.grammar.unified import any_depth_p
+from regparser.tree.paragraph import p_levels
 
 
 def prepend_parts(parts_prefix, n):
@@ -52,17 +59,61 @@ def split_text(text, tokens):
     return texts
 
 
+first_markers = [re.compile(ur'[\s|^|,|-|—]\((' 
+                            + re.escape(level[0]) + ')\)')
+                 for level in p_levels]
+
+
+def get_collapsed_markers(text):
+    """Not all paragraph markers are at the beginning of of the text. This
+    grabs inner markers like (1) and (i) here: 
+    (c) cContent —(1) 1Content (i) iContent"""
+    matches = []
+    for marker in first_markers:
+        lst = [m for m in marker.finditer(text) if m.start() > 0]
+        matches.extend([m for m in marker.finditer(text) if m.start() > 0])
+
+    #   remove matches at the beginning
+    start = text.find(')') + 1
+    while matches and matches[0].start() == start:
+        start = matches[0].end()
+        matches = matches[1:]
+
+    #   remove any that overlap with citations
+    matches = [m for m in matches
+               if not any(e.start <= m.start() and e.end >= m.end()
+               for e in internal_citations(text))]
+
+    #   get the letters
+    return [match.group(1) for match in matches]
+
+
 def get_paragraph_markers(text):
     """ From a body of text that contains paragraph markers, extract the
-    markers. """
+    initial markers. """
 
     for citation, start, end in any_depth_p.scanString(text):
         if start == 0:
-            return list(citation)
+            markers = [citation.p1, citation.p2, citation.p3, citation.p4,
+                       citation.p5, citation.p6]
+            if markers[4]:
+                markers[4] = '<E T="03">' + markers[4] + '</E>'
+            if markers[5]:
+                markers[5] = '<E T="03">' + markers[5] + '</E>'
+            return list(filter(bool, markers))
     return []
 
 
 def get_node_text(node):
+    """ Extract all the text from an XML node (including the
+    text of it's children). """
+    parts = [node.text] +\
+        list(chain(*([c.text, c.tail] for c in node.getchildren()))) +\
+        [node.tail]
+    return ''.join(filter(None, parts))
+
+
+def get_node_text_tags_preserved(node):
     """ Given an XML node, generate text from the node, skipping the PRTPAGE
     tag. """
 
@@ -75,8 +126,10 @@ def get_node_text(node):
 
     for c in node:
         if c.tag == 'E':
-            node_text += ' ' + etree.tostring(c)
-        elif c.tail is not None:
+            #xlmns non-sense makes me do this.
+            e_tag = '<E T="03">%s</E>' % c.text
+            node_text += e_tag
+        if c.tail is not None:
             node_text += c.tail
 
     node_text = html_parser.unescape(node_text)

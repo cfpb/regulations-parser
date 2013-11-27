@@ -188,12 +188,12 @@ def process_appendix(m_stack, current_section, child):
                 last[1].text = last[1].text + '\n %s' % node_text
 
 
-def build_non_reg_text(reg_xml):
+def build_non_reg_text(reg_xml, reg_part):
     """ This builds the tree for the non-regulation text such as Appendices
     and the Supplement section. """
     doc_root = etree.fromstring(reg_xml)
 
-    reg_part = int(doc_root.xpath('//REGTEXT')[0].attrib['PART'])
+    #reg_part = int(doc_root.xpath('//REGTEXT')[0].attrib['PART'])
     last_section = doc_root.xpath('//REGTEXT/PART/SECTION[last()]')[0]
 
     section_type = None

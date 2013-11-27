@@ -134,9 +134,11 @@ def match_to_label(match, initial_label, comment=False):
     return label
 
 
-def internal_citations(text, initial_label, require_marker=False):
+def internal_citations(text, initial_label=None, require_marker=False):
     """List of all internal citations in the text. require_marker helps by
     requiring text be prepended by 'comment'/'paragraphs'/etc."""
+    if not initial_label:
+        initial_label = Label()
     citations = []
 
     def multiple_citations(matches, comment):

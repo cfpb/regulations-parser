@@ -35,6 +35,8 @@ class CitationsTest(TestCase):
         for text, link, label in [
             ("The requirements in paragraph (a)(4)(iii) of",
              'paragraph (a)(4)(iii)', ['102', '6', 'a', '4', 'iii']),
+            ("Creditors may comply with paragraphs (a)(6) of this section",
+             'paragraphs (a)(6)', ['102', '6', 'a', '6']),
             (u"date in § 1005.20(h)(1) must disclose", u'§ 1005.20(h)(1)',
              ['1005', '20', 'h', '1']),
             ('(a) Solicited issuance. Except as provided in paragraph (b) '

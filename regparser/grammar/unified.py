@@ -1,6 +1,7 @@
 #vim: set encoding=utf-8
 """Some common combinations"""
-from pyparsing import LineEnd, Literal, OneOrMore, Optional, Suppress, SkipTo
+from pyparsing import FollowedBy, LineEnd, Literal, OneOrMore, Optional
+from pyparsing import Suppress, SkipTo
 
 from regparser.grammar import atomic
 from regparser.grammar.utils import keep_pos
@@ -12,12 +13,15 @@ marker_part_section = (
         "marker")
     + part_section)
 
-depth5_p = atomic.em_digit_p | atomic.plaintext_level5_p
+depth6_p = atomic.em_roman_p | atomic.plaintext_level6_p
+depth5_p = (
+    (atomic.em_digit_p | atomic.plaintext_level5_p) 
+    + Optional(depth6_p))
 depth4_p = atomic.upper_p + Optional(depth5_p)
 depth3_p = atomic.roman_p + Optional(depth4_p)
 depth2_p = atomic.digit_p + Optional(depth3_p)
-depth1_p = atomic.lower_p + Optional(depth2_p)
-any_depth_p = (depth1_p | depth2_p | depth3_p | depth4_p | depth5_p)
+depth1_p = atomic.lower_p + ~FollowedBy(atomic.upper_p) + Optional(depth2_p)
+any_depth_p = depth1_p | depth2_p | depth3_p | depth4_p | depth5_p | depth6_p
 
 depth2_c = atomic.roman_c + Optional(atomic.upper_c)
 depth1_c = atomic.digit_c + Optional(depth2_c)
@@ -29,8 +33,8 @@ section_paragraph = atomic.section + depth1_p
 mps_paragraph = marker_part_section + Optional(depth1_p)
 
 marker_paragraph = (
-    atomic.paragraph_marker.copy().setParseAction(keep_pos).setResultsName(
-        "marker")
+    (atomic.paragraph_marker | atomic.paragraphs_marker).setParseAction(
+        keep_pos).setResultsName("marker")
     + depth1_p)
 
 appendix_with_section = (
@@ -76,16 +80,20 @@ multiple_non_comments = (
         | atomic.sections_marker | atomic.section_marker)
     + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName("head")
     + OneOrMore(
-        atomic.conj_phrases
+        Optional(Suppress('('))
+        + atomic.conj_phrases
         + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName(
-            "tail", listAllMatches=True)))
+            "tail", listAllMatches=True)
+        + Optional(Suppress(')'))))
 multiple_appendix_section = (
     appendix_with_section.copy().setParseAction(keep_pos).setResultsName(
         "head")
     + OneOrMore(
-        atomic.conj_phrases
+        Optional(Suppress('('))
+        + atomic.conj_phrases
         + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName(
-            "tail", listAllMatches=True)))
+            "tail", listAllMatches=True)
+        + Optional(Suppress(')'))))
 
 multiple_comments = (
     (atomic.comments_marker | atomic.comment_marker)
@@ -93,7 +101,9 @@ multiple_comments = (
         + _inner_non_comment
         + Optional(depth1_c)).setParseAction(keep_pos).setResultsName("head")
     + OneOrMore(
-        atomic.conj_phrases
+        Optional(Suppress('('))
+        + atomic.conj_phrases
         + ( (_inner_non_comment + Optional(depth1_c))
             | depth1_c).setParseAction(keep_pos).setResultsName(
-            "tail", listAllMatches=True)))
+            "tail", listAllMatches=True)
+        + Optional(Suppress(')'))))

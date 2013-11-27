@@ -1,4 +1,4 @@
-from json import JSONDecoder, JSONEncoder
+from json import JSONEncoder
 
 
 class Node(object):
@@ -43,6 +43,8 @@ class NodeEncoder(JSONEncoder):
             fields = dict(obj.__dict__)
             if obj.title is None:
                 del fields['title']
+            if 'tagged_text' in fields:
+                del fields['tagged_text']
             return fields
         return JSONEncoder.default(self, obj)
 
@@ -97,7 +99,7 @@ def treeify(nodes):
     under a set of 'root' nodes, which have the min-length label."""
     if not nodes:
         return nodes
-    
+
     min_len, with_min = len(nodes[0].label), []
 
     for node in nodes:

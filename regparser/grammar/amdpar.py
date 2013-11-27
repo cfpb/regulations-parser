@@ -220,10 +220,12 @@ token_patterns = (
     | comment_context_with_section | comment_context_without_section
 
     | section_heading | section_heading_of | intro_text_of
-    | single_par | section_single_par
+    | section_single_par
 
     | multiple_sections | multiple_pars | multiple_appendices
     | multiple_comment_pars | multiple_comments
+    #   Must come after multiple_pars
+    | single_par
     #   Must come after multiple_comment_pars
     | single_comment_par
     #   Must come after section_single_par

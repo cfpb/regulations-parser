@@ -14,6 +14,42 @@ class ParseTest(TestCase):
         citations = self.parser.process(node)
         self.assertEqual(len(citations), 1)
 
+    def test_underparagraph(self):
+        text = 'Something something underparagraphs (a)(4) through (5)'
+        citations = self.parser.process(Node(text, label=['1005', '6']))
+        self.assertEqual(len(citations), 2)
+
+    def test_except_for(self):
+        text = 'paragraph (b)(2)(i) through (b)(2)(v) except for '
+        text += '(b)(2)(i)(D) and (b)(2)(vii) through (b)(2)(xiv)'
+        citations = self.parser.process(Node(text, label=['1005', '6']))
+        self.assertEqual(len(citations), 5)
+        self.assertEqual(citations[0]['citation'],
+                         ['1005', '6', 'b', '2', 'i'])
+        self.assertEqual(citations[1]['citation'],
+                         ['1005', '6', 'b', '2', 'v'])
+        self.assertEqual(citations[2]['citation'],
+                         ['1005', '6', 'b', '2', 'i', 'D'])
+        self.assertEqual(citations[3]['citation'],
+                         ['1005', '6', 'b', '2', 'vii'])
+        self.assertEqual(citations[4]['citation'],
+                         ['1005', '6', 'b', '2', 'xiv'])
+
+        text = 'paragraph (b)(2)(i) through (b)(2)(v) (except for '
+        text += '(b)(2)(i)(D)) and (b)(2)(vii) through (b)(2)(xiv)'
+        citations = self.parser.process(Node(text, label=['1005', '6']))
+        self.assertEqual(len(citations), 5)
+        self.assertEqual(citations[0]['citation'],
+                         ['1005', '6', 'b', '2', 'i'])
+        self.assertEqual(citations[1]['citation'],
+                         ['1005', '6', 'b', '2', 'v'])
+        self.assertEqual(citations[2]['citation'],
+                         ['1005', '6', 'b', '2', 'i', 'D'])
+        self.assertEqual(citations[3]['citation'],
+                         ['1005', '6', 'b', '2', 'vii'])
+        self.assertEqual(citations[4]['citation'],
+                         ['1005', '6', 'b', '2', 'xiv'])
+
     def test_multiple_paragraphs(self):
         """ Ensure that offsets work correctly in a simple multiple paragraph scenario. """
 
