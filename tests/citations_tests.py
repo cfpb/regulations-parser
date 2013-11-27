@@ -50,8 +50,12 @@ class CitationsTest(TestCase):
             ("See Appendix A-5", "Appendix A-5", ['102', 'A', '5']),
             ("See comment 3(v)-1.v. Another", "comment 3(v)-1.v",
              ['102', '3', 'v', 'Interp', '1', 'v']),
+            ("See the commentary to 3(b)(1)", 'commentary to 3(b)(1)',
+             ['102', '3', 'b', '1', 'Interp']),
             ("See comment 3(b)(1)-1.v.", 'comment 3(b)(1)-1.v',
-             ['102', '3', 'b', '1', 'Interp', '1', 'v'])]:
+             ['102', '3', 'b', '1', 'Interp', '1', 'v']),
+            ("See comment 3-1 for things", 'comment 3-1',
+             ['102', '3', 'Interp', '1'])]:
 
             citations = internal_citations(text, Label(part='102',
                                                        section='6'))
@@ -59,6 +63,12 @@ class CitationsTest(TestCase):
             citation = citations[0]
             self.assertEqual(citation.label.to_list(), label)
             self.assertEqual(link, to_full_text(citation, text))
+
+    def test_single_reference_false_positives(self):
+        text = "See the commentary. (a) child paragraph"
+        citations = internal_citations(
+            text, Label(part='102', section='1'))
+        self.assertEqual(0, len(citations))
 
     def test_section_ref_in_appendix(self):
         text = u"""(a) Something something § 1005.7(b)(1)."""
@@ -240,6 +250,50 @@ class CitationsTest(TestCase):
         self.assertEqual(['222', '31', 'b', '1', 'vi', 'Interp', '1'],
                          citation.label.to_list())
         self.assertEqual(to_text(citation, text), '31(b)(1)(vi)-1')
+
+    def test_single_match_multiple_paragraphs6(self):
+        text = "comments 5(b)(3)-1 through -3"
+        citations = internal_citations(text, Label(part='100', section='5'))
+        citation = citations[0]
+        self.assertEqual(2, len(citations))
+        self.assertEqual(['100', '5', 'b', '3', 'Interp', '1'],
+                         citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '5(b)(3)-1')
+        citation = citations[1]
+        self.assertEqual(['100', '5', 'b', '3', 'Interp', '3'],
+                         citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '-3')
+
+    def test_single_match_multiple_paragraphs7(self):
+        text = "comments 5(b)(3)-1, 5(b)(3)-3, or 5(d)-1 through -3."
+        citations = internal_citations(text, Label(part='100', section='5'))
+        citation = citations[0]
+        self.assertEqual(4, len(citations))
+        self.assertEqual(['100', '5', 'b', '3', 'Interp', '1'],
+                         citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '5(b)(3)-1')
+        citation = citations[1]
+        self.assertEqual(['100', '5', 'b', '3', 'Interp', '3'],
+                         citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '5(b)(3)-3')
+        citation = citations[2]
+        self.assertEqual(['100', '5', 'd', 'Interp', '1'],
+                         citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '5(d)-1')
+        citation = citations[3]
+        self.assertEqual(['100', '5', 'd', 'Interp', '3'],
+                         citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '-3')
+
+    def test_single_match_multiple_paragraphs8(self):
+        text = u'§ 105.2(a)(1)-(3)'
+        citations = internal_citations(text, Label(part='100', section='2'))
+        self.assertEqual(2, len(citations))
+
+    def test_single_match_multiple_p_false_positives(self):
+        text = "-9 text and stuff -2. (b) new thing"
+        citations = internal_citations(text, Label(part='100', section='4'))
+        self.assertEqual(0, len(citations))
 
 
 class CitationsLabelTest(TestCase):
