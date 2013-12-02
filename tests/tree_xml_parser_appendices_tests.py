@@ -4,7 +4,7 @@ from lxml import etree
 from lxml import html
 
 from regparser.tree.node_stack import NodeStack
-from regparser.tree.xml_parser import appendices
+from regparser.tree.xml_parser import appendices, tree_utils
 
 class AppendicesTest(TestCase):
     def test_interpretation_markers(self):
@@ -131,3 +131,32 @@ class AppendicesTest(TestCase):
         self.assertEqual(1, len(h2.children))
         self.assertEqual('Header 2', h2.title)
         self.assertEqual('Final Content', h2.children[0].text.strip())
+
+    def test_process_inner_child(self):
+        xml = """
+        <ROOT>
+            <HD>Title</HD>
+            <P>1. 111 i. iii</P>
+            <P>A. AAA</P>
+            <P><E T="03">1.</E> eee</P>
+        </ROOT>"""
+        node = etree.fromstring(xml).xpath('//HD')[0]
+        stack = NodeStack()
+        appendices.process_inner_children(stack, node)
+        while stack.size() > 1:
+            tree_utils.unwind_stack(stack)
+        n1 = stack.m_stack[0][0][1]
+        self.assertEqual(['1'], n1.label)
+        self.assertEqual(1, len(n1.children))
+
+        n1i = n1.children[0]
+        self.assertEqual(['1', 'i'], n1i.label)
+        self.assertEqual(1, len(n1i.children))
+
+        n1iA = n1i.children[0]
+        self.assertEqual(['1', 'i', 'A'], n1iA.label)
+        self.assertEqual(1, len(n1iA.children))
+
+        n1iA1 = n1iA.children[0]
+        self.assertEqual(['1', 'i', 'A', '1'], n1iA1.label)
+        self.assertEqual(0, len(n1iA1.children))

@@ -37,9 +37,9 @@ def add_to_stack(m_stack, node_level, node):
     last = m_stack.peek()
     element = (node_level, node)
 
-    if node_level > last[0][0]:
+    if len(last) > 0 and node_level > last[0][0]:
         m_stack.push(element)
-    elif node_level < last[0][0]:
+    elif len(last) > 0 and node_level < last[0][0]:
         while last[0][0] > node_level:
             unwind_stack(m_stack)
             last = m_stack.peek()

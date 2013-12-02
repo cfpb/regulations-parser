@@ -12,7 +12,7 @@ class Label(object):
     sect_schema = ('part', 'section', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6')
     default_schema = sect_schema
 
-    comment_schema = ('comment', 'c1', 'c2', 'c3')
+    comment_schema = ('comment', 'c1', 'c2', 'c3', 'c4')
 
     @staticmethod
     def from_node(node):
