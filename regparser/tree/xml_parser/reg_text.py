@@ -91,6 +91,9 @@ def build_tree(reg_xml):
         empty_part.children = sections
         tree.children = [empty_part]
 
+    non_reg_sections = build_non_reg_text(reg_xml, reg_part)
+    tree.children += non_reg_sections
+
     return tree
 
 
