@@ -105,8 +105,8 @@ class AppendicesTest(TestCase):
             <P>Content H1-2</P>
             <HD SOURCE="HD2">Subheader</HD>
             <P>Subheader content</P>
-            <HD SOURCE="HD1">Header 2</HD>
-            <P>Final Content</P>
+            <HD SOURCE="HD1">Header <E T="03">2</E></HD>
+            <P>Final <E T="03">Content</E></P>
         </APPENDIX>
         """
         appendix = appendices.appendix_tag(etree.fromstring(xml), 1111)

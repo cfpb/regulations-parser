@@ -198,13 +198,15 @@ def appendix_tag(appendix, part):
     last_hd_level = 0
     for child in appendix.getchildren():
         # escape clause for interpretations
-        if child.tag == 'HD' and 'Supplement I to Part' in child.text:
+        if (child.tag == 'HD' 
+            and 'Supplement I to Part' in tree_utils.get_node_text(child)):
             break
         if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
             or child.tag == 'RESERVED'):
-            letter = headers.parseString(child.text).appendix
+            letter = headers.parseString(tree_utils.get_node_text(
+                child)).appendix
             n = Node(node_type=Node.APPENDIX, label=[part, letter],
-                    title=child.text)
+                    title=tree_utils.get_node_text(child).strip())
             m_stack.push_last((2, n))
             counter = 0
             depth = 3
@@ -218,7 +220,7 @@ def appendix_tag(appendix, part):
                 depth = hd_level + 3
             last_hd_level = hd_level
             n = Node(node_type=Node.APPENDIX, label=['h' + str(header)],
-                     title=child.text)
+                     title=tree_utils.get_node_text(child).strip())
             tree_utils.add_to_stack(m_stack, depth - 1, n)
         elif child.tag == 'P' or child.tag == 'FP':
             counter += 1
