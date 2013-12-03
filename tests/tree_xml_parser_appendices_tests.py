@@ -136,7 +136,7 @@ class AppendicesTest(TestCase):
         xml = """
         <ROOT>
             <HD>Title</HD>
-            <P>1. 111 i. iii</P>
+            <P>1. 111. i. iii</P>
             <P>A. AAA</P>
             <P><E T="03">1.</E> eee</P>
         </ROOT>"""
@@ -151,6 +151,7 @@ class AppendicesTest(TestCase):
 
         n1i = n1.children[0]
         self.assertEqual(['1', 'i'], n1i.label)
+        self.assertEqual(n1i.text.strip(), 'i. iii')
         self.assertEqual(1, len(n1i.children))
 
         n1iA = n1i.children[0]
@@ -158,5 +159,40 @@ class AppendicesTest(TestCase):
         self.assertEqual(1, len(n1iA.children))
 
         n1iA1 = n1iA.children[0]
-        self.assertEqual(['1', 'i', 'A', '1'], n1iA1.label)
+        self.assertEqual(['1', 'i', 'A', '<E T="03">1'], n1iA1.label)
         self.assertEqual(0, len(n1iA1.children))
+
+    def test_process_inner_child_space(self):
+        xml = """
+        <ROOT>
+            <HD>Title</HD>
+            <P>1. 111</P>
+            <P>i. See country A. Not that country</P>
+        </ROOT>"""
+        node = etree.fromstring(xml).xpath('//HD')[0]
+        stack = NodeStack()
+        appendices.process_inner_children(stack, node)
+        while stack.size() > 1:
+            tree_utils.unwind_stack(stack)
+        n1 = stack.m_stack[0][0][1]
+        self.assertEqual(['1'], n1.label)
+        self.assertEqual(1, len(n1.children))
+
+        n1i = n1.children[0]
+        self.assertEqual(['1', 'i'], n1i.label)
+        self.assertEqual(0, len(n1i.children))
+
+    def test_process_inner_child_incorrect_xml(self):
+        xml = """
+        <ROOT>
+            <HD>Title</HD>
+            <P>1. 111</P>
+            <P>i. iii</P>
+            <P><E T="03">2. 222</E> Incorrect Content</P>
+        </ROOT>"""
+        node = etree.fromstring(xml).xpath('//HD')[0]
+        stack = NodeStack()
+        appendices.process_inner_children(stack, node)
+        while stack.size() > 1:
+            tree_utils.unwind_stack(stack)
+        self.assertEqual(2, len(stack.m_stack[0]))

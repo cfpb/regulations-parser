@@ -49,14 +49,25 @@ def get_interpretation_markers(text):
         return citation[0]
 
 
-def interpretation_level(marker):
+def interpretation_level(marker, previous_level=None):
     """
         Based on the marker, determine the interpretation paragraph level.
         Levels 1,2 don't need this, since they are marked differently.
     """
-    for idx, lst in enumerate(i_levels):
+    #   First, non-italics
+    for idx, lst in enumerate(i_levels[:3]):
         if marker in lst:
             return idx + 3
+    #   Italics don't always mean what we'd like (le sigh)
+    for idx, lst in enumerate(i_levels[3:]):
+        idx = idx + 3   #   Shift
+        if marker in lst:
+            #   Probably meant non-italic...
+            if idx + 3 > previous_level + 1:
+                return idx
+            else:
+                return idx + 3
+
 
 
 def determine_level(marker, current_level):
@@ -110,11 +121,11 @@ def determine_next_section(m_stack, node_level):
         #level because this doesn't happen.
 
 
-first_markers = [re.compile(ur'[\s|^|,|-|—](' + marker + ')\.')
-                 for marker in ['1', 'i', 'A']]
+first_markers = [re.compile(ur'[\.|,|;|-|—]\s*(' + marker + ')\.')
+                 for marker in ['i', 'A']]
 
 
-def interp_inner_child(child_node):
+def interp_inner_child(child_node, stack):
     """ Build an inner child node (basically a node that's after 
     -Interp- in the tree) """
     node_text = tree_utils.get_node_text(child_node)
@@ -126,38 +137,28 @@ def interp_inner_child(child_node):
         collapsed_markers.extend(m for m in marker.finditer(node_text) 
                                  if m.start() > 0)
 
-    m_stack = NodeStack()
-
-    ends = [m.start() for m in collapsed_markers[1:]] + [len(node_text)]
-    label = [first_marker]
-    for match, end in zip(collapsed_markers, ends):
-        n = Node(node_text[match.start():end], label=[match.group(1)],
-                 node_type=Node.INTERP)
-        node_level = interpretation_level(match.group(1))
-        last = m_stack.peek()
-        if len(last) == 0:
-            m_stack.push_last((node_level, n))
-        else:
-            tree_utils.add_to_stack(m_stack, node_level, n)
-        
-    starts = [m.start() for m in collapsed_markers] + [len(node_text)]
+    ends = [m.end() - 2 for m in collapsed_markers[1:]] + [len(node_text)]
+    starts = [m.end() - 2 for m in collapsed_markers] + [len(node_text)]
+    
     n = Node(node_text[0:starts[0]], label=[first_marker],
              node_type=Node.INTERP)
-    node_level = interpretation_level(first_marker)
-    m_stack.add_to_bottom((node_level, n)) 
+    last = stack.peek()
+    if len(last) == 0:
+        stack.push_last((interpretation_level(first_marker), n))
+    else:
+        node_level = interpretation_level(first_marker, last[0][0])
+        tree_utils.add_to_stack(stack, node_level, n)
 
-    while m_stack.size() > 1:
-        tree_utils.unwind_stack(m_stack)
-
-    inner_root = m_stack.pop()[0][1]
-    def per_node(n):
-        n.label = [l.replace('<E T="03">', '') for l in n.label]
-        for c in n.children:
-            per_node(c)
-    per_node(inner_root)
-
-    return node_level, inner_root
-
+    for match, end in zip(collapsed_markers, ends):
+        n = Node(node_text[match.end() - 2:end], label=[match.group(1)],
+                 node_type=Node.INTERP)
+        node_level = interpretation_level(match.group(1))
+        last = stack.peek()
+        if len(last) == 0:
+            stack.push_last((node_level, n))
+        else:
+            tree_utils.add_to_stack(stack, node_level, n)
+        
     #return node_level, n
 
 
@@ -177,10 +178,11 @@ def process_inner_children(inner_stack, node):
         lambda x: not is_title(x), node.itersiblings())
     for c in children:
         node_text = tree_utils.get_node_text(c)
-        marker = get_interpretation_markers(node_text)
+        #marker = get_interpretation_markers(node_text, inner_stack)
 
-        node_level, n = interp_inner_child(c)
-        tree_utils.add_to_stack(inner_stack, node_level, n)
+        interp_inner_child(c, inner_stack)
+        #print inner_stack.m_stack
+        #tree_utils.add_to_stack(inner_stack, node_level, n)
 
     #n = Node(node_text, label=[marker], node_type=Node.INTERP)
     #node_level = interpretation_level(marker)
@@ -221,6 +223,14 @@ def build_supplement_tree(reg_part, node):
             supplement_nodes.append(ch_node)
 
     supplement_tree = treeify(supplement_nodes)
+
+    def per_node(node):
+        node.label = [l.replace('<E T="03">', '') for l in node.label]
+        for child in node.children:
+            per_node(child)
+    for node in supplement_tree:
+        per_node(node)
+
     return supplement_tree
     
 def process_supplement(part, m_stack, child):
