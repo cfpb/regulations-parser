@@ -48,6 +48,23 @@ class RegTextTest(TestCase):
 
         self.assertEqual(1, len(node.children[1].children))
 
+    def test_build_section_collapsed_level_emph(self):
+        xml = u"""
+            <SECTION>
+                <SECTNO>§ 8675.309</SECTNO>
+                <SUBJECT>Definitions.</SUBJECT>
+                <P>(a) aaaa</P>
+                <P>(1) 1111</P>
+                <P>(i) iiii</P>
+                <P>(A) AAA—(<E T="03">1</E>) eeee</P>
+            </SECTION>
+        """
+        node = build_section('8675', etree.fromstring(xml))
+        a1iA = node.children[0].children[0].children[0].children[0]
+        self.assertEqual(u"(A) AAA—", a1iA.text)
+        self.assertEqual(1, len(a1iA.children))
+        self.assertEqual("(1) eeee", a1iA.children[0].text.strip())
+
     def test_build_section_reserved(self):
         xml = u"""
             <SECTION>
@@ -236,3 +253,14 @@ class RegTextTest(TestCase):
         self.assertEqual(
             tagged,
             [u'(a) <E T="03">Transfer </E>—', u'(1) <E T="03">Notice.</E> follow'])
+
+    def test_get_markers_and_text_emph(self):
+        text = '(A) aaaa. (<E T="03">1</E>) 1111'
+        xml = etree.fromstring('<P>%s</P>' % text)
+        markers = get_markers(text)
+        result = get_markers_and_text(xml, markers)
+
+        a, a1 = result
+        self.assertEqual(('A', ('(A) aaaa. ', '(A) aaaa. ')), a)
+        self.assertEqual(('<E T="03">1</E>', ('(1) 1111', 
+                                              '(<E T="03">1</E>) 1111')), a1)
