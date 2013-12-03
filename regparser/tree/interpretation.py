@@ -52,7 +52,7 @@ def segment_tree(text, part, parent_label):
     return interpParser.build_tree(body, 1, exclude, label, title)
 
 
-def text_to_label(text, part):
+def text_to_label(text, part, warn=True):
     citations = internal_citations(text, Label(part=part))
     citations = sorted(citations, key=lambda c:c.start)
     #   Assumes a citation is present
@@ -60,5 +60,5 @@ def text_to_label(text, part):
         label = citations[0].label.to_list()
         label.append(Node.INTERP_MARK)
         return label
-    else:
+    elif warn:
         logging.warning("Couldn't turn into label: " + text)

@@ -108,13 +108,17 @@ def interp_inner_child(child_node, stack):
 def is_title(xml_node):
     """Not all titles are created equal. Sometimes a title appears as a
     paragraph tag, mostly to add confusion."""
-    return (
+    if xml_node.getchildren():
+        child = xml_node.getchildren()[0]
+    else:
+        child = None
+    return bool(
         (xml_node.tag.upper() == 'HD' and xml_node.attrib['SOURCE'] != 'HED')
         or (xml_node.tag.upper() == 'P' 
             and (xml_node.text is None or not xml_node.text.strip())
-            and (xml_node.tail is None or not xml_node.tail.strip())
             and len(xml_node.getchildren()) == 1 
-            and text_to_label(xml_node.getchildren()[0].text, '')))
+            and (child.tail is None or not child.tail.strip())
+            and text_to_label(child.text, '', warn=False)))
 
 
 
@@ -168,7 +172,7 @@ def build_supplement_tree(reg_part, node):
     for node in supplement_tree:
         per_node(node)
 
-    return supplement_tree
+    return supplement_tree[0]
     
 
 def process_appendix(appendix, part):
@@ -238,7 +242,7 @@ def build_non_reg_text(reg_xml, reg_part):
     for non_reg_sect in non_reg_sects:
         section_title = get_app_title(non_reg_sect)
         if 'Supplement' in section_title and 'Part' in section_title:
-            children.extend(build_supplement_tree(reg_part, non_reg_sect))
+            children.append(build_supplement_tree(reg_part, non_reg_sect))
         else:
             children.append(process_appendix(non_reg_sect, reg_part))
 

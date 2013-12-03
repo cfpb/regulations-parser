@@ -34,11 +34,65 @@ class AppendicesTest(TestCase):
     def test_build_supplement_tree(self):
         """Integration test"""
         xml = """<APPENDIX>
+            <HD SOURCE="HED">Supplement I to Part 737-Official Interpretations</HD>
+            <HD SOURCE="HD2">Section 737.5 NASCAR</HD>
+            <P>1. Paragraph 1</P>
+            <P>i. Paragraph i; A. Start of A</P>
+            <HD SOURCE="HD2">5(a) Access Device</HD>
+            <P>1. Paragraph 111</P>
+            <P>i. Content content</P>
+            <P>ii. More content</P>
+            <P>A. Aaaaah</P>
+            <P><E T="03">1.</E> More info</P>
+            <P><E T="03">2.</E> Second info</P>
+            <P><E T="03">3. Keyterms</E></P>
         </APPENDIX>"""
+        tree = appendices.build_supplement_tree('737', etree.fromstring(xml))
+        self.assertEqual(['737', 'Interp'], tree.label)
+        self.assertEqual(1, len(tree.children))
+
+        i5 = tree.children[0]
+        self.assertEqual(['737', '5', 'Interp'], i5.label)
+        self.assertEqual(2, len(i5.children))
+
+        i51, i5a = i5.children
+        self.assertEqual(['737', '5', 'Interp', '1'], i51.label)
+        self.assertEqual(1, len(i51.children))
+        i51i = i51.children[0]
+        self.assertEqual(['737', '5', 'Interp', '1', 'i'], i51i.label)
+        self.assertEqual(1, len(i51i.children))
+        i51iA = i51i.children[0]
+        self.assertEqual(['737', '5', 'Interp', '1', 'i', 'A'], i51iA.label)
+        self.assertEqual(0, len(i51iA.children))
+
+        self.assertEqual(['737', '5', 'a', 'Interp'], i5a.label)
+        self.assertEqual(1, len(i5a.children))
+        i5a1 = i5a.children[0]
+        self.assertEqual(['737', '5', 'a', 'Interp', '1'], i5a1.label)
+        self.assertEqual(2, len(i5a1.children))
+        i5a1i, i5a1ii = i5a1.children
+        self.assertEqual(['737', '5', 'a', 'Interp', '1', 'i'], i5a1i.label)
+        self.assertEqual(0, len(i5a1i.children))
+
+        self.assertEqual(['737', '5', 'a', 'Interp', '1', 'ii'], i5a1ii.label)
+        self.assertEqual(1, len(i5a1ii.children))
+        i5a1iiA = i5a1ii.children[0]
+        self.assertEqual(['737', '5', 'a', 'Interp', '1', 'ii', 'A'],
+                         i5a1iiA.label)
+        self.assertEqual(3, len(i5a1iiA.children))
+        i5a1iiA1, i5a1iiA2, i5a1iiA3 = i5a1iiA.children
+        self.assertEqual(['737', '5', 'a', 'Interp', '1', 'ii', 'A', '1'],
+                         i5a1iiA1.label)
+        self.assertEqual(0, len(i5a1iiA1.children))
+        self.assertEqual(['737', '5', 'a', 'Interp', '1', 'ii', 'A', '2'],
+                         i5a1iiA2.label)
+        self.assertEqual(0, len(i5a1iiA2.children))
+        self.assertEqual(['737', '5', 'a', 'Interp', '1', 'ii', 'A', '3'],
+                         i5a1iiA3.label)
+        self.assertEqual(0, len(i5a1iiA3.children))
 
     def xtest_process_supplement_header(self):
         xml = """
-                <HD>Section 737.5 NASCAR</HD>
         """
         node = html.fragment_fromstring(xml, create_parent='DIV')
         m_stack = NodeStack()
@@ -51,7 +105,6 @@ class AppendicesTest(TestCase):
 
     def xtest_process_supplement_header(self):
         xml = """
-                <HD>2(a) Access Device</HD>
         """
         node = html.fragment_fromstring(xml, create_parent='DIV')
         m_stack = NodeStack()
@@ -202,11 +255,11 @@ class AppendicesTest(TestCase):
         #   Unlikely that the level jumped from 3 to 5
         self.assertEqual(3, appendices.interpretation_level('<E T="03">2', 3))
 
-    def xtest_is_title(self):
+    def test_is_title(self):
         titles = [
             "<HD SOURCE='HD1'>Some Title</HD>",
             "<HD SOURCE='HD2'>Some Title</HD>",
-            "<P><E T='03'>Some Title</E></P>",
+            "<P><E T='03'>Section 111.22</E></P>",
         ]
         for title in titles:
             self.assertTrue(appendices.is_title(etree.fromstring(title)))
@@ -214,6 +267,8 @@ class AppendicesTest(TestCase):
         non_titles = [
             "<HD SOURCE='HED'>Some Header</HD>",
             "<IMG>Some Image</IMG>",
+            "<P>Section 22.111</P>",
+            "<P><E T='03'>Section 222.33</E> More text</P>",
             "<P><E T='03'>Keyterm.</E> More text</P>",
         ]
         for non_title in non_titles:
