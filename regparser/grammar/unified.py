@@ -15,7 +15,7 @@ marker_part_section = (
 
 depth6_p = atomic.em_roman_p | atomic.plaintext_level6_p
 depth5_p = (
-    (atomic.em_digit_p | atomic.plaintext_level5_p) 
+    (atomic.em_digit_p | atomic.plaintext_level5_p)
     + Optional(depth6_p))
 depth4_p = atomic.upper_p + Optional(depth5_p)
 depth3_p = atomic.roman_p + Optional(depth4_p)
@@ -104,7 +104,7 @@ multiple_comments = (
     + OneOrMore(
         Optional(Suppress('('))
         + atomic.conj_phrases
-        + ( (_inner_non_comment + Optional(depth1_c))
+        + ((_inner_non_comment + Optional(depth1_c))
             | depth1_c).setParseAction(keep_pos).setResultsName(
             "tail", listAllMatches=True)
         + Optional(Suppress(')'))))

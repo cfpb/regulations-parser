@@ -6,6 +6,7 @@ from lxml import html
 from regparser.tree.node_stack import NodeStack
 from regparser.tree.xml_parser import appendices, tree_utils
 
+
 class AppendicesTest(TestCase):
     def test_interpretation_markers(self):
         text = '1. Kiwis and Mangos'
@@ -34,7 +35,8 @@ class AppendicesTest(TestCase):
     def test_build_supplement_tree(self):
         """Integration test"""
         xml = """<APPENDIX>
-            <HD SOURCE="HED">Supplement I to Part 737-Official Interpretations</HD>
+            <HD SOURCE="HED">
+                Supplement I to Part 737-Official Interpretations</HD>
             <HD SOURCE="HD2">Section 737.5 NASCAR</HD>
             <P>1. Paragraph 1</P>
             <P>i. Paragraph i; A. Start of A</P>
@@ -91,49 +93,12 @@ class AppendicesTest(TestCase):
                          i5a1iiA3.label)
         self.assertEqual(0, len(i5a1iiA3.children))
 
-    def xtest_process_supplement_header(self):
-        xml = """
-        """
-        node = html.fragment_fromstring(xml, create_parent='DIV')
-        m_stack = NodeStack()
-        m_stack.push_last((1, None))
-        appendices.process_supplement(737, m_stack ,node)
-
-        last = m_stack.pop()
-        self.assertEqual(last[0][0], 2)
-        self.assertEqual(last[0][1].label, ['5'])
-
-    def xtest_process_supplement_header(self):
-        xml = """
-        """
-        node = html.fragment_fromstring(xml, create_parent='DIV')
-        m_stack = NodeStack()
-        m_stack.push_last((1, None))
-        appendices.process_supplement(737, m_stack ,node)
-
-        last = m_stack.pop()
-        self.assertEqual(last[0][0], 2)
-        self.assertEqual(last[0][1].label, ['2(a)'])
-        self.assertEqual(last[0][1].title, '2(a) Access Device')
-
-    def xtest_process_supplement_header(self):
-        xml = """
-                <P>i. The red panda escaped.</P>"""
-        node = html.fragment_fromstring(xml, create_parent='DIV')
-        m_stack = NodeStack()
-        m_stack.push_last((1, None))
-        appendices.process_supplement(737, m_stack ,node)
-
-        last = m_stack.pop()
-        self.assertEqual(last[0][0], 4)
-        self.assertEqual(last[0][1].label, ['i'])
-        self.assertEqual(last[0][1].text, 'i. The red panda escaped.')
-
     def test_process_appendix_supplement(self):
         xml = u"""
         <APPENDIX>
             <EAR>Pt. 1111, Supp. I</EAR>
-            <HD SOURCE="HED">Supplement I to Part 1111—Official Interpretations</HD>
+            <HD SOURCE="HED">
+                Supplement I to Part 1111—Official Interpretations</HD>
             <P>Content</P>
         </APPENDIX>
         """
@@ -159,7 +124,7 @@ class AppendicesTest(TestCase):
         appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
         self.assertEqual(3, len(appendix.children))
         intro, h1, h2 = appendix.children
-        
+
         self.assertEqual([], intro.children)
         self.assertEqual("Intro text", intro.text.strip())
 

@@ -45,7 +45,7 @@ plaintext_level6_p = (
 
 # Leave whitespace; if there's a space we assume the comment is broken
 em_digit_c = ("." + Regex(r"<E[^>]*>")
-    + Word(string.digits).setResultsName("c4").leaveWhitespace())
+              + Word(string.digits).setResultsName("c4").leaveWhitespace())
 upper_c = "." + Word(string.ascii_uppercase).setResultsName(
     'c3').leaveWhitespace()
 roman_c = "." + Word("ivxlcdm").setResultsName('c2').leaveWhitespace()

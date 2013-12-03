@@ -52,7 +52,7 @@ def interpretation_level(marker, previous_level=None):
             return idx + 3
     #   Italics don't always mean what we'd like (le sigh)
     for idx, lst in enumerate(i_levels[3:]):
-        idx = idx + 3   #   Shift
+        idx = idx + 3   # Shift
         if marker in lst:
             #   Probably meant non-italic...
             if previous_level is not None and idx + 3 > previous_level + 1:
@@ -65,9 +65,8 @@ _first_markers = [re.compile(ur'[\.|,|;|-|—]\s*(' + marker + ')\.')
                   for marker in ['i', 'A']]
 
 
-
 def interp_inner_child(child_node, stack):
-    """ Build an inner child node (basically a node that's after 
+    """ Build an inner child node (basically a node that's after
     -Interp- in the tree) """
     node_text = tree_utils.get_node_text(child_node)
     text_with_tags = tree_utils.get_node_text_tags_preserved(child_node)
@@ -75,13 +74,13 @@ def interp_inner_child(child_node, stack):
 
     collapsed_markers = []
     for marker in _first_markers:
-        collapsed_markers.extend(m for m in marker.finditer(node_text) 
+        collapsed_markers.extend(m for m in marker.finditer(node_text)
                                  if m.start() > 0)
 
     #   -2 throughout to account for matching the character + period
     ends = [m.end() - 2 for m in collapsed_markers[1:]] + [len(node_text)]
     starts = [m.end() - 2 for m in collapsed_markers] + [len(node_text)]
-    
+
     #   Node for this paragraph
     n = Node(node_text[0:starts[0]], label=[first_marker],
              node_type=Node.INTERP)
@@ -114,12 +113,11 @@ def is_title(xml_node):
         child = None
     return bool(
         (xml_node.tag.upper() == 'HD' and xml_node.attrib['SOURCE'] != 'HED')
-        or (xml_node.tag.upper() == 'P' 
+        or (xml_node.tag.upper() == 'P'
             and (xml_node.text is None or not xml_node.text.strip())
-            and len(xml_node.getchildren()) == 1 
+            and len(xml_node.getchildren()) == 1
             and (child.tail is None or not child.tail.strip())
             and text_to_label(child.text, '', warn=False)))
-
 
 
 def process_inner_children(inner_stack, node):
@@ -138,8 +136,8 @@ def build_supplement_tree(reg_part, node):
 
     title = get_app_title(node)
     root = Node(
-        node_type=Node.INTERP, 
-        label=[reg_part, Node.INTERP_MARK], 
+        node_type=Node.INTERP,
+        label=[reg_part, Node.INTERP_MARK],
         title=title)
 
     supplement_nodes = [root]
@@ -151,12 +149,12 @@ def build_supplement_tree(reg_part, node):
                 continue
             n = Node(node_type=Node.INTERP, label=label_text, title=ch.text)
             node_level = 1
-            
+
             inner_stack = NodeStack()
             tree_utils.add_to_stack(inner_stack, node_level, n)
 
             process_inner_children(inner_stack, ch)
-                
+
             while inner_stack.size() > 1:
                 tree_utils.unwind_stack(inner_stack)
 
@@ -173,7 +171,7 @@ def build_supplement_tree(reg_part, node):
         per_node(node)
 
     return supplement_tree[0]
-    
+
 
 def process_appendix(appendix, part):
     m_stack = NodeStack()
@@ -184,15 +182,15 @@ def process_appendix(appendix, part):
     last_hd_level = 0
     for child in appendix.getchildren():
         # escape clause for interpretations
-        if (child.tag == 'HD' 
-            and 'Supplement I to Part' in tree_utils.get_node_text(child)):
+        if (child.tag == 'HD'
+                and 'Supplement I to Part' in tree_utils.get_node_text(child)):
             break
         if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
-            or child.tag == 'RESERVED'):
+                or child.tag == 'RESERVED'):
             letter = headers.parseString(tree_utils.get_node_text(
                 child)).appendix
             n = Node(node_type=Node.APPENDIX, label=[part, letter],
-                    title=tree_utils.get_node_text(child).strip())
+                     title=tree_utils.get_node_text(child).strip())
             m_stack.push_last((2, n))
             counter = 0
             depth = 3
@@ -222,7 +220,7 @@ def process_appendix(appendix, part):
 
 
 def get_app_title(node):
-    """ Appendix/Supplement sections have the title in an HD tag, or 
+    """ Appendix/Supplement sections have the title in an HD tag, or
     if they are reserved, in a <RESERVED> tag. Extract the title. """
 
     titles = node.xpath("./HD[@SOURCE='HED']")
@@ -231,9 +229,9 @@ def get_app_title(node):
     else:
         return node.xpath("./RESERVED")[0]
 
-    
+
 def build_non_reg_text(reg_xml, reg_part):
-    """ This builds the tree for the non-regulation text such as Appendices 
+    """ This builds the tree for the non-regulation text such as Appendices
     and the Supplement section """
     doc_root = etree.fromstring(reg_xml)
     non_reg_sects = doc_root.xpath('//PART//APPENDIX')

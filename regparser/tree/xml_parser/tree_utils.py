@@ -59,14 +59,14 @@ def split_text(text, tokens):
     return texts
 
 
-first_markers = [re.compile(ur'[\s|^|,|-|—]\((' 
+first_markers = [re.compile(ur'[\s|^|,|-|—]\(('
                             + re.escape(level[0]) + ')\)')
                  for level in p_levels]
 
 
 def get_collapsed_markers(text):
     """Not all paragraph markers are at the beginning of of the text. This
-    grabs inner markers like (1) and (i) here: 
+    grabs inner markers like (1) and (i) here:
     (c) cContent —(1) 1Content (i) iContent"""
     matches = []
     for marker in first_markers:
@@ -82,7 +82,7 @@ def get_collapsed_markers(text):
     #   remove any that overlap with citations
     matches = [m for m in matches
                if not any(e.start <= m.start() and e.end >= m.end()
-               for e in internal_citations(text))]
+                          for e in internal_citations(text))]
 
     #   get the letters
     return [match.group(1) for match in matches]

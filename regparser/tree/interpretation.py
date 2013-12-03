@@ -54,7 +54,7 @@ def segment_tree(text, part, parent_label):
 
 def text_to_label(text, part, warn=True):
     citations = internal_citations(text, Label(part=part))
-    citations = sorted(citations, key=lambda c:c.start)
+    citations = sorted(citations, key=lambda c: c.start)
     #   Assumes a citation is present
     if citations:
         label = citations[0].label.to_list()
