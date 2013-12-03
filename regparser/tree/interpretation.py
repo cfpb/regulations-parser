@@ -1,3 +1,5 @@
+import logging
+
 from regparser import utils
 from regparser.citations import internal_citations, Label
 import regparser.grammar.interpretation_headers as grammar
@@ -50,9 +52,13 @@ def segment_tree(text, part, parent_label):
     return interpParser.build_tree(body, 1, exclude, label, title)
 
 
-def text_to_label(text, part):
+def text_to_label(text, part, warn=True):
     citations = internal_citations(text, Label(part=part))
+    citations = sorted(citations, key=lambda c: c.start)
     #   Assumes a citation is present
-    label = citations[0].label.to_list()
-    label.append(Node.INTERP_MARK)
-    return label
+    if citations:
+        label = citations[0].label.to_list()
+        label.append(Node.INTERP_MARK)
+        return label
+    elif warn:
+        logging.warning("Couldn't turn into label: " + text)

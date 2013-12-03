@@ -1,7 +1,9 @@
+#vim: set encoding=utf-8
 from mock import patch
 from regparser.tree import struct
 from regparser.tree.interpretation import *
 from unittest import TestCase
+
 
 class DepthInterpretationTreeTest(TestCase):
 
@@ -98,7 +100,7 @@ class DepthInterpretationTreeTest(TestCase):
         self.assertEqual(1, len(child.children))
 
         child = child.children[0]
-        self.assertEqual(['876','2','r','4',Node.INTERP_MARK], child.label)
+        self.assertEqual(['876', '2', 'r', '4', Node.INTERP_MARK], child.label)
 
     def test_segment_tree_appendix(self):
         title = "Appendix Q - The Questions"
@@ -134,20 +136,20 @@ class DepthInterpretationTreeTest(TestCase):
         self.assertEqual(3, len(node.children))
 
         node = a_tree.children[1].children[0]
-        self.assertEqual(['111', '3', 'b', Node.INTERP_MARK, '2', 'i'], 
-                node.label)
+        self.assertEqual(['111', '3', 'b', Node.INTERP_MARK, '2', 'i'],
+                         node.label)
         self.assertEqual(depth2i, node.text)
         self.assertEqual(0, len(node.children))
 
         node = a_tree.children[1].children[1]
-        self.assertEqual(['111', '3', 'b', Node.INTERP_MARK, '2', 'ii'], 
-                node.label)
+        self.assertEqual(['111', '3', 'b', Node.INTERP_MARK, '2', 'ii'],
+                         node.label)
         self.assertEqual(depth2ii, node.text)
         self.assertEqual(0, len(node.children))
 
         node = a_tree.children[1].children[2]
-        self.assertEqual(['111', '3', 'b', Node.INTERP_MARK, '2', 'iii'], 
-                node.label)
+        self.assertEqual(['111', '3', 'b', Node.INTERP_MARK, '2', 'iii'],
+                         node.label)
         self.assertEqual(depth2iii, node.text)
         self.assertEqual(0, len(node.children))
 
@@ -168,11 +170,12 @@ class DepthInterpretationTreeTest(TestCase):
         self.assertEqual("2. Other data\n", child.text)
         self.assertEqual(1, len(child.children))
         self.assertEqual(['105', '11', Node.INTERP_MARK, '2'], child.label)
-        
+
         child = result.children[1].children[0]
         self.assertEqual("i. Hello hello", child.text)
         self.assertEqual([], child.children)
-        self.assertEqual(['105', '11', Node.INTERP_MARK, '2', 'i'], child.label)
+        self.assertEqual(['105', '11', Node.INTERP_MARK, '2', 'i'],
+                         child.label)
 
     def test_segment_tree_no_children(self):
         title = "Section 105.11 This is a section title"
@@ -205,8 +208,9 @@ class DepthInterpretationTreeTest(TestCase):
         s23 = "Paragraph 23(b)(4)(v)(Z)\nPar par\n"
         s25 = "Section 87.25 Title\nEven more info here\n"
         sb = "Appendix B-Some Title\nContent content\n"
-        self.assertEqual([(len(text), len(text + s22)),
-            (len(text+s22), len(text+s22+s23)), 
+        self.assertEqual([
+            (len(text), len(text + s22)),
+            (len(text+s22), len(text+s22+s23)),
             (len(text+s22+s23), len(text+s22+s23+s25)),
             (len(text+s22+s23+s25), len(text+s22+s23+s25+sb))
             ], segment_by_header(text + s22 + s23 + s25 + sb, 87))
@@ -219,3 +223,9 @@ class DepthInterpretationTreeTest(TestCase):
 
         self.assertEqual(3, len(segment_by_header(text+s10a+s10a1+s10b, 0)))
 
+    def test_text_to_label(self):
+        text = u"9(c)(2)(iii) Charges not Covered by § 1026.6(b)(1) and "
+        text += "(b)(2)"
+
+        self.assertEqual(['1111', '9', 'c', '2', 'iii', 'Interp'],
+                         text_to_label(text, '1111'))
