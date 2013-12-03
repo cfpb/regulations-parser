@@ -9,40 +9,34 @@ from regparser.tree.xml_parser import appendices, tree_utils
 class AppendicesTest(TestCase):
     def test_interpretation_markers(self):
         text = '1. Kiwis and Mangos'
-        marker = appendices.get_interpretation_markers(text)
+        marker = appendices.get_first_interp_marker(text)
         self.assertEqual(marker, '1')
 
     def test_interpretation_markers_roman(self):
         text = 'iv. Kiwis and Mangos'
-        marker = appendices.get_interpretation_markers(text)
+        marker = appendices.get_first_interp_marker(text)
         self.assertEqual(marker, 'iv')
+
+    def test_interpretation_markers_emph(self):
+        text = '<E T="03">1.</E> Kiwis and Mangos'
+        marker = appendices.get_first_interp_marker(text)
+        self.assertEqual(marker, '<E T="03">1')
+
+        text = '<E T="03">1. Kiwis and Mangos.</E> More content.'
+        marker = appendices.get_first_interp_marker(text)
+        self.assertEqual(marker, '<E T="03">1')
 
     def test_interpretation_markers_none(self):
         text = '(iv) Kiwis and Mangos'
-        marker = appendices.get_interpretation_markers(text)
+        marker = appendices.get_first_interp_marker(text)
         self.assertEqual(marker, None)
 
-    def test_supplement_letter(self):
-        text = u'Supplement J to Part 204'
-        letter = appendices.get_supplement_letter(text, 204)
-        self.assertEqual('J', letter)
+    def test_build_supplement_tree(self):
+        """Integration test"""
+        xml = """<APPENDIX>
+        </APPENDIX>"""
 
-    def test_supplement_letter_none(self):
-        text = 'Supplement K'
-        letter = appendices.get_supplement_letter(text, 204)
-        self.assertEqual(letter, None)
-
-    def test_appendix_section_number(self):
-        text = u'A-13 A Very Nice Appendix.'
-        number = appendices.get_appendix_section_number(text, 'A')
-        self.assertEqual('13', number)
-
-    def test_appendix_section_number_none(self):
-        text = u'A Very Nice Appendix.'
-        number = appendices.get_appendix_section_number(text, 'A')
-        self.assertEqual(None, number)
-
-    def test_process_supplement_header(self):
+    def xtest_process_supplement_header(self):
         xml = """
                 <HD>Section 737.5 NASCAR</HD>
         """
@@ -55,7 +49,7 @@ class AppendicesTest(TestCase):
         self.assertEqual(last[0][0], 2)
         self.assertEqual(last[0][1].label, ['5'])
 
-    def test_process_supplement_header(self):
+    def xtest_process_supplement_header(self):
         xml = """
                 <HD>2(a) Access Device</HD>
         """
@@ -69,7 +63,7 @@ class AppendicesTest(TestCase):
         self.assertEqual(last[0][1].label, ['2(a)'])
         self.assertEqual(last[0][1].title, '2(a) Access Device')
 
-    def test_process_supplement_header(self):
+    def xtest_process_supplement_header(self):
         xml = """
                 <P>i. The red panda escaped.</P>"""
         node = html.fragment_fromstring(xml, create_parent='DIV')
@@ -82,7 +76,7 @@ class AppendicesTest(TestCase):
         self.assertEqual(last[0][1].label, ['i'])
         self.assertEqual(last[0][1].text, 'i. The red panda escaped.')
 
-    def test_appendix_tag_supplement(self):
+    def test_process_appendix_supplement(self):
         xml = u"""
         <APPENDIX>
             <EAR>Pt. 1111, Supp. I</EAR>
@@ -90,10 +84,10 @@ class AppendicesTest(TestCase):
             <P>Content</P>
         </APPENDIX>
         """
-        self.assertEqual(appendices.appendix_tag(etree.fromstring(xml), 1111),
-                         None)
+        self.assertEqual(appendices.process_appendix(etree.fromstring(xml),
+                                                     1111), None)
 
-    def test_appendix_tag(self):
+    def test_process_appendix(self):
         """Integration test for appendices"""
         xml = u"""
         <APPENDIX>
@@ -109,7 +103,7 @@ class AppendicesTest(TestCase):
             <P>Final <E T="03">Content</E></P>
         </APPENDIX>
         """
-        appendix = appendices.appendix_tag(etree.fromstring(xml), 1111)
+        appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
         self.assertEqual(3, len(appendix.children))
         intro, h1, h2 = appendix.children
         
@@ -196,3 +190,31 @@ class AppendicesTest(TestCase):
         while stack.size() > 1:
             tree_utils.unwind_stack(stack)
         self.assertEqual(2, len(stack.m_stack[0]))
+
+    def test_interpretation_level(self):
+        self.assertEqual(3, appendices.interpretation_level('1'))
+        self.assertEqual(4, appendices.interpretation_level('ii'))
+        self.assertEqual(5, appendices.interpretation_level('C'))
+        self.assertEqual(6, appendices.interpretation_level('<E T="03">1'))
+        self.assertEqual(3, appendices.interpretation_level('1', 2))
+        self.assertEqual(4, appendices.interpretation_level('ii', 3))
+        self.assertEqual(5, appendices.interpretation_level('C', 4))
+        #   Unlikely that the level jumped from 3 to 5
+        self.assertEqual(3, appendices.interpretation_level('<E T="03">2', 3))
+
+    def xtest_is_title(self):
+        titles = [
+            "<HD SOURCE='HD1'>Some Title</HD>",
+            "<HD SOURCE='HD2'>Some Title</HD>",
+            "<P><E T='03'>Some Title</E></P>",
+        ]
+        for title in titles:
+            self.assertTrue(appendices.is_title(etree.fromstring(title)))
+
+        non_titles = [
+            "<HD SOURCE='HED'>Some Header</HD>",
+            "<IMG>Some Image</IMG>",
+            "<P><E T='03'>Keyterm.</E> More text</P>",
+        ]
+        for non_title in non_titles:
+            self.assertFalse(appendices.is_title(etree.fromstring(non_title)))

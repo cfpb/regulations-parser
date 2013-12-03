@@ -14,36 +14,26 @@ from regparser.tree.struct import Node, treeify
 from regparser.tree.xml_parser import tree_utils
 from regparser.utils import roman_nums
 
-p_levels = [
-    #0 -> A (Level 1)
-    list(string.ascii_uppercase),
-    #1 -> 1 (Level 2)
-    [str(i) for i in range(1, 51)],
-    #2 -> a (Level 3)
-    list(string.ascii_lowercase),
-    #3 -> 1 (Level 4)
-    [str(i) for i in range(1, 51)],
-    #4 -> (i)
-    list(itertools.islice(roman_nums(), 0, 50)),
-]
 
 i_levels = [
     [str(i) for i in range(1, 51)],
     list(itertools.islice(roman_nums(), 0, 50)),
     list(string.ascii_uppercase),
+    # We don't include the closing tag - it won't be closed if followed by a
+    # key term
     ['<E T="03">' + str(i) for i in range(1, 51)],
 ]
 
 
-def get_interpretation_markers(text):
+def get_first_interp_marker(text):
     roman_dec = Word("ivxlcdm")
     upper_dec = Word(string.ascii_uppercase)
+    emph_dec = (Regex(r"<E[^>]*>") + Word(string.digits)).setParseAction(
+        lambda s, l, t: ''.join(t))
 
     marker_parser = LineStart() + (
-        ((Word(string.digits) | roman_dec | upper_dec) + Suppress("."))
-        | (Regex(r"<E[^>]*>")
-           + Word(string.digits)).setParseAction(lambda s, l, t: ''.join(t)))
-
+        (Word(string.digits) | roman_dec | upper_dec | emph_dec)
+        + Suppress("."))
 
     for citation, start, end in marker_parser.scanString(text):
         return citation[0]
@@ -53,6 +43,8 @@ def interpretation_level(marker, previous_level=None):
     """
         Based on the marker, determine the interpretation paragraph level.
         Levels 1,2 don't need this, since they are marked differently.
+        Frustratingly, the XML is not always marked up correctly - some
+        markers are sometimes italicized when they shouldn't be.
     """
     #   First, non-italics
     for idx, lst in enumerate(i_levels[:3]):
@@ -63,66 +55,15 @@ def interpretation_level(marker, previous_level=None):
         idx = idx + 3   #   Shift
         if marker in lst:
             #   Probably meant non-italic...
-            if idx + 3 > previous_level + 1:
+            if previous_level is not None and idx + 3 > previous_level + 1:
                 return idx
             else:
                 return idx + 3
 
 
+_first_markers = [re.compile(ur'[\.|,|;|-|—]\s*(' + marker + ')\.')
+                  for marker in ['i', 'A']]
 
-def determine_level(marker, current_level):
-    """ Based on the current level and the new marker, determine
-    the new paragraph level. """
-    if marker in p_levels[3] and current_level > 2:
-        #digits
-        p_level = 4
-    elif marker in p_levels[0]:
-        #ascii_uppercase
-        p_level = 1
-    elif marker in p_levels[2]:
-        #ascii_lowercase
-        p_level = 3
-    elif marker in p_levels[4]:
-        #roman_nums
-        p_level = 5
-    return p_level
-
-
-def get_supplement_letter(title, part):
-    result = re.match(ur'Supplement ([A-Z+]) to Part %d.*$' % part, title)
-    if result:
-        return result.group(1)
-
-
-def get_appendix_section_number(title, appendix_letter):
-    result = re.match(ur'^%s-(\d+).*$' % appendix_letter, title)
-    if result:
-        return result.group(1)
-
-
-def determine_next_section(m_stack, node_level):
-    """ Sometimes, sections aren't numbered or lettered with
-    the body of the text. We peek at the stack, and figure out the next
-    marker. """
-
-    last_level = m_stack.peek_last()[0]
-
-    if node_level == last_level:
-        #Get the next marker on the same level
-        last_marker = m_stack.peek_last()[1].label[-1]
-        last_marker_index = p_levels[node_level-1].index(str(last_marker))
-        next_marker = p_levels[node_level-1][last_marker_index + 1]
-        return next_marker
-    if node_level > last_level:
-        #Get the first marker on the next level
-        return p_levels[node_level - 1][0]
-
-        #We don't need to get the next marker on a previous
-        #level because this doesn't happen.
-
-
-first_markers = [re.compile(ur'[\.|,|;|-|—]\s*(' + marker + ')\.')
-                 for marker in ['i', 'A']]
 
 
 def interp_inner_child(child_node, stack):
@@ -130,25 +71,29 @@ def interp_inner_child(child_node, stack):
     -Interp- in the tree) """
     node_text = tree_utils.get_node_text(child_node)
     text_with_tags = tree_utils.get_node_text_tags_preserved(child_node)
-    first_marker = get_interpretation_markers(text_with_tags)
+    first_marker = get_first_interp_marker(text_with_tags)
 
     collapsed_markers = []
-    for marker in first_markers:
+    for marker in _first_markers:
         collapsed_markers.extend(m for m in marker.finditer(node_text) 
                                  if m.start() > 0)
 
+    #   -2 throughout to account for matching the character + period
     ends = [m.end() - 2 for m in collapsed_markers[1:]] + [len(node_text)]
     starts = [m.end() - 2 for m in collapsed_markers] + [len(node_text)]
     
+    #   Node for this paragraph
     n = Node(node_text[0:starts[0]], label=[first_marker],
              node_type=Node.INTERP)
     last = stack.peek()
+
     if len(last) == 0:
         stack.push_last((interpretation_level(first_marker), n))
     else:
         node_level = interpretation_level(first_marker, last[0][0])
         tree_utils.add_to_stack(stack, node_level, n)
 
+    #   Collapsed-marker children
     for match, end in zip(collapsed_markers, ends):
         n = Node(node_text[match.end() - 2:end], label=[match.group(1)],
                  node_type=Node.INTERP)
@@ -158,11 +103,11 @@ def interp_inner_child(child_node, stack):
             stack.push_last((node_level, n))
         else:
             tree_utils.add_to_stack(stack, node_level, n)
-        
-    #return node_level, n
 
 
 def is_title(xml_node):
+    """Not all titles are created equal. Sometimes a title appears as a
+    paragraph tag, mostly to add confusion."""
     return (
         (xml_node.tag.upper() == 'HD' and xml_node.attrib['SOURCE'] != 'HED')
         or (xml_node.tag.upper() == 'P' 
@@ -174,21 +119,14 @@ def is_title(xml_node):
 
 
 def process_inner_children(inner_stack, node):
+    """Process the following nodes as children of this interpretation"""
     children = itertools.takewhile(
         lambda x: not is_title(x), node.itersiblings())
     for c in children:
         node_text = tree_utils.get_node_text(c)
-        #marker = get_interpretation_markers(node_text, inner_stack)
 
         interp_inner_child(c, inner_stack)
-        #print inner_stack.m_stack
-        #tree_utils.add_to_stack(inner_stack, node_level, n)
 
-    #n = Node(node_text, label=[marker], node_type=Node.INTERP)
-    #node_level = interpretation_level(marker)
-    #return node_level, n
-        #node_level, n = interp_inner_child(c)
-        #tree_utils.add_to_stack(inner_stack, node_level, n)
 
 def build_supplement_tree(reg_part, node):
     """ Build the tree for the supplement section. """
@@ -213,7 +151,6 @@ def build_supplement_tree(reg_part, node):
             inner_stack = NodeStack()
             tree_utils.add_to_stack(inner_stack, node_level, n)
 
-            print ">>>", ch.text
             process_inner_children(inner_stack, ch)
                 
             while inner_stack.size() > 1:
@@ -233,85 +170,8 @@ def build_supplement_tree(reg_part, node):
 
     return supplement_tree
     
-def process_supplement(part, m_stack, child):
-    """ Parse the Supplement sections and paragraphs. """
-    for ch in child.getchildren():
-        if ch.tag.upper() == 'HD':
-            label_text = text_to_label(ch.text, part)
-            n = Node(node_type=Node.INTERP, label=label_text, title=ch.text)
-            node_level = 1
-        elif ch.tag.upper() == 'P':
-            text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
-            marker = get_interpretation_markers(text)
-            node_text = tree_utils.get_node_text(ch)
 
-            n = Node(node_text, label=[marker], node_type=Node.INTERP)
-            node_level = interpretation_level(marker)
-        tree_utils.add_to_stack(m_stack, node_level, n)
-
-
-
-def process_appendix(m_stack, current_section, child):
-    html_parser = HTMLParser.HTMLParser()
-
-    for ch in child.getchildren():
-        if ch.tag == 'HD':
-            appendix_section = get_appendix_section_number(
-                ch.text, current_section)
-
-            if appendix_section is None:
-                appendix_section = determine_next_section(m_stack, 2)
-
-            n = Node(
-                node_type=Node.APPENDIX, label=[appendix_section],
-                title=ch.text)
-
-            node_level = 2
-            tree_utils.add_to_stack(m_stack, node_level, n)
-        if ch.tag == 'P':
-            text = ' '.join([ch.text] + [c.tail for c in ch if c.tail])
-            markers_list = tree_utils.get_paragraph_markers(text)
-
-            node_text = tree_utils.get_node_text(ch)
-
-            if len(markers_list) > 0:
-                if len(markers_list) > 1:
-                    actual_markers = ['(%s)' % m for m in markers_list]
-                    node_text = tree_utils.split_text(
-                        node_text, actual_markers)
-                else:
-                    node_text = [node_text]
-
-                for m, node_text in zip(markers_list, node_text):
-                    n = Node(
-                        node_text, label=[str(m)], node_type=Node.APPENDIX)
-
-                    last = m_stack.peek()
-                    node_level = determine_level(m, last[0][0])
-
-                    if m == 'i':
-                        #This is bit of a hack, since we can't easily
-                        #distinguish between the Roman numeral #(i) and the
-                        #letter (i) to determine the level. We look ahead to
-                        #help. This is not #a complete solution and we should
-                        #circle back at some point.
-
-                        next_text = ' '.join(
-                            [ch.getnext().text] +
-                            [c.tail for c in ch.getnext() if c.tail])
-
-                        next_markers = tree_utils.get_paragraph_markers(
-                            next_text)
-
-                        if next_markers[0] == 'ii':
-                            node_level = 5
-                    tree_utils.add_to_stack(m_stack, node_level, n)
-            else:
-                last = m_stack.peek_last()
-                last[1].text = last[1].text + '\n %s' % node_text
-
-
-def appendix_tag(appendix, part):
+def process_appendix(appendix, part):
     m_stack = NodeStack()
 
     counter = 0
@@ -356,6 +216,7 @@ def appendix_tag(appendix, part):
     if m_stack.m_stack[0]:
         return m_stack.m_stack[0][0][1]
 
+
 def get_app_title(node):
     """ Appendix/Supplement sections have the title in an HD tag, or 
     if they are reserved, in a <RESERVED> tag. Extract the title. """
@@ -365,6 +226,7 @@ def get_app_title(node):
         return titles[0].text
     else:
         return node.xpath("./RESERVED")[0]
+
     
 def build_non_reg_text(reg_xml, reg_part):
     """ This builds the tree for the non-regulation text such as Appendices 
@@ -376,9 +238,8 @@ def build_non_reg_text(reg_xml, reg_part):
     for non_reg_sect in non_reg_sects:
         section_title = get_app_title(non_reg_sect)
         if 'Supplement' in section_title and 'Part' in section_title:
-            supps = build_supplement_tree(reg_part, non_reg_sect)
-            children.extend(supps)
+            children.extend(build_supplement_tree(reg_part, non_reg_sect))
         else:
-            children.append(appendix_tag(non_reg_sect, reg_part))
+            children.append(process_appendix(non_reg_sect, reg_part))
 
     return children
