@@ -211,6 +211,12 @@ def process_appendix(appendix, part):
             text = tree_utils.get_node_text(child)
             n = Node(text, node_type=Node.APPENDIX, label=['p' + str(counter)])
             tree_utils.add_to_stack(m_stack, depth, n)
+        elif child.tag == 'GPH':
+            counter += 1
+            gid = child.xpath('./GID')[0].text
+            text = '![](' + gid + ')'
+            n = Node(text, node_type=Node.APPENDIX, label=['p' + str(counter)])
+            tree_utils.add_to_stack(m_stack, depth, n)
 
     while m_stack.size() > 1:
         tree_utils.unwind_stack(m_stack)

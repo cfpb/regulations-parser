@@ -16,11 +16,12 @@ class LayerGraphicsTest(TestCase):
 
     def test_process(self):
         node = Node("Testing ![ex](ABCD) then some more XXX " +
-            "some more ![222](XXX) followed by ![ex](ABCD) and XXX")
+            "some more ![222](XXX) followed by ![ex](ABCD) and XXX " +
+            "and ![](NOTEXT)")
         g = Graphics(None)
         result = g.process(node)
-        self.assertEqual(2, len(result))
-        found = [False, False]
+        self.assertEqual(3, len(result))
+        found = [False, False, False]
         for res in result:
             if (res['text'] == '![ex](ABCD)'
                 and 'ABCD' in res['url']
@@ -32,7 +33,13 @@ class LayerGraphicsTest(TestCase):
                 and res['alt'] == '222'
                 and res['locations'] == [0]):
                 found[1] = True
-        self.assertEqual([True, True], found)
+            elif (res['text'] == '![](NOTEXT)'
+                and 'NOTEXT' in res['url']
+                and res['alt'] == ''
+                and res['locations'] == [0]):
+                found[2] = True
+
+        self.assertEqual([True, True, True], found)
 
     def test_process_format(self):
         node = Node("![A88 Something](ER22MY13.257)")

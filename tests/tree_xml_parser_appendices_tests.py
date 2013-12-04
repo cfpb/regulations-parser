@@ -119,6 +119,10 @@ class AppendicesTest(TestCase):
             <P>Subheader content</P>
             <HD SOURCE="HD1">Header <E T="03">2</E></HD>
             <P>Final <E T="03">Content</E></P>
+            <GPH>
+                <PRTPAGE P="650" />
+                <GID>MYGID</GID>
+            </GPH>
         </APPENDIX>
         """
         appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
@@ -140,9 +144,10 @@ class AppendicesTest(TestCase):
         self.assertEqual('Subheader', sub.title)
         self.assertEqual('Subheader content', sub.children[0].text.strip())
 
-        self.assertEqual(1, len(h2.children))
+        self.assertEqual(2, len(h2.children))
         self.assertEqual('Header 2', h2.title)
         self.assertEqual('Final Content', h2.children[0].text.strip())
+        self.assertEqual('![](MYGID)', h2.children[1].text.strip())
 
     def test_process_inner_child(self):
         xml = """
