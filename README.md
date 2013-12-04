@@ -2,6 +2,7 @@ Regulations Parser
 ==================
 
 [![Build Status](https://travis-ci.org/cfpb/regulations-parser.png)](https://travis-ci.org/cfpb/regulations-parser)
+[![Coverage Status](https://coveralls.io/repos/cfpb/regulations-parser/badge.png)](https://coveralls.io/r/cfpb/regulations-parser)
 
 Parse a regulation (plain text) into a well-formated JSON tree (along with
 associated layers, such as links and definitions) with this tool. It also
