@@ -14,6 +14,34 @@ from regparser.tree.xml_parser.interpretations import build_supplement_tree
 from regparser.tree.xml_parser.interpretations import get_app_title
 
 
+def remove_toc(appendix, letter):
+    """The TOC at the top of certain appendices gives us trouble since it
+    looks a *lot* like a sequence of headers. Remove it if present"""
+    first_header = None
+    potential_toc = set()
+    for node in appendix.xpath("./HD[@SOURCE='HED']/following-sibling::*"):
+        parsed = parsed_title(tree_utils.get_node_text(node), letter)
+        if parsed:
+            #  The headers may not match character-per-character. Only
+            #  compare the parsed results.
+            fingerprint = tuple(parsed)
+            #  Hit the real content
+            if fingerprint == first_header and node.tag == 'HD':     
+                for el in potential_toc:
+                    el.getparent().remove(el)
+                return
+            else:
+                first_header = first_header or fingerprint
+                potential_toc.add(node)
+        else:   # Not a title => no TOC
+            return
+
+
+def is_appendix_header(node):
+    return (node.tag == 'RESERVED'
+            or (node.tag == 'HD' and node.attrib['SOURCE'] == 'HED'))
+
+
 def process_appendix(appendix, part):
     m_stack = NodeStack()
 
@@ -21,16 +49,20 @@ def process_appendix(appendix, part):
     header = 0
     depth = None
     last_hd_level = 0
+
     appendix_letter = None
+    for node in (c for c in appendix.getchildren() if is_appendix_header(c)):
+        text = tree_utils.get_node_text(node)
+        if appendix_letter:
+            logging.warning("Found two appendix headers: %s and %s",
+                            appendix_letter, text)
+        appendix_letter = headers.parseString(text).appendix
+
+    remove_toc(appendix, appendix_letter)
+
     for child in appendix.getchildren():
-        # escape clause for interpretations
-        if (child.tag == 'HD'
-                and 'Supplement I to Part' in tree_utils.get_node_text(child)):
-            break
         if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
                 or child.tag == 'RESERVED'):
-            appendix_letter = headers.parseString(tree_utils.get_node_text(
-                child)).appendix
             n = Node(node_type=Node.APPENDIX, label=[part, appendix_letter],
                      title=tree_utils.get_node_text(child).strip())
             m_stack.push_last((1, n))
@@ -80,29 +112,35 @@ def process_appendix(appendix, part):
         return m_stack.m_stack[0][0][1]
 
 
-def title_label_pair(text, appendix_letter, stack):
-    """Return the label + depth as indicated by a title"""
-    digit_str_parser = (LineStart()
-                        + Marker(appendix_letter)
+def parsed_title(text, appendix_letter):
+    digit_str_parser = (Marker(appendix_letter)
                         + Suppress('-')
                         + grammar.a1
                         + Optional(grammar.paren_upper | grammar.paren_lower))
-    for match, _, _ in digit_str_parser.scanString(text):
+    part_roman_parser = Marker("part") + grammar.aI
+    parser = LineStart() + (digit_str_parser | part_roman_parser)
+
+    for match, _, _ in parser.scanString(text):
+        return match
+
+
+def title_label_pair(text, appendix_letter, stack = None):
+    """Return the label + depth as indicated by a title"""
+    match = parsed_title(text, appendix_letter)
+    if match:
         #   May need to include the parenthesized letter (if this doesn't
         #   have an appropriate parent)
-        if match.paren_upper or match.paren_lower:
+        if stack and (match.paren_upper or match.paren_lower):
             #   Check for a parent with match.a1 as its digit
             parent = stack.peek_level_last(2)
             if parent and parent.label[-1] == match.a1:
                 return (match.paren_upper or match.paren_lower, 3)
 
             return (''.join(match), 2)
-        else:
+        elif match.a1:
             return (match.a1, 2)
-
-    part_roman_parser = (LineStart() + Marker("part") + grammar.aI)
-    for match, _, _ in part_roman_parser.scanString(text):
-        return (match.aI, 2)
+        elif match.aI:
+            return (match.aI, 2)
 
 
 def build_non_reg_text(reg_xml, reg_part):

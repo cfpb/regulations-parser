@@ -9,18 +9,6 @@ from regparser.tree.xml_parser import appendices, tree_utils
 
 
 class AppendicesTest(TestCase):
-    def test_process_appendix_supplement(self):
-        xml = u"""
-        <APPENDIX>
-            <EAR>Pt. 1111, Supp. I</EAR>
-            <HD SOURCE="HED">
-                Supplement I to Part 1111—Official Interpretations</HD>
-            <P>Content</P>
-        </APPENDIX>
-        """
-        self.assertEqual(appendices.process_appendix(etree.fromstring(xml),
-                                                     1111), None)
-
     def test_process_appendix(self):
         """Integration test for appendices"""
         xml = u"""
@@ -64,6 +52,39 @@ class AppendicesTest(TestCase):
         self.assertEqual('Header 2', h2.title)
         self.assertEqual('Final Content', h2.children[0].text.strip())
         self.assertEqual('![](MYGID)', h2.children[1].text.strip())
+
+    def test_remove_toc(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <FP>A-1 Awesome</FP>
+            <FP>A-2 More Awesome</FP>
+            <FP>A-1 Incorrect TOC</FP>
+            <P>A-3 The End of Awesome</P>
+            <HD>A-1Awesomer</HD>
+            <P>Content content</P>
+        </APPENDIX>"""
+        #   Note that the title isn't identical
+        xml = etree.fromstring(xml)
+        appendices.remove_toc(xml, 'A')
+        self.assertEqual(['EAR', 'HD', 'HD', 'P'], [t.tag for t in xml])
+
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <FP>A-1 Awesome</FP>
+            <P>Good Content here</P>
+            <FP>A-2 More Awesome</FP>
+            <P>More Content</P>
+            <HD>A-11 Crank It Up</HD>
+            <P>Content content</P>
+        </APPENDIX>"""
+        xml = etree.fromstring(xml)
+        appendices.remove_toc(xml, 'A')
+        self.assertEqual(['EAR', 'HD', 'FP', 'P', 'FP', 'P', 'HD', 'P'],
+                         [t.tag for t in xml])
 
     def test_title_label_pair(self):
         title = u'A-1—Model Clauses'
