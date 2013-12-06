@@ -58,7 +58,7 @@ def process_appendix(appendix, part):
                     depth += 1
                 elif hd_level < last_hd_level:
                     depth = hd_level + 2
-                
+
             last_hd_level = hd_level
             tree_utils.add_to_stack(m_stack, depth - 1, n)
         elif child.tag == 'P' or child.tag == 'FP':
@@ -84,7 +84,7 @@ def title_label_pair(text, appendix_letter, stack):
     """Return the label + depth as indicated by a title"""
     digit_str_parser = (LineStart()
                         + Marker(appendix_letter)
-                        + Suppress('-')  
+                        + Suppress('-')
                         + grammar.a1
                         + Optional(grammar.paren_upper | grammar.paren_lower))
     for match, _, _ in digit_str_parser.scanString(text):
