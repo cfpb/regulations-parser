@@ -26,7 +26,7 @@ def remove_toc(appendix, letter):
             #  compare the parsed results.
             fingerprint = tuple(parsed)
             #  Hit the real content
-            if fingerprint == first_header and node.tag == 'HD':     
+            if fingerprint == first_header and node.tag == 'HD':
                 for el in potential_toc:
                     el.getparent().remove(el)
                 return
@@ -49,8 +49,8 @@ def process_appendix(appendix, part):
     header = 0
     depth = None
     last_hd_level = 0
-
     appendix_letter = None
+
     for node in (c for c in appendix.getchildren() if is_appendix_header(c)):
         text = tree_utils.get_node_text(node)
         if appendix_letter:
@@ -124,7 +124,7 @@ def parsed_title(text, appendix_letter):
         return match
 
 
-def title_label_pair(text, appendix_letter, stack = None):
+def title_label_pair(text, appendix_letter, stack=None):
     """Return the label + depth as indicated by a title"""
     match = parsed_title(text, appendix_letter)
     if match:
