@@ -1,7 +1,12 @@
 #vim: set encoding=utf-8
-from lxml import etree
+import string
 
+from lxml import etree
+from pyparsing import LineStart, Literal, Optional, Suppress, Word
+
+from regparser.grammar import appendix as grammar
 from regparser.grammar.interpretation_headers import parser as headers
+from regparser.grammar.utils import Marker
 from regparser.tree.node_stack import NodeStack
 from regparser.tree.struct import Node
 from regparser.tree.xml_parser import tree_utils
@@ -14,8 +19,9 @@ def process_appendix(appendix, part):
 
     counter = 0
     header = 0
-    depth = 3
+    depth = None
     last_hd_level = 0
+    appendix_letter = None
     for child in appendix.getchildren():
         # escape clause for interpretations
         if (child.tag == 'HD'
@@ -23,24 +29,37 @@ def process_appendix(appendix, part):
             break
         if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
                 or child.tag == 'RESERVED'):
-            letter = headers.parseString(tree_utils.get_node_text(
+            appendix_letter = headers.parseString(tree_utils.get_node_text(
                 child)).appendix
-            n = Node(node_type=Node.APPENDIX, label=[part, letter],
+            n = Node(node_type=Node.APPENDIX, label=[part, appendix_letter],
                      title=tree_utils.get_node_text(child).strip())
-            m_stack.push_last((2, n))
+            m_stack.push_last((1, n))
             counter = 0
-            depth = 3
+            depth = 2
         elif child.tag == 'HD':
-            header += 1
-            source = child.attrib.get('SOURCE', 'HD0')
+            source = child.attrib.get('SOURCE', 'HD1')
             hd_level = int(source[2:])
-            if hd_level > last_hd_level:
-                depth += 1
-            elif hd_level < last_hd_level:
-                depth = hd_level + 3
+
+            title = tree_utils.get_node_text(child).strip()
+            pair = title_label_pair(title, appendix_letter, m_stack)
+
+            #   Use the depth indicated in the title
+            if pair:
+                label, title_depth = pair
+                depth = title_depth + 1
+                n = Node(node_type=Node.APPENDIX, label=[label],
+                         title=tree_utils.get_node_text(child).strip())
+            #   Try to deduce depth from SOURCE attribute
+            else:
+                header += 1
+                n = Node(node_type=Node.APPENDIX, label=['h' + str(header)],
+                         title=tree_utils.get_node_text(child).strip())
+                if hd_level > last_hd_level:
+                    depth += 1
+                elif hd_level < last_hd_level:
+                    depth = hd_level + 2
+                
             last_hd_level = hd_level
-            n = Node(node_type=Node.APPENDIX, label=['h' + str(header)],
-                     title=tree_utils.get_node_text(child).strip())
             tree_utils.add_to_stack(m_stack, depth - 1, n)
         elif child.tag == 'P' or child.tag == 'FP':
             counter += 1
@@ -59,6 +78,27 @@ def process_appendix(appendix, part):
 
     if m_stack.m_stack[0]:
         return m_stack.m_stack[0][0][1]
+
+
+def title_label_pair(text, appendix_letter, stack):
+    """Return the label + depth as indicated by a title"""
+    digit_str_parser = (LineStart()
+                        + Marker(appendix_letter)
+                        + Suppress('-')  
+                        + grammar.a1
+                        + Optional(grammar.paren_upper | grammar.paren_lower))
+    for match, _, _ in digit_str_parser.scanString(text):
+        #   May need to include the parenthesized letter (if this doesn't
+        #   have an appropriate parent)
+        if match.paren_upper or match.paren_lower:
+            #   Check for a parent with match.a1 as its digit
+            parent = stack.peek_level_last(2)
+            if parent and parent.label[-1] == match.a1:
+                return (match.paren_upper or match.paren_lower, 3)
+
+            return (''.join(match), 2)
+        else:
+            return (match.a1, 2)
 
 
 def build_non_reg_text(reg_xml, reg_part):
