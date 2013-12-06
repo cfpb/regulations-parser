@@ -100,6 +100,10 @@ def title_label_pair(text, appendix_letter, stack):
         else:
             return (match.a1, 2)
 
+    part_roman_parser = (LineStart() + Marker("part") + grammar.aI)
+    for match, _, _ in part_roman_parser.scanString(text):
+        return (match.aI, 2)
+
 
 def build_non_reg_text(reg_xml, reg_part):
     """ This builds the tree for the non-regulation text such as Appendices

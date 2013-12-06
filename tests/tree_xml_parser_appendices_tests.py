@@ -70,6 +70,11 @@ class AppendicesTest(TestCase):
         self.assertEqual(('1', 2),
                          appendices.title_label_pair(title, 'A', None))
 
+        title = u'Part III—Construction Period'
+        self.assertEqual(('III', 2),
+                         appendices.title_label_pair(title, 'A', None))
+
+    def test_title_label_pair_parens(self):
         title = u'G-13(A)—Has No parent'
         stack = NodeStack()
         stack.push_last((1, Node(label=['G'], node_type=Node.APPENDIX)))
