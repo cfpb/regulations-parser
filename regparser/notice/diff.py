@@ -24,6 +24,12 @@ def remove_char(xml_node, char):
     return etree.fromstring(as_str.replace(char, ''))
 
 
+def find_section(amdpar):
+    for sibling in amdpar.itersiblings():
+        if sibling.tag == 'SECTION':
+            return sibling
+
+
 def find_diffs(xml_tree, cfr_part):
     """Find the XML nodes that are needed to determine diffs"""
     last_context = []

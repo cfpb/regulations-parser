@@ -1,11 +1,15 @@
 from lxml import etree
 import requests
 
-from regparser.notice.diff import parse_amdpar
+from regparser.notice.diff import parse_amdpar, find_section
 from regparser.notice.address import fetch_addresses
 from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
 from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
+from regparser.notice import changes
+
+from regparser.tree.xml_parser import reg_text
+from regparser.tree import struct
 
 
 def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
@@ -40,6 +44,36 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
 
     return notice
 
+    
+def process_amendments(notice, notice_xml):
+    """ Process the changes to the regulation that are expressed in the notice.
+    """
+    context = []
+    amends = []
+    notice_changes = {}
+    for par in notice_xml.xpath('//AMDPAR'):
+        amended_labels, context = parse_amdpar(par, context)
+        section_xml = find_section(par)
+
+        if section_xml is not None:
+            section = reg_text.build_section(notice['cfr_part'], section_xml)
+            adds_map = changes.match_labels_and_changes(amended_labels, section)
+
+            for amendment in adds_map:
+                if adds_map[amendment]['action'] == 'updated':
+                    nodes = changes.create_add_amendment(adds_map[amendment]['node'])
+                    for n in nodes:
+                        notice_changes.update(n)
+        amends.extend(amended_labels)
+    print notice_changes
+    if amends:
+        notice['amendments'] = amends
+
+def process_sxs(notice, notice_xml):
+    sxs = find_section_by_section(notice_xml)
+    sxs = build_section_by_section(sxs, notice['cfr_part'],
+                                   notice['meta']['start_page'])
+    notice['section_by_section'] = sxs
 
 def process_xml(notice, notice_xml):
     """Pull out relevant fields from the xml and add them to the notice"""
@@ -52,19 +86,8 @@ def process_xml(notice, notice_xml):
     if addresses:
         notice['addresses'] = addresses
 
-    sxs = find_section_by_section(notice_xml)
-    sxs = build_section_by_section(sxs, notice['cfr_part'],
-                                   notice['meta']['start_page'])
-    notice['section_by_section'] = sxs
-
-    context = []
-    amends = []
-    for par in notice_xml.xpath('//AMDPAR'):
-        amend_set, context = parse_amdpar(par, context)
-        amends.extend(amend_set)
-    if amends:
-        notice['amendments'] = amends
-
+    process_sxs(notice, notice_xml)
+    process_amendments(notice, notice_xml)
     add_footnotes(notice, notice_xml)
 
     return notice
