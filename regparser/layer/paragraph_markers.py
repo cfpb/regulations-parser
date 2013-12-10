@@ -6,6 +6,8 @@ class ParagraphMarkers(Layer):
 
     def process(self, node):
         """Look for any leading paragraph markers."""
+        if node.node_type == Node.APPENDIX:
+            return
         marker = ParagraphMarkers.marker(node)
         if node.text.strip().startswith(marker):
             return [{
