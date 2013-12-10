@@ -161,3 +161,64 @@ class AppendicesTest(TestCase):
         #   Stack: G, 12, A
         self.assertEqual(('13(B)', 2),
                          appendices.title_label_pair(title, 'G', stack))
+
+
+class AppendixProcessorTest(TestCase):
+    def setUp(self):
+        self.ap = appendices.AppendixProcessor()
+        self.ap.paragraph_counter = 0
+        self.ap.depth = 0
+        self.ap.m_stack = NodeStack()
+
+    def result(self):
+        return self.ap.m_stack.peek_last()
+
+    def test_paragraph_plaintext(self):
+        self.ap.paragraph("Paragraph Text")
+        _, node = self.result()
+        self.assertEqual(node.text, 'Paragraph Text')
+        self.assertEqual(node.label, ['p1'])
+
+    def test_paragraph_parens(self):
+        self.ap.paragraph("(a) A paragraph")
+        lvl, node = self.result()
+        self.assertEqual(node.text, '(a) A paragraph')
+        self.assertEqual(lvl, 0)
+        self.assertEqual(node.label, ['a'])
+
+        self.ap.paragraph("(b) A paragraph")
+        lvl, node = self.result()
+        self.assertEqual(node.text, '(b) A paragraph')
+        self.assertEqual(lvl, 0)
+        self.assertEqual(node.label, ['b'])
+
+        self.ap.paragraph("(1) A paragraph")
+        lvl, node = self.result()
+        self.assertEqual(node.text, '(1) A paragraph')
+        self.assertEqual(lvl, 1)
+        self.assertEqual(node.label, ['1'])
+
+        self.ap.paragraph("(2) A paragraph")
+        lvl, node = self.result()
+        self.assertEqual(node.text, '(2) A paragraph')
+        self.assertEqual(lvl, 1)
+        self.assertEqual(node.label, ['2'])
+
+        self.ap.paragraph("(c) A paragraph")
+        lvl, node = self.result()
+        self.assertEqual(node.text, '(c) A paragraph')
+        self.assertEqual(lvl, 0)
+        self.assertEqual(node.label, ['c'])
+
+        self.ap.paragraph("Some text")
+        lvl, node = self.result()
+        self.assertEqual(node.text, 'Some text')
+        self.assertEqual(lvl, 1)
+        self.assertEqual(node.label, ['p1'])
+
+        self.ap.paragraph("(d) A paragraph")
+        lvl, node = self.result()
+        self.assertEqual(node.text, '(d) A paragraph')
+        self.assertEqual(lvl, 0)
+        self.assertEqual(node.label, ['d'])
+

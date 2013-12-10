@@ -8,6 +8,7 @@ from regparser.grammar import appendix as grammar
 from regparser.grammar.interpretation_headers import parser as headers
 from regparser.grammar.utils import Marker
 from regparser.tree.node_stack import NodeStack
+from regparser.tree.paragraph import p_levels
 from regparser.tree.struct import Node
 from regparser.tree.xml_parser import tree_utils
 from regparser.tree.xml_parser.interpretations import build_supplement_tree
@@ -96,9 +97,39 @@ class AppendixProcessor(object):
 
     def paragraph(self, text):
         """Paragraph text"""
-        self.paragraph_counter += 1
-        n = Node(text, node_type=Node.APPENDIX,
-                 label=['p' + str(self.paragraph_counter)])
+        pair = initial_marker(text)
+        if pair:
+            marker, _ = pair
+            n = Node(text, node_type=Node.APPENDIX, label=[marker])
+            this_levels = set(idx for idx, lvl in enumerate(p_levels)
+                              if marker in lvl)
+
+            is_previous_level = False
+            stack_levels = [l for l in self.m_stack.m_stack if l]
+            for level in stack_levels:
+                depth, last_node = level[-1]
+                last_marker = last_node.label[-1]
+                last_levels = set(idx for idx, lvl in enumerate(p_levels)
+                                  if last_marker in lvl)
+                if not is_previous_level and this_levels & last_levels:
+                    self.depth = depth
+                    is_previous_level = True
+
+            if stack_levels and not is_previous_level:
+                self.depth += 1
+
+        else:
+            self.paragraph_counter += 1
+            n = Node(text, node_type=Node.APPENDIX,
+                     label=['p' + str(self.paragraph_counter)])
+
+            has_labeled_peer = False
+            for _, node in self.m_stack.peek():
+                has_labeled_peer = has_labeled_peer or any(
+                    not node.title and node.label[-1] in lvl 
+                    for lvl in p_levels)
+            if has_labeled_peer:
+                self.depth += 1
         tree_utils.add_to_stack(self.m_stack, self.depth, n)
 
     def graphic(self, xml_node):
@@ -177,6 +208,15 @@ def title_label_pair(text, appendix_letter, stack=None):
             return (match.a1, 2)
         elif match.aI:
             return (match.aI, 2)
+
+
+def initial_marker(text):
+    parser = grammar.paren_upper | grammar.paren_lower | grammar.paren_digit
+    for match, start, end in parser.scanString(text):
+        if start != 0:
+            continue
+        marker = match.paren_upper or match.paren_lower or match.paren_digit
+        return marker, text[:end]
 
 
 def build_non_reg_text(reg_xml, reg_part):

@@ -14,3 +14,4 @@ aI = Word("IVXLCDM").setResultsName("aI")
 
 paren_upper = parenthesize(string.ascii_uppercase, "paren_upper")
 paren_lower = parenthesize(string.ascii_lowercase, "paren_lower")
+paren_digit = parenthesize(string.digits, "paren_digit")
