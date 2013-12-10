@@ -17,7 +17,7 @@ from regparser.tree.xml_parser.interpretations import get_app_title
 def remove_toc(appendix, letter):
     """The TOC at the top of certain appendices gives us trouble since it
     looks a *lot* like a sequence of headers. Remove it if present"""
-    first_header = None
+    headers = set()
     potential_toc = set()
     for node in appendix.xpath("./HD[@SOURCE='HED']/following-sibling::*"):
         parsed = parsed_title(tree_utils.get_node_text(node), letter)
@@ -26,14 +26,14 @@ def remove_toc(appendix, letter):
             #  compare the parsed results.
             fingerprint = tuple(parsed)
             #  Hit the real content
-            if fingerprint == first_header and node.tag == 'HD':
+            if fingerprint in headers and node.tag == 'HD':
                 for el in potential_toc:
                     el.getparent().remove(el)
                 return
             else:
-                first_header = first_header or fingerprint
+                headers.add(fingerprint)
                 potential_toc.add(node)
-        else:   # Not a title => no TOC
+        elif node.tag != 'GPH':     # Not a title and not a img => no TOC
             return
 
 
@@ -61,31 +61,33 @@ def process_appendix(appendix, part):
     remove_toc(appendix, appendix_letter)
 
     for child in appendix.getchildren():
+        text = tree_utils.get_node_text(child).strip()
         if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
                 or child.tag == 'RESERVED'):
             n = Node(node_type=Node.APPENDIX, label=[part, appendix_letter],
-                     title=tree_utils.get_node_text(child).strip())
+                     title=text)
             m_stack.push_last((1, n))
             counter = 0
             depth = 2
-        elif child.tag == 'HD':
+        elif (child.tag == 'HD'
+              or (title_label_pair(text, appendix_letter, m_stack)
+                  and child.tag in ('P', 'FP'))):
             source = child.attrib.get('SOURCE', 'HD1')
             hd_level = int(source[2:])
 
-            title = tree_utils.get_node_text(child).strip()
-            pair = title_label_pair(title, appendix_letter, m_stack)
+            pair = title_label_pair(text, appendix_letter, m_stack)
 
             #   Use the depth indicated in the title
             if pair:
                 label, title_depth = pair
                 depth = title_depth + 1
                 n = Node(node_type=Node.APPENDIX, label=[label],
-                         title=tree_utils.get_node_text(child).strip())
+                         title=text)
             #   Try to deduce depth from SOURCE attribute
             else:
                 header += 1
                 n = Node(node_type=Node.APPENDIX, label=['h' + str(header)],
-                         title=tree_utils.get_node_text(child).strip())
+                         title=text)
                 if hd_level > last_hd_level:
                     depth += 1
                 elif hd_level < last_hd_level:
