@@ -9,18 +9,6 @@ from regparser.tree.xml_parser import appendices, tree_utils
 
 
 class AppendicesTest(TestCase):
-    def test_process_appendix_supplement(self):
-        xml = u"""
-        <APPENDIX>
-            <EAR>Pt. 1111, Supp. I</EAR>
-            <HD SOURCE="HED">
-                Supplement I to Part 1111—Official Interpretations</HD>
-            <P>Content</P>
-        </APPENDIX>
-        """
-        self.assertEqual(appendices.process_appendix(etree.fromstring(xml),
-                                                     1111), None)
-
     def test_process_appendix(self):
         """Integration test for appendices"""
         xml = u"""
@@ -39,11 +27,15 @@ class AppendicesTest(TestCase):
                 <PRTPAGE P="650" />
                 <GID>MYGID</GID>
             </GPH>
+            <FP SOURCE="FR-1">A-3 Some header here</FP>
+            <P>Content A-3</P>
+            <P>A-4 Another header</P>
+            <P>Content A-4</P>
         </APPENDIX>
         """
         appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
-        self.assertEqual(3, len(appendix.children))
-        intro, h1, h2 = appendix.children
+        self.assertEqual(5, len(appendix.children))
+        intro, h1, h2, a3, a4 = appendix.children
 
         self.assertEqual([], intro.children)
         self.assertEqual("Intro text", intro.text.strip())
@@ -65,11 +57,69 @@ class AppendicesTest(TestCase):
         self.assertEqual('Final Content', h2.children[0].text.strip())
         self.assertEqual('![](MYGID)', h2.children[1].text.strip())
 
+        self.assertEqual('A-3 Some header here', a3.title)
+        self.assertEqual('A-4 Another header', a4.title)
+
+    def test_remove_toc(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <FP>A-1 Awesome</FP>
+            <FP>A-2 More Awesome</FP>
+            <FP>A-1 Incorrect TOC</FP>
+            <P>A-3 The End of Awesome</P>
+            <HD>A-1Awesomer</HD>
+            <P>Content content</P>
+        </APPENDIX>"""
+        #   Note that the title isn't identical
+        xml = etree.fromstring(xml)
+        appendices.remove_toc(xml, 'A')
+        self.assertEqual(['EAR', 'HD', 'HD', 'P'], [t.tag for t in xml])
+
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <FP>A-1 Awesome</FP>
+            <FP>A-2 More Awesome</FP>
+            <FP>A-1 Incorrect TOC</FP>
+            <P>A-3 The End of Awesome</P>
+            <GPH><GID>GIDGID</GID></GPH>
+            <HD>A-3Awesomer</HD>
+            <P>Content content</P>
+        </APPENDIX>"""
+        #   Note that the title isn't identical
+        xml = etree.fromstring(xml)
+        appendices.remove_toc(xml, 'A')
+        self.assertEqual(['EAR', 'HD', 'GPH', 'HD', 'P'], [t.tag for t in xml])
+
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <FP>A-1 Awesome</FP>
+            <P>Good Content here</P>
+            <FP>A-2 More Awesome</FP>
+            <P>More Content</P>
+            <HD>A-11 Crank It Up</HD>
+            <P>Content content</P>
+        </APPENDIX>"""
+        xml = etree.fromstring(xml)
+        appendices.remove_toc(xml, 'A')
+        self.assertEqual(['EAR', 'HD', 'FP', 'P', 'FP', 'P', 'HD', 'P'],
+                         [t.tag for t in xml])
+
     def test_title_label_pair(self):
         title = u'A-1—Model Clauses'
         self.assertEqual(('1', 2),
                          appendices.title_label_pair(title, 'A', None))
 
+        title = u'Part III—Construction Period'
+        self.assertEqual(('III', 2),
+                         appendices.title_label_pair(title, 'A', None))
+
+    def test_title_label_pair_parens(self):
         title = u'G-13(A)—Has No parent'
         stack = NodeStack()
         stack.push_last((1, Node(label=['G'], node_type=Node.APPENDIX)))

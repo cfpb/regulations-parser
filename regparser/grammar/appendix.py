@@ -9,6 +9,7 @@ def parenthesize(characters, name):
 
 #   Only used as the top of the appendix hierarchy
 a1 = Word(string.digits).setResultsName("a1")
+aI = Word("IVXLCDM").setResultsName("aI")
 
 
 paren_upper = parenthesize(string.ascii_uppercase, "paren_upper")
