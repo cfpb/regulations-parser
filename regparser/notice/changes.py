@@ -33,8 +33,8 @@ def fix_labels(labels_amended):
             actual_label_id = '-'.join(actual_label)
             fixed.append((action, actual_label, actual_label_id))
         else:
-            fixed_labels = [fix_label(label[l]) for l in label]
-            fixed_ids = ['-'.join(fixed_labels[l]) for l in fixed_labels]
+            fixed_labels = [fix_label(l) for l in label]
+            fixed_ids = ['-'.join(l) for l in fixed_labels]
             fixed.append((action, fixed_labels, fixed_ids))
     return fixed
 
