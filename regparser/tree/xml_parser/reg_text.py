@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#vim: set encoding=utf-8
 import re
 import logging
 
@@ -86,7 +86,9 @@ def build_tree(reg_xml):
         tree.children = subparts
     else:
         section_xmls = [c for c in part.getchildren() if c.tag == 'SECTION']
-        sections = [build_section(reg_part, s) for s in section_xmls]
+        sections = []
+        for section_xml in section_xmls:
+            sections.extend(build_from_section(reg_part, section_xml))
         empty_part = reg_text.build_empty_part(reg_part)
         empty_part.children = sections
         tree.children = [empty_part]
@@ -109,7 +111,7 @@ def build_subpart(reg_part, subpart_xml):
     sections = []
     for ch in subpart_xml.getchildren():
         if ch.tag == 'SECTION':
-            sections.append(build_section(reg_part, ch))
+            sections.extend(build_from_section(reg_part, ch))
 
     subpart.children = sections
     return subpart
@@ -157,7 +159,7 @@ def next_marker(xml_node, remaining_markers):
             return next_markers[0]
 
 
-def build_section(reg_part, section_xml):
+def build_from_section(reg_part, section_xml):
     p_level = 1
     m_stack = NodeStack()
     section_texts = []
@@ -191,24 +193,34 @@ def build_section(reg_part, section_xml):
                     tree_utils.add_to_stack(m_stack, new_p_level, n)
                 p_level = new_p_level
 
-    section_title = section_xml.xpath('SECTNO')[0].text
+    section_no = section_xml.xpath('SECTNO')[0].text
     subject_xml = section_xml.xpath('SUBJECT')
     if not subject_xml:
         subject_xml = section_xml.xpath('RESERVED')
     subject_text = subject_xml[0].text
-    if subject_text:
-        section_title += " " + subject_text
 
-    section_number_match = re.search(r'%s\.(\d+)' % reg_part, section_title)
-    #   Sometimes not reg text sections get mixed in
-    if section_number_match:
-        section_number = section_number_match.group(1)
+    nodes = []
+    section_nums = []
+    for match in re.finditer(r'%s\.(\d+)' % reg_part, section_no):
+        section_nums.append(int(match.group(1)))
 
+    if '-' in section_no:    #   Span of section numbers
+        first, last = section_nums
+        section_nums = []
+        for i in range(first, last + 1):
+            section_nums.append(i)
+
+    for section_number in section_nums:
+        section_number = str(section_number)
         plain_sect_texts = [s[0] for s in section_texts]
         tagged_sect_texts = [s[1] for s in section_texts]
 
         section_text = ' '.join([section_xml.text] + plain_sect_texts)
         tagged_section_text = ' '.join([section_xml.text] + tagged_sect_texts)
+        section_title = u"§ " + reg_part + "." + section_number
+        if subject_text:
+            section_title += " " + subject_text
+
         sect_node = Node(
             section_text, label=[reg_part, section_number],
             title=section_title)
@@ -219,4 +231,6 @@ def build_section(reg_part, section_xml):
         while m_stack.size() > 1:
             tree_utils.unwind_stack(m_stack)
 
-        return m_stack.pop()[0][1]
+        nodes.append(m_stack.pop()[0][1])
+
+    return nodes
