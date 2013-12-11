@@ -7,9 +7,12 @@ from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
 from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
 from regparser.notice import changes
-
 from regparser.tree.xml_parser import reg_text
+from regparser.tree import struct
 
+def print_labels(changes):
+    for  n in changes:
+        print n['label']
 
 def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     """Given JSON from the federal register, create our notice structure"""
@@ -70,6 +73,7 @@ def process_amendments(notice, notice_xml):
         amends.extend(amended_labels)
     if amends:
         notice['amendments'] = amends
+        print_labels(notice_changes.values())
         notice['changes'] = notice_changes
 
 
