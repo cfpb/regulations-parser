@@ -65,21 +65,21 @@ class AppendixProcessor(object):
                  title=text)
         self.m_stack.push_last((1, n))
         self.paragraph_counter = 0
-        self.depth = 2
+        self.depth = 1
 
     def subheader(self, xml_node, text):
         """Each appendix may contain multiple subheaders. Some of these are
         obviously labeled (e.g. A-3 or Part III) and others are headers
         without a specific label (we give them the h + # id)"""
         source = xml_node.attrib.get('SOURCE', 'HD1')
-        hd_level = int(source[2:])
+        hd_level = int(source[2:]) + 1
 
         pair = title_label_pair(text, self.appendix_letter, self.m_stack)
 
         #   Use the depth indicated in the title
         if pair:
             label, title_depth = pair
-            self.depth = title_depth + 1
+            self.depth = title_depth
             n = Node(node_type=Node.APPENDIX, label=[label],
                      title=text)
         #   Try to deduce depth from SOURCE attribute
@@ -89,47 +89,42 @@ class AppendixProcessor(object):
                      label=['h' + str(self.header_count)])
             if hd_level > self.last_hd_level:
                 self.depth += 1
-            elif hd_level < self.last_hd_level:
-                self.depth = hd_level + 2
+            else:
+            #elif hd_level < self.last_hd_level:
+                self.depth = hd_level
 
         self.last_hd_level = hd_level
-        tree_utils.add_to_stack(self.m_stack, self.depth - 1, n)
+        tree_utils.add_to_stack(self.m_stack, self.depth, n)
 
-    def paragraph(self, text):
-        """Paragraph text"""
-        pair = initial_marker(text)
-        if pair:
-            marker, _ = pair
-            n = Node(text, node_type=Node.APPENDIX, label=[marker])
-            this_levels = set(idx for idx, lvl in enumerate(p_levels)
-                              if marker in lvl)
+    def paragraph_no_marker(self, text):
+        """The paragraph has no (a) or a. etc."""
+        self.paragraph_counter += 1
+        n = Node(text, node_type=Node.APPENDIX,
+                 label=['p' + str(self.paragraph_counter)])
 
-            is_previous_level = False
-            stack_levels = [l for l in self.m_stack.m_stack if l]
-            for level in stack_levels:
-                depth, last_node = level[-1]
-                last_marker = last_node.label[-1]
-                last_levels = set(idx for idx, lvl in enumerate(p_levels)
-                                  if last_marker in lvl)
-                if not is_previous_level and this_levels & last_levels:
+        tree_utils.add_to_stack(self.m_stack, self.depth + 1, n)
+
+    def paragraph_with_marker(self, text):
+        """The paragraph has an (a) or a. etc."""
+        marker, _ = initial_marker(text)
+        n = Node(text, node_type=Node.APPENDIX, label=[marker])
+        this_levels = set(idx for idx, lvl in enumerate(p_levels)
+                          if marker in lvl)
+
+        stack_levels = [l for l in self.m_stack.m_stack if l]
+        is_previous_level = False
+        for level in stack_levels:
+            depth, last_node = level[-1]
+            last_marker = last_node.label[-1]
+            last_levels = set(idx for idx, lvl in enumerate(p_levels)
+                              if last_marker in lvl)
+            if (this_levels & last_levels and not last_node.title
+                and not is_previous_level):
                     self.depth = depth
                     is_previous_level = True
 
-            if stack_levels and not is_previous_level:
-                self.depth += 1
-
-        else:
-            self.paragraph_counter += 1
-            n = Node(text, node_type=Node.APPENDIX,
-                     label=['p' + str(self.paragraph_counter)])
-
-            has_labeled_peer = False
-            for _, node in self.m_stack.peek():
-                has_labeled_peer = has_labeled_peer or any(
-                    not node.title and node.label[-1] in lvl 
-                    for lvl in p_levels)
-            if has_labeled_peer:
-                self.depth += 1
+        if not is_previous_level:
+            self.depth += 1
         tree_utils.add_to_stack(self.m_stack, self.depth, n)
 
     def graphic(self, xml_node):
@@ -139,7 +134,7 @@ class AppendixProcessor(object):
         text = '![](' + gid + ')'
         n = Node(text, node_type=Node.APPENDIX,
                  label=['p' + str(self.paragraph_counter)])
-        tree_utils.add_to_stack(self.m_stack, self.depth, n)
+        tree_utils.add_to_stack(self.m_stack, self.depth + 1, n)
 
     def process(self, appendix, part):
         self.m_stack = NodeStack()
@@ -163,8 +158,10 @@ class AppendixProcessor(object):
                       and title_label_pair(text, self.appendix_letter,
                                            self.m_stack))):
                 self.subheader(child, text)
-            elif child.tag == 'P' or child.tag == 'FP':
-                self.paragraph(text)
+            elif initial_marker(text) and child.tag in ('P', 'FP'):
+                self.paragraph_with_marker(text)
+            elif child.tag in ('P', 'FP'):
+                self.paragraph_no_marker(text)
             elif child.tag == 'GPH':
                 self.graphic(child)
 
@@ -211,11 +208,14 @@ def title_label_pair(text, appendix_letter, stack=None):
 
 
 def initial_marker(text):
-    parser = grammar.paren_upper | grammar.paren_lower | grammar.paren_digit
+    parser = (grammar.paren_upper | grammar.paren_lower | grammar.paren_digit
+              | grammar.period_upper | grammar.period_digit )
     for match, start, end in parser.scanString(text):
         if start != 0:
             continue
-        marker = match.paren_upper or match.paren_lower or match.paren_digit
+        marker = (match.paren_upper or match.paren_lower or match.paren_digit
+                  or match.period_upper or match.period_lower
+                  or match.period_digit)
         return marker, text[:end]
 
 
