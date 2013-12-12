@@ -42,6 +42,8 @@ move_active = generate_verb(
 
 move_passive = generate_verb(['redesignated'], tokens.Verb.MOVE, active=False)
 
+designate_active = generate_verb(['designate'], tokens.Verb.DESIGNATE, active=True)
+
 
 #   Context
 context_certainty = Optional(
@@ -214,7 +216,8 @@ multiple_comments = (
 #   grammar which captures all of these possibilities
 token_patterns = (
     put_active | put_passive | post_active | post_passive
-    | delete_active | delete_passive | move_active | move_passive
+    | delete_active | delete_passive | move_active | move_passive 
+    | designate_active
 
     | interp | marker_subpart | appendix
     | comment_context_with_section | comment_context_without_section

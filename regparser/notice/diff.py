@@ -59,12 +59,16 @@ def parse_amdpar(par, initial_context):
     #print ""
     #print text.strip()
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
+    #print tokenized
     tokenized = switch_passive(tokenized)
+    tokenized = deal_with_subpart_adds(tokenized)
     tokenized = context_to_paragraph(tokenized)
     tokenized = separate_tokenlist(tokenized)
     tokenized, final_context = compress_context(tokenized, initial_context)
-    amends = make_amendments(tokenized)
+    amends = make_amendments(tokenized) #modify
+    print amends
     return amends, final_context
+
 
 
 def switch_passive(tokenized):
@@ -111,6 +115,38 @@ def context_to_paragraph(tokenized):
                 and not token.certain):
             converted[i] = tokens.Paragraph(token.label)
     return converted
+
+def deal_with_subpart_adds(tokenized):
+    """If we have a designate verb, and a token list, we're going to 
+    change the context to a Paragraph. Because it's not a context, it's 
+    part of the manipulation."""
+
+    def is_designate_token(token):
+        """ This is a designate token """
+        designate = tokens.Verb.DESIGNATE
+        return isinstance(token, tokens.Verb) and token.verb == designate
+
+    #Ensure that we only have one of each: designate verb, a token list and 
+    #a context
+    designate_tokens = [t for t in tokenized if is_designate_token(t)]
+    verb_exists = len(designate_tokens) == 1
+
+    tokens_lists = [t for t in tokenized if isinstance(t, tokens.TokenList)]
+    list_exists = len(tokens_lists) == 1
+
+    contexts = [t for t in tokenized if isinstance(t, tokens.Context)]
+    context_exists = len(contexts) == 1
+
+    if verb_exists and list_exists and context_exists:
+        token_list = []
+        for token in tokenized:
+            if isinstance(token, tokens.Context):
+                token_list.append(tokens.Paragraph(token.label))
+            else:
+                token_list.append(token)
+        return token_list
+    else:
+        return tokenized
 
 
 def separate_tokenlist(tokenized):
