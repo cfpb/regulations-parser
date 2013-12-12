@@ -204,7 +204,8 @@ def build_from_section(reg_part, section_xml):
     for match in re.finditer(r'%s\.(\d+)' % reg_part, section_no):
         section_nums.append(int(match.group(1)))
 
-    if '-' in section_no:    #   Span of section numbers
+    #  Span of section numbers
+    if u'§§' == section_no[:2] and '-' in section_no:
         first, last = section_nums
         section_nums = []
         for i in range(first, last + 1):
