@@ -6,7 +6,7 @@ from lxml import etree
 
 from regparser.grammar import amdpar, tokens
 from regparser.tree import struct
-from regparser.tree.xml_parser.reg_text import build_section
+from regparser.tree.xml_parser.reg_text import build_from_section
 
 
 def clear_between(xml_node, start_char, end_char):
@@ -32,8 +32,7 @@ def find_diffs(xml_tree, cfr_part):
     for section in xml_tree.xpath('//REGTEXT//SECTION'):
         section = clear_between(section, '[', ']')
         section = remove_char(remove_char(section, u'▸'), u'◂')
-        node = build_section(cfr_part, section)
-        if node:
+        for node in build_from_section(cfr_part, section):
             def per_node(node):
                 if node_is_empty(node):
                     for c in node.children:
