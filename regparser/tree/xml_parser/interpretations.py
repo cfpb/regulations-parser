@@ -4,7 +4,7 @@ import re
 import string
 from pyparsing import Word, LineStart, Regex, Suppress
 
-from regparser.tree.interpretation import text_to_label
+from regparser.tree.interpretation import text_to_labels
 from regparser.tree.node_stack import NodeStack
 from regparser.tree.struct import Node, treeify
 from regparser.tree.xml_parser import tree_utils
@@ -113,7 +113,7 @@ def is_title(xml_node):
             and (xml_node.text is None or not xml_node.text.strip())
             and len(xml_node.getchildren()) == 1
             and (child.tail is None or not child.tail.strip())
-            and text_to_label(child.text, '', warn=False)))
+            and text_to_labels(child.text, '', warn=False)))
 
 
 def process_inner_children(inner_stack, node):
@@ -140,22 +140,20 @@ def build_supplement_tree(reg_part, node):
 
     for ch in node:
         if is_title(ch):
-            label_text = text_to_label(ch.text, reg_part)
-            if not label_text:
-                continue
-            n = Node(node_type=Node.INTERP, label=label_text, title=ch.text)
-            node_level = 1
+            for label in text_to_labels(ch.text, reg_part):
+                n = Node(node_type=Node.INTERP, label=label, title=ch.text)
+                node_level = 1
 
-            inner_stack = NodeStack()
-            tree_utils.add_to_stack(inner_stack, node_level, n)
+                inner_stack = NodeStack()
+                tree_utils.add_to_stack(inner_stack, node_level, n)
 
-            process_inner_children(inner_stack, ch)
+                process_inner_children(inner_stack, ch)
 
-            while inner_stack.size() > 1:
-                tree_utils.unwind_stack(inner_stack)
+                while inner_stack.size() > 1:
+                    tree_utils.unwind_stack(inner_stack)
 
-            ch_node = inner_stack.m_stack[0][0][1]
-            supplement_nodes.append(ch_node)
+                ch_node = inner_stack.m_stack[0][0][1]
+                supplement_nodes.append(ch_node)
 
     supplement_tree = treeify(supplement_nodes)
 
@@ -178,5 +176,3 @@ def get_app_title(node):
         return titles[0].text
     else:
         return node.xpath("./RESERVED")[0]
-
-

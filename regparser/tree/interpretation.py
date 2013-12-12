@@ -1,3 +1,4 @@
+from itertools import takewhile
 import logging
 
 from regparser import utils
@@ -48,17 +49,23 @@ def segment_tree(text, part, parent_label):
     exclude = [(pc.full_start, pc.full_end) for pc in
                internal_citations(body, Label(part=parent_label[0]))]
 
-    label = text_to_label(title, part)
+    label = text_to_labels(title, part)[0]
     return interpParser.build_tree(body, 1, exclude, label, title)
 
 
-def text_to_label(text, part, warn=True):
-    citations = internal_citations(text, Label(part=part))
-    citations = sorted(citations, key=lambda c: c.start)
-    #   Assumes a citation is present
+def text_to_labels(text, part, warn=True):
+    all_citations = internal_citations(text.strip(), Label(part=part))
+    all_citations = sorted(all_citations, key=lambda c: c.start)
+    #   We care only about the first citation and its clauses
+    citations = all_citations[:1]
     if citations:
-        label = citations[0].label.to_list()
-        label.append(Node.INTERP_MARK)
-        return label
+        if citations[0].in_clause:
+            #   Clauses still in the first conjunction
+            citations.extend(takewhile(lambda c: c.in_clause,
+                                       all_citations[1:]))
+
+        return [citation.label.to_list() + [Node.INTERP_MARK]
+                for citation in citations]
     elif warn:
         logging.warning("Couldn't turn into label: " + text)
+    return []
