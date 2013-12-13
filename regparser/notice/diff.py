@@ -56,17 +56,14 @@ def node_is_empty(node):
 
 def parse_amdpar(par, initial_context):
     text = etree.tostring(par, encoding=unicode)
-    #print ""
-    #print text.strip()
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
-    #print tokenized
     tokenized = switch_passive(tokenized)
-    tokenized = deal_with_subpart_adds(tokenized)
+    tokenized, subpart = deal_with_subpart_adds(tokenized)
     tokenized = context_to_paragraph(tokenized)
-    tokenized = separate_tokenlist(tokenized)
+    tokenized = separate_tokenlist(tokenized, subpart)
     tokenized, final_context = compress_context(tokenized, initial_context)
-    amends = make_amendments(tokenized) #modify
-    print amends
+    amends = make_amendments(tokenized, subpart) #modify
+    #print amends
     return amends, final_context
 
 
@@ -116,15 +113,15 @@ def context_to_paragraph(tokenized):
             converted[i] = tokens.Paragraph(token.label)
     return converted
 
+def is_designate_token(token):
+    """ This is a designate token """
+    designate = tokens.Verb.DESIGNATE
+    return isinstance(token, tokens.Verb) and token.verb == designate
+
 def deal_with_subpart_adds(tokenized):
     """If we have a designate verb, and a token list, we're going to 
     change the context to a Paragraph. Because it's not a context, it's 
     part of the manipulation."""
-
-    def is_designate_token(token):
-        """ This is a designate token """
-        designate = tokens.Verb.DESIGNATE
-        return isinstance(token, tokens.Verb) and token.verb == designate
 
     #Ensure that we only have one of each: designate verb, a token list and 
     #a context
@@ -144,21 +141,25 @@ def deal_with_subpart_adds(tokenized):
                 token_list.append(tokens.Paragraph(token.label))
             else:
                 token_list.append(token)
-        return token_list
+        return token_list, True
     else:
-        return tokenized
+        return tokenized, False
 
 
-def separate_tokenlist(tokenized):
+def separate_tokenlist(tokenized, subpart=False):
     """When we come across a token list, separate it out into individual
     tokens"""
-    converted = []
-    for token in tokenized:
-        if isinstance(token, tokens.TokenList):
-            converted.extend(token.tokens)
-        else:
-            converted.append(token)
-    return converted
+    
+    if subpart:
+        return tokenized
+    else:
+        converted = []
+        for token in tokenized:
+            if isinstance(token, tokens.TokenList):
+                converted.extend(token.tokens)
+            else:
+                converted.append(token)
+        return converted
 
 
 def compress(lhs_label, rhs_label):
@@ -211,22 +212,34 @@ def compress_context(tokenized, initial_context):
     return converted, context
 
 
-def make_amendments(tokenized):
+def make_amendments(tokenized, subpart=False):
     """Convert a sequence of (normalized) tokens into a list of amendments"""
     verb = None
     amends = []
-    for i in range(len(tokenized)):
-        token = tokenized[i]
+    if subpart:
+        #Add verb
+        verb = tokens.Verb.DESIGNATE
+        #Convert token list to list of label_text
+        t_list  = [t for t in tokenized if isinstance(t, tokens.TokenList)][0]
+        token_list = [t.label_text() for t in t_list]
+        print token_list
+        #Extract and add destination as label_text
+        paragraphs = [t for t in tokenized if isinstance(t, tokens.Paragraph)]
+        destination = paragraphs[0]
 
-        if isinstance(token, tokens.Verb):
-            assert token.active
-            verb = token.verb
-        elif isinstance(token, tokens.Paragraph):
-            if verb == tokens.Verb.MOVE:
-                if isinstance(tokenized[i-1], tokens.Paragraph):
-                    amends.append((
-                        verb,
-                        (tokenized[i-1].label_text(), token.label_text())))
-            elif verb:
-                amends.append((verb, token.label_text()))
+        print destination.label_text()
+    else:
+        for i in range(len(tokenized)):
+            token = tokenized[i]
+            if isinstance(token, tokens.Verb):
+                assert token.active
+                verb = token.verb
+            elif isinstance(token, tokens.Paragraph):
+                if verb == tokens.Verb.MOVE:
+                    if isinstance(tokenized[i-1], tokens.Paragraph):
+                        amends.append((
+                            verb,
+                            (tokenized[i-1].label_text(), token.label_text())))
+                elif verb:
+                    amends.append((verb, token.label_text()))
     return amends
