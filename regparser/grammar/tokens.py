@@ -91,9 +91,21 @@ class TokenList:
 
     def __init__(self, tokens):
         self.tokens = tokens
+        self.current = 0
 
     def __repr__(self):
         return "TokenList([ %s ])" % ', '.join(map(repr, self.tokens))
 
     def __eq__(self, other):
         return repr(self) == repr(other)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        """ Make TokenList iteratable. """
+        if self.current > len(self.tokens) - 1:
+            raise StopIteration
+        else:
+            self.current += 1
+            return self.tokens[self.current - 1]
