@@ -140,20 +140,22 @@ def build_supplement_tree(reg_part, node):
 
     for ch in node:
         if is_title(ch):
-            for label in text_to_labels(ch.text, reg_part):
-                n = Node(node_type=Node.INTERP, label=label, title=ch.text)
-                node_level = 1
+            label_text = text_to_labels(ch.text, reg_part)
+            if not label_text:
+                 continue
+            n = Node(node_type=Node.INTERP, label=label_text[0], title=ch.text)
+            node_level = 1
 
-                inner_stack = NodeStack()
-                tree_utils.add_to_stack(inner_stack, node_level, n)
+            inner_stack = NodeStack()
+            tree_utils.add_to_stack(inner_stack, node_level, n)
 
-                process_inner_children(inner_stack, ch)
+            process_inner_children(inner_stack, ch)
 
-                while inner_stack.size() > 1:
-                    tree_utils.unwind_stack(inner_stack)
+            while inner_stack.size() > 1:
+                tree_utils.unwind_stack(inner_stack)
 
-                ch_node = inner_stack.m_stack[0][0][1]
-                supplement_nodes.append(ch_node)
+            ch_node = inner_stack.m_stack[0][0][1]
+            supplement_nodes.append(ch_node)
 
     supplement_tree = treeify(supplement_nodes)
 

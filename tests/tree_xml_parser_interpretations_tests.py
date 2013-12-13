@@ -94,32 +94,6 @@ class InterpretationsTest(TestCase):
                          i5a1iiA3.label)
         self.assertEqual(0, len(i5a1iiA3.children))
 
-    def test_build_supplement_tree_multiple(self):
-        """Integration test"""
-        xml = """<APPENDIX>
-            <HD SOURCE="HED">
-                Supplement I to Part 737-Official Interpretations</HD>
-            <HD SOURCE="HD2">Section 737.5 NASCAR</HD>
-            <HD SOURCE="HD2">Paragraphs 5(a) and (b)</HD>
-            <P>1. Content</P>
-        </APPENDIX>"""
-        tree = interpretations.build_supplement_tree('737',
-                                                     etree.fromstring(xml))
-        self.assertEqual(['737', 'Interp'], tree.label)
-        self.assertEqual(1, len(tree.children))
-
-        i5 = tree.children[0]
-        self.assertEqual(['737', '5', 'Interp'], i5.label)
-        self.assertEqual(2, len(i5.children))
-
-        i5a, i5b = i5.children
-        self.assertEqual(['737', '5', 'a', 'Interp'], i5a.label)
-        self.assertEqual(1, len(i5a.children))
-        self.assertEqual('1. Content', i5a.children[0].text.strip())
-        self.assertEqual(['737', '5', 'b', 'Interp'], i5b.label)
-        self.assertEqual(1, len(i5b.children))
-        self.assertEqual('1. Content', i5b.children[0].text.strip())
-
     def test_process_inner_child(self):
         xml = """
         <ROOT>
