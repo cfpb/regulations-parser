@@ -94,6 +94,41 @@ class InterpretationsTest(TestCase):
                          i5a1iiA3.label)
         self.assertEqual(0, len(i5a1iiA3.children))
 
+    def test_build_supplement_tree_skip_levels(self):
+        xml = """<APPENDIX>
+            <HD SOURCE="HED">
+                Supplement I to Part 737-Official Interpretations</HD>
+            <HD SOURCE="HD2">Section 737.5 NASCAR</HD>
+            <HD SOURCE="HD2">5(a)(1)(i) Access Device</HD>
+            <P>1. Paragraph 111</P>
+            <HD SOURCE="HD2">5(b) Other Devices</HD>
+            <P>1. Paragraph 222</P>
+        </APPENDIX>"""
+        tree = interpretations.build_supplement_tree('737',
+                                                     etree.fromstring(xml))
+        self.assertEqual(['737', 'Interp'], tree.label)
+        self.assertEqual(1, len(tree.children))
+
+        i5 = tree.children[0]
+        self.assertEqual(['737', '5', 'Interp'], i5.label)
+        self.assertEqual(2, len(i5.children))
+        i5a, i5b = i5.children
+
+        self.assertEqual(['737', '5', 'a', 'Interp'], i5a.label)
+        print i5a.children
+        self.assertEqual(1, len(i5a.children))
+        i5a1 = i5a.children[0]
+
+        self.assertEqual(['737', '5', 'a', '1', 'Interp'], i5a1.label)
+        self.assertEqual(1, len(i5a1.children))
+        i5a1i = i5a1.children[0]
+
+        self.assertEqual(['737', '5', 'a', '1', 'i', 'Interp'], i5a1i.label)
+        self.assertEqual(1, len(i5a1i.children))
+
+        self.assertEqual(['737', '5', 'b', 'Interp'], i5b.label)
+        self.assertEqual(1, len(i5b.children))
+
     def test_process_inner_child(self):
         xml = """
         <ROOT>
