@@ -72,6 +72,9 @@ class LayerTermTest(TestCase):
         text4 = u'Still no terms, but'
         text4a = u'the next one does'
         text4b = u'(4) <E T="03">Thing</E> means a thing that is defined'
+        text4c = u'(c) <E T="03">One thing</E> or <E T="03">another</E> means something'
+        text4d = u'(d) <E T="03">I am a keyterm.</E> I am very statuesque.'
+        text4e = u'(e) This is a new paragraph <E T="03">bam</E> or fake term'
         tree = Node(children=[ 
             Node(text1, label=['aaa']),
             Node(text2, label=['bbb']),
@@ -85,17 +88,22 @@ class LayerTermTest(TestCase):
             ]),
             Node(text4, children=[
                 Node(text4a, label=['eee']),
-                Node(text4b, label=['fff'])
+                Node(text4b, label=['fff']),
+                Node(text4c, label=['ggg']),
+                Node(text4d, label=['hhh']),
+                Node(text4e, label=['iii'])
             ])
         ])
         defs, excluded = t.node_definitions(tree)
-        self.assertEqual(6, len(defs))
+        self.assertEqual(8, len(defs))
         self.assertTrue(Ref('word', 'aaa', (12,16)) in defs)
         self.assertTrue(Ref('another word', 'bbb', (8,20)) in defs)
         self.assertTrue(Ref('moree', 'bbb', (32,37)) in defs)
         self.assertTrue(Ref('does see', 'ccc', (15,23)) in defs)
         self.assertTrue(Ref('subchildren', 'ddd', (7,18)) in defs)
-        self.assertTrue(Ref('thing', 'fff', (14,19)) in defs)
+        self.assertTrue(Ref('thing', 'fff', (2,19)) in defs)
+        self.assertTrue(Ref('one thing', 'ggg', (2,23)) in defs)
+        self.assertTrue(Ref('another', 'ggg', (28,48)) in defs)
 
     def test_node_defintions_act(self):
         t = Terms(None)

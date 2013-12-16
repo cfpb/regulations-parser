@@ -10,12 +10,19 @@ smart_quotes = (
     ).setParseAction(keep_pos).setResultsName("term")
 )
 
-starting_e_tag = (
-    Suppress(Regex(r"(\)) <E[^>]*>"))
-    + SkipTo(
-        Regex(r"\</E> means")
+e_tag = (
+    Suppress(Regex(r"<E[^>]*>"))
+    + SkipTo(Regex(r"</E> (or|means)"))
+)
+
+start_of_paragraph_e_tag = (
+    ((Suppress(") ")
+      | Suppress("or "))
+    + e_tag
     ).setParseAction(keep_pos).setResultsName("term")
 )
 
-# will eventually include italic text, etc.
-term_parser = (smart_quotes | starting_e_tag)
+term_parser = (
+    smart_quotes
+    | start_of_paragraph_e_tag
+)
