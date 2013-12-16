@@ -69,6 +69,9 @@ class LayerTermTest(TestCase):
         text3biA = u'Also has no terms'
         text3bii = u'Has no terms'
         text3c = u'Also has no terms'
+        text4 = u'Still no terms, but'
+        text4a = u'the next one does'
+        text4b = u'Thing means a thing that is defined'
         tree = Node(children=[ 
             Node(text1, label=['aaa']),
             Node(text2, label=['bbb']),
@@ -79,6 +82,10 @@ class LayerTermTest(TestCase):
                     Node(text3bii)
                 ]),
                 Node(text3c)
+            ]),
+            Node(text4, children=[
+                Node(text4a, label=['eee']),
+                Node(text4b, label=['fff'])
             ])
         ])
         defs, excluded = t.node_definitions(tree)
