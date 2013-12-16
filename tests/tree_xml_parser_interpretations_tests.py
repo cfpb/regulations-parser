@@ -50,7 +50,7 @@ class InterpretationsTest(TestCase):
             <P><E T="03">3. Keyterms</E></P>
         </APPENDIX>"""
         tree = interpretations.build_supplement_tree('737',
-            etree.fromstring(xml))
+                                                     etree.fromstring(xml))
         self.assertEqual(['737', 'Interp'], tree.label)
         self.assertEqual(1, len(tree.children))
 

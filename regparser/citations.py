@@ -97,7 +97,8 @@ class Label(object):
 
 
 class ParagraphCitation(object):
-    def __init__(self, start, end, label, full_start=None, full_end=None):
+    def __init__(self, start, end, label, full_start=None, full_end=None,
+                 in_clause=False):
         if full_start is None:
             full_start = start
         if full_end is None:
@@ -105,6 +106,7 @@ class ParagraphCitation(object):
 
         self.start, self.end, self.label = start, end, label
         self.full_start, self.full_end = full_start, full_end
+        self.in_clause = in_clause
 
     def __contains__(self, other):
         """Proper inclusion"""
@@ -150,7 +152,8 @@ def internal_citations(text, initial_label=None, require_marker=False):
                     submatch.pos[0], submatch.pos[1],
                     match_to_label(submatch.tokens, label, comment=comment),
                     full_start=start,
-                    full_end=end)
+                    full_end=end,
+                    in_clause=True)
                 label = cit.label   # update the label to keep context
                 citations.append(cit)
 
