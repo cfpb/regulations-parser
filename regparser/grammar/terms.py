@@ -13,7 +13,7 @@ smart_quotes = (
 starting_e_tag = (
     Suppress(Regex(r"(\)) <E[^>]*>"))
     + SkipTo(
-        Regex(r"\</E>")
+        Regex(r"\</E> means")
     ).setParseAction(keep_pos).setResultsName("term")
 )
 
