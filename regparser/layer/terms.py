@@ -37,6 +37,7 @@ class Terms(Layer):
         #   subpart -> list[section]
         self.subpart_map = defaultdict(list)
 
+
     def add_subparts(self):
         """Document the relationship between sections and subparts"""
 
@@ -111,7 +112,7 @@ class Terms(Layer):
         excluded_defs = []
 
         def per_node(n):
-            for match in [m for m, _, _ in term_parser.scanString(n.text)]:
+            for match, _, _ in term_parser.scanString(n.text):
                 term = match.term.tokens[0].lower()
                 pos = match.term.pos
 

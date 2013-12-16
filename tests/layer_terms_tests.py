@@ -95,6 +95,7 @@ class LayerTermTest(TestCase):
         self.assertTrue(Ref('moree', 'bbb', (32,37)) in defs)
         self.assertTrue(Ref('does see', 'ccc', (15,23)) in defs)
         self.assertTrue(Ref('subchildren', 'ddd', (7,18)) in defs)
+        self.assertTrue(Ref('thing', 'fff', (1, 5)) in defs)
 
     def test_node_defintions_act(self):
         t = Terms(None)
