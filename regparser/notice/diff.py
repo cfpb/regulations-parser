@@ -222,12 +222,16 @@ def make_amendments(tokenized, subpart=False):
         #Convert token list to list of label_text
         t_list  = [t for t in tokenized if isinstance(t, tokens.TokenList)][0]
         token_list = [t.label_text() for t in t_list]
-        print token_list
+
         #Extract and add destination as label_text
         paragraphs = [t for t in tokenized if isinstance(t, tokens.Paragraph)]
         destination = paragraphs[0]
 
-        print destination.label_text()
+        if destination.label[0] is None:
+            reg_part = t_list.tokens[0].label[0]
+            destination.label[0] = reg_part
+        destination = destination.label_text()
+        amends.append((verb, token_list, destination))
     else:
         for i in range(len(tokenized)):
             token = tokenized[i]

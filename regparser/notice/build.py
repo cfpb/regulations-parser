@@ -56,6 +56,23 @@ def process_amendments(notice, notice_xml):
     for par in notice_xml.xpath('//AMDPAR'):
         amended_labels, context = parse_amdpar(par, context)
 
+        for al in amended_labels:
+            if al[0] == 'DESIGNATE':
+                _, p_list, destination = al
+                if 'Subpart' in destination:
+                    reg_part, sub_part = destination.split('-')
+                    _, subpart_letter = destination.split(':')
+                    destination_label =  [reg_part, 'Subpart', subpart_letter]
+
+                    subpart_changes = {}
+
+                    for label in p_list:
+                        label = changes.fix_label(label)
+                        label_id = '-'.join(label)
+                        subpart_changes[label_id] = {
+                            'op':'assign', 'destination':destination_label}
+                    notice_changes.update(subpart_changes)
+
         section_xml = find_section(par)
         if section_xml is not None:
             section = reg_text.build_section(notice['cfr_part'], section_xml)
@@ -73,7 +90,8 @@ def process_amendments(notice, notice_xml):
         amends.extend(amended_labels)
     if amends:
         notice['amendments'] = amends
-        print_labels(notice_changes.values())
+        print notice['amendments']
+        #print_labels(notice_changes.values())
         notice['changes'] = notice_changes
 
 
