@@ -175,9 +175,19 @@ class AppendixProcessorTest(TestCase):
 
     def test_paragraph_no_marker(self):
         self.ap.paragraph_no_marker("Paragraph Text")
-        _, node = self.result()
+        lvl, node = self.result()
         self.assertEqual(node.text, 'Paragraph Text')
+        self.assertEqual(0, lvl)
         self.assertEqual(node.label, ['p1'])
+
+        #   If a header was before the paragraph, increment the level 1
+        tree_utils.add_to_stack(self.ap.m_stack, 0, Node(
+            label=['h1'], title='Some section'))
+        self.ap.paragraph_no_marker("Paragraph Text")
+        lvl, node = self.result()
+        self.assertEqual(node.text, 'Paragraph Text')
+        self.assertEqual(1, lvl)
+        self.assertEqual(node.label, ['p2'])
 
     def test_paragraph_with_marker(self):
         self.ap.paragraph_with_marker("(a) A paragraph")
@@ -213,7 +223,7 @@ class AppendixProcessorTest(TestCase):
         self.ap.paragraph_no_marker("Some text")
         lvl, node = self.result()
         self.assertEqual(node.text, 'Some text')
-        self.assertEqual(lvl, 2)
+        self.assertEqual(lvl, 1)    #   Stay on the same level
         self.assertEqual(node.label, ['p1'])
 
         self.ap.paragraph_with_marker("(d) A paragraph")
@@ -244,32 +254,32 @@ class AppendixProcessorTest(TestCase):
         self.ap.paragraph_no_marker("code . is here")
         lvl, node = self.result()
         self.assertEqual(node.text, 'code . is here')
-        self.assertEqual(lvl, 4)
+        self.assertEqual(lvl, 3)    #   Stay on the same level
         self.assertEqual(node.label, ['p1'])
 
     def xtest_paragraph_roman(self):
-        self.ap.paragraph("(1) A paragraph")
+        self.ap.paragraph_with_marker("(1) A paragraph")
         lvl, node = self.result()
         self.assertEqual(node.text, '(1) A paragraph')
-        self.assertEqual(lvl, 0)
+        self.assertEqual(lvl, 1)
         self.assertEqual(node.label, ['1'])
 
-        self.ap.paragraph("(b) A paragraph")
+        self.ap.paragraph_with_marker("(b) A paragraph")
         lvl, node = self.result()
         self.assertEqual(node.text, '(b) A paragraph')
-        self.assertEqual(lvl, 1)
+        self.assertEqual(lvl, 2)
         self.assertEqual(node.label, ['b'])
 
-        self.ap.paragraph("(i) A paragraph")
+        self.ap.paragraph_with_marker("(i) A paragraph")
         lvl, node = self.result()
         self.assertEqual(node.text, '(i) A paragraph')
-        self.assertEqual(lvl, 2)
+        self.assertEqual(lvl, 3)
         self.assertEqual(node.label, ['i'])
 
-        self.ap.paragraph("(ii) A paragraph")
+        self.ap.paragraph_with_marker("(ii) A paragraph")
         lvl, node = self.result()
         self.assertEqual(node.text, 'ii. A paragraph')
-        self.assertEqual(lvl, 2)
+        self.assertEqual(lvl, 3)
         self.assertEqual(node.label, ['ii'])
 
     def test_process_part_cap(self):

@@ -1,4 +1,5 @@
 #vim: set encoding=utf-8
+import re
 import string
 
 from lxml import etree
@@ -47,7 +48,6 @@ class AppendixProcessor(object):
     """Processing the appendix requires a lot of state to be carried in
     between xml nodes. Use a class to wrap that state so we can
     compartmentalize processing the various tags"""
-
     def set_letter(self, appendix):
         """Find (and set) the appendix letter"""
         for node in (c for c in appendix.getchildren() 
@@ -63,23 +63,23 @@ class AppendixProcessor(object):
         """HD with an HED source indicates the root of the appendix"""
         n = Node(node_type=Node.APPENDIX, label=[part, self.appendix_letter],
                  title=text)
-        self.m_stack.push_last((1, n))
+        self.m_stack.push_last((0, n))
         self.paragraph_counter = 0
-        self.depth = 1
+        self.depth = 0
 
     def subheader(self, xml_node, text):
         """Each appendix may contain multiple subheaders. Some of these are
         obviously labeled (e.g. A-3 or Part III) and others are headers
         without a specific label (we give them the h + # id)"""
         source = xml_node.attrib.get('SOURCE', 'HD1')
-        hd_level = int(source[2:]) + 1
+        hd_level = int(source[2:])
 
         pair = title_label_pair(text, self.appendix_letter, self.m_stack)
 
         #   Use the depth indicated in the title
         if pair:
             label, title_depth = pair
-            self.depth = title_depth
+            self.depth = title_depth - 1
             n = Node(node_type=Node.APPENDIX, label=[label],
                      title=text)
         #   Try to deduce depth from SOURCE attribute
@@ -87,22 +87,22 @@ class AppendixProcessor(object):
             self.header_count += 1
             n = Node(node_type=Node.APPENDIX, title=text,
                      label=['h' + str(self.header_count)])
-            if hd_level > self.last_hd_level:
-                self.depth += 1
-            else:
-            #elif hd_level < self.last_hd_level:
-                self.depth = hd_level
+            self.depth = hd_level
 
-        self.last_hd_level = hd_level
         tree_utils.add_to_stack(self.m_stack, self.depth, n)
 
     def paragraph_no_marker(self, text):
-        """The paragraph has no (a) or a. etc."""
+        """The paragraph has no (a) or a. etc. Indents one level if
+        preceded by a header"""
         self.paragraph_counter += 1
         n = Node(text, node_type=Node.APPENDIX,
                  label=['p' + str(self.paragraph_counter)])
+        n.irregular = True
 
-        tree_utils.add_to_stack(self.m_stack, self.depth + 1, n)
+        last = self.m_stack.peek()
+        if last and last[-1][1].title:
+            self.depth += 1
+        tree_utils.add_to_stack(self.m_stack, self.depth, n)
 
     def paragraph_with_marker(self, text):
         """The paragraph has an (a) or a. etc."""
@@ -114,6 +114,12 @@ class AppendixProcessor(object):
         stack_levels = [l for l in self.m_stack.m_stack if l]
         is_previous_level = False
         for level in stack_levels:
+            #   We only care about nodes that are well defined (i.e. have a
+            #   proper label)
+            level = [pair for pair in level
+                     if not getattr(pair[1], 'irregular', False)]
+            if not level:
+                continue
             depth, last_node = level[-1]
             last_marker = last_node.label[-1]
             last_levels = set(idx for idx, lvl in enumerate(p_levels)
@@ -128,13 +134,17 @@ class AppendixProcessor(object):
         tree_utils.add_to_stack(self.m_stack, self.depth, n)
 
     def graphic(self, xml_node):
-        """An image"""
+        """An image. Indents one level if preceded by a header"""
         self.paragraph_counter += 1
         gid = xml_node.xpath('./GID')[0].text
         text = '![](' + gid + ')'
         n = Node(text, node_type=Node.APPENDIX,
                  label=['p' + str(self.paragraph_counter)])
-        tree_utils.add_to_stack(self.m_stack, self.depth + 1, n)
+
+        last = self.m_stack.peek()
+        if last and last[-1][1].title:
+            self.depth += 1
+        tree_utils.add_to_stack(self.m_stack, self.depth, n)
 
     def process(self, appendix, part):
         self.m_stack = NodeStack()
@@ -142,7 +152,6 @@ class AppendixProcessor(object):
         self.paragraph_count = 0
         self.header_count = 0
         self.depth = None
-        self.last_hd_level = 0
         self.appendix_letter = None
 
         self.set_letter(appendix)
