@@ -89,6 +89,20 @@ class LayerInterpretationTest(TestCase):
         self.assertFalse(interp.process(Node(label=['100', '1', 'b']))
                          is None)
 
+    def test_process_regressions(self):
+        i1a = Node('Text', title='Paragraph 1(a) and 1(b)',
+                   label=['100', '1', 'a', Node.INTERP_MARK])
+        interp = Interpretations(i1a)
+        interp.pre_process()
+        self.assertEqual(None, interp.process(Node(label=['100', '1', 'a'])))
+
+        i1a1 = Node('Text', title='Paragraph 1(a) and 1(b)',
+                   label=['100', '1', 'a', Node.INTERP_MARK, '1'],
+                   node_type=Node.INTERP)
+        interp = Interpretations(i1a1)
+        interp.pre_process()
+        self.assertEqual(None, interp.process(Node(label=['100', '1', 'a'])))
+
     def test_empty_interpretations(self):
         interp = Interpretations(None)
         self.assertTrue(interp.empty_interpretation(Node('\n\n')))
