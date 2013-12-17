@@ -12,6 +12,14 @@ regparser.tree.xml_parser.appendices module
     :undoc-members:
     :show-inheritance:
 
+regparser.tree.xml_parser.interpretations module
+------------------------------------------------
+
+.. automodule:: regparser.tree.xml_parser.interpretations
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 regparser.tree.xml_parser.reg_text module
 -----------------------------------------
 

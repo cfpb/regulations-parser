@@ -1,3 +1,14 @@
+## 12/17/2013
+
+* Better appendices
+    * Account for 'Part I'
+    * Drop non-generated TOCs
+    * Catch many paragraphs which should be headers
+    * Take many paragraph markers into account when figuring depth
+* Generate multiple sections when a range of sections is [Reserved]
+* Allow for interpretations of multiple sections
+* Catch interpretations of deep paragraphs without parents (e.g. 2(a)(1) even when there is no interpretation of 2(a))
+
 ## 12/03/2013
 
 * Regtext parsing from the XML version of 12 CFR 1026’s re-issuance
