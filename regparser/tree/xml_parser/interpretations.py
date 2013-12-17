@@ -158,11 +158,8 @@ def build_supplement_tree(reg_part, node):
 
     last_label = [reg_part, Node.INTERP_MARK]
     for ch in node:
-        if is_title(ch):
-            labels = text_to_labels(ch.text, reg_part)
-            if not labels:
-                 continue
-
+        labels = [] if not is_title(ch) else text_to_labels(ch.text, reg_part)
+        if labels:
             label = labels[0]
             inner_stack = NodeStack()
             missing = missing_levels(last_label, label)
