@@ -10,7 +10,7 @@ from regparser.grammar.interpretation_headers import parser as headers
 from regparser.grammar.utils import Marker
 from regparser.tree.node_stack import NodeStack
 from regparser.tree.paragraph import p_levels
-from regparser.tree.struct import Node
+from regparser.tree.struct import Node, walk
 from regparser.tree.xml_parser import tree_utils
 from regparser.tree.xml_parser.interpretations import build_supplement_tree
 from regparser.tree.xml_parser.interpretations import get_app_title
@@ -97,39 +97,58 @@ class AppendixProcessor(object):
         self.paragraph_counter += 1
         n = Node(text, node_type=Node.APPENDIX,
                  label=['p' + str(self.paragraph_counter)])
-        n.irregular = True
 
         last = self.m_stack.peek()
         if last and last[-1][1].title:
             self.depth += 1
         tree_utils.add_to_stack(self.m_stack, self.depth, n)
 
-    def paragraph_with_marker(self, text):
+    def paragraph_with_marker(self, text, next_text=''):
         """The paragraph has an (a) or a. etc."""
         marker, _ = initial_marker(text)
         n = Node(text, node_type=Node.APPENDIX, label=[marker])
-        this_levels = set(idx for idx, lvl in enumerate(p_levels)
+
+        if initial_marker(next_text):
+            next_marker, _ = initial_marker(next_text)
+        else:
+            next_marker = None
+
+        this_p_levels = set(idx for idx, lvl in enumerate(p_levels)
                           if marker in lvl)
+        next_p_levels = set(idx for idx, lvl in enumerate(p_levels)
+                            if next_marker in lvl)
+        previous_levels = [l for l in self.m_stack.m_stack if l]
 
-        stack_levels = [l for l in self.m_stack.m_stack if l]
-        is_previous_level = False
-        for level in stack_levels:
-            #   We only care about nodes that are well defined (i.e. have a
-            #   proper label)
-            level = [pair for pair in level
-                     if not getattr(pair[1], 'irregular', False)]
-            if not level:
-                continue
-            depth, last_node = level[-1]
-            last_marker = last_node.label[-1]
-            last_levels = set(idx for idx, lvl in enumerate(p_levels)
-                              if last_marker in lvl)
-            if (this_levels & last_levels and not last_node.title
-                and not is_previous_level):
-                    self.depth = depth
-                    is_previous_level = True
+        #   Ambiguity, e.g. 'i', 'v'. Disambiguate by looking forward
+        if len(this_p_levels) > 1 and len(next_p_levels) == 1:
+            next_p_level = next_p_levels.pop()
+            #   e.g. be a 'i' followed by a 'ii'
+            if next_p_level in this_p_levels:
+                this_p_idx = p_levels[next_p_level].index(marker)
+                next_p_idx = p_levels[next_p_level].index(next_marker)
+                if this_p_idx < next_p_idx: #   Heuristic
+                    n.p_level = next_p_level
 
-        if not is_previous_level:
+        #   Ambiguity. Disambiguate by looking backwards
+        if len(this_p_levels) > 1 and not hasattr(n, 'p_level'):
+            for stack_level in previous_levels:
+                for lvl, stack_node in stack_level:
+                    if getattr(stack_node, 'p_level', None) in this_p_levels:
+                        #   Later levels replace earlier ones
+                        n.p_level = stack_node.p_level
+
+        #   Simple case (no ambiguity) and cases not seen above
+        if not getattr(n, 'p_level', None):
+            n.p_level = min(this_p_levels)  # rule of thumb: favor lower case
+
+        #   Check if we've seen this type of marker before
+        found_in_prev = False
+        for stack_level in previous_levels:
+            if any(getattr(stack_node, 'p_level', None) == n.p_level
+                   for _, stack_node in stack_level):
+                found_in_prev = True
+                self.depth = stack_level[-1][0]
+        if not found_in_prev:   # New type of marker
             self.depth += 1
         tree_utils.add_to_stack(self.m_stack, self.depth, n)
 
@@ -167,8 +186,12 @@ class AppendixProcessor(object):
                       and title_label_pair(text, self.appendix_letter,
                                            self.m_stack))):
                 self.subheader(child, text)
+            elif (initial_marker(text) and child.tag in ('P', 'FP')
+                  and child.getnext() is None):
+                    self.paragraph_with_marker(text)
             elif initial_marker(text) and child.tag in ('P', 'FP'):
-                self.paragraph_with_marker(text)
+                self.paragraph_with_marker(
+                    text, tree_utils.get_node_text(child.getnext()))
             elif child.tag in ('P', 'FP'):
                 self.paragraph_no_marker(text)
             elif child.tag == 'GPH':
@@ -178,7 +201,12 @@ class AppendixProcessor(object):
             tree_utils.unwind_stack(self.m_stack)
 
         if self.m_stack.m_stack[0]:
-            return self.m_stack.m_stack[0][0][1]
+            root = self.m_stack.m_stack[0][0][1]
+            def per_node(n):
+                if hasattr(n, 'p_level'):
+                    del n.p_level
+            walk(root, per_node)
+            return root
 
 
 def process_appendix(appendix, part):
