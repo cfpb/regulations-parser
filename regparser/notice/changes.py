@@ -49,6 +49,16 @@ def resolve_candidates(amend_map):
                 node['node'].label = label.split('-')
 
 
+def find_misparsed_node(section_node, label):
+    candidates = find_candidate(section_node, label[-1])
+    if len(candidates) == 1:
+        candidate = candidates[0]
+        return {
+            'action':'updated', 
+            'node':candidate, 
+            'candidate':True}
+
+
 def match_labels_and_changes(labels_amended, section_node):
     amend_map = {}
     for action, label, label_id in labels_amended:
@@ -60,13 +70,9 @@ def match_labels_and_changes(labels_amended, section_node):
         else:
             node = struct.find(section_node, label_id)
             if node is None:
-                candidates = find_candidate(section_node, label[-1])
-                if len(candidates) == 1:
-                    candidate = candidates[0]
-                    amend_map[label_id] = {
-                        'action': 'updated',
-                        'node': candidate,
-                        'candidate': True}
+                candidate = find_misparsed_node(section_node, label)
+                if candidate is not None:
+                    amend_map[label_id] = candidate
             else:
                 amend_map[label_id] = {
                     'node': node,
