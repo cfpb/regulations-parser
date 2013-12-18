@@ -223,7 +223,7 @@ class AppendixProcessorTest(TestCase):
         self.ap.paragraph_no_marker("Some text")
         lvl, node = self.result()
         self.assertEqual(node.text, 'Some text')
-        self.assertEqual(lvl, 1)    #   Stay on the same level
+        self.assertEqual(lvl, 1)    # Stay on the same level
         self.assertEqual(node.label, ['p1'])
 
         self.ap.paragraph_with_marker("(d) A paragraph")
@@ -254,7 +254,7 @@ class AppendixProcessorTest(TestCase):
         self.ap.paragraph_no_marker("code . is here")
         lvl, node = self.result()
         self.assertEqual(node.text, 'code . is here')
-        self.assertEqual(lvl, 3)    #   Stay on the same level
+        self.assertEqual(lvl, 3)    # Stay on the same level
         self.assertEqual(node.label, ['p1'])
 
     def test_paragraph_roman(self):

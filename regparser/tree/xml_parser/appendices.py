@@ -55,7 +55,7 @@ class AppendixProcessor(object):
     compartmentalize processing the various tags"""
     def set_letter(self, appendix):
         """Find (and set) the appendix letter"""
-        for node in (c for c in appendix.getchildren() 
+        for node in (c for c in appendix.getchildren()
                      if is_appendix_header(c)):
             text = tree_utils.get_node_text(node)
             if self.appendix_letter:
@@ -140,7 +140,7 @@ class AppendixProcessor(object):
             next_marker = None
 
         this_p_levels = set(idx for idx, lvl in enumerate(p_levels)
-                          if marker in lvl)
+                            if marker in lvl)
         next_p_levels = set(idx for idx, lvl in enumerate(p_levels)
                             if next_marker in lvl)
         previous_levels = [l for l in self.m_stack.m_stack if l]
@@ -156,7 +156,7 @@ class AppendixProcessor(object):
             if next_p_level in this_p_levels:
                 this_p_idx = p_levels[next_p_level].index(marker)
                 next_p_idx = p_levels[next_p_level].index(next_marker)
-                if this_p_idx < next_p_idx: #   Heuristic
+                if this_p_idx < next_p_idx:     # Heuristic
                     n.p_level = next_p_level
             #   e.g. (a)(1)(i) followed by an 'A'
             new_level = this_p_levels - previous_p_levels
@@ -239,9 +239,11 @@ class AppendixProcessor(object):
 
         if self.m_stack.m_stack[0]:
             root = self.m_stack.m_stack[0][0][1]
+
             def per_node(n):
                 if hasattr(n, 'p_level'):
                     del n.p_level
+
             walk(root, per_node)
             return root
 
@@ -283,7 +285,7 @@ def title_label_pair(text, appendix_letter, stack=None):
 
 def initial_marker(text):
     parser = (grammar.paren_upper | grammar.paren_lower | grammar.paren_digit
-              | grammar.period_upper | grammar.period_digit )
+              | grammar.period_upper | grammar.period_digit)
     for match, start, end in parser.scanString(text):
         if start != 0:
             continue
