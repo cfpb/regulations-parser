@@ -345,3 +345,25 @@ class AppendixProcessorTest(TestCase):
         self.assertEqual(['1111', 'A', 'I', 'p1'], aIb.label)
         self.assertEqual(['1111', 'A', 'I', 'p1', 'v'], aIv.label)
         self.assertEqual(['1111', 'A', 'I', 'p1', 'vi'], aIvi.label)
+
+    def test_process_collapsed(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <HD SOURCE="HD1">Part I - Something</HD>
+            <P>(a) Something referencing § 999.2(a)(1). (1) Content</P>
+            <P>(2) Something else</P>
+        </APPENDIX>
+        """
+        appendix = self.ap.process(etree.fromstring(xml), 1111)
+        self.assertEqual(1, len(appendix.children))
+        aI = appendix.children[0]
+        self.assertEqual(1, len(aI.children))
+        aIa = aI.children[0]
+        self.assertEqual(2, len(aIa.children))
+        aIa1, aIa2 = aIa.children
+        self.assertEqual(['1111', 'A', 'I', 'a', '1'], aIa1.label)
+        self.assertEqual('(1) Content', aIa1.text)
+        self.assertEqual(['1111', 'A', 'I', 'a', '2'], aIa2.label)
+        self.assertEqual('(2) Something else', aIa2.text)

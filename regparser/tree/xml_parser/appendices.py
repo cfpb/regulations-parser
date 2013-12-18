@@ -5,6 +5,7 @@ import string
 from lxml import etree
 from pyparsing import LineStart, Literal, Optional, Suppress, Word
 
+from regparser.citations import internal_citations
 from regparser.grammar import appendix as grammar
 from regparser.grammar.interpretation_headers import parser as headers
 from regparser.grammar.utils import Marker
@@ -42,6 +43,9 @@ def remove_toc(appendix, letter):
 def is_appendix_header(node):
     return (node.tag == 'RESERVED'
             or (node.tag == 'HD' and node.attrib['SOURCE'] == 'HED'))
+
+
+_first_markers = [re.compile('\(' + lvl[0] + '\)') for lvl in p_levels]
 
 
 class AppendixProcessor(object):
@@ -102,6 +106,25 @@ class AppendixProcessor(object):
         if last and last[-1][1].title:
             self.depth += 1
         tree_utils.add_to_stack(self.m_stack, self.depth, n)
+
+    def split_paragraph_text(self, text, next_text=''):
+        marker_positions = []
+        for marker in _first_markers:
+            marker_positions.extend(m.start() for m in marker.finditer(text))
+        #   Remove any citations
+        citations = internal_citations(text, require_marker=True)
+        marker_positions = [pos for pos in marker_positions
+                            if not any(cit.start <= pos and cit.end >= pos
+                                       for cit in citations)]
+        texts = []
+        #   Drop Zeros, add the end
+        break_points = [p for p in marker_positions if p] + [len(text)]
+        last_pos = 0
+        for pos in break_points:
+            texts.append(text[last_pos:pos])
+            last_pos = pos
+        texts.append(next_text)
+        return texts
 
     def paragraph_with_marker(self, text, next_text=''):
         """The paragraph has an (a) or a. etc."""
@@ -186,12 +209,15 @@ class AppendixProcessor(object):
                       and title_label_pair(text, self.appendix_letter,
                                            self.m_stack))):
                 self.subheader(child, text)
-            elif (initial_marker(text) and child.tag in ('P', 'FP')
-                  and child.getnext() is None):
-                    self.paragraph_with_marker(text)
             elif initial_marker(text) and child.tag in ('P', 'FP'):
-                self.paragraph_with_marker(
-                    text, tree_utils.get_node_text(child.getnext()))
+                if child.getnext() is None:
+                    next_text = ''
+                else:
+                    next_text = tree_utils.get_node_text(child.getnext())
+
+                texts = self.split_paragraph_text(text, next_text)
+                for text, next_text in zip(texts, texts[1:]):
+                    self.paragraph_with_marker(text, next_text)
             elif child.tag in ('P', 'FP'):
                 self.paragraph_no_marker(text)
             elif child.tag == 'GPH':
