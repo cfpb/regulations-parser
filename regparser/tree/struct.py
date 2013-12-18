@@ -43,9 +43,8 @@ class NodeEncoder(JSONEncoder):
             fields = dict(obj.__dict__)
             if obj.title is None:
                 del fields['title']
-            for field_name in ('tagged_text', 'irregular'):
-                if field_name in fields:
-                    del fields[field_name]
+            if 'tagged_text' in fields:
+                del fields['tagged_text']
             return fields
         return JSONEncoder.default(self, obj)
 
