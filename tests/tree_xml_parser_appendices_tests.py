@@ -288,6 +288,41 @@ class AppendixProcessorTest(TestCase):
         self.assertEqual(lvl, 3)
         self.assertEqual(node.label, ['v'])
 
+    def test_split_paragraph_text(self):
+        res = self.ap.split_paragraph_text("(a) Paragraph. (1) Next paragraph")
+        self.assertEqual(['(a) Paragraph. ', '(1) Next paragraph', ''], res)
+
+        res = self.ap.split_paragraph_text("(a) (Keyterm) (1) Next paragraph")
+        self.assertEqual(['(a) (Keyterm) ', '(1) Next paragraph', ''], res)
+
+        res = self.ap.split_paragraph_text("(a) Mentions one (1) comment")
+        self.assertEqual(['(a) Mentions one (1) comment', ''], res)
+
+    def test_paragraph_double_depth(self):
+        self.ap.paragraph_with_marker("(a) A paragraph", "(1) A paragraph")
+        lvl, node = self.result()
+        self.assertEqual(node.text, '(a) A paragraph')
+        self.assertEqual(lvl, 1)
+        self.assertEqual(node.label, ['a'])
+
+        self.ap.paragraph_with_marker("(1) A paragraph", "(i) A paragraph")
+        lvl, node = self.result()
+        self.assertEqual(node.text, '(1) A paragraph')
+        self.assertEqual(lvl, 2)
+        self.assertEqual(node.label, ['1'])
+
+        self.ap.paragraph_with_marker("(i) A paragraph", "(A) A paragraph")
+        lvl, node = self.result()
+        self.assertEqual(node.text, '(i) A paragraph')
+        self.assertEqual(lvl, 3)
+        self.assertEqual(node.label, ['i'])
+
+        self.ap.paragraph_with_marker("(A) A paragraph")
+        lvl, node = self.result()
+        self.assertEqual(node.text, '(A) A paragraph')
+        self.assertEqual(lvl, 4)
+        self.assertEqual(node.label, ['A'])
+
     def test_process_part_cap(self):
         xml = u"""
         <APPENDIX>

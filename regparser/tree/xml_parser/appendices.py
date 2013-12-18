@@ -45,7 +45,8 @@ def is_appendix_header(node):
             or (node.tag == 'HD' and node.attrib['SOURCE'] == 'HED'))
 
 
-_first_markers = [re.compile('\(' + lvl[0] + '\)') for lvl in p_levels]
+_first_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*\(' + lvl[0] + '\)')
+                  for lvl in p_levels]
 
 
 class AppendixProcessor(object):
@@ -110,7 +111,9 @@ class AppendixProcessor(object):
     def split_paragraph_text(self, text, next_text=''):
         marker_positions = []
         for marker in _first_markers:
-            marker_positions.extend(m.start() for m in marker.finditer(text))
+            #   text.index('(') to skip over the periods, spaces, etc.
+            marker_positions.extend(text.index('(', m.start())
+                                    for m in marker.finditer(text))
         #   Remove any citations
         citations = internal_citations(text, require_marker=True)
         marker_positions = [pos for pos in marker_positions
@@ -141,16 +144,24 @@ class AppendixProcessor(object):
         next_p_levels = set(idx for idx, lvl in enumerate(p_levels)
                             if next_marker in lvl)
         previous_levels = [l for l in self.m_stack.m_stack if l]
+        previous_p_levels = set()
+        for stack_level in previous_levels:
+            previous_p_levels.update(sn.p_level for _, sn in stack_level
+                                     if hasattr(sn, 'p_level'))
 
         #   Ambiguity, e.g. 'i', 'v'. Disambiguate by looking forward
         if len(this_p_levels) > 1 and len(next_p_levels) == 1:
             next_p_level = next_p_levels.pop()
-            #   e.g. be a 'i' followed by a 'ii'
+            #   e.g. an 'i' followed by a 'ii'
             if next_p_level in this_p_levels:
                 this_p_idx = p_levels[next_p_level].index(marker)
                 next_p_idx = p_levels[next_p_level].index(next_marker)
                 if this_p_idx < next_p_idx: #   Heuristic
                     n.p_level = next_p_level
+            #   e.g. (a)(1)(i) followed by an 'A'
+            new_level = this_p_levels - previous_p_levels
+            if next_p_level not in previous_p_levels and new_level:
+                n.p_level = new_level.pop()
 
         #   Ambiguity. Disambiguate by looking backwards
         if len(this_p_levels) > 1 and not hasattr(n, 'p_level'):
