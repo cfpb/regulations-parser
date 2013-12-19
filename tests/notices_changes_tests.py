@@ -105,4 +105,17 @@ class ChangesTests(TestCase):
             self.assertEqual(node['op'], 'updated')
             self.assertFalse('children' in node)
 
-        self.assertEqual(None, amendments)
+    def test_flatten_tree(self):
+        tree = self.build_tree()
+
+        node_list = []
+        changes.flatten_tree(node_list, tree)
+
+        self.assertEqual(6, len(node_list))
+        for n in node_list:
+            self.assertEqual(n.children, [])
+
+
+    def test_remove_intro(self):
+        text = 'abcd[text]'
+        self.assertEqual('abcd', changes.remove_intro(text))
