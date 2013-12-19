@@ -54,9 +54,9 @@ def find_misparsed_node(section_node, label):
     if len(candidates) == 1:
         candidate = candidates[0]
         return {
-            'action':'updated', 
-            'node':candidate, 
-            'candidate':True}
+            'action': 'updated',
+            'node': candidate,
+            'candidate': True}
 
 
 def match_labels_and_changes(labels_amended, section_node):
