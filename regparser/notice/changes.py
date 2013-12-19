@@ -1,3 +1,5 @@
+import logging
+
 from regparser.tree import struct
 from regparser.diff.treediff import node_to_dict
 
@@ -39,14 +41,21 @@ def fix_labels(labels_amended):
     return fixed
 
 
-def resolve_candidates(amend_map):
+def resolve_candidates(amend_map, warn=True):
     """Ensure candidate isn't actually accounted for elsewhere, and fix
     it's label. """
     for label, node in amend_map.items():
         if 'node' in node:
             node_label = node['node'].label_id()
-            if node['candidate'] and node_label not in amend_map:
-                node['node'].label = label.split('-')
+            if node['candidate']: 
+                if node_label not in amend_map:
+                    node['node'].label = label.split('-')
+                else:
+                    del amend_map[label]
+                    if warn:
+                        mesg = 'Unable to match amendment'
+                        mesg += 'to change for: %s ' %  label
+                        logging.warning(mesg)
 
 
 def find_misparsed_node(section_node, label):
