@@ -206,5 +206,7 @@ class ChangesTests(TestCase):
             labels_amended, root)
 
         self.assertTrue(amend_map['200-2-a-1-i']['candidate'])
-        #self.assertEqual(amend_map, None)
+        self.assertTrue(
+            amend_map['200-2-a-1-i']['node'].label_id(), '200-2-a-1-i')
+
 
