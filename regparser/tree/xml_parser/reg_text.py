@@ -31,12 +31,12 @@ def determine_level(c, current_level, next_marker=None):
         #   Check if we can be certain using the following marker
         for pot_level, pot_idx in potential:
             for next_level, next_idx in following:
-                if (    #   E.g. i followed by A or i followed by 1
-                    (next_idx == 0 and next_level == pot_level + 1)
-                    or  #   E.g. i followed by ii
-                    (next_level == pot_level and next_idx == pot_idx + 1)
-                    or  #   E.g. i followed by 3
-                    (next_level < pot_level and next_idx > 0)):
+                if (    # E.g. i followed by A or i followed by 1
+                        (next_idx == 0 and next_level == pot_level + 1)
+                        or  # E.g. i followed by ii
+                        (next_level == pot_level and next_idx == pot_idx + 1)
+                        or  # E.g. i followed by 3
+                        (next_level < pot_level and next_idx > 0)):
                     return pot_level + 1
         logging.warning("Ambiguous marker (%s) not followed by something "
                         + "disambiguating (%s)", c, next_marker)

@@ -6,6 +6,7 @@ from lxml import etree
 from regparser.tree.xml_parser.reg_text import *
 import settings
 
+
 class RegTextTest(TestCase):
     def setUp(self):
         self._original_macros = getattr(settings, 'MACROS', None)
@@ -15,7 +16,6 @@ class RegTextTest(TestCase):
             del settings.MACROS
         else:
             settings.MACROS = self._original_macros
-
 
     def test_build_from_section_intro_text(self):
         xml = u"""
@@ -38,13 +38,13 @@ class RegTextTest(TestCase):
 
     def test_build_from_section_collapsed_level(self):
         xml = u"""
-            <SECTION>
-                <SECTNO>§ 8675.309</SECTNO>
-                <SUBJECT>Definitions.</SUBJECT>
-                <P>(a) <E T="03">Transfers </E>—(1) <E T="03">Notice.</E> follow
-                </P>
-                <P>(b) <E T="03">Contents</E> (1) Here</P>
-            </SECTION>
+        <SECTION>
+            <SECTNO>§ 8675.309</SECTNO>
+            <SUBJECT>Definitions.</SUBJECT>
+            <P>(a) <E T="03">Transfers </E>—(1) <E T="03">Notice.</E> follow
+            </P>
+            <P>(b) <E T="03">Contents</E> (1) Here</P>
+        </SECTION>
         """
         node = build_from_section('8675', etree.fromstring(xml))[0]
         self.assertEqual(node.label, ['8675', '309'])
@@ -279,7 +279,8 @@ class RegTextTest(TestCase):
         tagged = [r[1][1] for r in result]
         self.assertEqual(
             tagged,
-            [u'(a) <E T="03">Transfer </E>—', u'(1) <E T="03">Notice.</E> follow'])
+            [u'(a) <E T="03">Transfer </E>—',
+             u'(1) <E T="03">Notice.</E> follow'])
 
     def test_get_markers_and_text_emph(self):
         text = '(A) aaaa. (<E T="03">1</E>) 1111'
@@ -289,7 +290,7 @@ class RegTextTest(TestCase):
 
         a, a1 = result
         self.assertEqual(('A', ('(A) aaaa. ', '(A) aaaa. ')), a)
-        self.assertEqual(('<E T="03">1</E>', ('(1) 1111', 
+        self.assertEqual(('<E T="03">1</E>', ('(1) 1111',
                                               '(<E T="03">1</E>) 1111')), a1)
 
     def test_preprocess_xml(self):
