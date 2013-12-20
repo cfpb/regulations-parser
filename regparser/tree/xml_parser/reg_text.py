@@ -10,6 +10,7 @@ from regparser.tree.node_stack import NodeStack
 from regparser.tree.xml_parser.appendices import build_non_reg_text
 from regparser.tree import reg_text
 from regparser.tree.xml_parser import tree_utils
+import settings
 
 
 def determine_level(c, current_level, next_marker=None):
@@ -68,6 +69,20 @@ def get_title(reg_doc):
     parent = reg_doc.xpath('//PART/HD')[0]
     title = parent.text
     return title
+
+
+def preprocess_xml(xml):
+    """This transforms the read XML through macros. Each macro consists of
+    an xpath and a replacement xml string"""
+    for path, replacement in getattr(settings, 'MACROS', []):
+        replacement = etree.fromstring('<ROOT>' + replacement + '</ROOT>')
+        for node in xml.xpath(path):
+            parent = node.getparent()
+            idx = parent.index(node)
+            parent.remove(node)
+            for repl in replacement:
+                parent.insert(idx, repl)
+                idx += 1
 
 
 def build_tree(reg_xml):
