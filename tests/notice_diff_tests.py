@@ -180,3 +180,83 @@ class NoticeDiffTests(TestCase):
             tokens.Context(['2']),
             tokens.Context(['3']),
         ])
+
+    def test_find_section(self):
+        xml = u"""
+        <REGTEXT>
+        <AMDPAR> 
+            In 200.1 revise paragraph (b) as follows:
+        </AMDPAR>
+        <SECTION>
+            <SECTNO>200.1</SECTNO>
+            <SUBJECT>Authority and Purpose.</SUBJECT>
+            <P> (b) This part is very important. </P>
+        </SECTION>
+        <AMDPAR> 
+            In 200.3 revise paragraph (b)(1) as follows:
+        </AMDPAR>
+        <SECTION>
+            <SECTNO>200.3</SECTNO>
+            <SUBJECT>Definitions</SUBJECT>
+            <P> (b)(1) Define a term here. </P>
+        </SECTION>
+        </REGTEXT>"""
+
+        notice_xml = etree.fromstring(xml)
+        amdpar_xml = notice_xml.xpath('//AMDPAR')[0]
+        section = find_section(amdpar_xml)
+        self.assertEqual(section.tag, 'SECTION')
+
+        sectno_xml = section.xpath('//SECTNO')[0]
+        self.assertEqual(sectno_xml.text, '200.1')
+
+    def test_is_designate_token(self):
+        class Noun:
+            def __init__(self, noun):
+                self.noun = noun
+
+        token = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        self.assertTrue(is_designate_token(token))
+
+        token = tokens.Verb(tokens.Verb.MOVE, True)
+        self.assertFalse(is_designate_token(token))
+
+        token = Noun('TABLE')
+        self.assertFalse(is_designate_token(token))
+
+    def list_of_tokens(self):
+        designate_token = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        move_token = tokens.Verb(tokens.Verb.MOVE, True)
+        return [designate_token, move_token]
+
+    def test_contains_one_designate_token(self):
+        tokenized = self.list_of_tokens()
+        self.assertTrue(contains_one_designate_token(tokenized))
+
+        designate_token_2 = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        tokenized.append(designate_token_2)
+        self.assertFalse(contains_one_designate_token(tokenized))
+
+    def test_contains_one_tokenlist(self):
+        token_list = self.list_of_tokens()
+
+        designate_token_2 = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        tokenized  = [tokens.TokenList(token_list), designate_token_2]
+        self.assertTrue(contains_one_tokenlist(tokenized))
+
+        tokenized = [tokens.TokenList(token_list), 
+                     designate_token_2, tokens.TokenList(token_list)]
+        self.assertFalse(contains_one_tokenlist(tokenized))
+
+    def test_contains_one_context(self):
+        tokenized = self.list_of_tokens()
+        context = tokens.Context(['200', '1'])
+        tokenized.append(context)
+
+        self.assertTrue(contains_one_context(tokenized))
+
+        designate_token = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        tokenized.append(designate_token)
+        tokenized.append(tokens.Context(['200', '2']))
+
+        self.assertFalse(contains_one_context(tokenized))

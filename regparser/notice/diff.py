@@ -25,6 +25,8 @@ def remove_char(xml_node, char):
 
 
 def find_section(amdpar):
+    """ With an AMDPAR xml, return the first section 
+    sibling """ 
     for sibling in amdpar.itersiblings():
         if sibling.tag == 'SECTION':
             return sibling
@@ -118,6 +120,18 @@ def is_designate_token(token):
     designate = tokens.Verb.DESIGNATE
     return isinstance(token, tokens.Verb) and token.verb == designate
 
+def contains_one_designate_token(tokenized):
+    designate_tokens = [t for t in tokenized if is_designate_token(t)]
+    return len(designate_tokens) == 1
+
+def contains_one_tokenlist(tokenized):
+    tokens_lists = [t for t in tokenized if isinstance(t, tokens.TokenList)]
+    return len(tokens_lists)  == 1
+
+def contains_one_context(tokenized):
+    contexts = [t for t in tokenized if isinstance(t, tokens.Context)]
+    return len(contexts) == 1
+
 def deal_with_subpart_adds(tokenized):
     """If we have a designate verb, and a token list, we're going to 
     change the context to a Paragraph. Because it's not a context, it's 
@@ -125,14 +139,9 @@ def deal_with_subpart_adds(tokenized):
 
     #Ensure that we only have one of each: designate verb, a token list and 
     #a context
-    designate_tokens = [t for t in tokenized if is_designate_token(t)]
-    verb_exists = len(designate_tokens) == 1
-
-    tokens_lists = [t for t in tokenized if isinstance(t, tokens.TokenList)]
-    list_exists = len(tokens_lists) == 1
-
-    contexts = [t for t in tokenized if isinstance(t, tokens.Context)]
-    context_exists = len(contexts) == 1
+    verb_exists = contains_one_designate_token(tokenized)
+    list_exists = contains_one_tokenlist(tokenized)
+    context_exists = contains_one_context(tokenized)
 
     if verb_exists and list_exists and context_exists:
         token_list = []
