@@ -298,7 +298,10 @@ def initial_marker(text):
 def build_non_reg_text(reg_xml, reg_part):
     """ This builds the tree for the non-regulation text such as Appendices
     and the Supplement section """
-    doc_root = etree.fromstring(reg_xml)
+    if isinstance(reg_xml, str) or isinstance(reg_xml, unicode):
+        doc_root = etree.fromstring(reg_xml)
+    else:
+        doc_root = reg_xml
     non_reg_sects = doc_root.xpath('//PART//APPENDIX')
     children = []
 

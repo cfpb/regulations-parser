@@ -42,7 +42,7 @@ class LayerGraphicsTest(TestCase):
         self.assertEqual([True, True, True], found)
 
     def test_process_format(self):
-        node = Node("![A88 Something](ER22MY13.257)")
+        node = Node("![A88 Something](ER22MY13.257-1)")
         g = Graphics(None)
         self.assertEqual(1, len(g.process(node)))
 

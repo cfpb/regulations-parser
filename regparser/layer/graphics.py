@@ -6,7 +6,7 @@ import settings
 
 
 class Graphics(Layer):
-    gid = re.compile(ur'!\[([\w\s]*)\]\(([a-zA-Z0-9.]+?)\)')
+    gid = re.compile(ur'!\[([\w\s]*)\]\(([a-zA-Z0-9.\-]+?)\)')
 
     def process(self, node):
         """If this node has a marker for an image in it, note where to get

@@ -87,6 +87,7 @@ def preprocess_xml(xml):
 
 def build_tree(reg_xml):
     doc = etree.fromstring(reg_xml)
+    preprocess_xml(doc)
 
     reg_part = get_reg_part(doc)
     title = get_title(doc)
@@ -108,7 +109,7 @@ def build_tree(reg_xml):
         empty_part.children = sections
         tree.children = [empty_part]
 
-    non_reg_sections = build_non_reg_text(reg_xml, reg_part)
+    non_reg_sections = build_non_reg_text(doc, reg_part)
     tree.children += non_reg_sections
 
     return tree
