@@ -80,6 +80,7 @@ def interp_inner_child(child_node, stack):
     #   Node for this paragraph
     n = Node(node_text[0:starts[0]], label=[first_marker],
              node_type=Node.INTERP)
+    n.tagged_text = text_with_tags
     last = stack.peek()
 
     if len(last) == 0:
