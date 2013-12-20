@@ -86,12 +86,15 @@ class InterpretationsTest(TestCase):
         i5a1iiA1, i5a1iiA2, i5a1iiA3 = i5a1iiA.children
         self.assertEqual(['737', '5', 'a', 'Interp', '1', 'ii', 'A', '1'],
                          i5a1iiA1.label)
+        self.assertEqual(i5a1iiA1.tagged_text, '<E T="03">1.</E> More info')
         self.assertEqual(0, len(i5a1iiA1.children))
         self.assertEqual(['737', '5', 'a', 'Interp', '1', 'ii', 'A', '2'],
                          i5a1iiA2.label)
+        self.assertEqual(i5a1iiA2.tagged_text, '<E T="03">2.</E> Second info')
         self.assertEqual(0, len(i5a1iiA2.children))
         self.assertEqual(['737', '5', 'a', 'Interp', '1', 'ii', 'A', '3'],
                          i5a1iiA3.label)
+        self.assertEqual(i5a1iiA3.tagged_text, '<E T="03">3. Keyterms</E>')
         self.assertEqual(0, len(i5a1iiA3.children))
 
     def test_build_supplement_tree_skip_levels(self):
