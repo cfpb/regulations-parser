@@ -8,6 +8,7 @@ Subpackages
 
     regparser.diff
     regparser.grammar
+    regparser.history
     regparser.layer
     regparser.notice
     regparser.tree
@@ -27,6 +28,14 @@ regparser.api_writer module
 ---------------------------
 
 .. automodule:: regparser.api_writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+regparser.citations module
+--------------------------
+
+.. automodule:: regparser.citations
     :members:
     :undoc-members:
     :show-inheritance:

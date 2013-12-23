@@ -223,9 +223,13 @@ class DepthInterpretationTreeTest(TestCase):
 
         self.assertEqual(3, len(segment_by_header(text+s10a+s10a1+s10b, 0)))
 
-    def test_text_to_label(self):
+    def test_text_to_labels(self):
         text = u"9(c)(2)(iii) Charges not Covered by § 1026.6(b)(1) and "
         text += "(b)(2)"
+        self.assertEqual([['1111', '9', 'c', '2', 'iii', 'Interp']],
+                         text_to_labels(text, '1111'))
 
-        self.assertEqual(['1111', '9', 'c', '2', 'iii', 'Interp'],
-                         text_to_label(text, '1111'))
+        text = "Paragraphs 4(b)(7) and (b)(8)."
+        self.assertEqual([['1111', '4', 'b', '7', 'Interp'],
+                          ['1111', '4', 'b', '8', 'Interp']],
+                         text_to_labels(text, '1111'))

@@ -1,5 +1,6 @@
+#vim: set encoding=utf-8
 from lxml import etree
-from regparser.notice.build import *
+from regparser.notice import build
 from unittest import TestCase
 
 
@@ -24,7 +25,7 @@ class NoticeBuildTest(TestCase):
             'type': 'Rule',
             'volume': 66,
         }
-        self.assertEqual(build_notice('5', '9292', fr), {
+        self.assertEqual(build.build_notice('5', '9292', fr), {
             'abstract': 'sum sum sum',
             'action': 'actact',
             'agency_names': ['Agency 1', 'Agency 2'],
@@ -72,7 +73,7 @@ class NoticeBuildTest(TestCase):
             </SUPLINF>
         </ROOT>"""
         notice = {'cfr_part': '9292', 'meta': {'start_page': 100}}
-        self.assertEqual(process_xml(notice, etree.fromstring(xml)), {
+        self.assertEqual(build.process_xml(notice, etree.fromstring(xml)), {
             'cfr_part': '9292',
             'footnotes': {},
             'meta': {'start_page': 100},
@@ -104,7 +105,7 @@ class NoticeBuildTest(TestCase):
             </SUPLINF>
         </ROOT>"""
         notice = {'cfr_part': '9292', 'meta': {'start_page': 210}}
-        self.assertEqual(process_xml(notice, etree.fromstring(xml)), {
+        self.assertEqual(build.process_xml(notice, etree.fromstring(xml)), {
             'cfr_part': '9292',
             'footnotes': {},
             'meta': {'start_page': 210},
@@ -133,9 +134,44 @@ class NoticeBuildTest(TestCase):
             </FTNT>
         </ROOT>"""
         notice = {}
-        add_footnotes(notice, etree.fromstring(xml))
+        build.add_footnotes(notice, etree.fromstring(xml))
         self.assertEqual(notice, {'footnotes': {
             '21': 'Footnote text',
             '43': 'This has a break',
             '98': 'This one has <em data-original="E-03">emph</em> tags'
         }})
+
+    def test_process_designate_subpart(self):
+        p_list = ['200-?-1-a', '200-?-1-b']
+        destination = '205-Subpart:A'
+        amended_label = ('DESIGNATE', p_list, destination)
+
+        subpart_changes = build.process_designate_subpart(amended_label)
+
+        self.assertEqual(['200-1-a', '200-1-b'], subpart_changes.keys())
+
+        for p, change in subpart_changes.items():
+            self.assertEqual(change['destination'], ['205', 'Subpart', 'A'])
+            self.assertEqual(change['op'], 'assign')
+
+    def test_process_amendments(self):
+        xml = u"""
+        <REGTEXT PART="1005" TITLE="12">
+        <SUBPART>
+        <HD SOURCE="HED">Subpart A—General</HD>
+        </SUBPART>
+        <AMDPAR>
+        2. Designate §§ 105.1 through 105.3 as subpart A under the heading.
+        </AMDPAR>
+        </REGTEXT>"""
+
+        notice_xml = etree.fromstring(xml)
+        notice = {}
+        build.process_amendments(notice, notice_xml)
+
+        section_list = ['105-2', '105-3', '105-1']
+        self.assertEqual(notice['changes'].keys(), section_list)
+
+        for l, c in notice['changes'].items():
+            self.assertEqual(c['destination'], ['105', 'Subpart', 'A'])
+            self.assertEqual(c['op'], 'assign')
