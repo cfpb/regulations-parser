@@ -5,7 +5,6 @@ import re
 from lxml import etree
 
 from regparser.grammar import amdpar, tokens
-from regparser.tree.xml_parser.reg_text import build_section
 from regparser.tree import struct
 from regparser.tree.xml_parser.reg_text import build_from_section
 
