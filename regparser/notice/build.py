@@ -10,9 +10,6 @@ from regparser.notice import changes
 from regparser.tree.xml_parser import reg_text
 from regparser.tree import struct
 
-def print_labels(changes):
-    for  n in changes:
-        print n['label']
 
 def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     """Given JSON from the federal register, create our notice structure"""
@@ -47,6 +44,23 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     return notice
 
 
+def process_designate_subpart(al):
+    _, p_list, destination = al
+    if 'Subpart' in destination:
+        reg_part, sub_part = destination.split('-')
+        _, subpart_letter = destination.split(':')
+        destination_label = [reg_part, 'Subpart', subpart_letter]
+
+        subpart_changes = {}
+
+        for label in p_list:
+            label = changes.fix_label(label)
+            label_id = '-'.join(label)
+            subpart_changes[label_id] = {
+                'op': 'assign', 'destination': destination_label}
+        return subpart_changes
+
+
 def process_amendments(notice, notice_xml):
     """ Process the changes to the regulation that are expressed in the notice.
     """
@@ -58,19 +72,8 @@ def process_amendments(notice, notice_xml):
 
         for al in amended_labels:
             if al[0] == 'DESIGNATE':
-                _, p_list, destination = al
-                if 'Subpart' in destination:
-                    reg_part, sub_part = destination.split('-')
-                    _, subpart_letter = destination.split(':')
-                    destination_label =  [reg_part, 'Subpart', subpart_letter]
-
-                    subpart_changes = {}
-
-                    for label in p_list:
-                        label = changes.fix_label(label)
-                        label_id = '-'.join(label)
-                        subpart_changes[label_id] = {
-                            'op':'assign', 'destination':destination_label}
+                subpart_changes = process_designate_subpart(al)
+                if subpart_changes:
                     notice_changes.update(subpart_changes)
 
         section_xml = find_section(par)
@@ -90,8 +93,6 @@ def process_amendments(notice, notice_xml):
         amends.extend(amended_labels)
     if amends:
         notice['amendments'] = amends
-        print notice['amendments']
-        #print_labels(notice_changes.values())
         notice['changes'] = notice_changes
 
 
