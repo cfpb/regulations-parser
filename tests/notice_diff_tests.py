@@ -184,7 +184,7 @@ class NoticeDiffTests(TestCase):
     def test_find_section(self):
         xml = u"""
         <REGTEXT>
-        <AMDPAR> 
+        <AMDPAR>
             In 200.1 revise paragraph (b) as follows:
         </AMDPAR>
         <SECTION>
@@ -192,7 +192,7 @@ class NoticeDiffTests(TestCase):
             <SUBJECT>Authority and Purpose.</SUBJECT>
             <P> (b) This part is very important. </P>
         </SECTION>
-        <AMDPAR> 
+        <AMDPAR>
             In 200.3 revise paragraph (b)(1) as follows:
         </AMDPAR>
         <SECTION>
@@ -241,10 +241,10 @@ class NoticeDiffTests(TestCase):
         token_list = self.list_of_tokens()
 
         designate_token_2 = tokens.Verb(tokens.Verb.DESIGNATE, True)
-        tokenized  = [tokens.TokenList(token_list), designate_token_2]
+        tokenized = [tokens.TokenList(token_list), designate_token_2]
         self.assertTrue(contains_one_tokenlist(tokenized))
 
-        tokenized = [tokens.TokenList(token_list), 
+        tokenized = [tokens.TokenList(token_list),
                      designate_token_2, tokens.TokenList(token_list)]
         self.assertFalse(contains_one_tokenlist(tokenized))
 
@@ -263,7 +263,7 @@ class NoticeDiffTests(TestCase):
 
     def paragraph_token_list(self):
         paragraph_tokens = [
-            tokens.Paragraph(['200', '1', 'a']), 
+            tokens.Paragraph(['200', '1', 'a']),
             tokens.Paragraph(['200', '1', 'b'])]
         return tokens.TokenList(paragraph_tokens)
 
@@ -276,7 +276,7 @@ class NoticeDiffTests(TestCase):
 
         toks, subpart_added = deal_with_subpart_adds(tokenized)
         self.assertTrue(subpart_added)
-        
+
         paragraph_found = False
         for t in toks:
             self.assertFalse(isinstance(t, tokens.Context))
@@ -296,7 +296,7 @@ class NoticeDiffTests(TestCase):
 
         toks, subpart_added = deal_with_subpart_adds(tokenized)
         self.assertFalse(subpart_added)
-    
+
     def test_separate_tokenlist_subpart(self):
         token_list = self.paragraph_token_list()
         tokenized = [token_list]
@@ -326,7 +326,6 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(verb, tokens.Verb.DESIGNATE)
         self.assertEqual(token_list, ['200-1-a', '200-1-b'])
         self.assertEqual(destination, '200-Subpart-J')
-
 
     def test_make_amendments_subpart(self):
         token_list = self.paragraph_token_list()

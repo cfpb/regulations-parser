@@ -5,7 +5,6 @@ import re
 from lxml import etree
 
 from regparser.grammar import amdpar, tokens
-from regparser.tree import struct
 from regparser.tree.xml_parser.reg_text import build_section
 
 
@@ -25,8 +24,8 @@ def remove_char(xml_node, char):
 
 
 def find_section(amdpar):
-    """ With an AMDPAR xml, return the first section 
-    sibling """ 
+    """ With an AMDPAR xml, return the first section
+    sibling """
     for sibling in amdpar.itersiblings():
         if sibling.tag == 'SECTION':
             return sibling
@@ -64,10 +63,8 @@ def parse_amdpar(par, initial_context):
     tokenized = context_to_paragraph(tokenized)
     tokenized = separate_tokenlist(tokenized, subpart)
     tokenized, final_context = compress_context(tokenized, initial_context)
-    amends = make_amendments(tokenized, subpart) #modify
-    #print amends
+    amends = make_amendments(tokenized, subpart)
     return amends, final_context
-
 
 
 def switch_passive(tokenized):
@@ -115,29 +112,34 @@ def context_to_paragraph(tokenized):
             converted[i] = tokens.Paragraph(token.label)
     return converted
 
+
 def is_designate_token(token):
     """ This is a designate token """
     designate = tokens.Verb.DESIGNATE
     return isinstance(token, tokens.Verb) and token.verb == designate
 
+
 def contains_one_designate_token(tokenized):
     designate_tokens = [t for t in tokenized if is_designate_token(t)]
     return len(designate_tokens) == 1
 
+
 def contains_one_tokenlist(tokenized):
     tokens_lists = [t for t in tokenized if isinstance(t, tokens.TokenList)]
-    return len(tokens_lists)  == 1
+    return len(tokens_lists) == 1
+
 
 def contains_one_context(tokenized):
     contexts = [t for t in tokenized if isinstance(t, tokens.Context)]
     return len(contexts) == 1
 
+
 def deal_with_subpart_adds(tokenized):
-    """If we have a designate verb, and a token list, we're going to 
-    change the context to a Paragraph. Because it's not a context, it's 
+    """If we have a designate verb, and a token list, we're going to
+    change the context to a Paragraph. Because it's not a context, it's
     part of the manipulation."""
 
-    #Ensure that we only have one of each: designate verb, a token list and 
+    #Ensure that we only have one of each: designate verb, a token list and
     #a context
     verb_exists = contains_one_designate_token(tokenized)
     list_exists = contains_one_tokenlist(tokenized)
@@ -158,7 +160,7 @@ def deal_with_subpart_adds(tokenized):
 def separate_tokenlist(tokenized, subpart=False):
     """When we come across a token list, separate it out into individual
     tokens"""
-    
+
     if subpart:
         return tokenized
     else:
@@ -233,15 +235,17 @@ def get_destination(tokenized, reg_part):
     destination = destination.label_text()
     return destination
 
+
 def handle_subpart_designate(tokenized):
     #Add verb
     verb = tokens.Verb.DESIGNATE
     #Convert token list to list of label_text
-    t_list  = [t for t in tokenized if isinstance(t, tokens.TokenList)][0]
+    t_list = [t for t in tokenized if isinstance(t, tokens.TokenList)][0]
     token_list = [t.label_text() for t in t_list]
 
     destination = get_destination(tokenized, t_list.tokens[0].label[0])
     return (verb, token_list, destination)
+
 
 def make_amendments(tokenized, subpart=False):
     """Convert a sequence of (normalized) tokens into a list of amendments"""
