@@ -221,26 +221,34 @@ def compress_context(tokenized, initial_context):
     return converted, context
 
 
+def get_destination(tokenized, reg_part):
+    """ In a designate scenario, get the destination label.  """
+
+    paragraphs = [t for t in tokenized if isinstance(t, tokens.Paragraph)]
+    destination = paragraphs[0]
+
+    if destination.label[0] is None:
+        destination.label[0] = reg_part
+
+    destination = destination.label_text()
+    return destination
+
+def handle_subpart_designate(tokenized):
+    #Add verb
+    verb = tokens.Verb.DESIGNATE
+    #Convert token list to list of label_text
+    t_list  = [t for t in tokenized if isinstance(t, tokens.TokenList)][0]
+    token_list = [t.label_text() for t in t_list]
+
+    destination = get_destination(tokenized, t_list.tokens[0].label[0])
+    return (verb, token_list, destination)
+
 def make_amendments(tokenized, subpart=False):
     """Convert a sequence of (normalized) tokens into a list of amendments"""
     verb = None
     amends = []
     if subpart:
-        #Add verb
-        verb = tokens.Verb.DESIGNATE
-        #Convert token list to list of label_text
-        t_list  = [t for t in tokenized if isinstance(t, tokens.TokenList)][0]
-        token_list = [t.label_text() for t in t_list]
-
-        #Extract and add destination as label_text
-        paragraphs = [t for t in tokenized if isinstance(t, tokens.Paragraph)]
-        destination = paragraphs[0]
-
-        if destination.label[0] is None:
-            reg_part = t_list.tokens[0].label[0]
-            destination.label[0] = reg_part
-        destination = destination.label_text()
-        amends.append((verb, token_list, destination))
+        amends.append(handle_subpart_designate(tokenized))
     else:
         for i in range(len(tokenized)):
             token = tokenized[i]
