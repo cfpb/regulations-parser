@@ -260,3 +260,81 @@ class NoticeDiffTests(TestCase):
         tokenized.append(tokens.Context(['200', '2']))
 
         self.assertFalse(contains_one_context(tokenized))
+
+    def paragraph_token_list(self):
+        paragraph_tokens = [
+            tokens.Paragraph(['200', '1', 'a']), 
+            tokens.Paragraph(['200', '1', 'b'])]
+        return tokens.TokenList(paragraph_tokens)
+
+    def test_deal_with_subpart_adds(self):
+        designate_token = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        token_list = self.paragraph_token_list()
+        context = tokens.Context(['Subpart', 'A'])
+
+        tokenized = [designate_token, token_list, context]
+
+        toks, subpart_added = deal_with_subpart_adds(tokenized)
+        self.assertTrue(subpart_added)
+        
+        paragraph_found = False
+        for t in toks:
+            self.assertFalse(isinstance(t, tokens.Context))
+
+            if isinstance(t, tokens.Paragraph):
+                self.assertEqual(t.label, ['Subpart', 'A'])
+                paragraph_found = True
+
+        self.assertTrue(contains_one_tokenlist(toks))
+        self.assertTrue(contains_one_designate_token(toks))
+        self.assertTrue(paragraph_found)
+
+    def test_deal_with_subpart_adds_no_subpart(self):
+        designate_token = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        token_list = self.paragraph_token_list()
+        tokenized = [designate_token, token_list]
+
+        toks, subpart_added = deal_with_subpart_adds(tokenized)
+        self.assertFalse(subpart_added)
+    
+    def test_separate_tokenlist_subpart(self):
+        token_list = self.paragraph_token_list()
+        tokenized = [token_list]
+
+        separated = separate_tokenlist(tokenized, True)
+        self.assertTrue(isinstance(separated[0], tokens.TokenList))
+
+    def test_get_destination_normal(self):
+        subpart_token = tokens.Paragraph(['205', 'Subpart', 'A'])
+        tokenized = [subpart_token]
+
+        self.assertEqual(get_destination(tokenized, '205'), '205-Subpart-A')
+
+    def test_get_destination_no_reg_part(self):
+        subpart_token = tokens.Paragraph([None, 'Subpart', 'J'])
+        tokenized = [subpart_token]
+
+        self.assertEqual(get_destination(tokenized, '205'), '205-Subpart-J')
+
+    def test_handle_subpart_designate(self):
+        token_list = self.paragraph_token_list()
+        subpart_token = tokens.Paragraph([None, 'Subpart', 'J'])
+        tokenized = [token_list, subpart_token]
+
+        verb, token_list, destination = handle_subpart_designate(tokenized)
+
+        self.assertEqual(verb, tokens.Verb.DESIGNATE)
+        self.assertEqual(token_list, ['200-1-a', '200-1-b'])
+        self.assertEqual(destination, '200-Subpart-J')
+
+
+    def test_make_amendments_subpart(self):
+        token_list = self.paragraph_token_list()
+        subpart_token = tokens.Paragraph([None, 'Subpart', 'J'])
+        tokenized = [token_list, subpart_token]
+        amends = make_amendments(tokenized, subpart=True)
+
+        verb, token_list, destination = amends[0]
+        self.assertEqual(verb, tokens.Verb.DESIGNATE)
+        self.assertEqual(token_list, ['200-1-a', '200-1-b'])
+        self.assertEqual(destination, '200-Subpart-J')
