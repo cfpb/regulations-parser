@@ -1,4 +1,5 @@
 import logging
+import copy
 
 from regparser.tree import struct
 from regparser.diff.treediff import node_to_dict
@@ -115,8 +116,10 @@ def flatten_tree(node_list, node):
     for c in node.children:
         flatten_tree(node_list, c)
 
-    node.children = []
-    node_list.append(node)
+    #Don't be destructive. 
+    no_kids = copy.deepcopy(node)
+    no_kids.children = []
+    node_list.append(no_kids)
 
 
 def remove_intro(l):
