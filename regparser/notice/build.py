@@ -44,8 +44,10 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     return notice
 
 
-def process_designate_subpart(al):
-    _, p_list, destination = al
+def process_designate_subpart(subpart_designate):
+    """ Process the designate amendment if it adds a subpart. """
+
+    _, p_list, destination = subpart_designate
     if 'Subpart' in destination:
         reg_part, sub_part = destination.split('-')
         _, subpart_letter = destination.split(':')
