@@ -297,13 +297,6 @@ class NoticeDiffTests(TestCase):
         toks, subpart_added = deal_with_subpart_adds(tokenized)
         self.assertFalse(subpart_added)
 
-    def test_separate_tokenlist_subpart(self):
-        token_list = self.paragraph_token_list()
-        tokenized = [token_list]
-
-        separated = separate_tokenlist(tokenized, True)
-        self.assertTrue(isinstance(separated[0], tokens.TokenList))
-
     def test_get_destination_normal(self):
         subpart_token = tokens.Paragraph(['205', 'Subpart', 'A'])
         tokenized = [subpart_token]

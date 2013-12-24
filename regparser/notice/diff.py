@@ -61,7 +61,8 @@ def parse_amdpar(par, initial_context):
     tokenized = switch_passive(tokenized)
     tokenized, subpart = deal_with_subpart_adds(tokenized)
     tokenized = context_to_paragraph(tokenized)
-    tokenized = separate_tokenlist(tokenized, subpart)
+    if not subpart:
+        tokenized = separate_tokenlist(tokenized)
     tokenized, final_context = compress_context(tokenized, initial_context)
     amends = make_amendments(tokenized, subpart)
     return amends, final_context
@@ -157,20 +158,17 @@ def deal_with_subpart_adds(tokenized):
         return tokenized, False
 
 
-def separate_tokenlist(tokenized, subpart=False):
+def separate_tokenlist(tokenized):
     """When we come across a token list, separate it out into individual
     tokens"""
 
-    if subpart:
-        return tokenized
-    else:
-        converted = []
-        for token in tokenized:
-            if isinstance(token, tokens.TokenList):
-                converted.extend(token.tokens)
-            else:
-                converted.append(token)
-        return converted
+    converted = []
+    for token in tokenized:
+        if isinstance(token, tokens.TokenList):
+            converted.extend(token.tokens)
+        else:
+            converted.append(token)
+    return converted
 
 
 def compress(lhs_label, rhs_label):
