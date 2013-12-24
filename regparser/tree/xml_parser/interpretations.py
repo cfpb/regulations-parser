@@ -80,6 +80,7 @@ def interp_inner_child(child_node, stack):
     #   Node for this paragraph
     n = Node(node_text[0:starts[0]], label=[first_marker],
              node_type=Node.INTERP)
+    n.tagged_text = text_with_tags
     last = stack.peek()
 
     if len(last) == 0:
@@ -126,6 +127,24 @@ def process_inner_children(inner_stack, node):
         interp_inner_child(c, inner_stack)
 
 
+def missing_levels(last_label, label):
+    """Sometimes we will have a 2(a)(1) without seeing 2(a). Fill in the
+    missing level"""
+    #   Only care about data before 'Interp'
+    label = list(itertools.takewhile(lambda l: l != Node.INTERP_MARK, label))
+    #   Find only the shared segments
+    zipped = zip(last_label, label)
+    shared = list(itertools.takewhile(lambda pair: pair[0] == pair[1], zipped))
+
+    missing = []
+    #   Add layers in between, but do not add the last; e.g. add 2(a) but
+    #   not 2(a)(1)
+    for i in range(len(shared) + 1, len(label)):
+        level_label = label[:i] + [Node.INTERP_MARK]
+        missing.append(Node(node_type=Node.INTERP, label=level_label))
+    return missing
+
+
 def build_supplement_tree(reg_part, node):
     """ Build the tree for the supplement section. """
     m_stack = NodeStack()
@@ -138,16 +157,18 @@ def build_supplement_tree(reg_part, node):
 
     supplement_nodes = [root]
 
+    last_label = [reg_part, Node.INTERP_MARK]
     for ch in node:
-        if is_title(ch):
-            label_text = text_to_labels(ch.text, reg_part)
-            if not label_text:
-                 continue
-            n = Node(node_type=Node.INTERP, label=label_text[0], title=ch.text)
-            node_level = 1
-
+        labels = [] if not is_title(ch) else text_to_labels(ch.text, reg_part)
+        if labels:
+            label = labels[0]
             inner_stack = NodeStack()
-            tree_utils.add_to_stack(inner_stack, node_level, n)
+            missing = missing_levels(last_label, label)
+            supplement_nodes.extend(missing)
+            last_label = label
+
+            node = Node(node_type=Node.INTERP, label=label, title=ch.text)
+            tree_utils.add_to_stack(inner_stack, 2, node)
 
             process_inner_children(inner_stack, ch)
 

@@ -12,10 +12,18 @@ regparser.grammar.amdpar module
     :undoc-members:
     :show-inheritance:
 
-regparser.grammar.common module
+regparser.grammar.appendix module
+---------------------------------
+
+.. automodule:: regparser.grammar.appendix
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+regparser.grammar.atomic module
 -------------------------------
 
-.. automodule:: regparser.grammar.common
+.. automodule:: regparser.grammar.atomic
     :members:
     :undoc-members:
     :show-inheritance:
@@ -36,26 +44,10 @@ regparser.grammar.external_citations module
     :undoc-members:
     :show-inheritance:
 
-regparser.grammar.internal_citations module
--------------------------------------------
-
-.. automodule:: regparser.grammar.internal_citations
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 regparser.grammar.interpretation_headers module
 -----------------------------------------------
 
 .. automodule:: regparser.grammar.interpretation_headers
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-regparser.grammar.rules module
-------------------------------
-
-.. automodule:: regparser.grammar.rules
     :members:
     :undoc-members:
     :show-inheritance:
@@ -72,6 +64,14 @@ regparser.grammar.tokens module
 -------------------------------
 
 .. automodule:: regparser.grammar.tokens
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+regparser.grammar.unified module
+--------------------------------
+
+.. automodule:: regparser.grammar.unified
     :members:
     :undoc-members:
     :show-inheritance:

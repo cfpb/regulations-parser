@@ -28,18 +28,18 @@ regparser.notice.diff module
     :undoc-members:
     :show-inheritance:
 
-regparser.notice.history module
--------------------------------
-
-.. automodule:: regparser.notice.history
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 regparser.notice.sxs module
 ---------------------------
 
 .. automodule:: regparser.notice.sxs
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+regparser.notice.util module
+----------------------------
+
+.. automodule:: regparser.notice.util
     :members:
     :undoc-members:
     :show-inheritance:

@@ -14,11 +14,17 @@ class Interpretations(Layer):
     def pre_process(self):
         """Create a lookup table for each interpretation"""
         def per_node(node):
-            if node.node_type == struct.Node.INTERP:
-                self.lookup_table[tuple(node.label[:-1])] = node
-            if node.title:
-                for label in text_to_labels(node.title, node.label[0]):
-                    self.lookup_table[tuple(label[:-1])] = node
+            if (node.node_type != struct.Node.INTERP
+                or node.label[-1] != struct.Node.INTERP_MARK):
+                    return
+
+            #   Always add a connection based on the interp's label
+            self.lookup_table[tuple(node.label[:-1])] = node
+
+            #   Also add connections based on the title
+            for label in text_to_labels(node.title or '', node.label[0],
+                                        warn=False):
+                self.lookup_table[tuple(label[:-1])] = node
         struct.walk(self.tree, per_node)
 
     def process(self, node):
