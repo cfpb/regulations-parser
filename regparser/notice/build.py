@@ -80,7 +80,8 @@ def process_amendments(notice, notice_xml):
 
         section_xml = find_section(par)
         if section_xml is not None:
-            section = reg_text.build_section(notice['cfr_part'], section_xml)
+            section = reg_text.build_from_section(
+                notice['cfr_part'], section_xml)[0]
             fixed_amended_labels = changes.fix_labels(amended_labels)
             adds_map = changes.match_labels_and_changes(
                 fixed_amended_labels, section)
