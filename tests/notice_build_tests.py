@@ -156,7 +156,7 @@ class NoticeBuildTest(TestCase):
 
     def test_process_amendments(self):
         xml = u"""
-        <REGTEXT PART="1005" TITLE="12">
+        <REGTEXT PART="105" TITLE="12">
         <SUBPART>
         <HD SOURCE="HED">Subpart A—General</HD>
         </SUBPART>
@@ -175,3 +175,29 @@ class NoticeBuildTest(TestCase):
         for l, c in notice['changes'].items():
             self.assertEqual(c['destination'], ['105', 'Subpart', 'A'])
             self.assertEqual(c['op'], 'assign')
+
+    def test_process_amendments_section(self):
+        xml = u"""
+            <REGTEXT PART="105" TITLE="12">
+            <AMDPAR> 
+            3. In § 105.1, revise paragraph (b) to read as follows:
+            </AMDPAR>
+            <SECTION>
+                <SECTNO>§ 105.1</SECTNO>
+                <SUBJECT>Purpose.</SUBJECT>
+                <STARS/>
+                <P>(b) This part carries out.</P>
+            </SECTION>
+            </REGTEXT>
+        """
+
+        notice_xml = etree.fromstring(xml)
+        notice = {'cfr_part':'105'}
+        build.process_amendments(notice, notice_xml)
+
+        self.assertEqual(notice['changes'].keys(), ['105-1-b'])
+
+        changes = notice['changes']['105-1-b']
+        self.assertEqual(changes['op'], 'updated')
+        self.assertTrue(
+            changes['text'].startswith(u'(b) This part carries out.\n'))
