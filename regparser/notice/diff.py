@@ -228,21 +228,28 @@ def get_destination(tokenized, reg_part):
     destination = paragraphs[0]
 
     if destination.label[0] is None:
+        #Sometimes the destination label doesn't know the reg part. 
         destination.label[0] = reg_part
 
     destination = destination.label_text()
     return destination
 
 
-def handle_subpart_designate(tokenized):
-    #Add verb
-    verb = tokens.Verb.DESIGNATE
-    #Convert token list to list of label_text
-    t_list = [t for t in tokenized if isinstance(t, tokens.TokenList)][0]
-    token_list = [t.label_text() for t in t_list]
+def handle_subpart_amendment(tokenized):
+    """ Handle the situation where a new subpart is designated. """
 
-    destination = get_destination(tokenized, t_list.tokens[0].label[0])
-    return (verb, token_list, destination)
+    verb = tokens.Verb.DESIGNATE
+
+    token_lists = [t for t in tokenized if isinstance(t, tokens.TokenList)]
+
+    #There's only one token list of paragraphs, sections to be designated
+    tokens_to_be_designated = token_lists[0]
+    labels_to_be_designated = [t.label_text() for t in tokens_to_be_designated]
+    
+    reg_part = tokens_to_be_designated.tokens[0].label[0]
+    destination = get_destination(tokenized, reg_part)
+
+    return (verb, labels_to_be_designated, destination)
 
 
 def make_amendments(tokenized, subpart=False):
@@ -250,7 +257,7 @@ def make_amendments(tokenized, subpart=False):
     verb = None
     amends = []
     if subpart:
-        amends.append(handle_subpart_designate(tokenized))
+        amends.append(handle_subpart_amendment(tokenized))
     else:
         for i in range(len(tokenized)):
             token = tokenized[i]

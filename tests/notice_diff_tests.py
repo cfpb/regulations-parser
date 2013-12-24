@@ -314,7 +314,7 @@ class NoticeDiffTests(TestCase):
         subpart_token = tokens.Paragraph([None, 'Subpart', 'J'])
         tokenized = [token_list, subpart_token]
 
-        verb, token_list, destination = handle_subpart_designate(tokenized)
+        verb, token_list, destination = handle_subpart_amendment(tokenized)
 
         self.assertEqual(verb, tokens.Verb.DESIGNATE)
         self.assertEqual(token_list, ['200-1-a', '200-1-b'])
