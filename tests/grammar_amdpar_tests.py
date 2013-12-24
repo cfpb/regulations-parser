@@ -6,6 +6,19 @@ from regparser.grammar.amdpar import token_patterns
 
 class GrammarAmdParTests(TestCase):
 
+    def test_tokenlist_iteratable(self):
+        token_list = tokens.TokenList([
+            tokens.Paragraph([1005, None, 1]),
+            tokens.Paragraph([1005, None, 2]),
+            tokens.Paragraph([1005, None, 3]),
+        ])
+
+        count = 1
+        for t in token_list:
+            self.assertEqual(t.label, [1005, None, count])
+            count += 1
+        self.assertEqual(count, 4)
+
     def test_example1(self):
         text = u"In § 9876.1, revise paragraph (b) to read as follows"
         result = [m[0] for m,_,_ in token_patterns.scanString(text)]

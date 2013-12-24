@@ -24,6 +24,14 @@ def remove_char(xml_node, char):
     return etree.fromstring(as_str.replace(char, ''))
 
 
+def find_section(amdpar):
+    """ With an AMDPAR xml, return the first section
+    sibling """
+    for sibling in amdpar.itersiblings():
+        if sibling.tag == 'SECTION':
+            return sibling
+
+
 def find_diffs(xml_tree, cfr_part):
     """Find the XML nodes that are needed to determine diffs"""
     last_context = []
@@ -49,14 +57,14 @@ def node_is_empty(node):
 
 def parse_amdpar(par, initial_context):
     text = etree.tostring(par, encoding=unicode)
-    #print ""
-    #print text.strip()
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
     tokenized = switch_passive(tokenized)
+    tokenized, subpart = deal_with_subpart_adds(tokenized)
     tokenized = context_to_paragraph(tokenized)
-    tokenized = separate_tokenlist(tokenized)
+    if not subpart:
+        tokenized = separate_tokenlist(tokenized)
     tokenized, final_context = compress_context(tokenized, initial_context)
-    amends = make_amendments(tokenized)
+    amends = make_amendments(tokenized, subpart)
     return amends, final_context
 
 
@@ -106,9 +114,54 @@ def context_to_paragraph(tokenized):
     return converted
 
 
+def is_designate_token(token):
+    """ This is a designate token """
+    designate = tokens.Verb.DESIGNATE
+    return isinstance(token, tokens.Verb) and token.verb == designate
+
+
+def contains_one_designate_token(tokenized):
+    designate_tokens = [t for t in tokenized if is_designate_token(t)]
+    return len(designate_tokens) == 1
+
+
+def contains_one_tokenlist(tokenized):
+    tokens_lists = [t for t in tokenized if isinstance(t, tokens.TokenList)]
+    return len(tokens_lists) == 1
+
+
+def contains_one_context(tokenized):
+    contexts = [t for t in tokenized if isinstance(t, tokens.Context)]
+    return len(contexts) == 1
+
+
+def deal_with_subpart_adds(tokenized):
+    """If we have a designate verb, and a token list, we're going to
+    change the context to a Paragraph. Because it's not a context, it's
+    part of the manipulation."""
+
+    #Ensure that we only have one of each: designate verb, a token list and
+    #a context
+    verb_exists = contains_one_designate_token(tokenized)
+    list_exists = contains_one_tokenlist(tokenized)
+    context_exists = contains_one_context(tokenized)
+
+    if verb_exists and list_exists and context_exists:
+        token_list = []
+        for token in tokenized:
+            if isinstance(token, tokens.Context):
+                token_list.append(tokens.Paragraph(token.label))
+            else:
+                token_list.append(token)
+        return token_list, True
+    else:
+        return tokenized, False
+
+
 def separate_tokenlist(tokenized):
     """When we come across a token list, separate it out into individual
     tokens"""
+
     converted = []
     for token in tokenized:
         if isinstance(token, tokens.TokenList):
@@ -168,22 +221,55 @@ def compress_context(tokenized, initial_context):
     return converted, context
 
 
-def make_amendments(tokenized):
+def get_destination(tokenized, reg_part):
+    """ In a designate scenario, get the destination label.  """
+
+    paragraphs = [t for t in tokenized if isinstance(t, tokens.Paragraph)]
+    destination = paragraphs[0]
+
+    if destination.label[0] is None:
+        #Sometimes the destination label doesn't know the reg part. 
+        destination.label[0] = reg_part
+
+    destination = destination.label_text()
+    return destination
+
+
+def handle_subpart_amendment(tokenized):
+    """ Handle the situation where a new subpart is designated. """
+
+    verb = tokens.Verb.DESIGNATE
+
+    token_lists = [t for t in tokenized if isinstance(t, tokens.TokenList)]
+
+    #There's only one token list of paragraphs, sections to be designated
+    tokens_to_be_designated = token_lists[0]
+    labels_to_be_designated = [t.label_text() for t in tokens_to_be_designated]
+    
+    reg_part = tokens_to_be_designated.tokens[0].label[0]
+    destination = get_destination(tokenized, reg_part)
+
+    return (verb, labels_to_be_designated, destination)
+
+
+def make_amendments(tokenized, subpart=False):
     """Convert a sequence of (normalized) tokens into a list of amendments"""
     verb = None
     amends = []
-    for i in range(len(tokenized)):
-        token = tokenized[i]
-
-        if isinstance(token, tokens.Verb):
-            assert token.active
-            verb = token.verb
-        elif isinstance(token, tokens.Paragraph):
-            if verb == tokens.Verb.MOVE:
-                if isinstance(tokenized[i-1], tokens.Paragraph):
-                    amends.append((
-                        verb,
-                        (tokenized[i-1].label_text(), token.label_text())))
-            elif verb:
-                amends.append((verb, token.label_text()))
+    if subpart:
+        amends.append(handle_subpart_amendment(tokenized))
+    else:
+        for i in range(len(tokenized)):
+            token = tokenized[i]
+            if isinstance(token, tokens.Verb):
+                assert token.active
+                verb = token.verb
+            elif isinstance(token, tokens.Paragraph):
+                if verb == tokens.Verb.MOVE:
+                    if isinstance(tokenized[i-1], tokens.Paragraph):
+                        amends.append((
+                            verb,
+                            (tokenized[i-1].label_text(), token.label_text())))
+                elif verb:
+                    amends.append((verb, token.label_text()))
     return amends

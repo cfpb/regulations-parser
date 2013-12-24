@@ -20,6 +20,7 @@ class Verb:
     POST = 'POST'
     MOVE = 'MOVE'
     DELETE = 'DELETE'
+    DESIGNATE = 'DESIGNATE'
 
     def __init__(self, verb, active):
         self.verb = verb
@@ -96,3 +97,6 @@ class TokenList:
 
     def __eq__(self, other):
         return repr(self) == repr(other)
+
+    def __iter__(self):
+        return iter(self.tokens)
