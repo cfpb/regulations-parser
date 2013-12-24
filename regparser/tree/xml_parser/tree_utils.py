@@ -59,7 +59,7 @@ def split_text(text, tokens):
     return texts
 
 
-first_markers = [re.compile(ur'[\s|^|,|-|—]\(('
+first_markers = [re.compile(ur'[\s|^|,|-|—|>]\(('
                             + re.escape(level[0]) + ')\)')
                  for level in p_levels]
 
@@ -68,6 +68,7 @@ def get_collapsed_markers(text):
     """Not all paragraph markers are at the beginning of of the text. This
     grabs inner markers like (1) and (i) here:
     (c) cContent —(1) 1Content (i) iContent"""
+
     matches = []
     for marker in first_markers:
         lst = [m for m in marker.finditer(text) if m.start() > 0]

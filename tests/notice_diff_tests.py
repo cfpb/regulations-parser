@@ -180,3 +180,153 @@ class NoticeDiffTests(TestCase):
             tokens.Context(['2']),
             tokens.Context(['3']),
         ])
+
+    def test_find_section(self):
+        xml = u"""
+        <REGTEXT>
+        <AMDPAR>
+            In 200.1 revise paragraph (b) as follows:
+        </AMDPAR>
+        <SECTION>
+            <SECTNO>200.1</SECTNO>
+            <SUBJECT>Authority and Purpose.</SUBJECT>
+            <P> (b) This part is very important. </P>
+        </SECTION>
+        <AMDPAR>
+            In 200.3 revise paragraph (b)(1) as follows:
+        </AMDPAR>
+        <SECTION>
+            <SECTNO>200.3</SECTNO>
+            <SUBJECT>Definitions</SUBJECT>
+            <P> (b)(1) Define a term here. </P>
+        </SECTION>
+        </REGTEXT>"""
+
+        notice_xml = etree.fromstring(xml)
+        amdpar_xml = notice_xml.xpath('//AMDPAR')[0]
+        section = find_section(amdpar_xml)
+        self.assertEqual(section.tag, 'SECTION')
+
+        sectno_xml = section.xpath('//SECTNO')[0]
+        self.assertEqual(sectno_xml.text, '200.1')
+
+    def test_is_designate_token(self):
+        class Noun:
+            def __init__(self, noun):
+                self.noun = noun
+
+        token = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        self.assertTrue(is_designate_token(token))
+
+        token = tokens.Verb(tokens.Verb.MOVE, True)
+        self.assertFalse(is_designate_token(token))
+
+        token = Noun('TABLE')
+        self.assertFalse(is_designate_token(token))
+
+    def list_of_tokens(self):
+        designate_token = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        move_token = tokens.Verb(tokens.Verb.MOVE, True)
+        return [designate_token, move_token]
+
+    def test_contains_one_designate_token(self):
+        tokenized = self.list_of_tokens()
+        self.assertTrue(contains_one_designate_token(tokenized))
+
+        designate_token_2 = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        tokenized.append(designate_token_2)
+        self.assertFalse(contains_one_designate_token(tokenized))
+
+    def test_contains_one_tokenlist(self):
+        token_list = self.list_of_tokens()
+
+        designate_token_2 = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        tokenized = [tokens.TokenList(token_list), designate_token_2]
+        self.assertTrue(contains_one_tokenlist(tokenized))
+
+        tokenized = [tokens.TokenList(token_list),
+                     designate_token_2, tokens.TokenList(token_list)]
+        self.assertFalse(contains_one_tokenlist(tokenized))
+
+    def test_contains_one_context(self):
+        tokenized = self.list_of_tokens()
+        context = tokens.Context(['200', '1'])
+        tokenized.append(context)
+
+        self.assertTrue(contains_one_context(tokenized))
+
+        designate_token = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        tokenized.append(designate_token)
+        tokenized.append(tokens.Context(['200', '2']))
+
+        self.assertFalse(contains_one_context(tokenized))
+
+    def paragraph_token_list(self):
+        paragraph_tokens = [
+            tokens.Paragraph(['200', '1', 'a']),
+            tokens.Paragraph(['200', '1', 'b'])]
+        return tokens.TokenList(paragraph_tokens)
+
+    def test_deal_with_subpart_adds(self):
+        designate_token = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        token_list = self.paragraph_token_list()
+        context = tokens.Context(['Subpart', 'A'])
+
+        tokenized = [designate_token, token_list, context]
+
+        toks, subpart_added = deal_with_subpart_adds(tokenized)
+        self.assertTrue(subpart_added)
+
+        paragraph_found = False
+        for t in toks:
+            self.assertFalse(isinstance(t, tokens.Context))
+
+            if isinstance(t, tokens.Paragraph):
+                self.assertEqual(t.label, ['Subpart', 'A'])
+                paragraph_found = True
+
+        self.assertTrue(contains_one_tokenlist(toks))
+        self.assertTrue(contains_one_designate_token(toks))
+        self.assertTrue(paragraph_found)
+
+    def test_deal_with_subpart_adds_no_subpart(self):
+        designate_token = tokens.Verb(tokens.Verb.DESIGNATE, True)
+        token_list = self.paragraph_token_list()
+        tokenized = [designate_token, token_list]
+
+        toks, subpart_added = deal_with_subpart_adds(tokenized)
+        self.assertFalse(subpart_added)
+
+    def test_get_destination_normal(self):
+        subpart_token = tokens.Paragraph(['205', 'Subpart', 'A'])
+        tokenized = [subpart_token]
+
+        self.assertEqual(get_destination(tokenized, '205'), '205-Subpart-A')
+
+    def test_get_destination_no_reg_part(self):
+        subpart_token = tokens.Paragraph([None, 'Subpart', 'J'])
+        tokenized = [subpart_token]
+
+        self.assertEqual(get_destination(tokenized, '205'), '205-Subpart-J')
+
+    def test_handle_subpart_designate(self):
+        token_list = self.paragraph_token_list()
+        subpart_token = tokens.Paragraph([None, 'Subpart', 'J'])
+        tokenized = [token_list, subpart_token]
+
+        verb, token_list, destination = handle_subpart_amendment(tokenized)
+
+        self.assertEqual(verb, tokens.Verb.DESIGNATE)
+        self.assertEqual(token_list, ['200-1-a', '200-1-b'])
+        self.assertEqual(destination, '200-Subpart-J')
+
+    def test_make_amendments_subpart(self):
+        token_list = self.paragraph_token_list()
+        subpart_token = tokens.Paragraph([None, 'Subpart', 'J'])
+        tokenized = [token_list, subpart_token]
+        amends = make_amendments(tokenized, subpart=True)
+
+        verb, token_list, destination = amends[0]
+        self.assertEqual(verb, tokens.Verb.DESIGNATE)
+        self.assertEqual(token_list, ['200-1-a', '200-1-b'])
+        self.assertEqual(destination, '200-Subpart-J')
