@@ -19,7 +19,7 @@ class ParagraphMarkers(Layer):
     def marker(node):
         m = [l for l in node.label if l != Node.INTERP_MARK][-1]
 
-        if 'Interpretations' in node.label or 'Interp' in node.label:
+        if node.node_type == Node.INTERP:
             m = m + '.'
         else:
             m = '(%s)' % m

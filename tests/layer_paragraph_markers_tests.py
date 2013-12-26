@@ -3,6 +3,7 @@ from unittest import TestCase
 from regparser.layer.paragraph_markers import ParagraphMarkers
 from regparser.tree.struct import Node
 
+
 class ParagraphMarkersTest(TestCase):
 
     def test_process_no_results(self):
@@ -17,25 +18,28 @@ class ParagraphMarkersTest(TestCase):
             Node("Later (a)", label=["a"])
         ))
         self.assertEqual(None, pm.process(
-            Node("(a) Interpretation", label=["a", Node.INTERP_MARK])
+            Node("(a) Interpretation", label=["a", Node.INTERP_MARK],
+                 node_type=Node.INTERP)
         ))
 
     def test_process_with_results(self):
         pm = ParagraphMarkers(None)
-        self.assertEqual(pm.process(Node("(c) Paragraph", label=['c'])), [{
-                "text": "(c)", "locations": [0]
-        }])
+        self.assertEqual(pm.process(Node("(c) Paragraph", label=['c'])),
+                         [{"text": "(c)", "locations": [0]}])
         self.assertEqual(
             pm.process(Node("\n(vi) Paragraph", label=['c', 'vi'])), [{
                 "text": "(vi)", "locations": [0]
             }]
         )
         self.assertEqual(
-            pm.process(Node("ii. Paragraph", label=['ii', Node.INTERP_MARK])), 
-            [{ "text": "ii.", "locations": [0] }]
+            pm.process(Node("ii. Paragraph",
+                            label=['ii', Node.INTERP_MARK],
+                            node_type=Node.INTERP)),
+            [{"text": "ii.", "locations": [0]}]
         )
         self.assertEqual(
-            pm.process(Node("A. Paragraph", label=['ii', 'A',
-                Node.INTERP_MARK])), 
-            [{ "text": "A.", "locations": [0] }]
+            pm.process(Node("A. Paragraph",
+                            label=['ii', 'A', Node.INTERP_MARK],
+                            node_type=Node.INTERP)),
+            [{"text": "A.", "locations": [0]}]
         )
