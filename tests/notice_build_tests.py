@@ -179,7 +179,7 @@ class NoticeBuildTest(TestCase):
     def test_process_amendments_section(self):
         xml = u"""
             <REGTEXT PART="105" TITLE="12">
-            <AMDPAR> 
+            <AMDPAR>
             3. In § 105.1, revise paragraph (b) to read as follows:
             </AMDPAR>
             <SECTION>
@@ -192,7 +192,7 @@ class NoticeBuildTest(TestCase):
         """
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part':'105'}
+        notice = {'cfr_part': '105'}
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual(notice['changes'].keys(), ['105-1-b'])
@@ -206,7 +206,7 @@ class NoticeBuildTest(TestCase):
         xml = u"""
             <RULE>
             <REGTEXT PART="105" TITLE="12">
-            <AMDPAR> 
+            <AMDPAR>
             3. In § 105.1, revise paragraph (b) to read as follows:
             </AMDPAR>
             <SECTION>
@@ -247,15 +247,15 @@ class NoticeBuildTest(TestCase):
         par = notice_xml.xpath('//AMDPAR')[1]
 
         amended_label = ('POST', '105-Subpart:B')
-        notice = {'cfr_part':'105'}
+        notice = {'cfr_part': '105'}
         changes = build.process_new_subpart(notice, amended_label, par)
 
-        new_nodes_added =['105-Subpart-B', '105-30', '105-30-a'] 
+        new_nodes_added = ['105-Subpart-B', '105-30', '105-30-a']
         self.assertEqual(new_nodes_added, changes.keys())
 
         for l, n in changes.items():
             self.assertEqual(n['op'], 'updated')
-        
+
         self.assertEqual(changes['105-Subpart-B']['node_type'], 'subpart')
 
     def test_process_amendments_subpart(self):

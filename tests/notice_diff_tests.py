@@ -235,7 +235,6 @@ class NoticeDiffTests(TestCase):
         headings = [s for s in subpart if s.tag == 'HD']
         self.assertEqual(headings[0].text, u"Subpart B—Requirements")
 
-
     def test_is_designate_token(self):
         class Noun:
             def __init__(self, noun):
