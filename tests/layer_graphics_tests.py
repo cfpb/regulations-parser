@@ -1,54 +1,56 @@
 from unittest import TestCase
 
+from mock import patch
+
 from regparser.layer.graphics import Graphics
 from regparser.tree.struct import Node
 import settings
 
+
 class LayerGraphicsTest(TestCase):
 
     def setUp(self):
-        self.overrides = settings.IMAGE_OVERRIDES
         self.default_url = settings.DEFAULT_IMAGE_URL
 
     def tearDown(self):
-        settings.IMAGE_OVERRIDES = self.overrides
         settings.DEFAULT_IMAGE_URL = self.default_url
 
     def test_process(self):
         node = Node("Testing ![ex](ABCD) then some more XXX " +
-            "some more ![222](XXX) followed by ![ex](ABCD) and XXX " +
-            "and ![](NOTEXT)")
+                    "some more ![222](XXX) followed by ![ex](ABCD) and XXX " +
+                    "and ![](NOTEXT)")
         g = Graphics(None)
         result = g.process(node)
         self.assertEqual(3, len(result))
         found = [False, False, False]
         for res in result:
             if (res['text'] == '![ex](ABCD)'
-                and 'ABCD' in res['url']
-                and res['alt'] == 'ex'
-                and res['locations'] == [0, 1]):
+                    and 'ABCD' in res['url']
+                    and res['alt'] == 'ex'
+                    and res['locations'] == [0, 1]):
                 found[0] = True
             elif (res['text'] == '![222](XXX)'
-                and 'XXX' in res['url']
-                and res['alt'] == '222'
-                and res['locations'] == [0]):
+                  and 'XXX' in res['url']
+                  and res['alt'] == '222'
+                  and res['locations'] == [0]):
                 found[1] = True
             elif (res['text'] == '![](NOTEXT)'
-                and 'NOTEXT' in res['url']
-                and res['alt'] == ''
-                and res['locations'] == [0]):
+                  and 'NOTEXT' in res['url']
+                  and res['alt'] == ''
+                  and res['locations'] == [0]):
                 found[2] = True
 
         self.assertEqual([True, True, True], found)
 
     def test_process_format(self):
-        node = Node("![A88 Something](ER22MY13.257)")
+        node = Node("![A88 Something](ER22MY13.257-1)")
         g = Graphics(None)
         self.assertEqual(1, len(g.process(node)))
 
-    def test_process_custom_url(self):
+    @patch('regparser.layer.graphics.content')
+    def test_process_custom_url(self, content):
         settings.DEFAULT_IMAGE_URL = ":::::%s:::::"
-        settings.IMAGE_OVERRIDES = {"a": "AAA", "f": "F8"}
+        content.ImageOverrides.return_value = {"a": "AAA", "f": "F8"}
 
         node = Node("![Alt1](img1)   ![Alt2](f)  ![Alt3](a)")
         g = Graphics(None)

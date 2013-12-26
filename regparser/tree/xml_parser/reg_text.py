@@ -4,6 +4,7 @@ import logging
 
 from lxml import etree
 
+from regparser import content
 from regparser.tree.struct import Node
 from regparser.tree.paragraph import p_levels
 from regparser.tree.node_stack import NodeStack
@@ -30,12 +31,12 @@ def determine_level(c, current_level, next_marker=None):
         #   Check if we can be certain using the following marker
         for pot_level, pot_idx in potential:
             for next_level, next_idx in following:
-                if (    #   E.g. i followed by A or i followed by 1
-                    (next_idx == 0 and next_level == pot_level + 1)
-                    or  #   E.g. i followed by ii
-                    (next_level == pot_level and next_idx == pot_idx + 1)
-                    or  #   E.g. i followed by 3
-                    (next_level < pot_level and next_idx > 0)):
+                if (    # E.g. i followed by A or i followed by 1
+                        (next_idx == 0 and next_level == pot_level + 1)
+                        or  # E.g. i followed by ii
+                        (next_level == pot_level and next_idx == pot_idx + 1)
+                        or  # E.g. i followed by 3
+                        (next_level < pot_level and next_idx > 0)):
                     return pot_level + 1
         logging.warning("Ambiguous marker (%s) not followed by something "
                         + "disambiguating (%s)", c, next_marker)
@@ -70,8 +71,23 @@ def get_title(reg_doc):
     return title
 
 
+def preprocess_xml(xml):
+    """This transforms the read XML through macros. Each macro consists of
+    an xpath and a replacement xml string"""
+    for path, replacement in content.Macros():
+        replacement = etree.fromstring('<ROOT>' + replacement + '</ROOT>')
+        for node in xml.xpath(path):
+            parent = node.getparent()
+            idx = parent.index(node)
+            parent.remove(node)
+            for repl in replacement:
+                parent.insert(idx, repl)
+                idx += 1
+
+
 def build_tree(reg_xml):
     doc = etree.fromstring(reg_xml)
+    preprocess_xml(doc)
 
     reg_part = get_reg_part(doc)
     title = get_title(doc)
@@ -93,7 +109,7 @@ def build_tree(reg_xml):
         empty_part.children = sections
         tree.children = [empty_part]
 
-    non_reg_sections = build_non_reg_text(reg_xml, reg_part)
+    non_reg_sections = build_non_reg_text(doc, reg_part)
     tree.children += non_reg_sections
 
     return tree
