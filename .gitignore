@@ -4,5 +4,6 @@
 local_settings.py
 
 regulations
+regcontent
 
 docs/_build
