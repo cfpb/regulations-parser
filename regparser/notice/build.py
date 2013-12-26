@@ -81,6 +81,7 @@ def process_amendments(notice, notice_xml):
     context = []
     amends = []
     notice_changes = {}
+
     for par in notice_xml.xpath('//AMDPAR'):
         amended_labels, context = parse_amdpar(par, context)
 

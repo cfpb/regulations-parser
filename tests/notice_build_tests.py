@@ -202,8 +202,20 @@ class NoticeBuildTest(TestCase):
         self.assertTrue(
             changes['text'].startswith(u'(b) This part carries out.\n'))
 
-    def test_process_new_subpart(self):
+    def new_subpart_xml(self):
         xml = u"""
+            <RULE>
+            <REGTEXT PART="105" TITLE="12">
+            <AMDPAR> 
+            3. In § 105.1, revise paragraph (b) to read as follows:
+            </AMDPAR>
+            <SECTION>
+                <SECTNO>§ 105.1</SECTNO>
+                <SUBJECT>Purpose.</SUBJECT>
+                <STARS/>
+                <P>(b) This part carries out.</P>
+            </SECTION>
+            </REGTEXT>
            <REGTEXT PART="105" TITLE="12">
             <AMDPAR>
                 6. Add subpart B to read as follows:
@@ -224,9 +236,15 @@ class NoticeBuildTest(TestCase):
                     <P>(a) "Agent" means agent.</P>
                 </SECTION>
             </SUBPART>
-           </REGTEXT>"""
+           </REGTEXT>
+           </RULE>"""
+
+        return xml
+
+    def test_process_new_subpart(self):
+        xml = self.new_subpart_xml()
         notice_xml = etree.fromstring(xml)
-        par = notice_xml.xpath('//AMDPAR')[0]
+        par = notice_xml.xpath('//AMDPAR')[1]
 
         amended_label = ('POST', '105-Subpart:B')
         notice = {'cfr_part':'105'}
@@ -239,3 +257,13 @@ class NoticeBuildTest(TestCase):
             self.assertEqual(n['op'], 'updated')
         
         self.assertEqual(changes['105-Subpart-B']['node_type'], 'subpart')
+
+    def test_process_amendments_subpart(self):
+        xml = self.new_subpart_xml()
+        notice_xml = etree.fromstring(xml)
+        notice = {'cfr_part':'105'}
+        build.process_amendments(notice, notice_xml)
+
+        self.assertTrue('105-Subpart-B' in notice['changes'].keys())
+        self.assertTrue('105-30-a' in notice['changes'].keys())
+        self.assertTrue('105-30' in notice['changes'].keys())
