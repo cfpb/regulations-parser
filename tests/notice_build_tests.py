@@ -260,6 +260,7 @@ class NoticeBuildTest(TestCase):
 
     def test_process_amendments_subpart(self):
         xml = self.new_subpart_xml()
+
         notice_xml = etree.fromstring(xml)
         notice = {'cfr_part':'105'}
         build.process_amendments(notice, notice_xml)
@@ -267,3 +268,25 @@ class NoticeBuildTest(TestCase):
         self.assertTrue('105-Subpart-B' in notice['changes'].keys())
         self.assertTrue('105-30-a' in notice['changes'].keys())
         self.assertTrue('105-30' in notice['changes'].keys())
+
+    def test_process_amendments_other_reg(self):
+        """Some notices apply to multiple regs. For now, just ignore the
+        sections not associated with the reg we're focused on"""
+        xml = u"""
+            <REGTEXT PART="106" TITLE="12">
+            <AMDPAR> 
+            3. In § 106.1, revise paragraph (a) to read as follows:
+            </AMDPAR>
+            <SECTION>
+                <SECTNO>§ 106.1</SECTNO>
+                <SUBJECT>Purpose.</SUBJECT>
+                <P>(a) Content</P>
+            </SECTION>
+            </REGTEXT>
+        """
+
+        notice_xml = etree.fromstring(xml)
+        notice = {'cfr_part':'105'}
+        build.process_amendments(notice, notice_xml)
+
+        self.assertEqual({}, notice['changes'])

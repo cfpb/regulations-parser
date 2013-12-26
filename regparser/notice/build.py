@@ -93,19 +93,19 @@ def process_amendments(notice, notice_xml):
 
         section_xml = find_section(par)
         if section_xml is not None:
-            section = reg_text.build_from_section(
-                notice['cfr_part'], section_xml)[0]
-            fixed_amended_labels = changes.fix_labels(amended_labels)
-            adds_map = changes.match_labels_and_changes(
-                fixed_amended_labels, section)
+            for section in reg_text.build_from_section(
+                    notice['cfr_part'], section_xml):
+                fixed_amended_labels = changes.fix_labels(amended_labels)
+                adds_map = changes.match_labels_and_changes(
+                    fixed_amended_labels, section)
 
-            for label, amendment in adds_map.items():
-                if amendment['action'] == 'updated':
-                    nodes = changes.create_add_amendment(amendment['node'])
-                    for n in nodes:
-                        notice_changes.update(n)
-                elif amendment['action'] == 'deleted':
-                    notice_changes.update({label: {'op': 'deleted'}})
+                for label, amendment in adds_map.items():
+                    if amendment['action'] == 'updated':
+                        nodes = changes.create_add_amendment(amendment['node'])
+                        for n in nodes:
+                            notice_changes.update(n)
+                    elif amendment['action'] == 'deleted':
+                        notice_changes.update({label: {'op': 'deleted'}})
         amends.extend(amended_labels)
     if amends:
         notice['amendments'] = amends
