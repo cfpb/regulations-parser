@@ -2,7 +2,7 @@
 import string
 
 from pyparsing import CaselessLiteral, Literal, OneOrMore, Optional, Regex
-from pyparsing import Suppress, Word, WordEnd, WordStart
+from pyparsing import Suppress, Word, WordEnd, WordStart, LineEnd
 
 from regparser.grammar import atomic, tokens, unified
 from regparser.grammar.utils import Marker, WordBoundaries
@@ -236,3 +236,8 @@ token_patterns = (
     #   Must come after intro_text_of
     | intro_text
 )
+
+subpart_label = (atomic.part + Suppress('-')
+                 + atomic.subpart_marker + Suppress(':')
+                 + Word(string.ascii_uppercase, max=1) 
+                 + LineEnd())

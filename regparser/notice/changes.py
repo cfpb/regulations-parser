@@ -48,14 +48,14 @@ def resolve_candidates(amend_map, warn=True):
     for label, node in amend_map.items():
         if 'node' in node:
             node_label = node['node'].label_id()
-            if node['candidate']: 
+            if node['candidate']:
                 if node_label not in amend_map:
                     node['node'].label = label.split('-')
                 else:
                     del amend_map[label]
                     if warn:
                         mesg = 'Unable to match amendment'
-                        mesg += 'to change for: %s ' %  label
+                        mesg += 'to change for: %s ' % label
                         logging.warning(mesg)
 
 
@@ -116,7 +116,7 @@ def flatten_tree(node_list, node):
     for c in node.children:
         flatten_tree(node_list, c)
 
-    #Don't be destructive. 
+    #Don't be destructive.
     no_kids = copy.deepcopy(node)
     no_kids.children = []
     node_list.append(no_kids)

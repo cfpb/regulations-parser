@@ -179,7 +179,7 @@ class NoticeBuildTest(TestCase):
     def test_process_amendments_section(self):
         xml = u"""
             <REGTEXT PART="105" TITLE="12">
-            <AMDPAR> 
+            <AMDPAR>
             3. In § 105.1, revise paragraph (b) to read as follows:
             </AMDPAR>
             <SECTION>
@@ -192,7 +192,7 @@ class NoticeBuildTest(TestCase):
         """
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part':'105'}
+        notice = {'cfr_part': '105'}
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual(notice['changes'].keys(), ['105-1-b'])
@@ -201,3 +201,69 @@ class NoticeBuildTest(TestCase):
         self.assertEqual(changes['op'], 'updated')
         self.assertTrue(
             changes['text'].startswith(u'(b) This part carries out.\n'))
+
+    def new_subpart_xml(self):
+        xml = u"""
+            <RULE>
+            <REGTEXT PART="105" TITLE="12">
+            <AMDPAR>
+            3. In § 105.1, revise paragraph (b) to read as follows:
+            </AMDPAR>
+            <SECTION>
+                <SECTNO>§ 105.1</SECTNO>
+                <SUBJECT>Purpose.</SUBJECT>
+                <STARS/>
+                <P>(b) This part carries out.</P>
+            </SECTION>
+            </REGTEXT>
+           <REGTEXT PART="105" TITLE="12">
+            <AMDPAR>
+                6. Add subpart B to read as follows:
+            </AMDPAR>
+            <CONTENTS>
+                <SUBPART>
+                    <SECHD>Sec.</SECHD>
+                    <SECTNO>105.30</SECTNO>
+                    <SUBJECT>First In New Subpart.</SUBJECT>
+                </SUBPART>
+            </CONTENTS>
+            <SUBPART>
+                <HD SOURCE="HED">Subpart B—Requirements</HD>
+                <SECTION>
+                    <SECTNO>105.30</SECTNO>
+                    <SUBJECT>First In New Subpart</SUBJECT>
+                    <P>For purposes of this subpart, the follow apply:</P>
+                    <P>(a) "Agent" means agent.</P>
+                </SECTION>
+            </SUBPART>
+           </REGTEXT>
+           </RULE>"""
+
+        return xml
+
+    def test_process_new_subpart(self):
+        xml = self.new_subpart_xml()
+        notice_xml = etree.fromstring(xml)
+        par = notice_xml.xpath('//AMDPAR')[1]
+
+        amended_label = ('POST', '105-Subpart:B')
+        notice = {'cfr_part': '105'}
+        changes = build.process_new_subpart(notice, amended_label, par)
+
+        new_nodes_added = ['105-Subpart-B', '105-30', '105-30-a']
+        self.assertEqual(new_nodes_added, changes.keys())
+
+        for l, n in changes.items():
+            self.assertEqual(n['op'], 'updated')
+
+        self.assertEqual(changes['105-Subpart-B']['node_type'], 'subpart')
+
+    def test_process_amendments_subpart(self):
+        xml = self.new_subpart_xml()
+        notice_xml = etree.fromstring(xml)
+        notice = {'cfr_part':'105'}
+        build.process_amendments(notice, notice_xml)
+
+        self.assertTrue('105-Subpart-B' in notice['changes'].keys())
+        self.assertTrue('105-30-a' in notice['changes'].keys())
+        self.assertTrue('105-30' in notice['changes'].keys())

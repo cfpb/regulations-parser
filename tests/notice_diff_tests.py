@@ -210,6 +210,31 @@ class NoticeDiffTests(TestCase):
         sectno_xml = section.xpath('//SECTNO')[0]
         self.assertEqual(sectno_xml.text, '200.1')
 
+    def test_find_subpart(self):
+        xml = u"""
+           <REGTEXT PART="105" TITLE="12">
+            <AMDPAR>
+                6. Add subpart B to read as follows:
+            </AMDPAR>
+            <SUBPART>
+                <HD SOURCE="HED">Subpart B—Requirements</HD>
+                <SECTION>
+                    <SECTNO>105.30</SECTNO>
+                    <SUBJECT>First In New Subpart</SUBJECT>
+                    <P>For purposes of this subpart, the follow apply:</P>
+                    <P>(a) "Agent" means agent.</P>
+                </SECTION>
+            </SUBPART>
+           </REGTEXT>"""
+
+        notice_xml = etree.fromstring(xml)
+        amdpar_xml = notice_xml.xpath('//AMDPAR')[0]
+        subpart = find_subpart(amdpar_xml)
+        self.assertTrue(subpart is not None)
+
+        headings = [s for s in subpart if s.tag == 'HD']
+        self.assertEqual(headings[0].text, u"Subpart B—Requirements")
+
     def test_is_designate_token(self):
         class Noun:
             def __init__(self, noun):
@@ -330,3 +355,13 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(verb, tokens.Verb.DESIGNATE)
         self.assertEqual(token_list, ['200-1-a', '200-1-b'])
         self.assertEqual(destination, '200-Subpart-J')
+
+    def test_new_subpart_added(self):
+        amended_label = ('POST', '200-Subpart:B')
+        self.assertTrue(new_subpart_added(amended_label))
+
+        amended_label = ('PUT', '200-Subpart:B')
+        self.assertFalse(new_subpart_added(amended_label))
+
+        amended_label = ('POST', '200-Subpart:B-a-3')
+        self.assertFalse(new_subpart_added(amended_label))
