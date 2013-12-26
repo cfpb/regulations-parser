@@ -67,6 +67,17 @@ IMAGE_OVERRIDES = {}
 # list of strings: phrases which shouldn't be broken by definition links
 IGNORE_DEFINITIONS_IN = []
 
+OVERRIDES_SOURCES = [
+    'regcontent.overrides'
+]
+
+# list of iterable[(xpath, replacement-xml)] modules, which will be loaded
+# in regparser.content.Macros
+MACROS_SOURCES = [
+    'regcontent.macros'
+]
+
+
 try:
     from local_settings import *
 except ImportError:

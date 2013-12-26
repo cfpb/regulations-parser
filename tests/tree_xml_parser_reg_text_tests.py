@@ -2,21 +2,12 @@
 from unittest import TestCase
 
 from lxml import etree
+from mock import patch
 
 from regparser.tree.xml_parser.reg_text import *
-import settings
 
 
 class RegTextTest(TestCase):
-    def setUp(self):
-        self._original_macros = getattr(settings, 'MACROS', None)
-
-    def tearDown(self):
-        if self._original_macros is None and hasattr(settings, 'MACROS'):
-            del settings.MACROS
-        else:
-            settings.MACROS = self._original_macros
-
     def test_build_from_section_intro_text(self):
         xml = u"""
             <SECTION>
@@ -293,7 +284,8 @@ class RegTextTest(TestCase):
         self.assertEqual(('<E T="03">1</E>', ('(1) 1111',
                                               '(<E T="03">1</E>) 1111')), a1)
 
-    def test_preprocess_xml(self):
+    @patch('regparser.tree.xml_parser.reg_text.content')
+    def test_preprocess_xml(self, content):
         xml = etree.fromstring("""
         <CFRGRANULE>
           <PART>
@@ -305,7 +297,7 @@ class RegTextTest(TestCase):
             </APPENDIX>
           </PART>
         </CFRGRANULE>""")
-        settings.MACROS = [
+        content.Macros.return_value = [
             ("//GID[./text()='ABCD.0123']/..", """
               <HD SOURCE="HD1">Some Title</HD>
               <GPH DEEP="453" SPAN="2">

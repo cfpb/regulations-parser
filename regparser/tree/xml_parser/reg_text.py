@@ -4,13 +4,13 @@ import logging
 
 from lxml import etree
 
+from regparser import content
 from regparser.tree.struct import Node
 from regparser.tree.paragraph import p_levels
 from regparser.tree.node_stack import NodeStack
 from regparser.tree.xml_parser.appendices import build_non_reg_text
 from regparser.tree import reg_text
 from regparser.tree.xml_parser import tree_utils
-import settings
 
 
 def determine_level(c, current_level, next_marker=None):
@@ -74,7 +74,7 @@ def get_title(reg_doc):
 def preprocess_xml(xml):
     """This transforms the read XML through macros. Each macro consists of
     an xpath and a replacement xml string"""
-    for path, replacement in getattr(settings, 'MACROS', []):
+    for path, replacement in content.Macros():
         replacement = etree.fromstring('<ROOT>' + replacement + '</ROOT>')
         for node in xml.xpath(path):
             parent = node.getparent()
