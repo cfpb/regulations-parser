@@ -273,3 +273,10 @@ def make_amendments(tokenized, subpart=False):
                 elif verb:
                     amends.append((verb, token.label_text()))
     return amends
+
+def new_subpart_added(amended_label):   
+    """ Return True if label indicates that a new subpart was added. """
+
+    new_subpart = amended_label[0] == 'POST'
+    m = [t for t, _, _ in amdpar.subpart_label.scanString(amended_label[1])]
+    return len(m) > 0 and new_subpart

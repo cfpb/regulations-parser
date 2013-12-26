@@ -2,6 +2,7 @@ from lxml import etree
 import requests
 
 from regparser.notice.diff import parse_amdpar, find_section
+from regparser.notice.diff import new_subpart_added
 from regparser.notice.address import fetch_addresses
 from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
@@ -9,6 +10,7 @@ from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
 from regparser.notice import changes
 from regparser.tree.xml_parser import reg_text
 from regparser.tree import struct
+
 
 
 def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
@@ -77,6 +79,8 @@ def process_amendments(notice, notice_xml):
                 subpart_changes = process_designate_subpart(al)
                 if subpart_changes:
                     notice_changes.update(subpart_changes)
+            elif new_subpart_added(al):
+                print 'new subpart added'
 
         section_xml = find_section(par)
         if section_xml is not None:

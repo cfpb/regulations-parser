@@ -330,3 +330,13 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(verb, tokens.Verb.DESIGNATE)
         self.assertEqual(token_list, ['200-1-a', '200-1-b'])
         self.assertEqual(destination, '200-Subpart-J')
+
+    def test_new_subpart_added(self):
+        amended_label = ('POST', '200-Subpart:B')
+        self.assertTrue(new_subpart_added(amended_label))
+
+        amended_label = ('PUT', '200-Subpart:B')
+        self.assertFalse(new_subpart_added(amended_label))
+
+        amended_label = ('POST', '200-Subpart:B-a-3')
+        self.assertFalse(new_subpart_added(amended_label))
