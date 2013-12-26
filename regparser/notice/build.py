@@ -1,7 +1,7 @@
 from lxml import etree
 import requests
 
-from regparser.notice.diff import parse_amdpar, find_section
+from regparser.notice.diff import parse_amdpar, find_section, find_subpart
 from regparser.notice.diff import new_subpart_added, parse_subpart_label
 from regparser.notice.address import fetch_addresses
 from regparser.notice.sxs import find_section_by_section
@@ -64,12 +64,6 @@ def process_designate_subpart(subpart_designate):
                 'op': 'assign', 'destination': destination_label}
         return subpart_changes
 
-
-def find_subpart(par):
-    """ Look amongst an amdpar tag's siblings to find a subpart. """
-    for sibling in par.itersiblings():
-        if sibling.tag == 'SUBPART':
-            return sibling
 
 
 def process_new_subpart(notice, subpart_added, par):

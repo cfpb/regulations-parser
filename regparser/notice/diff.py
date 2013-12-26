@@ -31,6 +31,11 @@ def find_section(amdpar):
         if sibling.tag == 'SECTION':
             return sibling
 
+def find_subpart(amdpar):
+    """ Look amongst an amdpar tag's siblings to find a subpart. """
+    for sibling in amdpar.itersiblings():
+        if sibling.tag == 'SUBPART':
+            return sibling
 
 def find_diffs(xml_tree, cfr_part):
     """Find the XML nodes that are needed to determine diffs"""
@@ -280,3 +285,8 @@ def new_subpart_added(amended_label):
     new_subpart = amended_label[0] == 'POST'
     m = [t for t, _, _ in amdpar.subpart_label.scanString(amended_label[1])]
     return len(m) > 0 and new_subpart
+
+def parse_subpart_label(subpart_label):
+    m = [t for t, _, _ in amdpar.subpart_label.scanString(subpart_label)]
+    if len(m) > 0:
+        return m[0]
