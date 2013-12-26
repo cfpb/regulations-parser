@@ -262,7 +262,7 @@ class NoticeBuildTest(TestCase):
         xml = self.new_subpart_xml()
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part':'105'}
+        notice = {'cfr_part': '105'}
         build.process_amendments(notice, notice_xml)
 
         self.assertTrue('105-Subpart-B' in notice['changes'].keys())
@@ -274,7 +274,7 @@ class NoticeBuildTest(TestCase):
         sections not associated with the reg we're focused on"""
         xml = u"""
             <REGTEXT PART="106" TITLE="12">
-            <AMDPAR> 
+            <AMDPAR>
             3. In § 106.1, revise paragraph (a) to read as follows:
             </AMDPAR>
             <SECTION>
@@ -286,7 +286,7 @@ class NoticeBuildTest(TestCase):
         """
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part':'105'}
+        notice = {'cfr_part': '105'}
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual({}, notice['changes'])
