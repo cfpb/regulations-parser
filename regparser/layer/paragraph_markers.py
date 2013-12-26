@@ -6,8 +6,6 @@ class ParagraphMarkers(Layer):
 
     def process(self, node):
         """Look for any leading paragraph markers."""
-        if node.node_type == Node.APPENDIX:
-            return
         marker = ParagraphMarkers.marker(node)
         if node.text.strip().startswith(marker):
             return [{
@@ -20,7 +18,8 @@ class ParagraphMarkers(Layer):
         m = [l for l in node.label if l != Node.INTERP_MARK][-1]
 
         if node.node_type == Node.INTERP:
-            m = m + '.'
+            return m + '.'
+        elif node.node_type == Node.APPENDIX and node.text.startswith(m + '.'):
+            return m + '.'
         else:
-            m = '(%s)' % m
-        return m
+            return '(%s)' % m

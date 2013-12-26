@@ -21,6 +21,12 @@ class ParagraphMarkersTest(TestCase):
             Node("(a) Interpretation", label=["a", Node.INTERP_MARK],
                  node_type=Node.INTERP)
         ))
+        self.assertEqual(None, pm.process(Node("References (a)",
+                                               label=["111", "A", "a"],
+                                               node_type=Node.APPENDIX)))
+        self.assertEqual(None, pm.process(Node("References a.",
+                                               label=["111", "A", "a"],
+                                               node_type=Node.APPENDIX)))
 
     def test_process_with_results(self):
         pm = ParagraphMarkers(None)
@@ -43,3 +49,13 @@ class ParagraphMarkersTest(TestCase):
                             node_type=Node.INTERP)),
             [{"text": "A.", "locations": [0]}]
         )
+        self.assertEqual(
+            pm.process(Node("(a) Paragraph",
+                            label=['111', 'A', 'a'],
+                            node_type=Node.APPENDIX)),
+            [{'text': '(a)', 'locations': [0]}])
+        self.assertEqual(
+            pm.process(Node("a. Paragraph",
+                            label=['111', 'A', 'a'],
+                            node_type=Node.APPENDIX)),
+            [{'text': 'a.', 'locations': [0]}])
