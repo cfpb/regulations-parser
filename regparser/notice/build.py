@@ -2,15 +2,13 @@ from lxml import etree
 import requests
 
 from regparser.notice.diff import parse_amdpar, find_section, find_subpart
-from regparser.notice.diff import new_subpart_added, parse_subpart_label
+from regparser.notice.diff import new_subpart_added
 from regparser.notice.address import fetch_addresses
 from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
 from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
 from regparser.notice import changes
 from regparser.tree.xml_parser import reg_text
-from regparser.tree import struct
-
 
 
 def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
@@ -65,7 +63,6 @@ def process_designate_subpart(subpart_designate):
         return subpart_changes
 
 
-
 def process_new_subpart(notice, subpart_added, par):
     subpart_changes = {}
     subpart_xml = find_subpart(par)
@@ -74,6 +71,7 @@ def process_new_subpart(notice, subpart_added, par):
     for change in changes.create_add_amendment(subpart):
         subpart_changes.update(change)
     return subpart_changes
+
 
 def process_amendments(notice, notice_xml):
     """ Process the changes to the regulation that are expressed in the notice.
