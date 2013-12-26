@@ -2,7 +2,7 @@ from lxml import etree
 import requests
 
 from regparser.notice.diff import parse_amdpar, find_section
-from regparser.notice.diff import new_subpart_added
+from regparser.notice.diff import new_subpart_added, parse_subpart_label
 from regparser.notice.address import fetch_addresses
 from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
@@ -65,6 +65,22 @@ def process_designate_subpart(subpart_designate):
         return subpart_changes
 
 
+def find_subpart(par):
+    """ Look amongst an amdpar tag's siblings to find a subpart. """
+    for sibling in par.itersiblings():
+        if sibling.tag == 'SUBPART':
+            return sibling
+
+
+def process_new_subpart(notice, subpart_added, par):
+    subpart_changes = {}
+    subpart_xml = find_subpart(par)
+    subpart = reg_text.build_subpart(notice['cfr_part'], subpart_xml)
+
+    for change in changes.create_add_amendment(subpart):
+        subpart_changes.update(change)
+    return subpart_changes
+
 def process_amendments(notice, notice_xml):
     """ Process the changes to the regulation that are expressed in the notice.
     """
@@ -80,7 +96,7 @@ def process_amendments(notice, notice_xml):
                 if subpart_changes:
                     notice_changes.update(subpart_changes)
             elif new_subpart_added(al):
-                print 'new subpart added'
+                notice_changes.update(process_new_subpart(notice, al, par))
 
         section_xml = find_section(par)
         if section_xml is not None:

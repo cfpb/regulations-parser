@@ -237,7 +237,7 @@ token_patterns = (
     | intro_text
 )
 
-subpart_label = (atomic.part + '-' 
-                 + atomic.subpart_marker + ':' 
+subpart_label = (atomic.part + Suppress('-')
+                 + atomic.subpart_marker + Suppress(':')
                  + Word(string.ascii_uppercase, max=1) 
                  + LineEnd())

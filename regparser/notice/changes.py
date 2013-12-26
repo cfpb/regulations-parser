@@ -3,6 +3,7 @@ import copy
 
 from regparser.tree import struct
 from regparser.diff.treediff import node_to_dict
+from regparser.notice.diff import parse_subpart_label
 
 
 def find_candidate(root, label_last):
