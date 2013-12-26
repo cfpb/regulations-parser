@@ -1,5 +1,7 @@
 from unittest import TestCase
 
+from mock import patch
+
 from regparser.layer.graphics import Graphics
 from regparser.tree.struct import Node
 import settings
@@ -8,11 +10,9 @@ import settings
 class LayerGraphicsTest(TestCase):
 
     def setUp(self):
-        self.overrides = settings.IMAGE_OVERRIDES
         self.default_url = settings.DEFAULT_IMAGE_URL
 
     def tearDown(self):
-        settings.IMAGE_OVERRIDES = self.overrides
         settings.DEFAULT_IMAGE_URL = self.default_url
 
     def test_process(self):
@@ -47,9 +47,10 @@ class LayerGraphicsTest(TestCase):
         g = Graphics(None)
         self.assertEqual(1, len(g.process(node)))
 
-    def test_process_custom_url(self):
+    @patch('regparser.layer.graphics.content')
+    def test_process_custom_url(self, content):
         settings.DEFAULT_IMAGE_URL = ":::::%s:::::"
-        settings.IMAGE_OVERRIDES = {"a": "AAA", "f": "F8"}
+        content.ImageOverrides.return_value = {"a": "AAA", "f": "F8"}
 
         node = Node("![Alt1](img1)   ![Alt2](f)  ![Alt3](a)")
         g = Graphics(None)
