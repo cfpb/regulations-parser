@@ -40,6 +40,7 @@ class MacrosTests(TestCase):
         self.assertEqual(pairs, [('a', 'b'), ('c', 'd'),    # source1
                                  ('a', 'b'), ('c', 'd')])   # source2
 
+
 class ImageOverridesTests(TestCase):
     def setUp(self):
         self._original_overrides = getattr(settings, 'OVERRIDES_SOURCES', None)

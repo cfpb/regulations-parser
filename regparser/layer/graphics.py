@@ -19,8 +19,8 @@ class Graphics(Layer):
         layer_el = []
         for text in matches_by_text:
             match = matches_by_text[text][0]
-            url = content.ImageOverrides().get(match.group(2),
-                settings.DEFAULT_IMAGE_URL % match.group(2))
+            url = content.ImageOverrides().get(
+                match.group(2), settings.DEFAULT_IMAGE_URL % match.group(2))
             layer_el.append({
                 'text': match.group(0),
                 'url': url,
