@@ -12,17 +12,13 @@ smart_quotes = (
 
 e_tag = (
     Suppress(Regex(r"<E[^>]*>"))
-    + SkipTo(Regex(r"</E> (or|means)"))
-)
-
-start_of_paragraph_e_tag = (
-    ((Suppress(") ")
-      | Suppress("or "))
-    + e_tag
+    + SkipTo(
+        Regex(r"</E> (or|means)")
     ).setParseAction(keep_pos).setResultsName("term")
+
 )
 
 term_parser = (
     smart_quotes
-    | start_of_paragraph_e_tag
+    | e_tag
 )
