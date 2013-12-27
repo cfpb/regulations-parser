@@ -96,6 +96,12 @@ class AppendixProcessor(object):
 
         tree_utils.add_to_stack(self.m_stack, self.depth, n)
 
+    def _indent_if_needed(self):
+        """Indents one level if preceded by a header"""
+        last = self.m_stack.peek()
+        if last and last[-1][1].title:
+            self.depth += 1
+
     def paragraph_no_marker(self, text):
         """The paragraph has no (a) or a. etc. Indents one level if
         preceded by a header"""
@@ -103,9 +109,7 @@ class AppendixProcessor(object):
         n = Node(text, node_type=Node.APPENDIX,
                  label=['p' + str(self.paragraph_counter)])
 
-        last = self.m_stack.peek()
-        if last and last[-1][1].title:
-            self.depth += 1
+        self._indent_if_needed()
         tree_utils.add_to_stack(self.m_stack, self.depth, n)
 
     def split_paragraph_text(self, text, next_text=''):
@@ -194,9 +198,26 @@ class AppendixProcessor(object):
         n = Node(text, node_type=Node.APPENDIX,
                  label=['p' + str(self.paragraph_counter)])
 
-        last = self.m_stack.peek()
-        if last and last[-1][1].title:
-            self.depth += 1
+        self._indent_if_needed()
+        tree_utils.add_to_stack(self.m_stack, self.depth, n)
+
+    def table(self, xml_node):
+        """A table. Indents one level if preceded by a header"""
+        self.paragraph_counter += 1
+        header = [tree_utils.get_node_text(hd).strip()
+                  for hd in xml_node.xpath('./BOXHD/CHED')]
+        divider = ['---']*len(header)
+        rows = []
+        for tr in xml_node.xpath('./ROW'):
+            rows.append([tree_utils.get_node_text(td).strip()
+                         for td in tr.xpath('./ENT')])
+        table = []
+        for row in [header] + [divider] + rows:
+            table.append('|' + '|'.join(row) + '|')
+        n = Node('\n'.join(table), node_type=Node.APPENDIX,
+                 label=['p' + str(self.paragraph_counter)])
+
+        self._indent_if_needed()
         tree_utils.add_to_stack(self.m_stack, self.depth, n)
 
     def process(self, appendix, part):
@@ -232,6 +253,8 @@ class AppendixProcessor(object):
                 self.paragraph_no_marker(text)
             elif child.tag == 'GPH':
                 self.graphic(child)
+            elif child.tag == 'GPOTABLE':
+                self.table(child)
 
         while self.m_stack.size() > 1:
             tree_utils.unwind_stack(self.m_stack)

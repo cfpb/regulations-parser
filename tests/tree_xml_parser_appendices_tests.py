@@ -27,6 +27,23 @@ class AppendicesTest(TestCase):
                 <PRTPAGE P="650" />
                 <GID>MYGID</GID>
             </GPH>
+            <GPOTABLE CDEF="s50,15,15" COLS="3" OPTS="L2">
+              <BOXHD>
+                <CHED H="1">For some reason <LI>lis</LI></CHED>
+                <CHED H="2">column two</CHED>
+                <CHED H="2">a third column</CHED>
+              </BOXHD>
+              <ROW>
+                <ENT I="01">0</ENT>
+                <ENT/>
+                <ENT>Content3</ENT>
+              </ROW>
+              <ROW>
+                <ENT>Cell 1</ENT>
+                <ENT>Cell 2</ENT>
+                <ENT>Cell 3</ENT>
+              </ROW>
+            </GPOTABLE>
             <FP SOURCE="FR-1">A-3 Some header here</FP>
             <P>Content A-3</P>
             <P>A-4 Another header</P>
@@ -52,10 +69,16 @@ class AppendicesTest(TestCase):
         self.assertEqual('Subheader', sub.title)
         self.assertEqual('Subheader content', sub.children[0].text.strip())
 
-        self.assertEqual(2, len(h2.children))
+        self.assertEqual(3, len(h2.children))
         self.assertEqual('Header 2', h2.title)
         self.assertEqual('Final Content', h2.children[0].text.strip())
         self.assertEqual('![](MYGID)', h2.children[1].text.strip())
+        table_lines = h2.children[2].text.strip().split('\n')
+        self.assertEqual('|For some reason lis|column two|a third column|',
+                         table_lines[0])
+        self.assertEqual('|---|---|---|', table_lines[1])
+        self.assertEqual('|0||Content3|', table_lines[2])
+        self.assertEqual('|Cell 1|Cell 2|Cell 3|', table_lines[3])
 
         self.assertEqual('A-3 Some header here', a3.title)
         self.assertEqual('A-4 Another header', a4.title)
