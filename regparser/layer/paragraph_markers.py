@@ -15,6 +15,9 @@ class ParagraphMarkers(Layer):
 
     @staticmethod
     def marker(node):
+        """Paragraphs have different markers -- regtext has parentheses,
+        interpretations have periods. Appendices, in all of their flexibility,
+        can have either"""
         m = [l for l in node.label if l != Node.INTERP_MARK][-1]
 
         if node.node_type == Node.INTERP:
