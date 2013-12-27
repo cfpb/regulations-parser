@@ -111,7 +111,6 @@ class Terms(Layer):
         included_defs = []
         excluded_defs = []
 
-
         def add_match(n, match):
             term = match.term.tokens[0].lower()
             pos = match.term.pos
@@ -123,7 +122,6 @@ class Terms(Layer):
             if self.is_exclusion(term, n.text, included_defs):
                 add_to = excluded_defs
             add_to.append(Ref(term, n.label_id(), pos))
-
 
         def per_node(n):
             for match, _, _ in term_parser.scanString(n.text):
