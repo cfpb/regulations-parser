@@ -1,6 +1,5 @@
 #vim: set encoding=utf-8
 from pyparsing import SkipTo, Suppress, Regex
-
 from regparser.grammar.utils import DocLiteral, keep_pos
 
 smart_quotes = (
@@ -13,12 +12,19 @@ smart_quotes = (
 e_tag = (
     Suppress(Regex(r"<E[^>]*>"))
     + SkipTo(
-        Regex(r"</E> (or|means)")
+        Suppress(Regex(r"</E> (or|means)"))
     ).setParseAction(keep_pos).setResultsName("term")
+)
 
+beginning_of_paragraph = (
+    Suppress(Regex(r"^\(([a-zA-Z0-9]+)\)"))
+    + e_tag
 )
 
 term_parser = (
     smart_quotes
-    | e_tag
+)
+
+xml_term_parser = (
+    beginning_of_paragraph
 )

@@ -6,7 +6,7 @@ from inflection import pluralize
 
 from regparser import utils
 from regparser.grammar.external_citations import uscode_exp as uscode
-from regparser.grammar.terms import term_parser
+from regparser.grammar.terms import term_parser, xml_term_parser
 from regparser.layer.layer import Layer
 from regparser.layer.paragraph_markers import ParagraphMarkers
 from regparser.tree import struct
@@ -111,18 +111,28 @@ class Terms(Layer):
         included_defs = []
         excluded_defs = []
 
+
+        def add_match(n, match):
+            term = match.term.tokens[0].lower()
+            pos = match.term.pos
+
+            add_to = included_defs
+
+            if term == 'act' and list(uscode.scanString(n.text)):
+                add_to = excluded_defs
+            if self.is_exclusion(term, n.text, included_defs):
+                add_to = excluded_defs
+            add_to.append(Ref(term, n.label_id(), pos))
+
+
         def per_node(n):
             for match, _, _ in term_parser.scanString(n.text):
-                term = match.term.tokens[0].lower()
-                pos = match.term.pos
+                add_match(n, match)
 
-                add_to = included_defs
+            if hasattr(n, 'tagged_text'):
+                for match, _, _ in xml_term_parser.scanString(n.tagged_text):
+                    add_match(n, match)
 
-                if term == 'act' and list(uscode.scanString(n.text)):
-                    add_to = excluded_defs
-                if self.is_exclusion(term, n.text, included_defs):
-                    add_to = excluded_defs
-                add_to.append(Ref(term, n.label_id(), pos))
         struct.walk(node, per_node)
         return included_defs, excluded_defs
 
