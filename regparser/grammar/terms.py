@@ -12,7 +12,7 @@ smart_quotes = (
 e_tag = (
     Suppress(Regex(r"<E[^>]*>"))
     + SkipTo(
-        Suppress(Regex(r"</E> (or|means)"))
+        Suppress(Regex(r"</E> means"))
     ).setParseAction(keep_pos).setResultsName("term")
 )
 
