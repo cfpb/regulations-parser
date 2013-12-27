@@ -79,7 +79,7 @@ class AppendixProcessor(object):
         source = xml_node.attrib.get('SOURCE', 'HD1')
         hd_level = int(source[2:])
 
-        pair = title_label_pair(text, self.appendix_letter, self.m_stack)
+        pair = title_label_pair(text, self.appendix_letter)
 
         #   Use the depth indicated in the title
         if pair:
@@ -217,8 +217,7 @@ class AppendixProcessor(object):
                 self.hed(part, text)
             elif (child.tag == 'HD'
                   or (child.tag in ('P', 'FP')
-                      and title_label_pair(text, self.appendix_letter,
-                                           self.m_stack))):
+                      and title_label_pair(text, self.appendix_letter))):
                 self.subheader(child, text)
             elif initial_marker(text) and child.tag in ('P', 'FP'):
                 if child.getnext() is None:
@@ -255,8 +254,10 @@ def process_appendix(appendix, part):
 def parsed_title(text, appendix_letter):
     digit_str_parser = (Marker(appendix_letter)
                         + Suppress('-')
-                        + grammar.a1
-                        + Optional(grammar.paren_upper | grammar.paren_lower))
+                        + grammar.a1.copy().leaveWhitespace()
+                        + Optional(grammar.markerless_upper)
+                        + Optional(grammar.paren_upper | grammar.paren_lower)
+                        + Optional(grammar.paren_digit))
     part_roman_parser = Marker("part") + grammar.aI
     parser = LineStart() + (digit_str_parser | part_roman_parser)
 
@@ -264,18 +265,14 @@ def parsed_title(text, appendix_letter):
         return match
 
 
-def title_label_pair(text, appendix_letter, stack=None):
+def title_label_pair(text, appendix_letter):
     """Return the label + depth as indicated by a title"""
     match = parsed_title(text, appendix_letter)
     if match:
-        #   May need to include the parenthesized letter (if this doesn't
-        #   have an appropriate parent)
-        if stack and (match.paren_upper or match.paren_lower):
-            #   Check for a parent with match.a1 as its digit
-            parent = stack.peek_level_last(2)
-            if parent and parent.label[-1] == match.a1:
-                return (match.paren_upper or match.paren_lower, 3)
-
+        #   May need to include the parenthesized letter(s)
+        has_parens = (match.paren_upper or match.paren_lower
+                      or match.paren_digit or match.markerless_upper)
+        if has_parens:
             return (''.join(match), 2)
         elif match.a1:
             return (match.a1, 2)

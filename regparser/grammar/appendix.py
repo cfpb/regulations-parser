@@ -1,10 +1,12 @@
 import string
 
-from pyparsing import Literal, Word
+from pyparsing import FollowedBy, Literal, Word
 
 
 def parenthesize(characters, name):
     return Literal("(") + Word(characters).setResultsName(name) + Literal(")")
+
+
 def decimalize(characters, name):
     return (Word(characters).setResultsName(name)
             + Literal(".").leaveWhitespace())
@@ -13,6 +15,11 @@ def decimalize(characters, name):
 #   Only used as the top of the appendix hierarchy
 a1 = Word(string.digits).setResultsName("a1")
 aI = Word("IVXLCDM").setResultsName("aI")
+
+
+#   Catches the A in 12A but not in 12Awesome
+markerless_upper = Word(string.ascii_uppercase).setResultsName(
+    'markerless_upper') + ~FollowedBy(Word(string.ascii_lowercase))
 
 
 paren_upper = parenthesize(string.ascii_uppercase, "paren_upper")
