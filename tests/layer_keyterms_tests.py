@@ -11,7 +11,8 @@ class LayerKeyTermTest(TestCase):
         node = Node(
             '(a) Apples. Apples are grown in New Zealand.',
             label=['101', '22', 'a'])
-        node.tagged_text = '(a) <E T="03">Apples.</E> Apples are grown in New Zealand.'
+        node.tagged_text = '(a) <E T="03">Apples.</E> Apples are grown in '
+        node.tagged_text += 'New Zealand.'
         kt = KeyTerms(None)
         results = kt.process(node)
         self.assertNotEqual(results, None)
@@ -51,7 +52,8 @@ class LayerKeyTermTest(TestCase):
 
     def test_interpretation_markers(self):
         node = Node('3. et seq. has a list: apples',
-                    label=['101', 'c', Node.INTERP_MARK, '3'])
+                    label=['101', 'c', Node.INTERP_MARK, '3'],
+                    node_type=Node.INTERP)
         node.tagged_text = '3. <E T="03">et seq.</E> has a list: apples'
         kt = KeyTerms(None)
         results = kt.process(node)

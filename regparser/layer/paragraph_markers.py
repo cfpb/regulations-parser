@@ -6,8 +6,6 @@ class ParagraphMarkers(Layer):
 
     def process(self, node):
         """Look for any leading paragraph markers."""
-        if node.node_type == Node.APPENDIX:
-            return
         marker = ParagraphMarkers.marker(node)
         if node.text.strip().startswith(marker):
             return [{
@@ -17,10 +15,14 @@ class ParagraphMarkers(Layer):
 
     @staticmethod
     def marker(node):
+        """Paragraphs have different markers -- regtext has parentheses,
+        interpretations have periods. Appendices, in all of their flexibility,
+        can have either"""
         m = [l for l in node.label if l != Node.INTERP_MARK][-1]
 
-        if 'Interpretations' in node.label or 'Interp' in node.label:
-            m = m + '.'
+        if node.node_type == Node.INTERP:
+            return m + '.'
+        elif node.node_type == Node.APPENDIX and node.text.startswith(m + '.'):
+            return m + '.'
         else:
-            m = '(%s)' % m
-        return m
+            return '(%s)' % m

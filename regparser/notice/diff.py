@@ -32,6 +32,13 @@ def find_section(amdpar):
             return sibling
 
 
+def find_subpart(amdpar):
+    """ Look amongst an amdpar tag's siblings to find a subpart. """
+    for sibling in amdpar.itersiblings():
+        if sibling.tag == 'SUBPART':
+            return sibling
+
+
 def find_diffs(xml_tree, cfr_part):
     """Find the XML nodes that are needed to determine diffs"""
     last_context = []
@@ -228,7 +235,7 @@ def get_destination(tokenized, reg_part):
     destination = paragraphs[0]
 
     if destination.label[0] is None:
-        #Sometimes the destination label doesn't know the reg part. 
+        #Sometimes the destination label doesn't know the reg part.
         destination.label[0] = reg_part
 
     destination = destination.label_text()
@@ -245,7 +252,6 @@ def handle_subpart_amendment(tokenized):
     #There's only one token list of paragraphs, sections to be designated
     tokens_to_be_designated = token_lists[0]
     labels_to_be_designated = [t.label_text() for t in tokens_to_be_designated]
-    
     reg_part = tokens_to_be_designated.tokens[0].label[0]
     destination = get_destination(tokenized, reg_part)
 
@@ -273,3 +279,11 @@ def make_amendments(tokenized, subpart=False):
                 elif verb:
                     amends.append((verb, token.label_text()))
     return amends
+
+
+def new_subpart_added(amended_label):
+    """ Return True if label indicates that a new subpart was added. """
+
+    new_subpart = amended_label[0] == 'POST'
+    m = [t for t, _, _ in amdpar.subpart_label.scanString(amended_label[1])]
+    return len(m) > 0 and new_subpart

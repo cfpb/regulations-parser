@@ -112,55 +112,24 @@ class AppendicesTest(TestCase):
 
     def test_title_label_pair(self):
         title = u'A-1—Model Clauses'
-        self.assertEqual(('1', 2),
-                         appendices.title_label_pair(title, 'A', None))
+        self.assertEqual(('1', 2), appendices.title_label_pair(title, 'A'))
 
         title = u'Part III—Construction Period'
-        self.assertEqual(('III', 2),
-                         appendices.title_label_pair(title, 'A', None))
+        self.assertEqual(('III', 2), appendices.title_label_pair(title, 'A'))
 
     def test_title_label_pair_parens(self):
         title = u'G-13(A)—Has No parent'
-        stack = NodeStack()
-        stack.push_last((1, Node(label=['G'], node_type=Node.APPENDIX)))
-        #   Stack: G
-        self.assertEqual(('13(A)', 2),
-                         appendices.title_label_pair(title, 'G', stack))
+        self.assertEqual(('13(A)', 2), appendices.title_label_pair(title, 'G'))
 
-        title = u'G-13(A)—Has A parent'
-        tree_utils.add_to_stack(stack, 2,
-                                Node(label=['13'], node_type=Node.APPENDIX))
-        #   Stack: G, 13
-        self.assertEqual(('A', 3),
-                         appendices.title_label_pair(title, 'G', stack))
+        title = u'G-13(C)(1) - Some Title'
+        self.assertEqual(('13(C)(1)', 2),
+                         appendices.title_label_pair(title, 'G'))
 
-        title = u'G-13(B)—Has A Sibling'
-        tree_utils.add_to_stack(stack, 3,
-                                Node(label=['A'], node_type=Node.APPENDIX))
-        #   Stack: G, 13, B
-        self.assertEqual(('B', 3),
-                         appendices.title_label_pair(title, 'G', stack))
+        title = u'G-13A - Some Title'
+        self.assertEqual(('13A', 2), appendices.title_label_pair(title, 'G'))
 
-        stack.pop()
-        stack.pop()
-        tree_utils.add_to_stack(stack, 2,
-                                Node(label=['13(A)'], node_type=Node.APPENDIX))
-        tree_utils.add_to_stack(stack, 3,
-                                Node(label=['a'], node_type=Node.APPENDIX))
-        #   Stack: G, 13(A), a
-        self.assertEqual(('13(B)', 2),
-                         appendices.title_label_pair(title, 'G', stack))
-
-        stack.pop()
-        stack.pop()
-        tree_utils.add_to_stack(stack, 2,
-                                Node(label=['12'], node_type=Node.APPENDIX))
-        tree_utils.add_to_stack(stack, 3,
-                                Node(label=['A'], node_type=Node.APPENDIX,
-                                     title='G-13(A)'))
-        #   Stack: G, 12, A
-        self.assertEqual(('13(B)', 2),
-                         appendices.title_label_pair(title, 'G', stack))
+        title = u'G-13And Some Smashed Text'
+        self.assertEqual(('13', 2), appendices.title_label_pair(title, 'G'))
 
 
 class AppendixProcessorTest(TestCase):
