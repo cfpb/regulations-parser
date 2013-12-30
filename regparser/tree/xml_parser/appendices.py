@@ -9,6 +9,7 @@ from regparser.citations import internal_citations
 from regparser.grammar import appendix as grammar
 from regparser.grammar.interpretation_headers import parser as headers
 from regparser.grammar.utils import Marker
+from regparser.layer.formatting import table_xml_to_plaintext
 from regparser.tree.paragraph import p_levels
 from regparser.tree.struct import Node, walk
 from regparser.tree.xml_parser import tree_utils
@@ -203,18 +204,10 @@ class AppendixProcessor(object):
     def table(self, xml_node):
         """A table. Indents one level if preceded by a header"""
         self.paragraph_counter += 1
-        header = [tree_utils.get_node_text(hd).strip()
-                  for hd in xml_node.xpath('./BOXHD/CHED')]
-        divider = ['---']*len(header)
-        rows = []
-        for tr in xml_node.xpath('./ROW'):
-            rows.append([tree_utils.get_node_text(td).strip()
-                         for td in tr.xpath('./ENT')])
-        table = []
-        for row in [header] + [divider] + rows:
-            table.append('|' + '|'.join(row) + '|')
-        n = Node('\n'.join(table), node_type=Node.APPENDIX,
-                 label=['p' + str(self.paragraph_counter)])
+        n = Node(table_xml_to_plaintext(xml_node),
+                 node_type=Node.APPENDIX,
+                 label=['p' + str(self.paragraph_counter)],
+                 source_xml=xml_node)
 
         self._indent_if_needed()
         self.m_stack.add(self.depth, n)

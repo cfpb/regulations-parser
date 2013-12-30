@@ -6,10 +6,10 @@ from regparser.diff import api_reader, treediff
 from regparser.federalregister import fetch_notices
 from regparser.history.notices import applicable as applicable_notices
 from regparser.history.delays import modify_effective_dates
-from regparser.layer import external_citations, internal_citations, graphics
-from regparser.layer import table_of_contents, interpretations, terms
-from regparser.layer import section_by_section, paragraph_markers, meta
-from regparser.layer import key_terms
+from regparser.layer import external_citations, formatting, graphics
+from regparser.layer import key_terms, internal_citations, interpretations
+from regparser.layer import meta, paragraph_markers, section_by_section
+from regparser.layer import table_of_contents, terms
 from regparser.tree.xml_parser import reg_text
 from regparser.tree.build import build_whole_regtree
 
@@ -71,6 +71,7 @@ if __name__ == "__main__":
             ('terms', terms.Terms),
             ('paragraph-markers', paragraph_markers.ParagraphMarkers),
             ('keyterms', key_terms.KeyTerms),
+            ('formatting', formatting.Formatting),
             ('graphics', graphics.Graphics)):
         layer = layer_class(reg_tree).build()
         writer.layer(ident, cfr_part, doc_number).write(layer)

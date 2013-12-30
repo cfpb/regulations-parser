@@ -115,7 +115,7 @@ def node_to_dict(node):
 
     node_dict = {}
     for k, v in node.__dict__.items():
-        if k != 'children':
+        if k not in ('children', 'source_xml'):
             node_dict[k] = v
     return node_dict
 

@@ -12,7 +12,7 @@ class Node(object):
 
     def __init__(
         self, text='', children=[], label=[], title=None,
-            node_type=REGTEXT):
+            node_type=REGTEXT, source_xml=None):
 
         self.text = unicode(text)
 
@@ -23,6 +23,7 @@ class Node(object):
         title = unicode(title or '')
         self.title = title or None
         self.node_type = node_type
+        self.source_xml = source_xml
 
     def __repr__(self):
         return (("Node( text = %s, children = %s, label = %s, title = %s, "
@@ -43,8 +44,9 @@ class NodeEncoder(JSONEncoder):
             fields = dict(obj.__dict__)
             if obj.title is None:
                 del fields['title']
-            if 'tagged_text' in fields:
-                del fields['tagged_text']
+            for field in ('tagged_text', 'source_xml'):
+                if field in fields:
+                    del fields[field]
             return fields
         return JSONEncoder.default(self, obj)
 
