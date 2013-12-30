@@ -198,7 +198,7 @@ multiple_paragraph_sections = (
     + unified.part_section
     + make_multiple(unified.any_depth_p)
     ).setParseAction(make_par_list(lambda m: [m.part, None, m.section,
-        m.p1,unified. m.p2, m.p3, m.p4, m.p5]))
+        m.p1, m.p2, m.p3, m.p4, m.p5]))
 
 multiple_appendices = make_multiple(unified.appendix_with_section
     ).setParseAction(make_par_list(
