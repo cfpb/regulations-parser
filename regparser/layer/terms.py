@@ -129,6 +129,12 @@ class Terms(Layer):
 
             if hasattr(n, 'tagged_text'):
                 for match, _, _ in xml_term_parser.scanString(n.tagged_text):
+                    """Returned position tuple has positions relating
+                    to n.tagged_text. Replace with positions that apply
+                    to n.text."""
+                    pos_start = n.text.find(match.term.tokens[0])
+                    match_len = len(match.term.tokens[0])
+                    match.term.pos = (pos_start, pos_start + match_len)
                     add_match(n, match)
 
         struct.walk(node, per_node)
