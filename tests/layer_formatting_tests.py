@@ -45,7 +45,7 @@ class LayerFormattingTests(TestCase):
         for n in n21.children:
             self.assertEqual(1, n.colspan)
             self.assertEqual(1, n.rowspan)
-        
+
         self.assertEqual('2-2', n22.text)
         self.assertEqual(3, n22.colspan)
         self.assertEqual(1, n22.rowspan)
@@ -85,11 +85,13 @@ class LayerFormattingTests(TestCase):
 
         mkhd = lambda t, c, r: {'text': t, 'colspan': c, 'rowspan': r}
         data = result['table_data']
-        self.assertEqual(data['header'],
+        self.assertEqual(
+            data['header'],
             [[mkhd('1-1', 1, 3), mkhd('1-2', 3, 1)],
              [mkhd('2-1', 1, 1), mkhd('2-2', 2, 1)],
              [mkhd('3-1', 1, 1), mkhd('3-2', 1, 1), mkhd('3-3', 1, 1)]])
-        self.assertEqual(data['rows'],
+        self.assertEqual(
+            data['rows'],
             [['11', '12', '13', '14'],
              ['21', '22', '23'],
              ['', '32', '33', '34']])

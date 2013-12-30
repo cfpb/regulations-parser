@@ -44,6 +44,7 @@ def build_header(xml_nodes):
     root = stack.m_stack[0][0][1]
 
     max_height = root.height()
+
     def set_rowspan(n):
         n.rowspan = max_height - n.height() - n.level + 1
     struct.walk(root, set_rowspan)
@@ -90,7 +91,7 @@ def table_xml_to_data(xml_node):
     for row in xml_node.xpath('./ROW'):
         rows.append([tree_utils.get_node_text(td).strip()
                      for td in row.xpath('./ENT')])
-    
+
     return {'header': header, 'rows': rows}
 
 

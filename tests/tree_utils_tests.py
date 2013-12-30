@@ -34,7 +34,8 @@ class TreeUtilsTest(unittest.TestCase):
         self.assertEqual(['i', 'A'], result)
 
     def test_get_node_text_tags(self):
-        text = '<P>(a)<E T="03">Fruit.</E>Apples,<PRTPAGE P="102"/> and Pineapples</P>'
+        text = '<P>(a)<E T="03">Fruit.</E>Apples,<PRTPAGE P="102"/> and '
+        text += 'Pineapples</P>'
         doc = etree.fromstring(text)
         result = tree_utils.get_node_text_tags_preserved(doc)
 

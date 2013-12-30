@@ -5,7 +5,7 @@ import logging
 from lxml import etree
 
 from regparser import content
-from regparser.tree.struct import Node, walk
+from regparser.tree.struct import Node
 from regparser.tree.paragraph import p_levels
 from regparser.tree.xml_parser.appendices import build_non_reg_text
 from regparser.tree import reg_text
@@ -110,14 +110,6 @@ def build_tree(reg_xml):
 
     non_reg_sections = build_non_reg_text(doc, reg_part)
     tree.children += non_reg_sections
-
-    seen = set()
-    def per_node(n):
-        l = tuple(n.label)
-        if l in seen:
-            print "Duplicate:", l
-        seen.add(l)
-    walk(tree, per_node)
 
     return tree
 
