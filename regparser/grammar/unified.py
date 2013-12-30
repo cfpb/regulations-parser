@@ -76,6 +76,7 @@ _inner_non_comment = (
     | (part_section + Optional(depth1_p))
     | (atomic.section + depth1_p)
     | appendix_with_section | marker_appendix)
+
 multiple_non_comments = (
     (atomic.paragraphs_marker | atomic.paragraph_marker
         | atomic.sections_marker | atomic.section_marker)
@@ -86,6 +87,7 @@ multiple_non_comments = (
         + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName(
             "tail", listAllMatches=True)
         + Optional(Suppress(')'))))
+
 multiple_appendix_section = (
     appendix_with_section.copy().setParseAction(keep_pos).setResultsName(
         "head")

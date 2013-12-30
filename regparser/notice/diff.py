@@ -7,6 +7,7 @@ from lxml import etree
 from regparser.grammar import amdpar, tokens
 from regparser.tree import struct
 from regparser.tree.xml_parser.reg_text import build_from_section
+from regparser.citations import internal_citations
 
 
 def clear_between(xml_node, start_char, end_char):
@@ -61,10 +62,29 @@ def node_is_empty(node):
     """Handle different ways the regulation represents no content"""
     return node.text.strip() == ''
 
+def use_internal_citations(text):
+    citations = internal_citations(text)
+
+    paragraph_labels = []
+    for c in citations:
+        if 'section' in c.label.schema:
+            label = list(c.label.to_list())
+            label = [label[0]] + [None] + label[1:]
+
+            paragraph_label = tokens.Paragraph(label)
+            paragraph_labels.append(paragraph_label)
+    return paragraph_labels
+
 
 def parse_amdpar(par, initial_context):
     text = etree.tostring(par, encoding=unicode)
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
+    citations = use_internal_citations(text)
+
+    print tokenized
+    print citations
+    print '-------------'
+
     tokenized = switch_passive(tokenized)
     tokenized, subpart = deal_with_subpart_adds(tokenized)
     tokenized = context_to_paragraph(tokenized)

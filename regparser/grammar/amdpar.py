@@ -193,6 +193,13 @@ multiple_pars = (
     ).setParseAction(make_par_list(lambda m: [m.part, None, m.section,
         m.p1, m.p2, m.p3, m.p4, m.p5]))
 
+multiple_paragraph_sections = (
+    atomic.section_marker
+    + unified.part_section
+    + make_multiple(unified.any_depth_p)
+    ).setParseAction(make_par_list(lambda m: [m.part, None, m.section,
+        m.p1,unified. m.p2, m.p3, m.p4, m.p5]))
+
 multiple_appendices = make_multiple(unified.appendix_with_section
     ).setParseAction(make_par_list(
         lambda m: [None, 'Appendix:' + m.appendix, m.appendix_section, m.p1,
@@ -223,7 +230,7 @@ token_patterns = (
     | comment_context_with_section | comment_context_without_section
 
     | section_heading | section_heading_of | intro_text_of
-    | section_single_par
+    | multiple_paragraph_sections | section_single_par
 
     | multiple_sections | multiple_pars | multiple_appendices
     | multiple_comment_pars | multiple_comments

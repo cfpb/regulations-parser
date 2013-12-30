@@ -238,3 +238,10 @@ class GrammarAmdParTests(TestCase):
             tokens.Paragraph([None, 'Interpretations', None, None, '2', 'xi']),
             tokens.Verb(tokens.Verb.POST, active=False)
         ])
+
+    def test_example18(self):
+        text = 'Section 1026.52(b)(1)(ii)(A) and (B) is revised to read as follows'
+        for m,_,_ in token_patterns.scanString(text):
+            print m
+        self.assertFalse(True)
+

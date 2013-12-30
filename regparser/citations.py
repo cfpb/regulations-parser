@@ -95,6 +95,9 @@ class Label(object):
 
         return filter(bool, lst)
 
+    def __repr__(self):
+        return repr(self.to_list())
+
 
 class ParagraphCitation(object):
     def __init__(self, start, end, label, full_start=None, full_end=None,
