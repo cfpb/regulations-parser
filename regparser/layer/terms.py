@@ -111,10 +111,7 @@ class Terms(Layer):
         included_defs = []
         excluded_defs = []
 
-        def add_match(n, match):
-            term = match.term.tokens[0].lower()
-            pos = match.term.pos
-
+        def add_match(n, term, pos):
             add_to = included_defs
 
             if term == 'act' and list(uscode.scanString(n.text)):
@@ -125,11 +122,20 @@ class Terms(Layer):
 
         def per_node(n):
             for match, _, _ in term_parser.scanString(n.text):
-                add_match(n, match)
+                add_match(n,
+                          match.term.tokens[0].lower(),
+                          match.term.pos)
 
             if hasattr(n, 'tagged_text'):
                 for match, _, _ in xml_term_parser.scanString(n.tagged_text):
-                    add_match(n, match)
+                    """Position in match reflects XML tags, so its
+                    dropped in preference of new values based on
+                    n.text."""
+                    pos_start = n.text.find(match.term.tokens[0])
+                    match_len = len(match.term.tokens[0])
+                    add_match(n,
+                              match.term.tokens[0].lower(),
+                              (pos_start, pos_start + match_len))
 
         struct.walk(node, per_node)
         return included_defs, excluded_defs
