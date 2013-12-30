@@ -69,6 +69,18 @@ class LayerTermTest(TestCase):
         text3biA = u'Also has no terms'
         text3bii = u'Has no terms'
         text3c = u'Also has no terms'
+        text4 = u'Still no terms, but'
+        text4a = u'the next one does'
+        text4b = u'(4) <E T="03">Thing</E> means a thing that is defined'
+        text4c = u'<E T="03">This term</E> means should not match'
+
+        node4a = Node(text4a, label=['eee'])
+        node4b = Node(text4b, label=['fff'])
+        node4c = Node(text4c, label=['ggg'])
+        node4a.tagged_text = text4a
+        node4b.tagged_text = text4b
+        node4c.tagged_text = text4c
+
         tree = Node(children=[ 
             Node(text1, label=['aaa']),
             Node(text2, label=['bbb']),
@@ -79,15 +91,21 @@ class LayerTermTest(TestCase):
                     Node(text3bii)
                 ]),
                 Node(text3c)
+            ]),
+            Node(text4, children=[
+                node4a,
+                node4b,
+                node4c
             ])
         ])
         defs, excluded = t.node_definitions(tree)
-        self.assertEqual(5, len(defs))
+        self.assertEqual(6, len(defs))
         self.assertTrue(Ref('word', 'aaa', (12,16)) in defs)
         self.assertTrue(Ref('another word', 'bbb', (8,20)) in defs)
         self.assertTrue(Ref('moree', 'bbb', (32,37)) in defs)
         self.assertTrue(Ref('does see', 'ccc', (15,23)) in defs)
         self.assertTrue(Ref('subchildren', 'ddd', (7,18)) in defs)
+        self.assertTrue(Ref('thing', 'fff', (14,19)) in defs)
 
     def test_node_defintions_act(self):
         t = Terms(None)
