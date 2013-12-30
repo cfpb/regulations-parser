@@ -2,7 +2,7 @@
 from unittest import TestCase
 
 from regparser.grammar import tokens
-from regparser.grammar.amdpar import token_patterns
+from regparser.grammar.amdpar import token_patterns, multiple_paragraph_sections
 
 class GrammarAmdParTests(TestCase):
 
@@ -240,8 +240,13 @@ class GrammarAmdParTests(TestCase):
         ])
 
     def test_example18(self):
-        text = 'Section 1026.52(b)(1)(ii)(A) and (B) is revised to read as follows'
-        for m,_,_ in token_patterns.scanString(text):
-            print m
-        self.assertFalse(True)
+        text = 'Section 106.52(b)(1)(ii)(A) and (B) is revised to read as follows'
+        result = [m[0] for m,_,_ in token_patterns.scanString(text)]
 
+        self.assertEqual(result, [
+            tokens.TokenList([
+                tokens.Paragraph(['106', None, '52', 'b', '1', 'ii', 'A']),
+                tokens.Paragraph([None, None, None, None, None, None, 'B']), 
+            ]),
+            tokens.Verb(tokens.Verb.PUT, active=False)
+        ])

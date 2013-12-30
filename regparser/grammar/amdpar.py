@@ -195,8 +195,7 @@ multiple_pars = (
 
 multiple_paragraph_sections = (
     atomic.section_marker
-    + unified.part_section
-    + make_multiple(unified.any_depth_p)
+    + make_multiple(Optional(unified.part_section) + unified.any_depth_p)
     ).setParseAction(make_par_list(lambda m: [m.part, None, m.section,
         m.p1, m.p2, m.p3, m.p4, m.p5]))
 

@@ -98,6 +98,12 @@ class NoticeDiffTests(TestCase):
                               '5'])
         ])
 
+    def test_compress_context_special(self):
+        tokenized = [
+            tokens.Context([]), 
+            tokens.Paragraph([])
+        ]
+
     def test_compress(self):
         self.assertEqual([1, 2, 3], compress([1, 2, 3], []))
         self.assertEqual([1, 6, 3], compress([1, 2, 3, 4, 5], [None, 6, None]))
@@ -365,3 +371,14 @@ class NoticeDiffTests(TestCase):
 
         amended_label = ('POST', '200-Subpart:B-a-3')
         self.assertFalse(new_subpart_added(amended_label))
+
+    def test_switch_context(self):
+        initial_context = ['105', '2']
+
+        tokenized = [
+            tokens.Paragraph(['203', '2', 'x']),
+            tokens.Verb(tokens.Verb.DESIGNATE, True)
+        ]
+
+        self.assertEqual(
+            change_initial_context(tokenized, initial_context), [])

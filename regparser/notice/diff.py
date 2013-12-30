@@ -62,34 +62,33 @@ def node_is_empty(node):
     """Handle different ways the regulation represents no content"""
     return node.text.strip() == ''
 
-def use_internal_citations(text):
-    citations = internal_citations(text)
+def change_initial_context(token_list, carried_context):
+    """ Notices can refer to multiple regulations (CFR parts). If the 
+    CFR part changes, empty out the context that we carry forward. """
 
-    paragraph_labels = []
-    for c in citations:
-        if 'section' in c.label.schema:
-            label = list(c.label.to_list())
-            label = [label[0]] + [None] + label[1:]
+    def is_valid_label(label):
+        return (label and label[0] is not None)
 
-            paragraph_label = tokens.Paragraph(label)
-            paragraph_labels.append(paragraph_label)
-    return paragraph_labels
+    if carried_context and carried_context[0] is not None:
+        token_list = [t for t in token_list if not isinstance(t, tokens.Verb)]
+        reg_parts = [t.label[0] for t in token_list if is_valid_label(t.label)]
 
+        if len(reg_parts) > 0:
+            reg_part = reg_parts[0]
+            if reg_part != carried_context[0]:
+                return []
+    return carried_context
+        
 
 def parse_amdpar(par, initial_context):
     text = etree.tostring(par, encoding=unicode)
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
-    citations = use_internal_citations(text)
-
-    print tokenized
-    print citations
-    print '-------------'
-
     tokenized = switch_passive(tokenized)
     tokenized, subpart = deal_with_subpart_adds(tokenized)
     tokenized = context_to_paragraph(tokenized)
     if not subpart:
         tokenized = separate_tokenlist(tokenized)
+    initial_context = change_initial_context(tokenized, initial_context)
     tokenized, final_context = compress_context(tokenized, initial_context)
     amends = make_amendments(tokenized, subpart)
     return amends, final_context
