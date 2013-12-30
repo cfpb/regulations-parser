@@ -5,7 +5,6 @@ import string
 from pyparsing import Word, LineStart, Regex, Suppress
 
 from regparser.tree.interpretation import text_to_labels
-from regparser.tree.node_stack import NodeStack
 from regparser.tree.struct import Node, treeify
 from regparser.tree.xml_parser import tree_utils
 from regparser.utils import roman_nums
@@ -87,7 +86,7 @@ def interp_inner_child(child_node, stack):
         stack.push_last((interpretation_level(first_marker), n))
     else:
         node_level = interpretation_level(first_marker, last[0][0])
-        tree_utils.add_to_stack(stack, node_level, n)
+        stack.add(node_level, n)
 
     #   Collapsed-marker children
     for match, end in zip(collapsed_markers, ends):
@@ -98,7 +97,7 @@ def interp_inner_child(child_node, stack):
         if len(last) == 0:
             stack.push_last((node_level, n))
         else:
-            tree_utils.add_to_stack(stack, node_level, n)
+            stack.add(node_level, n)
 
 
 def is_title(xml_node):
@@ -147,7 +146,7 @@ def missing_levels(last_label, label):
 
 def build_supplement_tree(reg_part, node):
     """ Build the tree for the supplement section. """
-    m_stack = NodeStack()
+    m_stack = tree_utils.NodeStack()
 
     title = get_app_title(node)
     root = Node(
@@ -162,18 +161,18 @@ def build_supplement_tree(reg_part, node):
         labels = [] if not is_title(ch) else text_to_labels(ch.text, reg_part)
         if labels:
             label = labels[0]
-            inner_stack = NodeStack()
+            inner_stack = tree_utils.NodeStack()
             missing = missing_levels(last_label, label)
             supplement_nodes.extend(missing)
             last_label = label
 
             node = Node(node_type=Node.INTERP, label=label, title=ch.text)
-            tree_utils.add_to_stack(inner_stack, 2, node)
+            inner_stack.add(2, node)
 
             process_inner_children(inner_stack, ch)
 
             while inner_stack.size() > 1:
-                tree_utils.unwind_stack(inner_stack)
+                inner_stack.unwind()
 
             ch_node = inner_stack.m_stack[0][0][1]
             supplement_nodes.append(ch_node)

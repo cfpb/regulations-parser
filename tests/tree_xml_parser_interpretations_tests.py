@@ -3,7 +3,6 @@ from unittest import TestCase
 from lxml import etree
 from lxml import html
 
-from regparser.tree.node_stack import NodeStack
 from regparser.tree.xml_parser import interpretations, tree_utils
 
 
@@ -141,10 +140,10 @@ class InterpretationsTest(TestCase):
             <P><E T="03">1.</E> eee</P>
         </ROOT>"""
         node = etree.fromstring(xml).xpath('//HD')[0]
-        stack = NodeStack()
+        stack = tree_utils.NodeStack()
         interpretations.process_inner_children(stack, node)
         while stack.size() > 1:
-            tree_utils.unwind_stack(stack)
+            stack.unwind()
         n1 = stack.m_stack[0][0][1]
         self.assertEqual(['1'], n1.label)
         self.assertEqual(1, len(n1.children))
@@ -170,10 +169,10 @@ class InterpretationsTest(TestCase):
             <P>i. See country A. Not that country</P>
         </ROOT>"""
         node = etree.fromstring(xml).xpath('//HD')[0]
-        stack = NodeStack()
+        stack = tree_utils.NodeStack()
         interpretations.process_inner_children(stack, node)
         while stack.size() > 1:
-            tree_utils.unwind_stack(stack)
+            stack.unwind()
         n1 = stack.m_stack[0][0][1]
         self.assertEqual(['1'], n1.label)
         self.assertEqual(1, len(n1.children))
@@ -191,10 +190,10 @@ class InterpretationsTest(TestCase):
             <P><E T="03">2. 222</E> Incorrect Content</P>
         </ROOT>"""
         node = etree.fromstring(xml).xpath('//HD')[0]
-        stack = NodeStack()
+        stack = tree_utils.NodeStack()
         interpretations.process_inner_children(stack, node)
         while stack.size() > 1:
-            tree_utils.unwind_stack(stack)
+            stack.unwind()
         self.assertEqual(2, len(stack.m_stack[0]))
 
     def test_interpretation_level(self):

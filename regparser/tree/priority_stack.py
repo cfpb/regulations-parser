@@ -1,4 +1,4 @@
-class NodeStack(object):
+class PriorityStack(object):
     def __init__(self):
         self.m_stack = [[]]
 
@@ -34,3 +34,24 @@ class NodeStack(object):
 
     def size(self):
         return len(self.m_stack)
+
+    def unwind(self):
+        """Combine nodes as needed while walking back up the stack. Intended
+        to be overridden"""
+        pass
+
+    def add(self, node_level, node):
+        """ Add a new node with level node_level to the stack. Unwind the stack
+        when necessary. """
+        last = self.peek()
+        element = (node_level, node)
+
+        if len(last) > 0 and node_level > last[0][0]:
+            self.push(element)
+        elif len(last) > 0 and node_level < last[0][0]:
+            while last[0][0] > node_level:
+                self.unwind()
+                last = self.peek()
+            self.push_last(element)
+        else:
+            self.push_last(element)

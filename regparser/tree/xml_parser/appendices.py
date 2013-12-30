@@ -9,7 +9,6 @@ from regparser.citations import internal_citations
 from regparser.grammar import appendix as grammar
 from regparser.grammar.interpretation_headers import parser as headers
 from regparser.grammar.utils import Marker
-from regparser.tree.node_stack import NodeStack
 from regparser.tree.paragraph import p_levels
 from regparser.tree.struct import Node, walk
 from regparser.tree.xml_parser import tree_utils
@@ -94,7 +93,7 @@ class AppendixProcessor(object):
                      label=['h' + str(self.header_count)])
             self.depth = hd_level
 
-        tree_utils.add_to_stack(self.m_stack, self.depth, n)
+        self.m_stack.add(self.depth, n)
 
     def _indent_if_needed(self):
         """Indents one level if preceded by a header"""
@@ -110,7 +109,7 @@ class AppendixProcessor(object):
                  label=['p' + str(self.paragraph_counter)])
 
         self._indent_if_needed()
-        tree_utils.add_to_stack(self.m_stack, self.depth, n)
+        self.m_stack.add(self.depth, n)
 
     def split_paragraph_text(self, text, next_text=''):
         marker_positions = []
@@ -188,7 +187,7 @@ class AppendixProcessor(object):
                 self.depth = stack_level[-1][0]
         if not found_in_prev:   # New type of marker
             self.depth += 1
-        tree_utils.add_to_stack(self.m_stack, self.depth, n)
+        self.m_stack.add(self.depth, n)
 
     def graphic(self, xml_node):
         """An image. Indents one level if preceded by a header"""
@@ -199,7 +198,7 @@ class AppendixProcessor(object):
                  label=['p' + str(self.paragraph_counter)])
 
         self._indent_if_needed()
-        tree_utils.add_to_stack(self.m_stack, self.depth, n)
+        self.m_stack.add(self.depth, n)
 
     def table(self, xml_node):
         """A table. Indents one level if preceded by a header"""
@@ -218,10 +217,10 @@ class AppendixProcessor(object):
                  label=['p' + str(self.paragraph_counter)])
 
         self._indent_if_needed()
-        tree_utils.add_to_stack(self.m_stack, self.depth, n)
+        self.m_stack.add(self.depth, n)
 
     def process(self, appendix, part):
-        self.m_stack = NodeStack()
+        self.m_stack = tree_utils.NodeStack()
 
         self.paragraph_count = 0
         self.header_count = 0
@@ -257,7 +256,7 @@ class AppendixProcessor(object):
                 self.table(child)
 
         while self.m_stack.size() > 1:
-            tree_utils.unwind_stack(self.m_stack)
+            self.m_stack.unwind()
 
         if self.m_stack.m_stack[0]:
             root = self.m_stack.m_stack[0][0][1]

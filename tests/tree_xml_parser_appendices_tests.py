@@ -3,7 +3,6 @@ from unittest import TestCase
 from lxml import etree
 from lxml import html
 
-from regparser.tree.node_stack import NodeStack
 from regparser.tree.struct import Node
 from regparser.tree.xml_parser import appendices, tree_utils
 
@@ -160,7 +159,7 @@ class AppendixProcessorTest(TestCase):
         self.ap = appendices.AppendixProcessor()
         self.ap.paragraph_counter = 0
         self.ap.depth = 0
-        self.ap.m_stack = NodeStack()
+        self.ap.m_stack = tree_utils.NodeStack()
 
     def result(self):
         return self.ap.m_stack.peek_last()
@@ -173,8 +172,7 @@ class AppendixProcessorTest(TestCase):
         self.assertEqual(node.label, ['p1'])
 
         #   If a header was before the paragraph, increment the level 1
-        tree_utils.add_to_stack(self.ap.m_stack, 0, Node(
-            label=['h1'], title='Some section'))
+        self.ap.m_stack.add(0, Node(label=['h1'], title='Some section'))
         self.ap.paragraph_no_marker("Paragraph Text")
         lvl, node = self.result()
         self.assertEqual(node.text, 'Paragraph Text')
