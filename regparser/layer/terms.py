@@ -132,9 +132,10 @@ class Terms(Layer):
                     dropped in preference of new values based on
                     n.text."""
                     pos_start = n.text.find(match.term.tokens[0])
-                    match_len = len(match.term.tokens[0])
+                    term = ' '.join(match.term.tokens).lower()
+                    match_len = len(term)
                     add_match(n,
-                              match.term.tokens[0].lower(),
+                              term,
                               (pos_start, pos_start + match_len))
 
         struct.walk(node, per_node)

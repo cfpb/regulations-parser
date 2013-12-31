@@ -1,5 +1,5 @@
 #vim: set encoding=utf-8
-from pyparsing import SkipTo, Suppress, Regex, Literal
+from pyparsing import SkipTo, Suppress, Regex, Literal, Word, srange, OneOrMore
 from regparser.grammar.utils import DocLiteral, keep_pos
 from regparser.grammar.unified import any_depth_p
 
@@ -12,14 +12,15 @@ smart_quotes = (
 
 e_tag = (
     Suppress(Regex(r"<E[^>]*>"))
-    + SkipTo(
+    + OneOrMore(Word(srange("[a-zA-Z-]")))
+    + Suppress(
         Literal("</E>") + Literal("means")
-    ).setParseAction(keep_pos).setResultsName("term")
+    )
 )
 
 beginning_of_paragraph = (
     Suppress(any_depth_p)
-    + e_tag
+    + (e_tag).setParseAction(keep_pos).setResultsName("term")
 )
 
 term_parser = (
