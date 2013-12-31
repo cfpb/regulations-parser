@@ -37,8 +37,9 @@ class PriorityStack(object):
 
     def unwind(self):
         """Combine nodes as needed while walking back up the stack. Intended
-        to be overridden"""
-        pass
+        to be overridden, as how to combine elements depends on the element
+        type."""
+        raise NotImplementedError
 
     def add(self, node_level, node):
         """ Add a new node with level node_level to the stack. Unwind the stack

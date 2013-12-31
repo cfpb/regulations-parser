@@ -12,7 +12,7 @@ class HeaderStack(PriorityStack):
         self.peek_last()[1].children = children
 
 
-class THNode(object):
+class TableHeaderNode(object):
     """Represents a cell in a table's header"""
     def __init__(self, text, level):
         self.text = text
@@ -30,14 +30,14 @@ class THNode(object):
 
 
 def build_header(xml_nodes):
-    """Builds a THNode tree, with an empty root. Each node in the tree
+    """Builds a TableHeaderNode tree, with an empty root. Each node in the tree
     includes its colspan/rowspan"""
     stack = HeaderStack()
-    stack.add(0, THNode(None, 0))  # Root
+    stack.add(0, TableHeaderNode(None, 0))  # Root
     for xml_node in xml_nodes:
         level = int(xml_node.attrib['H'])
         text = tree_utils.get_node_text(xml_node).strip()
-        stack.add(level, THNode(text, level))
+        stack.add(level, TableHeaderNode(text, level))
 
     while stack.size() > 1:
         stack.unwind()
@@ -59,7 +59,7 @@ def build_header(xml_nodes):
 def table_xml_to_plaintext(xml_node):
     """Markdown representation of a table. Note that this doesn't account
     for all the options needed to display the table properly, but works fine
-    for simple tables"""
+    for simple tables. This gets included in the reg plain text"""
     header = [tree_utils.get_node_text(hd).strip()
               for hd in xml_node.xpath('./BOXHD/CHED')]
     divider = ['---']*len(header)
@@ -74,9 +74,10 @@ def table_xml_to_plaintext(xml_node):
 
 
 def table_xml_to_data(xml_node):
-    """Construct a representation of the table data for display. We provide
-    a different data structure than the native XML as a simpler
-    representation."""
+    """Construct a data structure of the table data. We provide a different
+    structure than the native XML as the XML encodes too much logic. This
+    structure can be used to generate semi-complex tables which could not be
+    generated from the markdown above"""
     header_root = build_header(xml_node.xpath('./BOXHD/CHED'))
     header = [[] for _ in range(header_root.height())]
 

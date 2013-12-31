@@ -24,6 +24,10 @@ def prepend_parts(parts_prefix, n):
 
 
 class NodeStack(PriorityStack):
+    """ The NodeStack aids our construction of a struct.Node tree. We process
+    xml one paragraph at a time; using a priority stack allows us to insert
+    items at their proper depth and unwind the stack (collecting children) as
+    necessary"""
     def unwind(self):
         """ Unwind the stack, collapsing sub-paragraphs that are on the stack
         into the children of the previous level. """
