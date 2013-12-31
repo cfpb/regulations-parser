@@ -98,12 +98,6 @@ class NoticeDiffTests(TestCase):
                               '5'])
         ])
 
-    def test_compress_context_special(self):
-        tokenized = [
-            tokens.Context([]), 
-            tokens.Paragraph([])
-        ]
-
     def test_compress(self):
         self.assertEqual([1, 2, 3], compress([1, 2, 3], []))
         self.assertEqual([1, 6, 3], compress([1, 2, 3, 4, 5], [None, 6, None]))
@@ -381,4 +375,12 @@ class NoticeDiffTests(TestCase):
         ]
 
         self.assertEqual(
-            change_initial_context(tokenized, initial_context), [])
+            switch_context(tokenized, initial_context), [])
+
+        tokenized = [
+            tokens.Paragraph(['105', '4', 'j', 'iv']),
+            tokens.Verb(tokens.Verb.DESIGNATE, True)
+        ]
+
+        self.assertEqual(
+            switch_context(tokenized, initial_context), initial_context)

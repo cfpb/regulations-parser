@@ -5,9 +5,7 @@ import re
 from lxml import etree
 
 from regparser.grammar import amdpar, tokens
-from regparser.tree import struct
 from regparser.tree.xml_parser.reg_text import build_from_section
-from regparser.citations import internal_citations
 
 
 def clear_between(xml_node, start_char, end_char):
@@ -42,8 +40,6 @@ def find_subpart(amdpar):
 
 def find_diffs(xml_tree, cfr_part):
     """Find the XML nodes that are needed to determine diffs"""
-    last_context = []
-    diffs = []
     #   Only final notices have this format
     for section in xml_tree.xpath('//REGTEXT//SECTION'):
         section = clear_between(section, '[', ']')
@@ -62,8 +58,9 @@ def node_is_empty(node):
     """Handle different ways the regulation represents no content"""
     return node.text.strip() == ''
 
-def change_initial_context(token_list, carried_context):
-    """ Notices can refer to multiple regulations (CFR parts). If the 
+
+def switch_context(token_list, carried_context):
+    """ Notices can refer to multiple regulations (CFR parts). If the
     CFR part changes, empty out the context that we carry forward. """
 
     def is_valid_label(label):
@@ -78,7 +75,7 @@ def change_initial_context(token_list, carried_context):
             if reg_part != carried_context[0]:
                 return []
     return carried_context
-        
+
 
 def parse_amdpar(par, initial_context):
     text = etree.tostring(par, encoding=unicode)
@@ -88,7 +85,7 @@ def parse_amdpar(par, initial_context):
     tokenized = context_to_paragraph(tokenized)
     if not subpart:
         tokenized = separate_tokenlist(tokenized)
-    initial_context = change_initial_context(tokenized, initial_context)
+    initial_context = switch_context(tokenized, initial_context)
     tokenized, final_context = compress_context(tokenized, initial_context)
     amends = make_amendments(tokenized, subpart)
     return amends, final_context

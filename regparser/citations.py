@@ -1,4 +1,4 @@
-from itertools import chain, takewhile
+from itertools import chain
 
 from regparser.grammar import unified as grammar
 from regparser.tree.struct import Node

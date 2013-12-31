@@ -366,3 +366,7 @@ class CitationsLabelTest(TestCase):
                          (['111', 'Subpart'], Node.EMPTYPART)]:
             n = Node(label=lst, node_type=typ)
             self.assertEqual(Label.from_node(n).to_list(), lst)
+
+    def test_label_representation(self):
+        l = Label(part='105', section='3')
+        self.assertEqual(repr(l), "['105', '3']")

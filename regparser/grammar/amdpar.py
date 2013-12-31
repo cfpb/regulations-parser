@@ -12,6 +12,7 @@ from regparser.tree.paragraph import p_levels
 intro_text_marker = (
     Marker("introductory") + WordBoundaries(CaselessLiteral("text")))
 
+
 #Verbs
 def generate_verb(word_list, verb, active):
     """Short hand for making tokens.Verb from a list of trigger words"""
@@ -42,7 +43,9 @@ move_active = generate_verb(
 
 move_passive = generate_verb(['redesignated'], tokens.Verb.MOVE, active=False)
 
-designate_active = generate_verb(['designate'], tokens.Verb.DESIGNATE, active=True)
+designate_active = generate_verb(
+    ['designate'],
+    tokens.Verb.DESIGNATE, active=True)
 
 
 #   Context
@@ -67,15 +70,15 @@ comment_context_with_section = (
     + (Marker("comment") | Marker("paragraph"))
     + atomic.section
     + unified.depth1_p
-    ).setParseAction(lambda m: tokens.Context([None, 'Interpretations', 
-        m.section, '(' + ')('.join(p for p in [m.p1, m.p2, m.p3, m.p4, m.p5] 
+    ).setParseAction(lambda m: tokens.Context([None, 'Interpretations',
+        m.section, '(' + ')('.join(p for p in [m.p1, m.p2, m.p3, m.p4, m.p5]
                                    if p) + ')'], bool(m.certain)))
 comment_context_without_section = (
     context_certainty
     + atomic.paragraph_marker
     + unified.depth2_p
-    ).setParseAction(lambda m: tokens.Context([None, 'Interpretations', None, 
-        '(' + ')('.join(p for p in [m.p2, m.p3, m.p4, m.p5] 
+    ).setParseAction(lambda m: tokens.Context([None, 'Interpretations', None,
+        '(' + ')('.join(p for p in [m.p2, m.p3, m.p4, m.p5]
             if p) + ')'], bool(m.certain)))
 appendix = (
     context_certainty
@@ -85,13 +88,13 @@ appendix = (
         [m.part, 'Appendix:' + m.appendix], bool(m.certain)))
 section = (
     context_certainty
-    + atomic.section_marker 
+    + atomic.section_marker
     + unified.part_section).setParseAction(lambda m: tokens.Context(
         [m.part, None, m.section], bool(m.certain)))
 
 
 #   Paragraph components (used when not replacing the whole paragraph)
-section_heading = Marker("heading").setParseAction(lambda _: 
+section_heading = Marker("heading").setParseAction(lambda _:
     tokens.Paragraph([], field=tokens.Paragraph.HEADING_FIELD))
 intro_text = intro_text_marker.copy().setParseAction(
     lambda _: tokens.Paragraph([], field=tokens.Paragraph.TEXT_FIELD))
@@ -109,19 +112,19 @@ comment_p = (
 section_heading_of = (
     Marker("heading") + Marker("of")
     + unified.marker_part_section
-    ).setParseAction(lambda m: tokens.Paragraph([m.part, None, m.section], 
+    ).setParseAction(lambda m: tokens.Paragraph([m.part, None, m.section],
         field=tokens.Paragraph.TEXT_FIELD))
 intro_text_of = (
     intro_text_marker + Marker("of")
     + unified.marker_paragraph.copy()
     ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
-        m.p1, m.p2, m.p3, m.p4, m.p5], 
+        m.p1, m.p2, m.p3, m.p4, m.p5],
         field=tokens.Paragraph.TEXT_FIELD))
 single_par = (
     unified.marker_paragraph
     + Optional(intro_text_marker)
     ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
-        m.p1, m.p2, m.p3, m.p4, m.p5], 
+        m.p1, m.p2, m.p3, m.p4, m.p5],
         field=(tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
 section_single_par = (
     unified.marker_part_section
@@ -130,7 +133,7 @@ section_single_par = (
     ).setParseAction(lambda m: tokens.Paragraph([m.part, None,
         m.section, m.p1, m.p2, m.p3, m.p4, m.p5],
         field=(tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
-single_comment_par=(
+single_comment_par = (
     atomic.paragraph_marker
     + comment_p
     ).setParseAction(lambda m: tokens.Paragraph([None,
@@ -166,9 +169,9 @@ def make_par_list(listify):
                 prev = pars[-1]
                 if len(prev.label) == 3:
                     # Section numbers
-                    for i in range(int(prev.label[-1]) + 1, 
+                    for i in range(int(prev.label[-1]) + 1,
                             int(next_par.label[-1])):
-                        pars.append(tokens.Paragraph(prev.label[:2] 
+                        pars.append(tokens.Paragraph(prev.label[:2]
                             + [str(i)]))
                 if len(prev.label) > 3:
                     # Paragraphs
@@ -251,5 +254,5 @@ token_patterns = (
 
 subpart_label = (atomic.part + Suppress('-')
                  + atomic.subpart_marker + Suppress(':')
-                 + Word(string.ascii_uppercase, max=1) 
+                 + Word(string.ascii_uppercase, max=1)
                  + LineEnd())
