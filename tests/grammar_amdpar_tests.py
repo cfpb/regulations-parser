@@ -2,7 +2,9 @@
 from unittest import TestCase
 
 from regparser.grammar import tokens
-from regparser.grammar.amdpar import token_patterns, multiple_paragraph_sections
+from regparser.grammar.amdpar import *
+#from regparser.grammar.amdpar import token_patterns, multiple_paragraph_sections, multiple_pars
+from regparser.citations import internal_citations
 
 class GrammarAmdParTests(TestCase):
 
@@ -250,3 +252,21 @@ class GrammarAmdParTests(TestCase):
             ]),
             tokens.Verb(tokens.Verb.PUT, active=False)
         ])
+
+    def test_example_19(self):
+        text = u"Section 106.43 is amended by revising paragraphs"
+        text += " (a)(3)(ii) and (iii), (b)(4), (e)(1) and (g)(1)(ii)(B)," 
+        text += " and adding new paragraphs (a)(3)(iv) through (vi), (e)(5)"
+        text += " and (e)(6) to read as follows:"
+
+        result = [m[0] for m,_,_ in token_patterns.scanString(text)]
+        result = [l for l in result if isinstance(l, tokens.TokenList)]
+        token_list = result[0]
+
+        iii = tokens.Paragraph([None, None, None, None, None, 'iii']) 
+        self.assertTrue(iii in token_list)
+
+        second_token_list = result[1]
+
+        v = tokens.Paragraph([None, None, None, 'a', '3', 'v'])
+        self.assertTrue(v in second_token_list)

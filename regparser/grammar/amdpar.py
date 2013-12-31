@@ -218,6 +218,12 @@ multiple_comments = (
         m.section, '(' + ')('.join(p for p in [m.p1, m.p2, m.p3, m.p4, m.p5]
                                    if p) + ')']))
 
+multiple_paragraphs = (
+    atomic.paragraphs_marker
+    + make_multiple(unified.any_depth_p)
+    ).setParseAction(make_par_list(lambda m: [m.part, None, m.section,
+        m.p1, m.p2, m.p3, m.p4, m.p5]))
+
 
 #   grammar which captures all of these possibilities
 token_patterns = (
@@ -231,7 +237,7 @@ token_patterns = (
     | section_heading | section_heading_of | intro_text_of
     | multiple_paragraph_sections | section_single_par
 
-    | multiple_sections | multiple_pars | multiple_appendices
+    | multiple_sections | multiple_pars | multiple_paragraphs | multiple_appendices
     | multiple_comment_pars | multiple_comments
     #   Must come after multiple_pars
     | single_par
