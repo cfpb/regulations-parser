@@ -365,3 +365,22 @@ class NoticeDiffTests(TestCase):
 
         amended_label = ('POST', '200-Subpart:B-a-3')
         self.assertFalse(new_subpart_added(amended_label))
+
+    def test_switch_context(self):
+        initial_context = ['105', '2']
+
+        tokenized = [
+            tokens.Paragraph(['203', '2', 'x']),
+            tokens.Verb(tokens.Verb.DESIGNATE, True)
+        ]
+
+        self.assertEqual(
+            switch_context(tokenized, initial_context), [])
+
+        tokenized = [
+            tokens.Paragraph(['105', '4', 'j', 'iv']),
+            tokens.Verb(tokens.Verb.DESIGNATE, True)
+        ]
+
+        self.assertEqual(
+            switch_context(tokenized, initial_context), initial_context)

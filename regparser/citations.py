@@ -1,4 +1,4 @@
-from itertools import chain, takewhile
+from itertools import chain
 
 from regparser.grammar import unified as grammar
 from regparser.tree.struct import Node
@@ -94,6 +94,9 @@ class Label(object):
             lst.append(self.settings.get('c3'))
 
         return filter(bool, lst)
+
+    def __repr__(self):
+        return repr(self.to_list())
 
 
 class ParagraphCitation(object):
