@@ -132,7 +132,8 @@ class Terms(Layer):
                     dropped in preference of new values based on
                     n.text."""
                     pos_start = n.text.find(match.term.tokens[0])
-                    term = ' '.join(match.term.tokens).lower()
+                    term = n.tagged_text[
+                        match.term.pos[0]:match.term.pos[1]].lower()
                     match_len = len(term)
                     add_match(n,
                               term,

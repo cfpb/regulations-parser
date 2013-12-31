@@ -80,17 +80,21 @@ class LayerTermTest(TestCase):
         xml_text4d = u'(d) <E T="03">Term1</E> or <E T="03">term2></E> means stuff'
         text4e = u'(e) Well-meaning lawyers means people who do weird things'
         xml_text4e = u'(e) <E T="03">Well-meaning lawyers</E> means people who do weird things'
+        text4f = u'(f) Huge billowy clouds means I want to take a nap'
+        xml_text4f = u'(f) <E T="03">Huge billowy clouds</E> means I want to take a nap'
 
         node4a = Node(text4a, label=['eee'])
         node4b = Node(text4b, label=['fff'])
         node4c = Node(text4c, label=['ggg'])
         node4d = Node(text4d, label=['hhh'])
         node4e = Node(text4e, label=['iii'])
+        node4f = Node(text4f, label=['jjj'])
         node4a.tagged_text = xml_text4a
         node4b.tagged_text = xml_text4b
         node4c.tagged_text = xml_text4c
         node4d.tagged_text = xml_text4d
         node4e.tagged_text = xml_text4e
+        node4f.tagged_text = xml_text4f
 
         tree = Node(children=[ 
             Node(text1, label=['aaa']),
@@ -108,11 +112,12 @@ class LayerTermTest(TestCase):
                 node4b,
                 node4c,
                 node4d,
-                node4e
+                node4e,
+                node4f
             ])
         ])
         defs, excluded = t.node_definitions(tree)
-        self.assertEqual(7, len(defs))
+        self.assertEqual(8, len(defs))
         self.assertTrue(Ref('word', 'aaa', (12,16)) in defs)
         self.assertTrue(Ref('another word', 'bbb', (8,20)) in defs)
         self.assertTrue(Ref('moree', 'bbb', (32,37)) in defs)
@@ -120,6 +125,7 @@ class LayerTermTest(TestCase):
         self.assertTrue(Ref('subchildren', 'ddd', (7,18)) in defs)
         self.assertTrue(Ref('thing', 'fff', (4,9)) in defs)
         self.assertTrue(Ref('well-meaning lawyers', 'iii', (4,24)) in defs)
+        self.assertTrue(Ref('huge billowy clouds', 'jjj', (4,23)) in defs)
 
     def test_node_defintions_act(self):
         t = Terms(None)

@@ -12,7 +12,9 @@ smart_quotes = (
 
 e_tag = (
     Suppress(Regex(r"<E[^>]*>"))
-    + OneOrMore(Word(srange("[a-zA-Z-]")))
+    + OneOrMore(
+        Word(srange("[a-zA-Z-]"))
+    ).setParseAction(keep_pos).setResultsName("term")
     + Suppress(
         Literal("</E>") + Literal("means")
     )
@@ -20,7 +22,7 @@ e_tag = (
 
 beginning_of_paragraph = (
     Suppress(any_depth_p)
-    + (e_tag).setParseAction(keep_pos).setResultsName("term")
+    + e_tag
 )
 
 term_parser = (
