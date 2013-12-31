@@ -190,11 +190,6 @@ multiple_sections = (
     + make_multiple(unified.part_section)
     ).setParseAction(make_par_list(lambda m: [m.part, None, m.section]))
 
-multiple_pars = (
-    atomic.paragraphs_marker
-    + make_multiple(unified.depth1_p)
-    ).setParseAction(make_par_list(lambda m: [m.part, None, m.section,
-        m.p1, m.p2, m.p3, m.p4, m.p5]))
 
 multiple_paragraph_sections = (
     atomic.section_marker
@@ -240,7 +235,7 @@ token_patterns = (
     | section_heading | section_heading_of | intro_text_of
     | multiple_paragraph_sections | section_single_par
 
-    | multiple_sections | multiple_pars | multiple_paragraphs | multiple_appendices
+    | multiple_sections | multiple_paragraphs | multiple_appendices
     | multiple_comment_pars | multiple_comments
     #   Must come after multiple_pars
     | single_par
