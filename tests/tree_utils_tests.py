@@ -5,7 +5,6 @@ from lxml import etree
 
 from regparser.tree.struct import Node
 from regparser.tree.xml_parser import tree_utils
-from regparser.tree.node_stack import NodeStack
 
 
 class TreeUtilsTest(unittest.TestCase):
@@ -35,7 +34,8 @@ class TreeUtilsTest(unittest.TestCase):
         self.assertEqual(['i', 'A'], result)
 
     def test_get_node_text_tags(self):
-        text = '<P>(a)<E T="03">Fruit.</E>Apples,<PRTPAGE P="102"/> and Pineapples</P>'
+        text = '<P>(a)<E T="03">Fruit.</E>Apples,<PRTPAGE P="102"/> and '
+        text += 'Pineapples</P>'
         doc = etree.fromstring(text)
         result = tree_utils.get_node_text_tags_preserved(doc)
 
@@ -59,12 +59,12 @@ class TreeUtilsTest(unittest.TestCase):
         level_one_n = Node(label=['272'])
         level_two_n = Node(label=['a'])
 
-        m_stack = NodeStack()
+        m_stack = tree_utils.NodeStack()
         m_stack.push_last((1, level_one_n))
-        tree_utils.add_to_stack(m_stack, 2, level_two_n)
+        m_stack.add(2, level_two_n)
 
         self.assertEquals(m_stack.size(), 2)
-        tree_utils.unwind_stack(m_stack)
+        m_stack.unwind()
 
         self.assertEquals(m_stack.size(), 1)
 

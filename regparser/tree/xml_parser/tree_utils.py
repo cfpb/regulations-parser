@@ -8,6 +8,7 @@ from lxml import etree
 from regparser.citations import internal_citations
 from regparser.grammar.unified import any_depth_p
 from regparser.tree.paragraph import p_levels
+from regparser.tree.priority_stack import PriorityStack
 
 
 def prepend_parts(parts_prefix, n):
@@ -22,30 +23,18 @@ def prepend_parts(parts_prefix, n):
     return n
 
 
-def unwind_stack(m_stack):
-    """ Unwind the stack, collapsing sub-paragraphs that are on the stack into
-    the children of the previous level. """
-    children = m_stack.pop()
-    parts_prefix = m_stack.peek_last()[1].label
-    children = [prepend_parts(parts_prefix, c[1]) for c in children]
-    m_stack.peek_last()[1].children = children
-
-
-def add_to_stack(m_stack, node_level, node):
-    """ Add a new node with level node_level to the stack. Unwind the stack
-    when necessary. """
-    last = m_stack.peek()
-    element = (node_level, node)
-
-    if len(last) > 0 and node_level > last[0][0]:
-        m_stack.push(element)
-    elif len(last) > 0 and node_level < last[0][0]:
-        while last[0][0] > node_level:
-            unwind_stack(m_stack)
-            last = m_stack.peek()
-        m_stack.push_last(element)
-    else:
-        m_stack.push_last(element)
+class NodeStack(PriorityStack):
+    """ The NodeStack aids our construction of a struct.Node tree. We process
+    xml one paragraph at a time; using a priority stack allows us to insert
+    items at their proper depth and unwind the stack (collecting children) as
+    necessary"""
+    def unwind(self):
+        """ Unwind the stack, collapsing sub-paragraphs that are on the stack
+        into the children of the previous level. """
+        children = self.pop()
+        parts_prefix = self.peek_last()[1].label
+        children = [prepend_parts(parts_prefix, c[1]) for c in children]
+        self.peek_last()[1].children = children
 
 
 def split_text(text, tokens):

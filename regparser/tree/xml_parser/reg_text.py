@@ -7,7 +7,6 @@ from lxml import etree
 from regparser import content
 from regparser.tree.struct import Node
 from regparser.tree.paragraph import p_levels
-from regparser.tree.node_stack import NodeStack
 from regparser.tree.xml_parser.appendices import build_non_reg_text
 from regparser.tree import reg_text
 from regparser.tree.xml_parser import tree_utils
@@ -177,7 +176,7 @@ def next_marker(xml_node, remaining_markers):
 
 def build_from_section(reg_part, section_xml):
     p_level = 1
-    m_stack = NodeStack()
+    m_stack = tree_utils.NodeStack()
     section_texts = []
     for ch in (ch for ch in section_xml.getchildren() if ch.tag == 'P'):
         text = tree_utils.get_node_text(ch)
@@ -206,7 +205,7 @@ def build_from_section(reg_part, section_xml):
                 if len(last) == 0:
                     m_stack.push_last((new_p_level, n))
                 else:
-                    tree_utils.add_to_stack(m_stack, new_p_level, n)
+                    m_stack.add(new_p_level, n)
                 p_level = new_p_level
 
     section_no = section_xml.xpath('SECTNO')[0].text
@@ -246,7 +245,7 @@ def build_from_section(reg_part, section_xml):
         m_stack.add_to_bottom((1, sect_node))
 
         while m_stack.size() > 1:
-            tree_utils.unwind_stack(m_stack)
+            m_stack.unwind()
 
         nodes.append(m_stack.pop()[0][1])
 
