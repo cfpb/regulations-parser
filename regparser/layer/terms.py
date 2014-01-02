@@ -10,6 +10,7 @@ from regparser.grammar.terms import term_parser, xml_term_parser
 from regparser.layer.layer import Layer
 from regparser.layer.paragraph_markers import ParagraphMarkers
 from regparser.tree import struct
+from regparser.tree.priority_stack import PriorityStack
 import settings
 
 
@@ -25,6 +26,15 @@ class Ref(object):
                 and hasattr(other, 'position') and self.term == other.term
                 and self.label == other.label
                 and self.position == other.position)
+
+
+class ParentStack(PriorityStack):
+    """Used to keep track of the parents while processing nodes to find
+    terms. This is needed as the definition may need to find its scope in
+    parents."""
+    def unwind(self):
+        """No collapsing needs to happen."""
+        self.pop()
 
 
 class Terms(Layer):
@@ -56,6 +66,27 @@ class Terms(Layer):
 
         struct.walk(self.tree, per_node)
 
+    def determine_scope(self, stack):
+        for i in range(stack.size(), 0, -1):
+            node = stack.peek_level_last(i)
+            scopes = []
+            if "purposes of this part" in node.text.lower():
+                scopes.append(node.label[:1])
+            elif "purposes of this subpart" in node.text.lower():
+                scopes.extend(self.subpart_scope(node.label))
+            elif "purposes of this section" in node.text.lower():
+                scopes.append(node.label[:2])
+            elif "purposes of this paragraph" in node.text.lower():
+                scopes.append(node.label)
+
+            #   Add interpretation to scopes
+            scopes = scopes + [s + [struct.Node.INTERP_MARK] for s in scopes]
+            if scopes:
+                return [tuple(s) for s in scopes]
+
+        #   Couldn't determine scope; default to the entire reg
+        return [tuple(node.label[:1])]
+
     def pre_process(self):
         """Step through every node in the tree, finding definitions. Add
         these definition to self.scoped_terms. Also keep track of which
@@ -63,12 +94,22 @@ class Terms(Layer):
 
         self.add_subparts()
 
+        stack = ParentStack()
         def per_node(node):
-            if self.has_definitions(node):
-                for scope in self.definitions_scopes(node):
-                    included, excluded = self.node_definitions(node)
-                    self.scoped_terms[scope].extend(included)
-                    self.scoped_terms['EXCLUDED'].extend(excluded)
+            if node.node_type in (struct.Node.REGTEXT, struct.Node.SUBPART,
+                                  struct.Node.EMPTYPART):
+                if (len(node.label) > 1
+                        and node.node_type == struct.Node.REGTEXT):
+                    #   Add one for the subpart level
+                    stack.add(len(node.label) + 1, node)
+                else:
+                    stack.add(len(node.label), node)
+
+                included, excluded = self.node_definitions(node)
+                if included:
+                    for scope in self.determine_scope(stack):
+                        self.scoped_terms[scope].extend(included)
+                self.scoped_terms['EXCLUDED'].extend(excluded)
 
         struct.walk(self.tree, per_node)
 
@@ -139,7 +180,8 @@ class Terms(Layer):
                               term,
                               (pos_start, pos_start + match_len))
 
-        struct.walk(node, per_node)
+        #struct.walk(node, per_node)
+        per_node(node)
         return included_defs, excluded_defs
 
     def subpart_scope(self, label_parts):
@@ -163,6 +205,7 @@ class Terms(Layer):
             scopes.append(node.label[:2])
         elif "purposes of this paragraph" in node.text.lower():
             scopes.append(node.label)
+
         else:   # defaults to whole reg
             scopes.append(node.label[:1])
 
