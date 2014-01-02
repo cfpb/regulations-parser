@@ -5,8 +5,8 @@ import re
 from inflection import pluralize
 
 from regparser import utils
+from regparser.grammar import terms as grammar
 from regparser.grammar.external_citations import uscode_exp as uscode
-from regparser.grammar.terms import term_parser, xml_term_parser
 from regparser.layer.layer import Layer
 from regparser.layer.paragraph_markers import ParagraphMarkers
 from regparser.tree import struct
@@ -67,8 +67,7 @@ class Terms(Layer):
         struct.walk(self.tree, per_node)
 
     def determine_scope(self, stack):
-        for i in range(stack.size(), 0, -1):
-            node = stack.peek_level_last(i)
+        for node in stack.lineage():
             scopes = []
             if "purposes of this part" in node.text.lower():
                 scopes.append(node.label[:1])
@@ -105,7 +104,7 @@ class Terms(Layer):
                 else:
                     stack.add(len(node.label), node)
 
-                included, excluded = self.node_definitions(node)
+                included, excluded = self.node_definitions(node, stack)
                 if included:
                     for scope in self.determine_scope(stack):
                         self.scoped_terms[scope].extend(included)
@@ -142,7 +141,18 @@ class Terms(Layer):
             return bool(re.search(regex, node.text.lower()))
         return False
 
-    def node_definitions(self, node):
+    def has_parent_definitions_indicator(self, stack):
+        """With smart quotes, we catch some false positives, phrases in quotes
+        that are not terms. This extra test lets us know that a parent of the
+        node looks like it would contain definitions."""
+        for node in stack.lineage():
+            if ('Definition' in node.text
+                or 'Definition' in (node.title or '')
+                or re.search('the term .* means', node.text)):
+                return True
+        return False
+
+    def node_definitions(self, node, stack):
         """Walk through this node and its children to find defined terms.
         'Act' is a special case, as it is also defined as an external
         citation."""
@@ -156,27 +166,24 @@ class Terms(Layer):
             else:
                 included_defs.append(Ref(term, n.label_id(), pos))
 
-        def per_node(n):
-            for match, _, _ in term_parser.scanString(n.text):
-                add_match(n,
-                          match.term.tokens[0].lower(),
-                          match.term.pos)
+        if self.has_parent_definitions_indicator(stack):
+            for match, _, _ in grammar.smart_quotes.scanString(node.text):
+                term = match.term.tokens[0].lower().strip(',')
+                add_match(node, term, match.term.pos)
 
-            if hasattr(n, 'tagged_text'):
-                for match, _, _ in xml_term_parser.scanString(n.tagged_text):
-                    """Position in match reflects XML tags, so its
-                    dropped in preference of new values based on
-                    n.text."""
-                    pos_start = n.text.find(match.term.tokens[0])
-                    term = n.tagged_text[
-                        match.term.pos[0]:match.term.pos[1]].lower()
-                    match_len = len(term)
-                    add_match(n,
-                              term,
-                              (pos_start, pos_start + match_len))
+        if hasattr(node, 'tagged_text'):
+            for match, _, _ in grammar.xml_term_parser.scanString(
+                    node.tagged_text):
+                """Position in match reflects XML tags, so its dropped in 
+                preference of new values based on node.text."""
+                pos_start = node.text.find(match.term.tokens[0])
+                term = node.tagged_text[
+                    match.term.pos[0]:match.term.pos[1]].lower()
+                match_len = len(term)
+                add_match(node,
+                          term,
+                          (pos_start, pos_start + match_len))
 
-        #struct.walk(node, per_node)
-        per_node(node)
         return included_defs, excluded_defs
 
     def subpart_scope(self, label_parts):

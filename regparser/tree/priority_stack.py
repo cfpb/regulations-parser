@@ -29,6 +29,9 @@ class PriorityStack(object):
         if found:
             return found[-1]
 
+    def lineage(self):
+        return list(reversed([els[-1][-1] for els in self.m_stack]))
+
     def add_to_bottom(self, m):
         self.m_stack = [[m]] + self.m_stack
 
