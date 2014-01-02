@@ -1,3 +1,13 @@
+## 12/31/2013
+
+* Better appendices
+    * Catch headers like 'G-14A' and 'G-18(C)(3)'
+    * Paragraph markers for both '(a)' and 'a.'
+    * Place G-12(a) headers on the same level as G-12
+* Add keyterms to interpretations in XML
+* Add method to expand macros in XML
+* Catch additional definitions (indicated by tags followed by "means")
+
 ## 12/17/2013
 
 * Better appendices
