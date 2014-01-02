@@ -121,29 +121,26 @@ class Terms(Layer):
                     'position': ref.position
                 }
 
-    def has_definitions(self, node):
-        """Does this node have definitions?"""
-        # Definitions cannot be in the top-most layer of the tree (the root)
-        if len(node.label) < 2:
-            return False
-        # Definitions are only in the reg text (not appendices/interprs)
-        if node.node_type != struct.Node.REGTEXT:
-            return False
-        stripped = node.text.strip(ParagraphMarkers.marker(node)).strip()
-        return (
-            stripped.lower().startswith('definition')
-            or (node.title and 'definition' in node.title.lower())
-            or re.search('the term .* means', stripped.lower())
-            )
+    def applicable_terms(self, label):
+        """Find all terms that might be applicable to nodes with this label.
+        Note that we don't have to deal with subparts as subpart_scope simply
+        applies the definition to all sections in a subpart"""
+        applicable_terms = {}
+        for segment_length in range(1, len(label) + 1):
+            scope = tuple(label[:segment_length])
+            for ref in self.scoped_terms.get(scope, []):
+                applicable_terms[ref.term] = ref    # overwrites
+        return applicable_terms
 
-    def is_exclusion(self, term, text, previous_terms):
+    def is_exclusion(self, term, node):
         """Some definitions are exceptions/exclusions of a previously
         defined term. At the moment, we do not want to include these as they
         would replace previous (correct) definitions."""
-        if term not in [t.term for t in previous_terms]:
-            return False
-        regex = 'the term .?' + re.escape(term) + '.? does not include'
-        return bool(re.search(regex, text.lower()))
+        applicable_terms = self.applicable_terms(node.label)
+        if term not in applicable_terms:
+            regex = 'the term .?' + re.escape(term) + '.? does not include'
+            return bool(re.search(regex, node.text.lower()))
+        return False
 
     def node_definitions(self, node):
         """Walk through this node and its children to find defined terms.
@@ -153,13 +150,11 @@ class Terms(Layer):
         excluded_defs = []
 
         def add_match(n, term, pos):
-            add_to = included_defs
-
-            if term == 'act' and list(uscode.scanString(n.text)):
-                add_to = excluded_defs
-            if self.is_exclusion(term, n.text, included_defs):
-                add_to = excluded_defs
-            add_to.append(Ref(term, n.label_id(), pos))
+            if ((term == 'act' and list(uscode.scanString(n.text)))
+                    or self.is_exclusion(term, n)):
+                excluded_defs.append(Ref(term, n.label_id(), pos))
+            else:
+                included_defs.append(Ref(term, n.label_id(), pos))
 
         def per_node(n):
             for match, _, _ in term_parser.scanString(n.text):
@@ -194,35 +189,10 @@ class Terms(Layer):
                 return [[reg, sect] for sect in self.subpart_map[subpart]]
         return []
 
-    def definitions_scopes(self, node):
-        """Try to determine the scope of definitions in this term."""
-        scopes = []
-        if "purposes of this part" in node.text.lower():
-            scopes.append(node.label[:1])
-        elif "purposes of this subpart" in node.text.lower():
-            scopes.extend(self.subpart_scope(node.label))
-        elif "purposes of this section" in node.text.lower():
-            scopes.append(node.label[:2])
-        elif "purposes of this paragraph" in node.text.lower():
-            scopes.append(node.label)
-
-        else:   # defaults to whole reg
-            scopes.append(node.label[:1])
-
-        for scope in list(scopes):  # second list so we can iterate
-            interp_scope = scope + [struct.Node.INTERP_MARK]
-            if interp_scope:
-                scopes.append(interp_scope)
-        return [tuple(scope) for scope in scopes]
-
     def process(self, node):
         """Determine which (if any) definitions would apply to this node,
         then find if any of those terms appear in this node"""
-        applicable_terms = {}
-        for segment_length in range(1, len(node.label)+1):
-            scope = tuple(node.label[:segment_length])
-            for ref in self.scoped_terms.get(scope, []):
-                applicable_terms[ref.term] = ref    # overwrites
+        applicable_terms = self.applicable_terms(node.label)
 
         layer_el = []
         #   Remove any definitions defined in this paragraph
