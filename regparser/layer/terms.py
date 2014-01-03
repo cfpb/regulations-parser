@@ -8,7 +8,6 @@ from regparser import utils
 from regparser.grammar import terms as grammar
 from regparser.grammar.external_citations import uscode_exp as uscode
 from regparser.layer.layer import Layer
-from regparser.layer.paragraph_markers import ParagraphMarkers
 from regparser.tree import struct
 from regparser.tree.priority_stack import PriorityStack
 import settings
@@ -26,6 +25,10 @@ class Ref(object):
                 and hasattr(other, 'position') and self.term == other.term
                 and self.label == other.label
                 and self.position == other.position)
+
+    def __repr__(self):
+        return 'Ref( term=%s, label=%s, position=%s )' % (
+                repr(self.term), repr(self.label), repr(self.position))
 
 
 class ParentStack(PriorityStack):
@@ -136,7 +139,7 @@ class Terms(Layer):
         defined term. At the moment, we do not want to include these as they
         would replace previous (correct) definitions."""
         applicable_terms = self.applicable_terms(node.label)
-        if term not in applicable_terms:
+        if term in applicable_terms:
             regex = 'the term .?' + re.escape(term) + '.? does not include'
             return bool(re.search(regex, node.text.lower()))
         return False
@@ -148,7 +151,7 @@ class Terms(Layer):
         for node in stack.lineage():
             if ('Definition' in node.text
                 or 'Definition' in (node.title or '')
-                or re.search('the term .* means', node.text)):
+                or re.search('the term .* means', node.text.lower())):
                 return True
         return False
 
@@ -168,8 +171,12 @@ class Terms(Layer):
 
         if self.has_parent_definitions_indicator(stack):
             for match, _, _ in grammar.smart_quotes.scanString(node.text):
-                term = match.term.tokens[0].lower().strip(',')
-                add_match(node, term, match.term.pos)
+                term = match.term.tokens[0].lower().strip(',.;')
+                #   Don't use pos_end because we are stripping some chars
+                pos_start = match.term.pos[0]
+                add_match(node,
+                          term,
+                          (pos_start, pos_start + len(term)))
 
         if hasattr(node, 'tagged_text'):
             for match, _, _ in grammar.xml_term_parser.scanString(
