@@ -28,7 +28,7 @@ class Ref(object):
 
     def __repr__(self):
         return 'Ref( term=%s, label=%s, position=%s )' % (
-                repr(self.term), repr(self.label), repr(self.position))
+            repr(self.term), repr(self.label), repr(self.position))
 
 
 class ParentStack(PriorityStack):
@@ -50,7 +50,6 @@ class Terms(Layer):
         #   subpart -> list[section]
         self.subpart_map = defaultdict(list)
 
-
     def add_subparts(self):
         """Document the relationship between sections and subparts"""
 
@@ -61,8 +60,8 @@ class Terms(Layer):
                 current_subpart[0] = node.label[2]
             elif node.node_type == struct.Node.EMPTYPART:
                 current_subpart[0] = None
-            if (len(node.label) == 2 and
-                node.node_type in (struct.Node.REGTEXT, struct.Node.APPENDIX)):
+            if (node.node_type in (struct.Node.REGTEXT, struct.Node.APPENDIX)
+                    and len(node.label) == 2):
                 #Subparts
                 section = node.label[-1]
                 self.subpart_map[current_subpart[0]].append(section)
@@ -95,8 +94,8 @@ class Terms(Layer):
         subpart we are in. Finally, document all defined terms. """
 
         self.add_subparts()
-
         stack = ParentStack()
+
         def per_node(node):
             if node.node_type in (struct.Node.REGTEXT, struct.Node.SUBPART,
                                   struct.Node.EMPTYPART):
@@ -150,8 +149,8 @@ class Terms(Layer):
         node looks like it would contain definitions."""
         for node in stack.lineage():
             if ('Definition' in node.text
-                or 'Definition' in (node.title or '')
-                or re.search('the term .* means', node.text.lower())):
+                    or 'Definition' in (node.title or '')
+                    or re.search('the term .* means', node.text.lower())):
                 return True
         return False
 
@@ -181,7 +180,7 @@ class Terms(Layer):
         if hasattr(node, 'tagged_text'):
             for match, _, _ in grammar.xml_term_parser.scanString(
                     node.tagged_text):
-                """Position in match reflects XML tags, so its dropped in 
+                """Position in match reflects XML tags, so its dropped in
                 preference of new values based on node.text."""
                 pos_start = node.text.find(match.term.tokens[0])
                 term = node.tagged_text[
