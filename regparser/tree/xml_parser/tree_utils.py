@@ -53,7 +53,8 @@ _first_markers = []
 for idx, level in enumerate(p_levels):
     marker = (Suppress(Regex(u',|\.|-|—|>'))
               + Suppress('(')
-              + Literal(level[0]) + Suppress(')'))
+              + Literal(level[0])
+              + Suppress(')'))
     for inner_idx in range(idx + 1, len(p_levels)):
         inner_level = p_levels[inner_idx]
         marker += Optional(Suppress('(')
