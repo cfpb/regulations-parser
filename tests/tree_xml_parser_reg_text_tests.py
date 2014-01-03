@@ -65,6 +65,31 @@ class RegTextTest(TestCase):
         self.assertEqual(1, len(a1iA.children))
         self.assertEqual("(1) eeee", a1iA.children[0].text.strip())
 
+    def test_build_from_section_double_collapsed(self):
+        xml = u"""
+            <SECTION>
+                <SECTNO>§ 8675.309</SECTNO>
+                <SUBJECT>Definitions.</SUBJECT>
+                <P>(a) <E T="03">Keyterm</E>—(1)(i) Content</P>
+                <P>(ii) Content2</P>
+            </SECTION>
+        """
+        node = build_from_section('8675', etree.fromstring(xml))[0]
+        self.assertEqual(['8675', '309'], node.label)
+        self.assertEqual(1, len(node.children))
+
+        a = node.children[0]
+        self.assertEqual(['8675', '309', 'a'], a.label)
+        self.assertEqual(1, len(a.children))
+
+        a1 = a.children[0]
+        self.assertEqual(['8675', '309', 'a', '1'], a1.label)
+        self.assertEqual(2, len(a1.children))
+
+        a1i, a1ii = a1.children
+        self.assertEqual(['8675', '309', 'a', '1', 'i'], a1i.label)
+        self.assertEqual(['8675', '309', 'a', '1', 'ii'], a1ii.label)
+
     def test_build_from_section_reserved(self):
         xml = u"""
             <SECTION>
