@@ -96,29 +96,6 @@ def match_labels_and_changes(amendments, section_node):
     resolve_candidates(amend_map)
     return amend_map
 
-#def match_labels_and_changes(labels_amended, section_node):
-#    amend_map = {}
-#    for action, label, label_id in labels_amended:
-#        if action == 'MOVE':
-#            amend_map[label_id[0]] = {
-#                'action': 'move', 'destination': label[1]}
-#        elif action == 'DELETE':
-#            amend_map[label_id] = {'action': 'deleted'}
-#        else:
-#            node = struct.find(section_node, label_id)
-#            if node is None:
-#                candidate = find_misparsed_node(section_node, label)
-#                if candidate is not None:
-#                    amend_map[label_id] = candidate
-#            else:
-#                amend_map[label_id] = {
-#                    'node': node,
-#                    'action': 'updated',
-#                    'candidate': False}
-
-    resolve_candidates(amend_map)
-    return amend_map
-
 
 def create_add_amendment(amendment):
     nodes_list = []

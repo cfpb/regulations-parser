@@ -272,6 +272,8 @@ def handle_subpart_amendment(tokenized):
     reg_part = tokens_to_be_designated.tokens[0].label[0]
     destination = get_destination(tokenized, reg_part)
 
+    print 'destination: %s' % destination
+
     return DesignateAmendment(verb, labels_to_be_designated, destination)
     #return (verb, labels_to_be_designated, destination)
 
@@ -300,7 +302,11 @@ class Amendment(object):
         self.action = action
         self.original_label = label
         self.label = self.fix_label(self.original_label)
-        self.destination = destination
+
+        if destination and '-' in destination:
+            self.destination = destination.split('-')
+        else:
+            self.destination = destination
 
         if self.TITLE in self.original_label:
             self.field = self.TITLE
@@ -312,6 +318,20 @@ class Amendment(object):
     def label_id(self):
         return '-'.join(self.label)
 
+    def __repr__(self):
+        if self.destination:
+            return '(%s, %s, %s)' % (self.action, self.label, self.destination)
+        else:
+            return '(%s, %s)' % (self.action, self.label)
+
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__)
+            and self.__dict__ == other.__dict__)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+        
+
 
 class DesignateAmendment(Amendment):
     def __init__(self, action, label_list, destination):
@@ -320,10 +340,12 @@ class DesignateAmendment(Amendment):
         self.labels = [self.fix_label(l) for l in self.original_labels]
         self.original_destination = destination
 
-        if 'Subpart' in destination:
+        if 'Subpart' in destination and ':' in destination:
             reg_part, subpart = self.original_destination.split('-')
             _, subpart_letter = destination.split(':')
             self.destination = [reg_part, 'Subpart', subpart_letter]
+        elif '-' in destination:
+            self.destination = destination.split('-')
         else:
             self.destination = destination
 

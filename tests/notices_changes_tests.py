@@ -2,6 +2,7 @@
 from unittest import TestCase
 from regparser.notice import changes
 from regparser.tree.struct import Node
+from regparser.notice.diff import Amendment
 
 
 class ChangesTests(TestCase):
@@ -90,7 +91,9 @@ class ChangesTests(TestCase):
 
     def test_create_add_amendment(self):
         root = self.build_tree()
-        amendments = changes.create_add_amendment(root)
+
+        amendment = {'node':root, 'action':'POST'}
+        amendments = changes.create_add_amendment(amendment)
         self.assertEqual(6, len(amendments))
 
         amends = {}
@@ -102,7 +105,7 @@ class ChangesTests(TestCase):
    
         for label, node in amends.items():
             self.assertEqual(label, '-'.join(node['label']))
-            self.assertEqual(node['op'], 'updated')
+            self.assertEqual(node['action'], 'POST')
             self.assertFalse('children' in node)
 
     def test_flatten_tree(self):
@@ -156,18 +159,16 @@ class ChangesTests(TestCase):
 
 
     def test_match_labels_and_changes_move(self):
-        labels_amended = [
-            ('MOVE', (['200', '1'], ['200', '2']), ('200-1', '200-2'))]
+        labels_amended = [Amendment('MOVE', '200-1', '200-2')]
         amend_map = changes.match_labels_and_changes(labels_amended, None)
         self.assertEqual(amend_map, {
-            '200-1': {'action': 'move', 'destination': ['200', '2']}})
+            '200-1': {'action': 'MOVE', 'destination': ['200', '2']}})
 
     def test_match_labels_and_changes_delete(self):
-        labels_amended = [
-            ('DELETE', ['200', '1','a', 'i'], '200-1-a-i')]
+        labels_amended = [Amendment('DELETE','200-1-a-i')]
         amend_map = changes.match_labels_and_changes(labels_amended, None)
         self.assertEqual(amend_map, {
-            '200-1-a-i':{'action': 'deleted'}})
+            '200-1-a-i':{'action': 'DELETE'}})
 
     def section_node(self):
         n1 = Node('n2', label=['200', '2'])
@@ -178,9 +179,8 @@ class ChangesTests(TestCase):
         return root
 
     def test_match_labels_and_changes(self):
-        labels_amended = [
-            ('POST', ['200', '2'], '200-2'),
-            ('PUT', ['200', '2', 'a'], '200-2-a')]
+        labels_amended = [Amendment('POST', '200-2'), 
+                          Amendment('PUT', '200-2-a')]
 
         amend_map = changes.match_labels_and_changes(
             labels_amended, self.section_node())
@@ -189,12 +189,12 @@ class ChangesTests(TestCase):
 
         for label, amend in amend_map.items():
             self.assertFalse(amend['candidate'])
-            self.assertEqual('updated', amend['action'])
+            self.assertTrue(amend['action'] in ['POST', 'PUT'])
 
     def test_match_labels_and_changes_candidate(self):
         labels_amended = [
-            ('POST', ['200', '2'], '200-2'),
-            ('PUT', ['200', '2', 'a', '1', 'i'], '200-2-a-1-i')]
+            Amendment('POST', '200-2'),
+            Amendment('PUT', '200-2-a-1-i')]
 
         n1 = Node('n2', label=['200', '2'])
         n2 = Node('n2a', label=['200', '2', 'i'])
