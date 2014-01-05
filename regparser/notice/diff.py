@@ -275,8 +275,10 @@ def handle_subpart_amendment(tokenized):
     return DesignateAmendment(verb, labels_to_be_designated, destination)
     #return (verb, labels_to_be_designated, destination)
 
+
 class Amendment(object):
-    TITLE =  '[title]'
+
+    TITLE = '[title]'
     TEXT = '[text]'
 
     def remove_intro(self, l):
@@ -290,10 +292,9 @@ class Amendment(object):
         """
         def wanted(l):
             return l != '?' and 'Subpart' not in l
-        
+
         components = label.split('-')
         return [self.remove_intro(l) for l in components if wanted(l)]
-
 
     def __init__(self, action, label, destination=None):
         self.action = action
@@ -311,6 +312,7 @@ class Amendment(object):
     def label_id(self):
         return '-'.join(self.label)
 
+
 class DesignateAmendment(Amendment):
     def __init__(self, action, label_list, destination):
         self.action = action
@@ -327,8 +329,8 @@ class DesignateAmendment(Amendment):
 
     def __repr__(self):
         return "(%s, %s, %s)" % (
-            repr(self.action), repr(self.labels), repr(self.destination)) 
-        
+            repr(self.action), repr(self.labels), repr(self.destination))
+
 
 def make_amendments(tokenized, subpart=False):
     """Convert a sequence of (normalized) tokens into a list of amendments"""
@@ -345,15 +347,11 @@ def make_amendments(tokenized, subpart=False):
             elif isinstance(token, tokens.Paragraph):
                 if verb == tokens.Verb.MOVE:
                     if isinstance(tokenized[i-1], tokens.Paragraph):
-                        origin = tokenized[i-1].label_text()  
-                        destination = token.label_text() 
-                        ammends.append(Amendment(verb, origin, destination))
-                        #amends.append((
-                        #    verb,
-                        #    (tokenized[i-1].label_text(), token.label_text())))
+                        origin = tokenized[i-1].label_text()
+                        destination = token.label_text()
+                        amends.append(Amendment(verb, origin, destination))
                 elif verb:
                     amends.append(Amendment(verb, token.label_text()))
-                    #amends.append((verb, token.label_text()))
     return amends
 
 
@@ -361,9 +359,6 @@ def new_subpart_added(amendment):
     """ Return True if label indicates that a new subpart was added. """
 
     new_subpart = amendment.action == 'POST'
-    m = [t for t, _, _ in amdpar.subpart_label.scanString(amendment.original_label)]
+    label = amendment.original_label
+    m = [t for t, _, _ in amdpar.subpart_label.scanString(label)]
     return len(m) > 0 and new_subpart
-
-    #new_subpart = amended_label[0] == 'POST'
-    #m = [t for t, _, _ in amdpar.subpart_label.scanString(amended_label[1])]
-    #return len(m) > 0 and new_subpart

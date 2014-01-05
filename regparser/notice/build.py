@@ -63,10 +63,11 @@ def process_designate_subpart(subpart_designate):
                 'op': 'assign', 'destination': destination_label}
         return subpart_changes
 
+
 def process_designate_subpart_new(amendment):
     """ Process the designate amendment if it adds a subpart. """
 
-    if 'Subpart' in amendment.destination: 
+    if 'Subpart' in amendment.destination:
         subpart_changes = {}
 
         for label in amendment.labels:
@@ -74,6 +75,7 @@ def process_designate_subpart_new(amendment):
             subpart_changes[label_id] = {
                 'op': 'assign', 'destination': amendment.destination}
         return subpart_changes
+
 
 def process_new_subpart(notice, subpart_added, par):
     subpart_changes = {}

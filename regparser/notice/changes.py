@@ -75,10 +75,10 @@ def match_labels_and_changes(amendments, section_node):
     amend_map = {}
     for amend in amendments:
         if amend.action == 'MOVE':
-            change = {'action':amend.action, 'destination': amend.destination}
+            change = {'action': amend.action, 'destination': amend.destination}
             amend_map[amend.label_id()] = change
         elif amend.action == 'DELETE':
-            amend_map[amend.label_id()] = {'action':amend.action}
+            amend_map[amend.label_id()] = {'action': amend.action}
         else:
             node = struct.find(section_node, amend.label_id())
             if node is None:
@@ -92,7 +92,7 @@ def match_labels_and_changes(amendments, section_node):
                     'candidate': False}
             if amend.field is not None:
                 amend_map[amend.label_id()]['field'] = amend.field
-                
+
     resolve_candidates(amend_map)
     return amend_map
 
@@ -134,6 +134,7 @@ def create_add_amendment(amendment):
 
     nodes = [format_node(n) for n in nodes_list]
     return nodes
+
 
 def create_subpart_amendment(subpart_node):
     amendment = {
