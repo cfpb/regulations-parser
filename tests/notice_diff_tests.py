@@ -49,7 +49,8 @@ class NoticeDiffTests(TestCase):
         amends = make_amendments(tokenized)
         print amends
         self.assertEqual(amends,
-                         [Amendment(tokens.Verb.PUT, '222'), Amendment(tokens.Verb.PUT, '333'),
+                         [Amendment(tokens.Verb.PUT, '222'),
+                          Amendment(tokens.Verb.PUT, '333'),
                           Amendment(tokens.Verb.PUT, '444'),
                           Amendment(tokens.Verb.DELETE, '555'),
                           Amendment(tokens.Verb.MOVE, '666', '777')])
@@ -345,7 +346,7 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(amendment.action, tokens.Verb.DESIGNATE)
         labels = [['200', '1', 'a'], ['200', '1', 'b']]
         self.assertEqual(amendment.labels, labels)
-        self.assertEqual(amendment.destination, ['200','Subpart', 'J'])
+        self.assertEqual(amendment.destination, ['200', 'Subpart', 'J'])
 
     def test_make_amendments_subpart(self):
         token_list = self.paragraph_token_list()
@@ -355,7 +356,8 @@ class NoticeDiffTests(TestCase):
 
         amendment = amends[0]
         self.assertEqual(amendment.action, tokens.Verb.DESIGNATE)
-        self.assertEqual(amendment.labels, [['200', '1', 'a'], ['200', '1', 'b']])
+        labels = [['200', '1', 'a'], ['200', '1', 'b']]
+        self.assertEqual(amendment.labels, labels)
         self.assertEqual(amendment.destination, ['200', 'Subpart', 'J'])
 
     def test_new_subpart_added(self):
