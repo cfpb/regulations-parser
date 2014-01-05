@@ -84,3 +84,6 @@ class TreeUtilsTest(unittest.TestCase):
 
         text = u'(a) <E T="03">Transfer—</E>(1) <E T="03">Notice.</E> follow'
         self.assertEqual([u'1'], tree_utils.get_collapsed_markers(text))
+
+        text = u'(a) <E T="03">Keyterm</E>—(1)(i) Content'
+        self.assertEqual(['1', 'i'], tree_utils.get_collapsed_markers(text))
