@@ -1,5 +1,6 @@
 import logging
 import copy
+from collections import defaultdict
 
 from regparser.tree import struct
 from regparser.diff.treediff import node_to_dict
@@ -45,6 +46,7 @@ def fix_labels(labels_amended):
 def resolve_candidates(amend_map, warn=True):
     """Ensure candidate isn't actually accounted for elsewhere, and fix
     it's label. """
+
     for label, node in amend_map.items():
         if 'node' in node:
             node_label = node['node'].label_id()
@@ -55,7 +57,7 @@ def resolve_candidates(amend_map, warn=True):
                     del amend_map[label]
                     if warn:
                         mesg = 'Unable to match amendment'
-                        mesg += 'to change for: %s ' % label
+                        mesg += ' to change for: %s ' % label
                         logging.warning(mesg)
 
 
@@ -69,45 +71,76 @@ def find_misparsed_node(section_node, label):
             'candidate': True}
 
 
-def match_labels_and_changes(labels_amended, section_node):
+def match_labels_and_changes(amendments, section_node):
     amend_map = {}
-    for action, label, label_id in labels_amended:
-        if action == 'MOVE':
-            amend_map[label_id[0]] = {
-                'action': 'move', 'destination': label[1]}
-        elif action == 'DELETE':
-            amend_map[label_id] = {'action': 'deleted'}
+    for amend in amendments:
+        if amend.action == 'MOVE':
+            change = {'action':amend.action, 'destination': amend.destination}
+            amend_map[amend.label_id()] = change
+        elif amend.action == 'DELETE':
+            amend_map[amend.label_id()] = {'action':amend.action}
         else:
-            node = struct.find(section_node, label_id)
+            node = struct.find(section_node, amend.label_id())
             if node is None:
-                candidate = find_misparsed_node(section_node, label)
-                if candidate is not None:
-                    amend_map[label_id] = candidate
+                candidate = find_misparsed_node(section_node, amend.label)
+                if candidate:
+                    amend_map[amend.label_id()] = candidate
             else:
-                amend_map[label_id] = {
+                amend_map[amend.label_id()] = {
                     'node': node,
-                    'action': 'updated',
+                    'action': amend.action,
                     'candidate': False}
+            if amend.field is not None:
+                amend_map[amend.label_id()]['field'] = amend.field
+                
+    resolve_candidates(amend_map)
+    return amend_map
+
+#def match_labels_and_changes(labels_amended, section_node):
+#    amend_map = {}
+#    for action, label, label_id in labels_amended:
+#        if action == 'MOVE':
+#            amend_map[label_id[0]] = {
+#                'action': 'move', 'destination': label[1]}
+#        elif action == 'DELETE':
+#            amend_map[label_id] = {'action': 'deleted'}
+#        else:
+#            node = struct.find(section_node, label_id)
+#            if node is None:
+#                candidate = find_misparsed_node(section_node, label)
+#                if candidate is not None:
+#                    amend_map[label_id] = candidate
+#            else:
+#                amend_map[label_id] = {
+#                    'node': node,
+#                    'action': 'updated',
+#                    'candidate': False}
 
     resolve_candidates(amend_map)
     return amend_map
 
 
-def create_add_amendment(node):
-    """ Create the JSON representation for a node that has been added for
-    changed. The way notices are written we don't need to distinguish between
-    nodes that have been added and those that have been updated. """
-
+def create_add_amendment(amendment):
     nodes_list = []
-    flatten_tree(nodes_list, node)
+    flatten_tree(nodes_list, amendment['node'])
 
     def format_node(node):
-        d = node_to_dict(n)
-        d['op'] = 'updated'
-        return {node.label_id(): d}
+        node_as_dict = node_to_dict(n)
+        node_as_dict['action'] = amendment['action']
+
+        if 'field' in amendment:
+            node_as_dict['field'] = amendment['field']
+        return {node.label_id(): node_as_dict}
 
     nodes = [format_node(n) for n in nodes_list]
     return nodes
+
+def create_subpart_amendment(subpart_node):
+    amendment = {
+        'node': subpart_node,
+        'action': 'POST'
+    }
+    return create_add_amendment(amendment)
 
 
 def flatten_tree(node_list, node):
@@ -126,3 +159,12 @@ def remove_intro(l):
     """ Remove the marker that indicates this is a change to introductory
     text. """
     return l.replace('[text]', '')
+
+
+class NoticeChanges(object):
+    def __init__(self):
+        self.changes = defaultdict(list)
+
+    def update(self, changes):
+        for l, c in changes.items():
+            self.changes[l].append(c)

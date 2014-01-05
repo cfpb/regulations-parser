@@ -80,6 +80,7 @@ def switch_context(token_list, carried_context):
 def parse_amdpar(par, initial_context):
     text = etree.tostring(par, encoding=unicode)
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
+
     tokenized = switch_passive(tokenized)
     tokenized, subpart = deal_with_subpart_adds(tokenized)
     tokenized = context_to_paragraph(tokenized)
@@ -271,8 +272,63 @@ def handle_subpart_amendment(tokenized):
     reg_part = tokens_to_be_designated.tokens[0].label[0]
     destination = get_destination(tokenized, reg_part)
 
-    return (verb, labels_to_be_designated, destination)
+    return DesignateAmendment(verb, labels_to_be_designated, destination)
+    #return (verb, labels_to_be_designated, destination)
 
+class Amendment(object):
+    TITLE =  '[title]'
+    TEXT = '[text]'
+
+    def remove_intro(self, l):
+        """ Remove the marker that indicates this is a change to introductory
+        text. """
+        return l.replace(self.TITLE, '').replace(self.TEXT, '')
+
+    def fix_label(self, label):
+        """ The labels that come back from parsing the list of amendments have
+        question marks (for the subpart) and other markers. Remove those here.
+        """
+        def wanted(l):
+            return l != '?' and 'Subpart' not in l
+        
+        components = label.split('-')
+        return [self.remove_intro(l) for l in components if wanted(l)]
+
+
+    def __init__(self, action, label, destination=None):
+        self.action = action
+        self.original_label = label
+        self.label = self.fix_label(self.original_label)
+        self.destination = destination
+
+        if self.TITLE in self.original_label:
+            self.field = self.TITLE
+        elif self.TEXT in self.original_label:
+            self.field = self.TEXT
+        else:
+            self.field = None
+
+    def label_id(self):
+        return '-'.join(self.label)
+
+class DesignateAmendment(Amendment):
+    def __init__(self, action, label_list, destination):
+        self.action = action
+        self.original_labels = label_list
+        self.labels = [self.fix_label(l) for l in self.original_labels]
+        self.original_destination = destination
+
+        if 'Subpart' in destination:
+            reg_part, subpart = self.original_destination.split('-')
+            _, subpart_letter = destination.split(':')
+            self.destination = [reg_part, 'Subpart', subpart_letter]
+        else:
+            self.destination = destination
+
+    def __repr__(self):
+        return "(%s, %s, %s)" % (
+            repr(self.action), repr(self.labels), repr(self.destination)) 
+        
 
 def make_amendments(tokenized, subpart=False):
     """Convert a sequence of (normalized) tokens into a list of amendments"""
@@ -289,17 +345,25 @@ def make_amendments(tokenized, subpart=False):
             elif isinstance(token, tokens.Paragraph):
                 if verb == tokens.Verb.MOVE:
                     if isinstance(tokenized[i-1], tokens.Paragraph):
-                        amends.append((
-                            verb,
-                            (tokenized[i-1].label_text(), token.label_text())))
+                        origin = tokenized[i-1].label_text()  
+                        destination = token.label_text() 
+                        ammends.append(Amendment(verb, origin, destination))
+                        #amends.append((
+                        #    verb,
+                        #    (tokenized[i-1].label_text(), token.label_text())))
                 elif verb:
-                    amends.append((verb, token.label_text()))
+                    amends.append(Amendment(verb, token.label_text()))
+                    #amends.append((verb, token.label_text()))
     return amends
 
 
-def new_subpart_added(amended_label):
+def new_subpart_added(amendment):
     """ Return True if label indicates that a new subpart was added. """
 
-    new_subpart = amended_label[0] == 'POST'
-    m = [t for t, _, _ in amdpar.subpart_label.scanString(amended_label[1])]
+    new_subpart = amendment.action == 'POST'
+    m = [t for t, _, _ in amdpar.subpart_label.scanString(amendment.original_label)]
     return len(m) > 0 and new_subpart
+
+    #new_subpart = amended_label[0] == 'POST'
+    #m = [t for t, _, _ in amdpar.subpart_label.scanString(amended_label[1])]
+    #return len(m) > 0 and new_subpart

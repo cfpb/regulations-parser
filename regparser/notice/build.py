@@ -3,6 +3,7 @@ import requests
 
 from regparser.notice.diff import parse_amdpar, find_section, find_subpart
 from regparser.notice.diff import new_subpart_added
+from regparser.notice.diff import DesignateAmendment
 from regparser.notice.address import fetch_addresses
 from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
@@ -62,13 +63,24 @@ def process_designate_subpart(subpart_designate):
                 'op': 'assign', 'destination': destination_label}
         return subpart_changes
 
+def process_designate_subpart_new(amendment):
+    """ Process the designate amendment if it adds a subpart. """
+
+    if 'Subpart' in amendment.destination: 
+        subpart_changes = {}
+
+        for label in amendment.labels:
+            label_id = '-'.join(label)
+            subpart_changes[label_id] = {
+                'op': 'assign', 'destination': amendment.destination}
+        return subpart_changes
 
 def process_new_subpart(notice, subpart_added, par):
     subpart_changes = {}
     subpart_xml = find_subpart(par)
     subpart = reg_text.build_subpart(notice['cfr_part'], subpart_xml)
 
-    for change in changes.create_add_amendment(subpart):
+    for change in changes.create_subpart_amendment(subpart):
         subpart_changes.update(change)
     return subpart_changes
 
@@ -78,14 +90,14 @@ def process_amendments(notice, notice_xml):
     """
     context = []
     amends = []
-    notice_changes = {}
+    notice_changes = changes.NoticeChanges()
 
     for par in notice_xml.xpath('//AMDPAR'):
         amended_labels, context = parse_amdpar(par, context)
 
         for al in amended_labels:
-            if al[0] == 'DESIGNATE':
-                subpart_changes = process_designate_subpart(al)
+            if isinstance(al, DesignateAmendment):
+                subpart_changes = process_designate_subpart_new(al)
                 if subpart_changes:
                     notice_changes.update(subpart_changes)
             elif new_subpart_added(al):
@@ -95,21 +107,20 @@ def process_amendments(notice, notice_xml):
         if section_xml is not None:
             for section in reg_text.build_from_section(
                     notice['cfr_part'], section_xml):
-                fixed_amended_labels = changes.fix_labels(amended_labels)
                 adds_map = changes.match_labels_and_changes(
-                    fixed_amended_labels, section)
+                    amended_labels, section)
 
                 for label, amendment in adds_map.items():
-                    if amendment['action'] == 'updated':
-                        nodes = changes.create_add_amendment(amendment['node'])
+                    if amendment['action'] in ['POST', 'PUT']:
+                        nodes = changes.create_add_amendment(amendment)
                         for n in nodes:
                             notice_changes.update(n)
                     elif amendment['action'] == 'deleted':
-                        notice_changes.update({label: {'op': 'deleted'}})
+                        notice_changes.update({label: {'action': 'deleted'}})
         amends.extend(amended_labels)
     if amends:
         notice['amendments'] = amends
-        notice['changes'] = notice_changes
+        notice['changes'] = notice_changes.changes
 
 
 def process_sxs(notice, notice_xml):
