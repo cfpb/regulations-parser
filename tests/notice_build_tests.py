@@ -291,3 +291,55 @@ class NoticeBuildTest(TestCase):
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual({}, notice['changes'])
+    
+    def test_introductory_text(self):
+        """ Sometimes notices change just the introductory text of a paragraph
+        (instead of changing the entire paragraph tree).  """
+
+        xml = u"""
+        <REGTEXT PART="106" TITLE="12">
+        <AMDPAR>
+            3. In § 106.2, revise the introductory text to read as follows:
+        </AMDPAR>
+        <SECTION>
+            <SECTNO>§ 106.2</SECTNO>
+            <SUBJECT> Definitions </SUBJECT>
+            <P> Except as otherwise provided, the following apply. </P>
+        </SECTION>
+        </REGTEXT>
+        """
+
+        notice_xml = etree.fromstring(xml)
+        notice = {'cfr_part':'106'}
+        build.process_amendments(notice, notice_xml)
+
+        self.assertEqual('[text]', notice['changes']['106-2'][0]['field'])
+
+    def test_multiple_changes(self):
+        """ A notice can have two modifications to a paragraph. """
+
+        xml = u"""
+        <ROOT>
+        <REGTEXT PART="106" TITLE="12">
+        <AMDPAR>
+            2. Designate §§ 106.1 through 106.3 as subpart A under the heading.
+        </AMDPAR>
+        </REGTEXT>
+        <REGTEXT PART="106" TITLE="12">
+        <AMDPAR>
+            3. In § 106.2, revise the introductory text to read as follows:
+        </AMDPAR>
+        <SECTION>
+            <SECTNO>§ 106.2</SECTNO>
+            <SUBJECT> Definitions </SUBJECT>
+            <P> Except as otherwise provided, the following apply. </P>
+        </SECTION>
+        </REGTEXT>
+        </ROOT>
+        """
+
+        notice_xml = etree.fromstring(xml)
+        notice = {'cfr_part':'106'}
+        build.process_amendments(notice, notice_xml)
+
+        self.assertEqual(2, len(notice['changes']['106-2']))
