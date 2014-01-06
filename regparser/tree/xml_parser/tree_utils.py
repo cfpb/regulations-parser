@@ -4,6 +4,7 @@ from itertools import chain
 import re
 
 from lxml import etree
+from pyparsing import Literal, Optional, Regex, StringStart, Suppress
 
 from regparser.citations import internal_citations
 from regparser.grammar.unified import any_depth_p
@@ -48,9 +49,18 @@ def split_text(text, tokens):
     return texts
 
 
-first_markers = [re.compile(ur'[\s|^|,|-|—|>]\(('
-                            + re.escape(level[0]) + ')\)')
-                 for level in p_levels]
+_first_markers = []
+for idx, level in enumerate(p_levels):
+    marker = (Suppress(Regex(u',|\.|-|—|>'))
+              + Suppress('(')
+              + Literal(level[0])
+              + Suppress(')'))
+    for inner_idx in range(idx + 1, len(p_levels)):
+        inner_level = p_levels[inner_idx]
+        marker += Optional(Suppress('(')
+                           + Literal(inner_level[0])
+                           + Suppress(')'))
+    _first_markers.append(marker)
 
 
 def get_collapsed_markers(text):
@@ -59,23 +69,20 @@ def get_collapsed_markers(text):
     (c) cContent —(1) 1Content (i) iContent"""
 
     matches = []
-    for marker in first_markers:
-        lst = [m for m in marker.finditer(text) if m.start() > 0]
-        matches.extend([m for m in marker.finditer(text) if m.start() > 0])
+    for parser in _first_markers:
+        matches.extend(parser.scanString(text))
 
     #   remove matches at the beginning
-    start = text.find(')') + 1
-    while matches and matches[0].start() == start:
-        start = matches[0].end()
+    if matches and matches[0][1] == 0:
         matches = matches[1:]
 
     #   remove any that overlap with citations
-    matches = [m for m in matches
-               if not any(e.start <= m.start() and e.end >= m.end()
+    matches = [m for m, start, end in matches
+               if not any(e.start <= start and e.end >= end
                           for e in internal_citations(text))]
 
-    #   get the letters
-    return [match.group(1) for match in matches]
+    #   get the letters; poor man's flatten
+    return reduce(lambda lhs, rhs: list(lhs) + list(rhs), matches, [])
 
 
 def get_paragraph_markers(text):
