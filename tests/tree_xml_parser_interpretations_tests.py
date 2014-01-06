@@ -158,9 +158,9 @@ class InterpretationsTest(TestCase):
                 Supplement I to Part 737-Official Interpretations</HD>
             <HD SOURCE="HD2">Appendix H</HD>
             <HD SOURCE="HD3">(b) bbbbbbb</HD>
-            <P> 1. Paragraph b</P>
+            <P>1. Paragraph b</P>
             <HD SOURCE="HD3">(b)(5) b5b5b5</HD>
-            <P> 1. Paragraph b5</P>
+            <P>1. Paragraph b5</P>
         </APPENDIX>"""
         tree = interpretations.build_supplement_tree('737',
                                                      etree.fromstring(xml))
@@ -200,7 +200,6 @@ class InterpretationsTest(TestCase):
         self.assertEqual(['737', 'G:H', 'Interp'], aGH.label)
         self.assertEqual(['737', 'G', 'Interp'], aG.label)
         self.assertEqual(['737', 'H', 'Interp'], aH.label)
-
 
     def test_process_inner_child(self):
         xml = """

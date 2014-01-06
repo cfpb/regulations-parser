@@ -1,5 +1,7 @@
 #vim: set encoding=utf-8
 from mock import patch
+
+from regparser.citations import Label
 from regparser.tree import struct
 from regparser.tree.interpretation import *
 from unittest import TestCase
@@ -226,16 +228,19 @@ class DepthInterpretationTreeTest(TestCase):
         text = u"9(c)(2)(iii) Charges not Covered by § 1026.6(b)(1) and "
         text += "(b)(2)"
         self.assertEqual([['1111', '9', 'c', '2', 'iii', 'Interp']],
-                         text_to_labels(text, '1111'))
+                         text_to_labels(text, Label(part='1111',
+                                                    comment=True)))
 
         text = "Paragraphs 4(b)(7) and (b)(8)."
         self.assertEqual([['1111', '4', 'b', '7', 'Interp'],
                           ['1111', '4', 'b', '8', 'Interp']],
-                         text_to_labels(text, '1111'))
+                         text_to_labels(text, Label(part='1111',
+                                                    comment=True)))
 
         text = "Appendices G and H-Something"
         self.assertEqual([['1111', 'G', 'Interp'], ['1111', 'H', 'Interp']],
-                         text_to_labels(text, '1111'))
+                         text_to_labels(text, Label(part='1111',
+                                                    comment=True)))
 
     def test_merge_labels(self):
         labels = [['1021', 'A'], ['1021', 'B']]

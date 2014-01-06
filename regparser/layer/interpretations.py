@@ -1,3 +1,4 @@
+from regparser.citations import Label
 from regparser.layer.layer import Layer
 from regparser.tree import struct
 from regparser.tree.interpretation import text_to_labels
@@ -22,7 +23,8 @@ class Interpretations(Layer):
             self.lookup_table[tuple(node.label[:-1])] = node
 
             #   Also add connections based on the title
-            for label in text_to_labels(node.title or '', node.label[0],
+            for label in text_to_labels(node.title or '', 
+                                        Label.from_node(node),
                                         warn=False):
                 self.lookup_table[tuple(label[:-1])] = node
         struct.walk(self.tree, per_node)

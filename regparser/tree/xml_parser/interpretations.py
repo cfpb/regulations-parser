@@ -4,6 +4,7 @@ import re
 import string
 from pyparsing import Word, LineStart, Regex, Suppress
 
+from regparser.citations import Label
 from regparser.tree.interpretation import merge_labels, text_to_labels
 from regparser.tree.struct import Node, treeify
 from regparser.tree.xml_parser import tree_utils
@@ -113,7 +114,7 @@ def is_title(xml_node):
             and (xml_node.text is None or not xml_node.text.strip())
             and len(xml_node.getchildren()) == 1
             and (child.tail is None or not child.tail.strip())
-            and text_to_labels(child.text, '', warn=False)))
+            and text_to_labels(child.text, Label(), warn=False)))
 
 
 def process_inner_children(inner_stack, node):
@@ -158,7 +159,10 @@ def build_supplement_tree(reg_part, node):
 
     last_label = [reg_part, Node.INTERP_MARK]
     for ch in node:
-        labels = [] if not is_title(ch) else text_to_labels(ch.text, reg_part)
+        node = Node(label=last_label, node_type=Node.INTERP)
+        label_obj = Label.from_node(node)
+        labels = [] if not is_title(ch) else text_to_labels(ch.text,
+                label_obj)
         if labels:
             label = merge_labels(labels)
             inner_stack = tree_utils.NodeStack()
