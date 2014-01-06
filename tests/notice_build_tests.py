@@ -1,6 +1,7 @@
 #vim: set encoding=utf-8
 from lxml import etree
 from regparser.notice import build
+from regparser.notice.diff import DesignateAmendment
 from unittest import TestCase
 
 
@@ -144,7 +145,7 @@ class NoticeBuildTest(TestCase):
     def test_process_designate_subpart(self):
         p_list = ['200-?-1-a', '200-?-1-b']
         destination = '205-Subpart:A'
-        amended_label = ('DESIGNATE', p_list, destination)
+        amended_label = DesignateAmendment('DESIGNATE', p_list, destination)
 
         subpart_changes = build.process_designate_subpart(amended_label)
 
@@ -173,8 +174,9 @@ class NoticeBuildTest(TestCase):
         self.assertEqual(notice['changes'].keys(), section_list)
 
         for l, c in notice['changes'].items():
-            self.assertEqual(c['destination'], ['105', 'Subpart', 'A'])
-            self.assertEqual(c['op'], 'assign')
+            change = c[0]
+            self.assertEqual(change['destination'], ['105', 'Subpart', 'A'])
+            self.assertEqual(change['op'], 'assign')
 
     def test_process_amendments_section(self):
         xml = u"""
@@ -197,8 +199,8 @@ class NoticeBuildTest(TestCase):
 
         self.assertEqual(notice['changes'].keys(), ['105-1-b'])
 
-        changes = notice['changes']['105-1-b']
-        self.assertEqual(changes['op'], 'updated')
+        changes = notice['changes']['105-1-b'][0]
+        self.assertEqual(changes['action'], 'PUT')
         self.assertTrue(
             changes['text'].startswith(u'(b) This part carries out.\n'))
 
@@ -254,7 +256,7 @@ class NoticeBuildTest(TestCase):
         self.assertEqual(new_nodes_added, changes.keys())
 
         for l, n in changes.items():
-            self.assertEqual(n['op'], 'updated')
+            self.assertEqual(n['action'], 'POST')
 
         self.assertEqual(changes['105-Subpart-B']['node_type'], 'subpart')
 
@@ -290,3 +292,55 @@ class NoticeBuildTest(TestCase):
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual({}, notice['changes'])
+    
+    def test_introductory_text(self):
+        """ Sometimes notices change just the introductory text of a paragraph
+        (instead of changing the entire paragraph tree).  """
+
+        xml = u"""
+        <REGTEXT PART="106" TITLE="12">
+        <AMDPAR>
+            3. In § 106.2, revise the introductory text to read as follows:
+        </AMDPAR>
+        <SECTION>
+            <SECTNO>§ 106.2</SECTNO>
+            <SUBJECT> Definitions </SUBJECT>
+            <P> Except as otherwise provided, the following apply. </P>
+        </SECTION>
+        </REGTEXT>
+        """
+
+        notice_xml = etree.fromstring(xml)
+        notice = {'cfr_part':'106'}
+        build.process_amendments(notice, notice_xml)
+
+        self.assertEqual('[text]', notice['changes']['106-2'][0]['field'])
+
+    def test_multiple_changes(self):
+        """ A notice can have two modifications to a paragraph. """
+
+        xml = u"""
+        <ROOT>
+        <REGTEXT PART="106" TITLE="12">
+        <AMDPAR>
+            2. Designate §§ 106.1 through 106.3 as subpart A under the heading.
+        </AMDPAR>
+        </REGTEXT>
+        <REGTEXT PART="106" TITLE="12">
+        <AMDPAR>
+            3. In § 106.2, revise the introductory text to read as follows:
+        </AMDPAR>
+        <SECTION>
+            <SECTNO>§ 106.2</SECTNO>
+            <SUBJECT> Definitions </SUBJECT>
+            <P> Except as otherwise provided, the following apply. </P>
+        </SECTION>
+        </REGTEXT>
+        </ROOT>
+        """
+
+        notice_xml = etree.fromstring(xml)
+        notice = {'cfr_part':'106'}
+        build.process_amendments(notice, notice_xml)
+
+        self.assertEqual(2, len(notice['changes']['106-2']))

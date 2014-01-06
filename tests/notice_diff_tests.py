@@ -47,11 +47,13 @@ class NoticeDiffTests(TestCase):
             tokens.Paragraph(['777'])
         ]
         amends = make_amendments(tokenized)
+        print amends
         self.assertEqual(amends,
-                         [(tokens.Verb.PUT, '222'), (tokens.Verb.PUT, '333'),
-                          (tokens.Verb.PUT, '444'),
-                          (tokens.Verb.DELETE, '555'),
-                          (tokens.Verb.MOVE, ('666', '777'))])
+                         [Amendment(tokens.Verb.PUT, '222'),
+                          Amendment(tokens.Verb.PUT, '333'),
+                          Amendment(tokens.Verb.PUT, '444'),
+                          Amendment(tokens.Verb.DELETE, '555'),
+                          Amendment(tokens.Verb.MOVE, '666', '777')])
 
     def test_compress_context_simple(self):
         tokenized = [
@@ -339,11 +341,12 @@ class NoticeDiffTests(TestCase):
         subpart_token = tokens.Paragraph([None, 'Subpart', 'J'])
         tokenized = [token_list, subpart_token]
 
-        verb, token_list, destination = handle_subpart_amendment(tokenized)
+        amendment = handle_subpart_amendment(tokenized)
 
-        self.assertEqual(verb, tokens.Verb.DESIGNATE)
-        self.assertEqual(token_list, ['200-1-a', '200-1-b'])
-        self.assertEqual(destination, '200-Subpart-J')
+        self.assertEqual(amendment.action, tokens.Verb.DESIGNATE)
+        labels = [['200', '1', 'a'], ['200', '1', 'b']]
+        self.assertEqual(amendment.labels, labels)
+        self.assertEqual(amendment.destination, ['200', 'Subpart', 'J'])
 
     def test_make_amendments_subpart(self):
         token_list = self.paragraph_token_list()
@@ -351,19 +354,20 @@ class NoticeDiffTests(TestCase):
         tokenized = [token_list, subpart_token]
         amends = make_amendments(tokenized, subpart=True)
 
-        verb, token_list, destination = amends[0]
-        self.assertEqual(verb, tokens.Verb.DESIGNATE)
-        self.assertEqual(token_list, ['200-1-a', '200-1-b'])
-        self.assertEqual(destination, '200-Subpart-J')
+        amendment = amends[0]
+        self.assertEqual(amendment.action, tokens.Verb.DESIGNATE)
+        labels = [['200', '1', 'a'], ['200', '1', 'b']]
+        self.assertEqual(amendment.labels, labels)
+        self.assertEqual(amendment.destination, ['200', 'Subpart', 'J'])
 
     def test_new_subpart_added(self):
-        amended_label = ('POST', '200-Subpart:B')
+        amended_label = Amendment('POST', '200-Subpart:B')
         self.assertTrue(new_subpart_added(amended_label))
 
-        amended_label = ('PUT', '200-Subpart:B')
+        amended_label = Amendment('PUT', '200-Subpart:B')
         self.assertFalse(new_subpart_added(amended_label))
 
-        amended_label = ('POST', '200-Subpart:B-a-3')
+        amended_label = Amendment('POST', '200-Subpart:B-a-3')
         self.assertFalse(new_subpart_added(amended_label))
 
     def test_switch_context(self):
