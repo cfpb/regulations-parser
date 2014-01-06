@@ -82,6 +82,35 @@ class AppendicesTest(TestCase):
         self.assertEqual('A-3 Some header here', a3.title)
         self.assertEqual('A-4 Another header', a4.title)
 
+    def test_header_ordering(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <HD SOURCE="HD1">A-1 Content</HD>
+            <HD SOURCE="HD3">Level 1</HD>
+            <HD SOURCE="HD2">Level 2</HD>
+            <P>Paragraph</P>
+            <HD SOURCE="HD1">A-1(A) More Content</HD>
+            <P>A1A Paragraph</P>
+        </APPENDIX>"""
+        appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
+        self.assertEqual(2, len(appendix.children))
+        a1, a1A = appendix.children
+
+        self.assertEqual(1, len(a1A.children))
+
+        self.assertEqual(['1111', 'A', '1'], a1.label)
+        self.assertEqual(1, len(a1.children))
+        a1_1 = a1.children[0]
+
+        self.assertEqual(['1111', 'A', '1', 'h1'], a1_1.label)
+        self.assertEqual(1, len(a1_1.children))
+        a1_1_1 = a1_1.children[0]
+
+        self.assertEqual(['1111', 'A', '1', 'h1', 'h2'], a1_1_1.label)
+        self.assertEqual(1, len(a1_1_1.children))
+
     def test_remove_toc(self):
         xml = u"""
         <APPENDIX>
