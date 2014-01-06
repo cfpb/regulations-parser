@@ -21,28 +21,6 @@ def find_candidate(root, label_last):
     return response
 
 
-def fix_label(label):
-    """ The labels that come back from parsing the list of amendments have
-    question marks (for the subpart) and other markers. Remove those here. """
-    return [remove_intro(l) for l in label.split('-') if l != '?']
-
-
-def fix_labels(labels_amended):
-    """ The labels that come back from parsing the list of amendments need
-    fixing so that we can use them. We do this en-mass here. """
-    fixed = []
-    for action, label in labels_amended:
-        if isinstance(label, basestring):
-            actual_label = fix_label(label)
-            actual_label_id = '-'.join(actual_label)
-            fixed.append((action, actual_label, actual_label_id))
-        else:
-            fixed_labels = [fix_label(l) for l in label]
-            fixed_ids = ['-'.join(l) for l in fixed_labels]
-            fixed.append((action, fixed_labels, fixed_ids))
-    return fixed
-
-
 def resolve_candidates(amend_map, warn=True):
     """Ensure candidate isn't actually accounted for elsewhere, and fix
     it's label. """

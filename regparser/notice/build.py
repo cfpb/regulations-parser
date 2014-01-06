@@ -45,26 +45,7 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     return notice
 
 
-def process_designate_subpart(subpart_designate):
-    """ Process the designate amendment if it adds a subpart. """
-
-    _, p_list, destination = subpart_designate
-    if 'Subpart' in destination:
-        reg_part, sub_part = destination.split('-')
-        _, subpart_letter = destination.split(':')
-        destination_label = [reg_part, 'Subpart', subpart_letter]
-
-        subpart_changes = {}
-
-        for label in p_list:
-            label = changes.fix_label(label)
-            label_id = '-'.join(label)
-            subpart_changes[label_id] = {
-                'op': 'assign', 'destination': destination_label}
-        return subpart_changes
-
-
-def process_designate_subpart_new(amendment):
+def process_designate_subpart(amendment):
     """ Process the designate amendment if it adds a subpart. """
 
     if 'Subpart' in amendment.destination:
@@ -99,7 +80,7 @@ def process_amendments(notice, notice_xml):
 
         for al in amended_labels:
             if isinstance(al, DesignateAmendment):
-                subpart_changes = process_designate_subpart_new(al)
+                subpart_changes = process_designate_subpart(al)
                 if subpart_changes:
                     notice_changes.update(subpart_changes)
             elif new_subpart_added(al):

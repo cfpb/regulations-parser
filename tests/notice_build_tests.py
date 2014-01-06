@@ -1,6 +1,7 @@
 #vim: set encoding=utf-8
 from lxml import etree
 from regparser.notice import build
+from regparser.notice.diff import DesignateAmendment
 from unittest import TestCase
 
 
@@ -144,7 +145,7 @@ class NoticeBuildTest(TestCase):
     def test_process_designate_subpart(self):
         p_list = ['200-?-1-a', '200-?-1-b']
         destination = '205-Subpart:A'
-        amended_label = ('DESIGNATE', p_list, destination)
+        amended_label = DesignateAmendment('DESIGNATE', p_list, destination)
 
         subpart_changes = build.process_designate_subpart(amended_label)
 

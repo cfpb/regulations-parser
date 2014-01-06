@@ -28,42 +28,6 @@ class ChangesTests(TestCase):
         result = changes.find_candidate(root, 'j')
         self.assertEqual(result, [])
 
-    def test_fix_label(self):
-        self.assertEqual(
-            ['200', '1', 'a'], 
-            changes.fix_label('200-?-1-a'))
-
-        self.assertEqual(
-            ['200', '1', 'a', 'ii'],
-            changes.fix_label('200-1-a-ii'))
-
-        self.assertEqual(
-            ['200'], 
-            changes.fix_label('200'))
-
-        self.assertEqual(
-            ['200', '1', 'a'],
-            changes.fix_label('200-1-a[text]'))
-
-    def test_fix_labels(self):
-        amended = [
-            ('POST', '205-?-1-a'), 
-            ('PUT', '205-?-1-b[text]'), 
-            ('MOVE', ('205-?-2-a', '205-?-2-j'))]
-        fixed = changes.fix_labels(amended)
-        post = fixed[0]
-        put = fixed[1]
-        move = fixed[2]
-
-        self.assertEqual(post[1], ['205', '1', 'a'])
-        self.assertEqual(post[2], '205-1-a')
-
-        self.assertEqual(put[1], ['205', '1', 'b'])
-        self.assertEqual(put[2], '205-1-b')
-
-        self.assertEqual(move[1], [['205', '2', 'a'], ['205', '2', 'j']])
-        self.assertEqual(move[2], ['205-2-a', '205-2-j'])
-
     def test_find_misparsed_node(self):
         n2 = Node('n1i', label=['200', 1, 'i'])
 

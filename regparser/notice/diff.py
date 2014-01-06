@@ -272,10 +272,7 @@ def handle_subpart_amendment(tokenized):
     reg_part = tokens_to_be_designated.tokens[0].label[0]
     destination = get_destination(tokenized, reg_part)
 
-    print 'destination: %s' % destination
-
     return DesignateAmendment(verb, labels_to_be_designated, destination)
-    #return (verb, labels_to_be_designated, destination)
 
 
 class Amendment(object):
