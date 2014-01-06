@@ -4,7 +4,7 @@ import re
 import string
 from pyparsing import Word, LineStart, Regex, Suppress
 
-from regparser.tree.interpretation import text_to_labels
+from regparser.tree.interpretation import merge_labels, text_to_labels
 from regparser.tree.struct import Node, treeify
 from regparser.tree.xml_parser import tree_utils
 from regparser.utils import roman_nums
@@ -160,7 +160,7 @@ def build_supplement_tree(reg_part, node):
     for ch in node:
         labels = [] if not is_title(ch) else text_to_labels(ch.text, reg_part)
         if labels:
-            label = labels[0]
+            label = merge_labels(labels)
             inner_stack = tree_utils.NodeStack()
             missing = missing_levels(last_label, label)
             supplement_nodes.extend(missing)

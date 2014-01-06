@@ -6,7 +6,6 @@ from unittest import TestCase
 
 
 class DepthInterpretationTreeTest(TestCase):
-
     def test_interpParser_iv(self):
         """Make sure a bug with the 4th roman numeral is fixed."""
         sub1 = 'i. One '
@@ -199,7 +198,7 @@ class DepthInterpretationTreeTest(TestCase):
         text += "2. Ends with see comment 20(b)(2)-4.ii.\n"
         text += "3. Then three\ni. Sub bit\nA. More\n4. Four"
 
-        result = segment_tree(text, 28, ['28'])
+        result = segment_tree(text, '28', ['28'])
         self.assertEqual(4, len(result.children))
 
     def test_segment_by_header(self):
@@ -233,3 +232,14 @@ class DepthInterpretationTreeTest(TestCase):
         self.assertEqual([['1111', '4', 'b', '7', 'Interp'],
                           ['1111', '4', 'b', '8', 'Interp']],
                          text_to_labels(text, '1111'))
+
+        text = "Appendices G and H-Something"
+        self.assertEqual([['1111', 'G', 'Interp'], ['1111', 'H', 'Interp']],
+                         text_to_labels(text, '1111'))
+
+    def test_merge_labels(self):
+        labels = [['1021', 'A'], ['1021', 'B']]
+        self.assertEqual(['1021', 'A:B'], merge_labels(labels))
+
+        labels = [['1021', 'A', '1'], ['1021', 'A', '2']]
+        self.assertEqual(['1021', 'A', '1:2'], merge_labels(labels))

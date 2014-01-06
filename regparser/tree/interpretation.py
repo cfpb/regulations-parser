@@ -42,6 +42,16 @@ def segment_by_header(text, part):
     return offset_pairs
 
 
+def merge_labels(labels):
+    max_len = max(len(l) for l in labels)
+    labels = [l + [None]*(max_len - len(l)) for l in labels]
+    merged = zip(*labels)
+    final_label = []
+    for tups in merged:
+        final_label.append(':'.join(sorted(set(tups))))
+    return final_label
+
+
 def segment_tree(text, part, parent_label):
     """Build a tree representing the interpretation of a section, paragraph,
     or appendix."""
@@ -49,7 +59,7 @@ def segment_tree(text, part, parent_label):
     exclude = [(pc.full_start, pc.full_end) for pc in
                internal_citations(body, Label(part=parent_label[0]))]
 
-    label = text_to_labels(title, part)[0]
+    label = merge_labels(text_to_labels(title, part))
     return interpParser.build_tree(body, 1, exclude, label, title)
 
 
