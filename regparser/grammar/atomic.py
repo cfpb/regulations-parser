@@ -83,6 +83,7 @@ comment_marker = (
 comments_marker = Marker("comments")
 
 appendix_marker = Marker("appendix")
+appendices_marker = Marker("appendices")
 
 conj_phrases = (
     (Suppress(",") + Optional(Marker("and") | Marker("or")))

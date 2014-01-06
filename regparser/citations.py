@@ -177,6 +177,7 @@ def internal_citations(text, initial_label=None, require_marker=False):
     multiple_citations(grammar.multiple_appendix_section.scanString(text),
                        False)
     multiple_citations(grammar.multiple_comments.scanString(text), True)
+    multiple_citations(grammar.multiple_appendices.scanString(text), False)
 
     single_citations(grammar.marker_appendix.scanString(text), False)
     single_citations(grammar.appendix_with_section.scanString(text), False)

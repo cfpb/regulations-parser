@@ -93,6 +93,13 @@ class CitationsTest(TestCase):
                          ['102', 'Z', '12', 'g', '2', 'ii'])
         self.assertEqual(to_text(citation, text), 'Z-12(g)(2)(ii)')
 
+        text = u"Appendices G and H—Yadda yadda"
+        citations = internal_citations(text, Label(part='102'))
+        self.assertEqual(2, len(citations))
+        citG, citH = citations
+        self.assertEqual(citG.label.to_list(), ['102', 'G'])
+        self.assertEqual(citH.label.to_list(), ['102', 'H'])
+
     def test_single_match_multiple_paragraphs1(self):
         text = "the requirements of paragraphs (c)(3), (d)(2), (e)(1), "
         text += "(e)(3), and (f) of this section"
