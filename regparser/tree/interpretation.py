@@ -72,7 +72,7 @@ def text_to_labels(text, initial_label, warn=True):
     citations = all_citations[:1]
 
     #   Under certain situations, we need to infer from context
-    initial_pars = list(match for match, start, _ 
+    initial_pars = list(match for match, start, _
                         in unified.any_depth_p.scanString(text)
                         if start == 0)
 

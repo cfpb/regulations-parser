@@ -16,14 +16,14 @@ class Interpretations(Layer):
         """Create a lookup table for each interpretation"""
         def per_node(node):
             if (node.node_type != struct.Node.INTERP
-                or node.label[-1] != struct.Node.INTERP_MARK):
-                    return
+                    or node.label[-1] != struct.Node.INTERP_MARK):
+                return
 
             #   Always add a connection based on the interp's label
             self.lookup_table[tuple(node.label[:-1])] = node
 
             #   Also add connections based on the title
-            for label in text_to_labels(node.title or '', 
+            for label in text_to_labels(node.title or '',
                                         Label.from_node(node),
                                         warn=False):
                 self.lookup_table[tuple(label[:-1])] = node
@@ -36,11 +36,10 @@ class Interpretations(Layer):
         parents match"""
 
         label = tuple(node.label)
-        if label in self.lookup_table and not self.empty_interpretation(
-            self.lookup_table[label]):
-                return [{
-                         'reference': self.lookup_table[label].label_id()
-                       }]  # list as we will eventually match parents as well
+        if (label in self.lookup_table
+                and not self.empty_interpretation(self.lookup_table[label])):
+            # list as we will eventually match parents as well
+            return [{'reference': self.lookup_table[label].label_id()}]
 
     def empty_interpretation(self, interp):
         """We don't want to include empty (e.g. \n\n) nodes as
@@ -49,6 +48,6 @@ class Interpretations(Layer):
         location of the 'Interp' delimiter."""
         if interp.text.strip():
             return False
-        return all(
-            not child.label or child.label[-1] == struct.Node.INTERP_MARK
-            for child in interp.children)
+        return all(not child.label
+                   or child.label[-1] == struct.Node.INTERP_MARK
+                   for child in interp.children)

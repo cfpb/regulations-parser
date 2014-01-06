@@ -162,7 +162,7 @@ def build_supplement_tree(reg_part, node):
         node = Node(label=last_label, node_type=Node.INTERP)
         label_obj = Label.from_node(node)
         labels = [] if not is_title(ch) else text_to_labels(ch.text,
-                label_obj)
+                                                            label_obj)
         if labels:
             label = merge_labels(labels)
             inner_stack = tree_utils.NodeStack()

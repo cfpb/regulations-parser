@@ -19,7 +19,7 @@ class Label(object):
         """Best guess for schema based on the provided
            regparser.tree.struct.Node"""
         if (node.node_type == Node.APPENDIX
-            or (node.node_type == Node.INTERP 
+            or (node.node_type == Node.INTERP
                 and len(node.label) > 2
                 and node.label[1].isalpha())):
             if len(node.label) > 2 and node.label[2].isdigit():
