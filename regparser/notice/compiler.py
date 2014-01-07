@@ -1,4 +1,5 @@
 import copy
+import itertools
 from regparser.tree.struct import Node, find
 from regparser.utils import roman_nums
 
@@ -38,6 +39,9 @@ class RegulationTree(object):
                 c.label[-1], roman=(len(c.label) == 5))
 
         children.sort(key=lambda x: x.sortable)
+
+        for c in children:
+            del c.sortable
         return children
 
     def replace_node_and_subtree(self, node):
@@ -48,6 +52,17 @@ class RegulationTree(object):
 
         other_children = [c for c in parent.children if c.label != node.label]
         parent.children = self.add_child(other_children, node)
+
+    def add_node(self, node):
+        """ Add an entirely new node to the regulation tree. """
+        parent_label = self.get_parent_label(node)
+        parent = find(self.tree, parent_label)
+        parent.children = self.add_child(parent.children, node)
+
+    def replace_node_text(self, label, change):
+        node = find(self.tree, label)
+        node.text = change['node']['text']
+
 
 def dict_to_node(node_dict):
     """ Convert a dictionary representation of a node into a Node object if 
@@ -66,8 +81,7 @@ def dict_to_node(node_dict):
 
 def compile_regulation(previous_tree, notice_changes):
     reg = RegulationTree(previous_tree)
-
-    labels = sorted(notice_changes.keys(), key=lambda x: len(x[0]))
+    labels = sorted(notice_changes.keys(), key=lambda x: len(x))
 
     for label in labels:
         changes = notice_changes[label]
@@ -77,6 +91,11 @@ def compile_regulation(previous_tree, notice_changes):
             if change['action'] == 'PUT' and replace_subtree:
                 node = dict_to_node(change['node'])
                 reg.replace_node_and_subtree(node)
+            elif change['action'] == 'PUT' and change['field'] == '[text]':
+                reg.replace_node_text(label, change)
+            elif change['action'] == 'POST':
+                node = dict_to_node(change['node'])
+                reg.add_node(node)
             else:
-                print label
+                print "%s: %s" % (change['action'], label)
     return reg

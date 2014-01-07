@@ -54,7 +54,7 @@ def process_designate_subpart(amendment):
         for label in amendment.labels:
             label_id = '-'.join(label)
             subpart_changes[label_id] = {
-                'op': 'assign', 'destination': amendment.destination}
+                'action': 'DESIGNATE', 'destination': amendment.destination}
         return subpart_changes
 
 
