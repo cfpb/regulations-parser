@@ -54,6 +54,8 @@ class AppendixProcessor(object):
     """Processing the appendix requires a lot of state to be carried in
     between xml nodes. Use a class to wrap that state so we can
     compartmentalize processing the various tags"""
+    filler_regex = re.compile(r"[ph]\d+")
+
     def set_letter(self, appendix):
         """Find (and set) the appendix letter"""
         for node in (c for c in appendix.getchildren()
@@ -103,6 +105,8 @@ class AppendixProcessor(object):
                     return pair[1]
                 else:
                     return lvl + 1
+            if not AppendixProcessor.filler_regex.match(parent.label[-1]):
+                return lvl + 1
 
     def subheader(self, xml_node, text):
         """Each appendix may contain multiple subheaders. Some of these are
