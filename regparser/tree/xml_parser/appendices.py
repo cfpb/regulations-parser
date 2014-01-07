@@ -54,6 +54,9 @@ class AppendixProcessor(object):
     """Processing the appendix requires a lot of state to be carried in
     between xml nodes. Use a class to wrap that state so we can
     compartmentalize processing the various tags"""
+
+    #   Placeholder text/headers have the label p1 or h1; use that as an
+    #   identifier when determining which depth elements should be placed
     filler_regex = re.compile(r"[ph]\d+")
 
     def set_letter(self, appendix):
