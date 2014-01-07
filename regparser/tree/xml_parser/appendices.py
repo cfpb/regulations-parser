@@ -1,4 +1,5 @@
 #vim: set encoding=utf-8
+from itertools import takewhile
 import re
 import string
 
@@ -73,12 +74,23 @@ class AppendixProcessor(object):
         self.depth = 0
 
     def depth_from_ancestry(self, source_attr):
-        #   Check if this SOURCE level matches a previous
-        for lvl, parent in self.m_stack.lineage_with_level():
-            if parent.title and title_label_pair(parent.title,
-                                                 self.appendix_letter):
-                break  #   Too far, hit a known-depth header
+        """Subheaders without explicit depth markers (e.g. Part I) are
+        tricky. We look through their parents, trying to find a previous
+        header that shared its SOURCE level (the next node would also share
+        node level). If that doesn't work, find the last header and set
+        depth on higher (as the next node is an unseen level)."""
 
+        def not_known_depth_header(pair):
+            """Hitting a know-depth header (see above) means we've gone too
+            far"""
+            lvl, parent = pair
+            return (not parent.title
+                    or not title_label_pair(parent.title,
+                                            self.appendix_letter))
+
+        #   Check if this SOURCE level matches a previous
+        for lvl, parent in takewhile(not_known_depth_header,
+                                     self.m_stack.lineage_with_level()):
             if (parent.source_xml is not None
                     and parent.source_xml.attrib.get('SOURCE') == source_attr):
                 return lvl
