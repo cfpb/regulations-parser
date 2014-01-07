@@ -244,7 +244,7 @@ class DepthInterpretationTreeTest(TestCase):
 
     def test_merge_labels(self):
         labels = [['1021', 'A'], ['1021', 'B']]
-        self.assertEqual(['1021', 'A:B'], merge_labels(labels))
+        self.assertEqual(['1021', 'A_B'], merge_labels(labels))
 
         labels = [['1021', 'A', '1'], ['1021', 'A', '2']]
-        self.assertEqual(['1021', 'A', '1:2'], merge_labels(labels))
+        self.assertEqual(['1021', 'A', '1_2'], merge_labels(labels))

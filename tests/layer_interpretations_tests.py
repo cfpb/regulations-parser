@@ -3,7 +3,6 @@ from regparser.tree.struct import Node
 from unittest import TestCase
 
 class LayerInterpretationTest(TestCase):
-
     def test_process(self):
         root = Node(children = [
             Node("Interp11a", 
@@ -111,3 +110,23 @@ class LayerInterpretationTest(TestCase):
         self.assertFalse(interp.empty_interpretation(Node('Content')))
         self.assertFalse(interp.empty_interpretation(Node('',
             [Node('Something', label=['1', Node.INTERP_MARK, '3'])])))
+
+    def test_pre_process_multiple_interps(self):
+        interpG = Node('GGGG', title='Appendix G',
+                       label=['1111', 'G', 'Interp'], node_type=Node.INTERP)
+        interpH = Node('HHHH', title='Appendix H',
+                       label=['1111', 'H', 'Interp'], node_type=Node.INTERP)
+        interpGH = Node('GHGHGH', title='Appendices G and H',
+                        label=['1111', 'G_H', 'Interp'],
+                        node_type=Node.INTERP)
+
+        tree = Node(label=['1111'], children=[
+            Node(label=['1111', 'Interp'], node_type=Node.INTERP, children=[
+                interpGH, interpG, interpH])])
+
+        interp = Interpretations(tree)
+        interp.pre_process()
+
+        node = Node('App G', label=['1111', 'G'], node_type=Node.APPENDIX)
+        self.assertEqual(interp.process(node),
+            [{'reference': '1111-G_H-Interp'}, {'reference': '1111-G-Interp'}])

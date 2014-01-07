@@ -197,7 +197,7 @@ class InterpretationsTest(TestCase):
         self.assertEqual(3, len(tree.children))
         aGH, aG, aH = tree.children
 
-        self.assertEqual(['737', 'G:H', 'Interp'], aGH.label)
+        self.assertEqual(['737', 'G_H', 'Interp'], aGH.label)
         self.assertEqual(['737', 'G', 'Interp'], aG.label)
         self.assertEqual(['737', 'H', 'Interp'], aH.label)
 

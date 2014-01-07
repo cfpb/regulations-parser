@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from regparser.citations import Label
 from regparser.layer.layer import Layer
 from regparser.tree import struct
@@ -10,7 +12,7 @@ class Interpretations(Layer):
     interpretations."""
     def __init__(self, tree):
         Layer.__init__(self, tree)
-        self.lookup_table = {}
+        self.lookup_table = defaultdict(list)
 
     def pre_process(self):
         """Create a lookup table for each interpretation"""
@@ -20,13 +22,15 @@ class Interpretations(Layer):
                 return
 
             #   Always add a connection based on the interp's label
-            self.lookup_table[tuple(node.label[:-1])] = node
+            self.lookup_table[tuple(node.label[:-1])].append(node)
 
             #   Also add connections based on the title
             for label in text_to_labels(node.title or '',
                                         Label.from_node(node),
                                         warn=False):
-                self.lookup_table[tuple(label[:-1])] = node
+                label = tuple(label[:-1])   # Remove Interp marker
+                if node not in self.lookup_table[label]:
+                    self.lookup_table[label].append(node)
         struct.walk(self.tree, per_node)
 
     def process(self, node):
@@ -36,10 +40,10 @@ class Interpretations(Layer):
         parents match"""
 
         label = tuple(node.label)
-        if (label in self.lookup_table
-                and not self.empty_interpretation(self.lookup_table[label])):
-            # list as we will eventually match parents as well
-            return [{'reference': self.lookup_table[label].label_id()}]
+        if self.lookup_table[label]:    # default dict; will always be present
+            interp_labels = [n.label_id() for n in self.lookup_table[label]
+                             if not self.empty_interpretation(n)]
+            return [{'reference': l} for l in interp_labels] or None
 
     def empty_interpretation(self, interp):
         """We don't want to include empty (e.g. \n\n) nodes as
