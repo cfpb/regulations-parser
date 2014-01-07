@@ -80,12 +80,21 @@ def create_add_amendment(amendment):
     flatten_tree(nodes_list, amendment['node'])
 
     def format_node(node):
-        node_as_dict = node_to_dict(n)
-        node_as_dict['action'] = amendment['action']
+        node_as_dict = {
+            'node': node_to_dict(n),
+            'action': amendment['action'],
+        }
 
         if 'field' in amendment:
             node_as_dict['field'] = amendment['field']
         return {node.label_id(): node_as_dict}
+
+        #node_as_dict = node_to_dict(n)
+        #node_as_dict['action'] = amendment['action']
+
+        #if 'field' in amendment:
+        #    node_as_dict['field'] = amendment['field']
+        #return {node.label_id(): node_as_dict}
 
     nodes = [format_node(n) for n in nodes_list]
     return nodes
