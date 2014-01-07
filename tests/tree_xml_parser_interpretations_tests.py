@@ -96,6 +96,28 @@ class InterpretationsTest(TestCase):
         self.assertEqual(i5a1iiA3.tagged_text, '<E T="03">3. Keyterms</E>')
         self.assertEqual(0, len(i5a1iiA3.children))
 
+    def test_build_supplement_tree_repeats(self):
+        """Integration test"""
+        xml = """<APPENDIX>
+            <HD SOURCE="HED">
+                Supplement I to Part 737-Official Interpretations</HD>
+            <HD SOURCE="HD2">Appendices G and H-Content</HD>
+            <P>1. G:H</P>
+            <HD SOURCE="HD2">Appendix G</HD>
+            <P>1. G</P>
+            <HD SOURCE="HD2">Appendix H</HD>
+            <P>1. H</P>
+        </APPENDIX>"""
+        tree = interpretations.build_supplement_tree('737',
+                                                     etree.fromstring(xml))
+        self.assertEqual(['737', 'Interp'], tree.label)
+        self.assertEqual(3, len(tree.children))
+        aGH, aG, aH = tree.children
+
+        self.assertEqual(['737', 'G:H', 'Interp'], aGH.label)
+        self.assertEqual(['737', 'G', 'Interp'], aG.label)
+        self.assertEqual(['737', 'H', 'Interp'], aH.label)
+
     def test_build_supplement_tree_skip_levels(self):
         xml = """<APPENDIX>
             <HD SOURCE="HED">
@@ -117,7 +139,6 @@ class InterpretationsTest(TestCase):
         i5a, i5b = i5.children
 
         self.assertEqual(['737', '5', 'a', 'Interp'], i5a.label)
-        print i5a.children
         self.assertEqual(1, len(i5a.children))
         i5a1 = i5a.children[0]
 
@@ -130,6 +151,55 @@ class InterpretationsTest(TestCase):
 
         self.assertEqual(['737', '5', 'b', 'Interp'], i5b.label)
         self.assertEqual(1, len(i5b.children))
+
+    def test_build_supplement_tree_appendix_paragraphs(self):
+        xml = """<APPENDIX>
+            <HD SOURCE="HED">
+                Supplement I to Part 737-Official Interpretations</HD>
+            <HD SOURCE="HD2">Appendix H</HD>
+            <HD SOURCE="HD3">(b) bbbbbbb</HD>
+            <P>1. Paragraph b</P>
+            <HD SOURCE="HD3">(b)(5) b5b5b5</HD>
+            <P>1. Paragraph b5</P>
+        </APPENDIX>"""
+        tree = interpretations.build_supplement_tree('737',
+                                                     etree.fromstring(xml))
+        self.assertEqual(['737', 'Interp'], tree.label)
+        self.assertEqual(1, len(tree.children))
+
+        iH = tree.children[0]
+        self.assertEqual(['737', 'H', 'Interp'], iH.label)
+        self.assertEqual(1, len(iH.children))
+
+        iHb = iH.children[0]
+        self.assertEqual(['737', 'H', 'b', 'Interp'], iHb.label)
+        self.assertEqual(2, len(iHb.children))
+
+        iHb1, iHb5 = iHb.children
+        self.assertEqual(['737', 'H', 'b', 'Interp', '1'], iHb1.label)
+        self.assertEqual(['737', 'H', 'b', '5', 'Interp'], iHb5.label)
+
+    def test_build_supplement_tree_repeats(self):
+        """Integration test"""
+        xml = """<APPENDIX>
+            <HD SOURCE="HED">
+                Supplement I to Part 737-Official Interpretations</HD>
+            <HD SOURCE="HD2">Appendices G and H-Content</HD>
+            <P>1. G:H</P>
+            <HD SOURCE="HD2">Appendix G</HD>
+            <P>1. G</P>
+            <HD SOURCE="HD2">Appendix H</HD>
+            <P>1. H</P>
+        </APPENDIX>"""
+        tree = interpretations.build_supplement_tree('737',
+                                                     etree.fromstring(xml))
+        self.assertEqual(['737', 'Interp'], tree.label)
+        self.assertEqual(3, len(tree.children))
+        aGH, aG, aH = tree.children
+
+        self.assertEqual(['737', 'G:H', 'Interp'], aGH.label)
+        self.assertEqual(['737', 'G', 'Interp'], aG.label)
+        self.assertEqual(['737', 'H', 'Interp'], aH.label)
 
     def test_process_inner_child(self):
         xml = """

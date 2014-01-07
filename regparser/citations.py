@@ -18,7 +18,10 @@ class Label(object):
     def from_node(node):
         """Best guess for schema based on the provided
            regparser.tree.struct.Node"""
-        if node.node_type == Node.APPENDIX:
+        if (node.node_type == Node.APPENDIX
+            or (node.node_type == Node.INTERP
+                and len(node.label) > 2
+                and node.label[1].isalpha())):
             if len(node.label) > 2 and node.label[2].isdigit():
                 schema = Label.app_sect_schema
             else:
@@ -177,6 +180,7 @@ def internal_citations(text, initial_label=None, require_marker=False):
     multiple_citations(grammar.multiple_appendix_section.scanString(text),
                        False)
     multiple_citations(grammar.multiple_comments.scanString(text), True)
+    multiple_citations(grammar.multiple_appendices.scanString(text), False)
 
     single_citations(grammar.marker_appendix.scanString(text), False)
     single_citations(grammar.appendix_with_section.scanString(text), False)

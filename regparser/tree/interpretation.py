@@ -3,6 +3,7 @@ import logging
 
 from regparser import utils
 from regparser.citations import internal_citations, Label
+from regparser.grammar import unified
 import regparser.grammar.interpretation_headers as grammar
 from regparser.tree.paragraph import ParagraphParser
 from regparser.tree.struct import Node, treeify
@@ -42,6 +43,16 @@ def segment_by_header(text, part):
     return offset_pairs
 
 
+def merge_labels(labels):
+    max_len = max(len(l) for l in labels)
+    labels = [l + [None]*(max_len - len(l)) for l in labels]
+    merged = zip(*labels)
+    final_label = []
+    for tups in merged:
+        final_label.append(':'.join(sorted(set(tups))))
+    return final_label
+
+
 def segment_tree(text, part, parent_label):
     """Build a tree representing the interpretation of a section, paragraph,
     or appendix."""
@@ -49,15 +60,22 @@ def segment_tree(text, part, parent_label):
     exclude = [(pc.full_start, pc.full_end) for pc in
                internal_citations(body, Label(part=parent_label[0]))]
 
-    label = text_to_labels(title, part)[0]
+    label = merge_labels(text_to_labels(title, Label(part=part, comment=True)))
     return interpParser.build_tree(body, 1, exclude, label, title)
 
 
-def text_to_labels(text, part, warn=True):
-    all_citations = internal_citations(text.strip(), Label(part=part))
+def text_to_labels(text, initial_label, warn=True):
+    all_citations = internal_citations(text.strip(), initial_label)
     all_citations = sorted(all_citations, key=lambda c: c.start)
+
     #   We care only about the first citation and its clauses
     citations = all_citations[:1]
+
+    #   Under certain situations, we need to infer from context
+    initial_pars = list(match for match, start, _
+                        in unified.any_depth_p.scanString(text)
+                        if start == 0)
+
     if citations:
         if citations[0].in_clause:
             #   Clauses still in the first conjunction
@@ -66,6 +84,12 @@ def text_to_labels(text, part, warn=True):
 
         return [citation.label.to_list() + [Node.INTERP_MARK]
                 for citation in citations]
+    elif (initial_label.comment and initial_pars
+          and initial_label.settings.get('appendix')):
+        return [[initial_label.settings['part'],
+                 initial_label.settings['appendix']]
+                + list(initial_pars[0])
+                + [Node.INTERP_MARK]]
     elif warn:
         logging.warning("Couldn't turn into label: " + text)
     return []
