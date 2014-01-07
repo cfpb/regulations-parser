@@ -1,4 +1,5 @@
 #vim: set encoding=utf-8
+from itertools import takewhile
 import re
 import string
 
@@ -72,12 +73,42 @@ class AppendixProcessor(object):
         self.paragraph_counter = 0
         self.depth = 0
 
+    def depth_from_ancestry(self, source_attr):
+        """Subheaders without explicit depth markers (e.g. Part I) are
+        tricky. We look through their parents, trying to find a previous
+        header that shared its SOURCE level (the next node would also share
+        node level). If that doesn't work, find the last header and set
+        depth on higher (as the next node is an unseen level)."""
+
+        def not_known_depth_header(pair):
+            """Hitting a know-depth header (see above) means we've gone too
+            far"""
+            lvl, parent = pair
+            return (not parent.title
+                    or not title_label_pair(parent.title,
+                                            self.appendix_letter))
+
+        #   Check if this SOURCE level matches a previous
+        for lvl, parent in takewhile(not_known_depth_header,
+                                     self.m_stack.lineage_with_level()):
+            if (parent.source_xml is not None
+                    and parent.source_xml.attrib.get('SOURCE') == source_attr):
+                return lvl
+
+        #   Second pass, search for any header; place self one lower
+        for lvl, parent in self.m_stack.lineage_with_level():
+            if parent.title:
+                pair = title_label_pair(parent.title, self.appendix_letter)
+                if pair:
+                    return pair[1]
+                else:
+                    return lvl + 1
+
     def subheader(self, xml_node, text):
         """Each appendix may contain multiple subheaders. Some of these are
         obviously labeled (e.g. A-3 or Part III) and others are headers
         without a specific label (we give them the h + # id)"""
-        source = xml_node.attrib.get('SOURCE', 'HD1')
-        hd_level = int(source[2:])
+        source = xml_node.attrib.get('SOURCE')
 
         pair = title_label_pair(text, self.appendix_letter)
 
@@ -87,12 +118,13 @@ class AppendixProcessor(object):
             self.depth = title_depth - 1
             n = Node(node_type=Node.APPENDIX, label=[label],
                      title=text)
-        #   Try to deduce depth from SOURCE attribute
+        #   Look through parents to determine which level this should be
         else:
             self.header_count += 1
             n = Node(node_type=Node.APPENDIX, title=text,
-                     label=['h' + str(self.header_count)])
-            self.depth = hd_level
+                     label=['h' + str(self.header_count)],
+                     source_xml=xml_node)
+            self.depth = self.depth_from_ancestry(source)
 
         self.m_stack.add(self.depth, n)
 

@@ -30,7 +30,14 @@ class PriorityStack(object):
             return found[-1]
 
     def lineage(self):
+        """Fetch the last element of each level of priorities. When the
+        stack is used to keep track of a tree, this list includes a list of
+        'parents', as the last element of each level is the parent being
+        processed."""
         return list(reversed([els[-1][-1] for els in self.m_stack]))
+
+    def lineage_with_level(self):
+        return list(reversed([els[-1] for els in self.m_stack]))
 
     def add_to_bottom(self, m):
         self.m_stack = [[m]] + self.m_stack
