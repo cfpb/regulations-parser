@@ -49,7 +49,7 @@ def merge_labels(labels):
     merged = zip(*labels)
     final_label = []
     for tups in merged:
-        final_label.append(':'.join(sorted(set(tups))))
+        final_label.append('_'.join(sorted(set(tups))))
     return final_label
 
 
