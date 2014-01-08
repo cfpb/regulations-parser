@@ -144,6 +144,20 @@ class AppendixProcessor(object):
         self._indent_if_needed()
         self.m_stack.add(self.depth, n)
 
+    def find_next_text_with_marker(self, node):
+        """Scan xml nodes and their neighbors looking for text that begins
+        with a marker. When found, return it"""
+        if node.tag == 'HD':   # Next section; give up
+            return None
+        if node.tag in ('P', 'FP'):     # Potential text
+            text = tree_utils.get_node_text(node)
+            pair = initial_marker(text)
+            if pair:
+                return text
+        if node.getnext() is None:  # end of the line
+            return None
+        return self.find_next_text_with_marker(node.getnext())
+
     def split_paragraph_text(self, text, next_text=''):
         marker_positions = []
         for marker in _first_markers:
@@ -268,8 +282,8 @@ class AppendixProcessor(object):
                 if child.getnext() is None:
                     next_text = ''
                 else:
-                    next_text = tree_utils.get_node_text(child.getnext())
-
+                    next_text = self.find_next_text_with_marker(
+                        child.getnext()) or ''
                 texts = self.split_paragraph_text(text, next_text)
                 for text, next_text in zip(texts, texts[1:]):
                     self.paragraph_with_marker(text, next_text)

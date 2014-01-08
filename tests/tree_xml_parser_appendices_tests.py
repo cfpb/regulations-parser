@@ -357,6 +357,25 @@ class AppendixProcessorTest(TestCase):
 
         self.assertEqual(1, len(aI.children))
 
+    def test_process_depth_look_forward(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <P>(a) aaaaa</P>
+            <P>(i) iiiii</P>
+            <P>Text text</P>
+            <P>(ii) ii ii ii</P>
+        </APPENDIX>
+        """
+        appendix = self.ap.process(etree.fromstring(xml), 1111)
+        self.assertEqual(1, len(appendix.children))
+        Aa = appendix.children[0]
+
+        child_labels = [child.label for child in Aa.children]
+        self.assertTrue(['1111', 'A', 'a', 'i'] in child_labels)
+        self.assertTrue(['1111', 'A', 'a', 'ii'] in child_labels)
+
     def test_process_header_depth(self):
         xml = u"""
         <APPENDIX>
