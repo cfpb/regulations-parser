@@ -93,7 +93,6 @@ class AppendicesTest(TestCase):
             <P>2. More content</P>
         </APPENDIX>"""
         appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
-        print [a.label for a in appendix.children]
         self.assertEqual(2, len(appendix.children))
         a1, a2 = appendix.children
 
