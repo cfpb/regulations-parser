@@ -85,6 +85,9 @@ def create_add_amendment(amendment):
             'action': amendment['action'],
         }
 
+        if 'extras' in amendment:
+            node_as_dict.update(amendment['extras'])
+
         if 'field' in amendment:
             node_as_dict['field'] = amendment['field']
         return {node.label_id(): node_as_dict}
@@ -103,7 +106,8 @@ def create_add_amendment(amendment):
 def create_subpart_amendment(subpart_node):
     amendment = {
         'node': subpart_node,
-        'action': 'POST'
+        'action': 'POST',
+        'extras': {'subpart':subpart_node.label}
     }
     return create_add_amendment(amendment)
 
