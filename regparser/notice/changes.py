@@ -92,13 +92,6 @@ def create_add_amendment(amendment):
             node_as_dict['field'] = amendment['field']
         return {node.label_id(): node_as_dict}
 
-        #node_as_dict = node_to_dict(n)
-        #node_as_dict['action'] = amendment['action']
-
-        #if 'field' in amendment:
-        #    node_as_dict['field'] = amendment['field']
-        #return {node.label_id(): node_as_dict}
-
     nodes = [format_node(n) for n in nodes_list]
     return nodes
 
@@ -107,7 +100,7 @@ def create_subpart_amendment(subpart_node):
     amendment = {
         'node': subpart_node,
         'action': 'POST',
-        'extras': {'subpart':subpart_node.label}
+        'extras': {'subpart': subpart_node.label}
     }
     return create_add_amendment(amendment)
 
