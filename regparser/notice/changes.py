@@ -76,10 +76,16 @@ def match_labels_and_changes(amendments, section_node):
 
 
 def create_add_amendment(amendment):
+    """ An amendment comes in with a whole tree structure. We break apart the
+    tree here (this is what flatten does), convert the Node objects to JSON
+    representations. This ensures that each amendment only acts on one node.
+    """
+
     nodes_list = []
     flatten_tree(nodes_list, amendment['node'])
 
     def format_node(node):
+        """ Format a node into a dict, and add in amendment information. """
         node_as_dict = {
             'node': node_to_dict(n),
             'action': amendment['action'],
@@ -97,6 +103,10 @@ def create_add_amendment(amendment):
 
 
 def create_subpart_amendment(subpart_node):
+    """ Create an amendment that describes a subpart. In particular
+    when the list of nodes added gets flattened, each node specifies which
+    subpart it's part of. """
+
     amendment = {
         'node': subpart_node,
         'action': 'POST',
@@ -124,9 +134,13 @@ def remove_intro(l):
 
 
 class NoticeChanges(object):
+    """ Notice changes. """
     def __init__(self):
         self.changes = defaultdict(list)
 
     def update(self, changes):
+        """ Essentially add more changes into NoticeChanges. This is
+        cognizant of the fact that a single label can have more than
+        one change. """
         for l, c in changes.items():
             self.changes[l].append(c)
