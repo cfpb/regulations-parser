@@ -68,9 +68,9 @@ class ChangesTests(TestCase):
             self.assertTrue(l in amends)
    
         for label, node in amends.items():
-            self.assertEqual(label, '-'.join(node['label']))
+            self.assertEqual(label, '-'.join(node['node']['label']))
             self.assertEqual(node['action'], 'POST')
-            self.assertFalse('children' in node)
+            self.assertFalse('children' in node['node'])
 
     def test_flatten_tree(self):
         tree = self.build_tree()
