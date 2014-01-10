@@ -72,21 +72,6 @@ class CompilerTests(TestCase):
         for c in children:
             self.assertFalse(hasattr(c, 'sortable'))
 
-    def tree_with_pargraphs(self):
-        n1 = Node('n1', label=['205', '1'])
-        n2 = Node('n2', label=['205', '2'])
-        n4 = Node('n4', label=['205', '4'])
-
-        n2a = Node('n2a', label=['205', '2', 'a'])
-        n2b = Node('n2b', label=['205', '2', 'b'])
-
-        n2.children = [n2a, n2b]
-
-        root = Node('', label=['205'])
-        root.children = [n1, n2, n4]
-
-        return root
-
     def tree_with_paragraphs(self):
         n1 = Node('n1', label=['205', '1'])
         n2 = Node('n2', label=['205', '2'])
@@ -214,3 +199,43 @@ class CompilerTests(TestCase):
         labels = [s.label_id() for s in subparts]
 
         self.assertEqual(labels, ['205-Subpart-A', '205-Subpart-B'])
+
+    def tree_with_subparts(self):
+        nsa = Node('nsa', 
+                   label=['205', 'Subpart', 'A'], 
+                   node_type=Node.SUBPART)
+
+        nsb = Node('nsb', 
+                   label=['205', 'Subpart', 'B'], 
+                   node_type=Node.SUBPART)
+
+        nappa = Node('nappa', 
+                     label=['205', 'Appendix', 'C'], 
+                     node_type=Node.APPENDIX)
+
+        root = Node('', label = ['205'])
+        root.children = [nsa, nsb, nappa]
+        return root
+
+    def test_create_new_subpart(self):
+        root = self.tree_with_subparts()
+
+        reg_tree = compiler.RegulationTree(root)
+        reg_tree.create_new_subpart(['205', 'Subpart', 'C'])
+
+        subparts = reg_tree.get_subparts()
+        labels = [s.label_id() for s in subparts]
+
+        self.assertEqual(
+            labels, ['205-Subpart-A', '205-Subpart-B', '205-Subpart-C'])
+
+    def test_get_subpart_for_node(self):
+        root = self.tree_with_subparts()
+        n1 = Node('n1', label=['205', '1'])
+        nsb = find(root, '205-Subpart-B')
+        nsb.children = [n1]
+
+        reg_tree = compiler.RegulationTree(root)
+        subpart = reg_tree.get_subpart_for_node('205-1')
+
+        self.assertEqual(subpart.label_id(), '205-Subpart-B')
