@@ -7,6 +7,43 @@ import re
 from regparser.tree.struct import Node, find
 from regparser.utils import roman_nums
 
+def get_parent_label(node):
+    """ Given a node, get the label of it's parent. """
+
+    if node.node_type == Node.SUBPART:
+        return node.label[0]
+    else:
+        parent_label = node.label[:-1]
+        return '-'.join(parent_label)
+
+def make_label_sortable(label, roman=False):
+    """ Make labels sortable, but converting them as appropriate.
+    Also, appendices have labels that look like 30(a), we make those
+    appropriately sortable. """
+
+    if label.isdigit():
+        return (int(label),)
+    if label.isalpha():
+        if roman:
+            romans = list(itertools.islice(roman_nums(), 0, 50))
+            return 1 + romans.index(label)
+        else:
+            return (label,)
+    else:
+        m = re.match(r"([0-9]+)([\(])([a-z]+)([\)])", label, re.I)
+        return (int(m.groups()[0]), m.groups()[2])
+
+def make_root_sortable(label, node_type):
+    """ Child nodes of the root contain nodes of various types, these
+    need to be sorted correctly. This returns a tuple to help
+    sort these first level nodes. """
+
+    if node_type == Node.SUBPART or node_type == Node.EMPTYPART:
+        return (0, label[-1])
+    elif node_type == Node.APPENDIX:
+        return (1, label[-1])
+    elif node_type == Node.INTERP:
+        return (2,)
 
 class RegulationTree(object):
     """ This encapsulates a regulation tree, and methods to change that tree.
@@ -15,50 +52,12 @@ class RegulationTree(object):
     def __init__(self, previous_tree):
         self.tree = copy.deepcopy(previous_tree)
 
-    def get_parent_label(self, node):
-        """ Given a node, get the label of it's parent. """
-
-        if node.node_type == Node.SUBPART:
-            return node.label[0]
-        else:
-            parent_label = node.label[:-1]
-            return '-'.join(parent_label)
-
-    def make_label_sortable(self, label, roman=False):
-        """ Make labels sortable, but converting them as appropriate.
-        Also, appendices have labels that look like 30(a), we make those
-        appropriately sortable. """
-
-        if label.isdigit():
-            return (int(label),)
-        if label.isalpha():
-            if roman:
-                romans = list(itertools.islice(roman_nums(), 0, 50))
-                return 1 + romans.index(label)
-            else:
-                return (label,)
-        else:
-            m = re.match(r"([0-9]+)([\(])([a-z]+)([\)])", label, re.I)
-            return (int(m.groups()[0]), m.groups()[2])
-
-    def make_root_sortable(self, label, node_type):
-        """ Child nodes of the root contain nodes of various types, these
-        need to be sorted correctly. This returns a tuple to help
-        sort these first level nodes. """
-
-        if node_type == Node.SUBPART or node_type == Node.EMPTYPART:
-            return (0, label[-1])
-        elif node_type == Node.APPENDIX:
-            return (1, label[-1])
-        elif node_type == Node.INTERP:
-            return (2,)
-
     def add_to_root(self, node):
         """ Add a child to the root of the tree. """
         self.tree.children.append(node)
 
         for c in self.tree.children:
-            c.sortable = self.make_root_sortable(c.label, c.node_type)
+            c.sortable = make_root_sortable(c.label, c.node_type)
 
         self.tree.children.sort(key=lambda x: x.sortable)
 
@@ -72,7 +71,7 @@ class RegulationTree(object):
         children.append(node)
 
         for c in children:
-            c.sortable = self.make_label_sortable(
+            c.sortable = make_label_sortable(
                 c.label[-1], roman=(len(c.label) == 5))
 
         children.sort(key=lambda x: x.sortable)
@@ -84,7 +83,7 @@ class RegulationTree(object):
     def replace_node_and_subtree(self, node):
         """ Replace an existing node in the tree with node.  """
         #find parent of node
-        parent_label = self.get_parent_label(node)
+        parent_label = get_parent_label(node)
         parent = find(self.tree, parent_label)
 
         other_children = [c for c in parent.children if c.label != node.label]
@@ -96,7 +95,7 @@ class RegulationTree(object):
         if node.node_type == Node.SUBPART:
             return self.add_to_root(node)
 
-        parent_label = self.get_parent_label(node)
+        parent_label = get_parent_label(node)
         parent = find(self.tree, parent_label)
         parent.children = self.add_child(parent.children, node)
 
@@ -161,7 +160,7 @@ class RegulationTree(object):
 
 def dict_to_node(node_dict):
     """ Convert a dictionary representation of a node into a Node object if
-    it contains the minimum required field. Otherwise, pass it through
+    it contains the minimum required fields. Otherwise, pass it through
     unchanged. """
     minimum_fields = set(('text', 'label', 'node_type'))
     if minimum_fields.issubset(node_dict.keys()):
