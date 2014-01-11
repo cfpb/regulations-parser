@@ -7,12 +7,11 @@ from regparser.tree.struct import Node, find
 class CompilerTests(TestCase):
     def test_dict_to_node(self):
         dict_node = {
-            'text': 'node text', 
-            'label':['205', 'A'], 
-            'node_type':'appendix'}
+            'text': 'node text',
+            'label': ['205', 'A'],
+            'node_type': 'appendix'}
 
-        node = compiler.dict_to_node(dict_node) 
-
+        node = compiler.dict_to_node(dict_node)
 
         self.assertEqual(
             node,
@@ -47,7 +46,7 @@ class CompilerTests(TestCase):
         self.assertEqual(
             compiler.make_root_sortable(['205', 'B'], Node.APPENDIX),
             (1, 'B'))
-        
+
         self.assertEqual(
             compiler.make_root_sortable(['205', 'Subpart', 'J'], Node.SUBPART),
             (0, 'J'))
@@ -98,10 +97,10 @@ class CompilerTests(TestCase):
         root.children = [n1, n2, n4]
 
         reg_tree = compiler.RegulationTree(root)
-        
+
         a2 = Node('a2', label=['205', '2'])
         a2e = Node('a2e', label=['205', '2', 'e'])
-        a2f= Node('a2f', label=['205', '2', 'f'])
+        a2f = Node('a2f', label=['205', '2', 'f'])
         a2.children = [a2e, a2f]
 
         reg_tree.replace_node_and_subtree(a2)
@@ -124,23 +123,25 @@ class CompilerTests(TestCase):
         n2a.children = [n2ai]
         self.assertEqual(reg_tree.tree, root)
 
-    
     def test_add_to_root(self):
-        nsa = Node('nsa', 
-                  label=['205', 'Subpart', 'A'], 
-                  node_type=Node.SUBPART) 
+        nsa = Node(
+            'nsa',
+            label=['205', 'Subpart', 'A'],
+            node_type=Node.SUBPART)
 
-        nappa = Node('nappa', 
-                    label = ['205', 'Appendix', 'C'], 
-                    node_type = Node.APPENDIX)
+        nappa = Node(
+            'nappa',
+            label=['205', 'Appendix', 'C'],
+            node_type=Node.APPENDIX)
 
         root = Node('', label=['205'])
         root.children = [nsa, nappa]
 
         reg_tree = compiler.RegulationTree(root)
 
-        nappb = Node('nappb', 
-                    label=['205', 'Appendix', 'B'], node_type=Node.APPENDIX)
+        nappb = Node(
+            'nappb',
+            label=['205', 'Appendix', 'B'], node_type=Node.APPENDIX)
 
         reg_tree.add_to_root(nappb)
         root.children = [nsa, nappb, nappa]
@@ -148,25 +149,26 @@ class CompilerTests(TestCase):
         self.assertEqual(reg_tree.tree, root)
 
     def test_add_section(self):
-        nsa = Node('nsa', 
-          label=['205', 'Subpart', 'A'], 
-          node_type=Node.SUBPART) 
+        nsa = Node(
+            'nsa',
+            label=['205', 'Subpart', 'A'],
+            node_type=Node.SUBPART)
 
-        nappa = Node('nappa', 
-            label=['205', 'Appendix', 'C'], 
+        nappa = Node(
+            'nappa',
+            label=['205', 'Appendix', 'C'],
             node_type=Node.APPENDIX)
 
-        root = Node('', label = ['205'])
+        root = Node('', label=['205'])
         root.children = [nsa, nappa]
 
-        n1 = Node('', label = ['205', '1'])
+        n1 = Node('', label=['205', '1'])
 
         reg_tree = compiler.RegulationTree(root)
         reg_tree.add_section(n1, ['205', 'Subpart', 'A'])
 
         nsa.children = [n1]
         self.assertEqual(reg_tree.tree, root)
-
 
     def test_replace_node_text(self):
         root = self.tree_with_paragraphs()
@@ -179,19 +181,19 @@ class CompilerTests(TestCase):
         self.assertEqual(changed_node.text, 'new text')
 
     def test_get_subparts(self):
-        nsa = Node('nsa', 
-                   label=['205', 'Subpart', 'A'], 
+        nsa = Node(
+            'nsa',
+            label=['205', 'Subpart', 'A'], node_type=Node.SUBPART)
+
+        nsb = Node('nsb',
+                   label=['205', 'Subpart', 'B'],
                    node_type=Node.SUBPART)
 
-        nsb = Node('nsb', 
-                   label=['205', 'Subpart', 'B'], 
-                   node_type=Node.SUBPART)
-
-        nappa = Node('nappa', 
-                     label=['205', 'Appendix', 'C'], 
+        nappa = Node('nappa',
+                     label=['205', 'Appendix', 'C'],
                      node_type=Node.APPENDIX)
 
-        root = Node('', label = ['205'])
+        root = Node('', label=['205'])
         root.children = [nsa, nsb, nappa]
 
         reg_tree = compiler.RegulationTree(root)
@@ -201,19 +203,19 @@ class CompilerTests(TestCase):
         self.assertEqual(labels, ['205-Subpart-A', '205-Subpart-B'])
 
     def tree_with_subparts(self):
-        nsa = Node('nsa', 
-                   label=['205', 'Subpart', 'A'], 
+        nsa = Node('nsa',
+                   label=['205', 'Subpart', 'A'],
                    node_type=Node.SUBPART)
 
-        nsb = Node('nsb', 
-                   label=['205', 'Subpart', 'B'], 
+        nsb = Node('nsb',
+                   label=['205', 'Subpart', 'B'],
                    node_type=Node.SUBPART)
 
-        nappa = Node('nappa', 
-                     label=['205', 'Appendix', 'C'], 
+        nappa = Node('nappa',
+                     label=['205', 'Appendix', 'C'],
                      node_type=Node.APPENDIX)
 
-        root = Node('', label = ['205'])
+        root = Node('', label=['205'])
         root.children = [nsa, nsb, nappa]
         return root
 
@@ -239,3 +241,114 @@ class CompilerTests(TestCase):
         subpart = reg_tree.get_subpart_for_node('205-1')
 
         self.assertEqual(subpart.label_id(), '205-Subpart-B')
+
+    def test_compile_reg_put_replace_whole_tree(self):
+        root = self.tree_with_paragraphs()
+
+        change2a = {
+            'action': 'PUT',
+            'node': {
+                'text': 'new text',
+                'label': ['205', '2', 'a'],
+                'node_type': 'regtext'}}
+
+        change2a1 = {
+            'action': 'PUT',
+            'node': {
+                'text': '2a1 text',
+                'label': ['205', '2', 'a', '1'],
+                'node_type': 'regtext'}}
+
+        notice_changes = {
+            '205-2-a-1': [change2a1],
+            '205-2-a': [change2a]
+        }
+
+        reg = compiler.compile_regulation(root, notice_changes)
+
+        added_node = find(reg, '205-2-a')
+        self.assertEqual(added_node.text, 'new text')
+
+        deeper = find(reg, '205-2-a-1')
+        self.assertEqual(deeper.text, '2a1 text')
+
+    def test_compile_reg_put_text_only(self):
+        root = self.tree_with_paragraphs()
+        change2a = {
+            'action': 'PUT',
+            'field': '[text]',
+            'node': {
+                'text': 'new text',
+                'label': ['205', '2', 'a'],
+                'node_type': 'regtext'}}
+
+        notice_changes = {'205-2-a': [change2a]}
+        reg = compiler.compile_regulation(root, notice_changes)
+
+        changed_node = find(reg, '205-2-a')
+        self.assertEqual(changed_node.text, 'new text')
+
+    def test_compile_reg_post_no_subpart(self):
+        root = self.tree_with_paragraphs()
+        change2a1 = {
+            'action': 'POST',
+            'node': {
+                'text': '2a1 text',
+                'label': ['205', '2', 'a', '1'],
+                'node_type': 'regtext'}}
+
+        notice_changes = {'205-2-a-1': [change2a1]}
+        reg = compiler.compile_regulation(root, notice_changes)
+        added_node = find(reg, '205-2-a-1')
+        self.assertNotEqual(None, added_node)
+        self.assertEqual(added_node.text, '2a1 text')
+
+    def test_compile_add_to_subpart(self):
+        root = self.tree_with_subparts()
+
+        change = {
+            'action': 'POST',
+            'subpart': ['205', 'Subpart', 'B'],
+            'node': {
+                'text': '2 text',
+                'label': ['205', '2'],
+                'node_type': 'regtext'}}
+
+        notice_changes = {'205-2': [change]}
+        reg = compiler.compile_regulation(root, notice_changes)
+        added_node = find(reg, '205-2')
+        self.assertNotEqual(None, added_node)
+        self.assertEqual(added_node.text, '2 text')
+
+    def test_compile_designate(self):
+        root = self.tree_with_subparts()
+        change = {
+            'action': 'POST',
+            'subpart': ['205', 'Subpart', 'B'],
+            'node': {
+                'text': '2 text',
+                'label': ['205', '2'],
+                'node_type': 'regtext'}}
+
+        notice_changes = {'205-2': [change]}
+        reg = compiler.compile_regulation(root, notice_changes)
+
+        subpart_b = find(reg, '205-Subpart-B')
+        self.assertEqual(len(subpart_b.children), 1)
+
+        subpart_a = find(reg, '205-Subpart-A')
+        self.assertEqual(len(subpart_a.children), 0)
+
+        change = {
+            'action': 'DESIGNATE',
+            'destination': ['205', 'Subpart', 'A']}
+
+        notice_changes = {'205-2': [change]}
+
+        new_reg = compiler.compile_regulation(reg, notice_changes)
+
+        subpart_b = find(new_reg, '205-Subpart-B')
+        self.assertEqual(len(subpart_b.children), 0)
+
+        subpart_a = find(new_reg, '205-Subpart-A')
+        self.assertEqual(len(subpart_a.children), 1)

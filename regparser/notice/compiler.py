@@ -7,6 +7,7 @@ import re
 from regparser.tree.struct import Node, find
 from regparser.utils import roman_nums
 
+
 def get_parent_label(node):
     """ Given a node, get the label of it's parent. """
 
@@ -15,6 +16,7 @@ def get_parent_label(node):
     else:
         parent_label = node.label[:-1]
         return '-'.join(parent_label)
+
 
 def make_label_sortable(label, roman=False):
     """ Make labels sortable, but converting them as appropriate.
@@ -33,6 +35,7 @@ def make_label_sortable(label, roman=False):
         m = re.match(r"([0-9]+)([\(])([a-z]+)([\)])", label, re.I)
         return (int(m.groups()[0]), m.groups()[2])
 
+
 def make_root_sortable(label, node_type):
     """ Child nodes of the root contain nodes of various types, these
     need to be sorted correctly. This returns a tuple to help
@@ -44,6 +47,7 @@ def make_root_sortable(label, node_type):
         return (1, label[-1])
     elif node_type == Node.INTERP:
         return (2,)
+
 
 class RegulationTree(object):
     """ This encapsulates a regulation tree, and methods to change that tree.
@@ -145,10 +149,14 @@ class RegulationTree(object):
 
         destination = find(self.tree, '-'.join(subpart_label))
 
+        print destination
+
         if destination is None:
             destination = self.create_new_subpart(subpart_label)
 
         subpart_with_node = self.get_subpart_for_node(label)
+
+        print subpart_with_node
 
         if destination and subpart_with_node:
             node = find(subpart_with_node, label)
@@ -213,4 +221,4 @@ def compile_regulation(previous_tree, notice_changes):
                     reg.move_to_subpart(label, change['destination'])
             else:
                 print "%s: %s" % (change['action'], label)
-    return reg
+    return reg.tree
