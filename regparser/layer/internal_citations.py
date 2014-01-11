@@ -1,6 +1,6 @@
 #vim: set encoding=utf-8
-import logging
 from itertools import takewhile
+import logging
 import re
 import string
 
