@@ -180,6 +180,16 @@ class CompilerTests(TestCase):
         changed_node = find(reg_tree.tree, '205-2-a')
         self.assertEqual(changed_node.text, 'new text')
 
+    def test_replace_node_title(self):
+        root = self.tree_with_paragraphs()
+
+        change = {'node': {'title': 'new title'}}
+        reg_tree = compiler.RegulationTree(root)
+
+        reg_tree.replace_node_title('205-2-a', change)
+        changed_node = find(reg_tree.tree, '205-2-a')
+        self.assertEqual(changed_node.title, 'new title')
+
     def test_get_subparts(self):
         nsa = Node(
             'nsa',
