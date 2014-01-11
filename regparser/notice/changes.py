@@ -74,6 +74,32 @@ def match_labels_and_changes(amendments, section_node):
     resolve_candidates(amend_map)
     return amend_map
 
+def format_node(node, amendment):
+    """ Format a node into a dict, and add in amendment information. """
+    node_as_dict = {
+        'node': node_to_dict(node),
+        'action': amendment['action'],
+    }
+
+    if 'extras' in amendment:
+        node_as_dict.update(amendment['extras'])
+
+    if 'field' in amendment:
+        node_as_dict['field'] = amendment['field']
+    return {node.label_id(): node_as_dict}
+
+
+def create_field_amendment(label, amendment):
+    """ If an amendment is changing just a field (text, title) then we 
+    don't need to package the rest of the paragraphs with it. Those get 
+    dealt with later, if appropriate. """
+
+    nodes_list = []
+    flatten_tree(nodes_list, amendment['node'])
+
+    changed_nodes = [n for n in nodes_list if n.label_id() == label]
+    nodes = [format_node(n, amendment) for n in changed_nodes]
+    return nodes
 
 def create_add_amendment(amendment):
     """ An amendment comes in with a whole tree structure. We break apart the
@@ -83,22 +109,7 @@ def create_add_amendment(amendment):
 
     nodes_list = []
     flatten_tree(nodes_list, amendment['node'])
-
-    def format_node(node):
-        """ Format a node into a dict, and add in amendment information. """
-        node_as_dict = {
-            'node': node_to_dict(n),
-            'action': amendment['action'],
-        }
-
-        if 'extras' in amendment:
-            node_as_dict.update(amendment['extras'])
-
-        if 'field' in amendment:
-            node_as_dict['field'] = amendment['field']
-        return {node.label_id(): node_as_dict}
-
-    nodes = [format_node(n) for n in nodes_list]
+    nodes = [format_node(n, amendment) for n in nodes_list]
     return nodes
 
 

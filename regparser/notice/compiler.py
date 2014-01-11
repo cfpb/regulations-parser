@@ -115,6 +115,12 @@ class RegulationTree(object):
         node = find(self.tree, label)
         node.text = change['node']['text']
 
+    def replace_node_title(self, label, change):
+        """ Replace just a node's title. """
+
+        node = find(self.tree, label)
+        node.title = change['node']['title']
+
     def get_subparts(self):
         """ Get all the subparts and empty parts in the tree.  """
 
@@ -149,14 +155,10 @@ class RegulationTree(object):
 
         destination = find(self.tree, '-'.join(subpart_label))
 
-        print destination
-
         if destination is None:
             destination = self.create_new_subpart(subpart_label)
 
         subpart_with_node = self.get_subpart_for_node(label)
-
-        print subpart_with_node
 
         if destination and subpart_with_node:
             node = find(subpart_with_node, label)
@@ -210,6 +212,8 @@ def compile_regulation(previous_tree, notice_changes):
                 reg.replace_node_and_subtree(node)
             elif change['action'] == 'PUT' and change['field'] == '[text]':
                 reg.replace_node_text(label, change)
+            elif change['action'] == 'PUT' and change['field'] == '[title]':
+                reg.replace_node_title(label, change)
             elif change['action'] == 'POST':
                 node = dict_to_node(change['node'])
                 if 'subpart' in change and len(node.label) == 2:

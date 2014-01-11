@@ -95,7 +95,10 @@ def process_amendments(notice, notice_xml):
 
                 for label, amendment in adds_map.items():
                     if amendment['action'] in ['POST', 'PUT']:
-                        nodes = changes.create_add_amendment(amendment)
+                        if 'field' in amendment:
+                            nodes = changes.create_field_amendment(label, amendment)
+                        else:
+                            nodes = changes.create_add_amendment(amendment)
                         for n in nodes:
                             notice_changes.update(n)
                     elif amendment['action'] == 'deleted':
