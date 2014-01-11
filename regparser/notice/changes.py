@@ -55,6 +55,7 @@ def match_labels_and_changes(amendments, section_node):
         if amend.action == 'MOVE':
             change = {'action': amend.action, 'destination': amend.destination}
             amend_map[amend.label_id()] = change
+            print "MOVE: %s " % amend.label_id()
         elif amend.action == 'DELETE':
             amend_map[amend.label_id()] = {'action': amend.action}
         else:
@@ -64,6 +65,9 @@ def match_labels_and_changes(amendments, section_node):
                 if candidate:
                     amend_map[amend.label_id()] = candidate
             else:
+                if amend.label_id() == '1005-33-c-2-iii':
+                    print "OOPS: %s " % amend.action
+                    print node
                 amend_map[amend.label_id()] = {
                     'node': node,
                     'action': amend.action,
@@ -72,6 +76,8 @@ def match_labels_and_changes(amendments, section_node):
                 amend_map[amend.label_id()]['field'] = amend.field
 
     resolve_candidates(amend_map)
+    for l, a in amend_map.items():
+        print l, a['action']
     return amend_map
 
 def format_node(node, amendment):

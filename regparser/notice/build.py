@@ -101,8 +101,10 @@ def process_amendments(notice, notice_xml):
                             nodes = changes.create_add_amendment(amendment)
                         for n in nodes:
                             notice_changes.update(n)
-                    elif amendment['action'] == 'deleted':
-                        notice_changes.update({label: {'action': 'deleted'}})
+                    elif amendment['action'] == 'DELETE':
+                        notice_changes.update({label: {'action': amendment['action']}})
+                    else:
+                        print "NOT HANDLED: %s" % amendment['action']
         amends.extend(amended_labels)
     if amends:
         notice['amendments'] = amends

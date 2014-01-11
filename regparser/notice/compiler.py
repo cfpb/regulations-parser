@@ -223,6 +223,8 @@ def compile_regulation(previous_tree, notice_changes):
             elif change['action'] == 'DESIGNATE':
                 if 'Subpart' in change['destination']:
                     reg.move_to_subpart(label, change['destination'])
+            elif change['action'] == 'MOVE':
+                print 'MOVE'
             else:
                 print "%s: %s" % (change['action'], label)
     return reg.tree
