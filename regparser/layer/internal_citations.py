@@ -65,4 +65,3 @@ class InternalCitationParser(Layer):
                 new_end = end - (len(string) - len(rstring))
                 citation['offsets'][i] = (new_start, new_end)
         return citations
-
