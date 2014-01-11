@@ -7,6 +7,7 @@ from regparser.tree.struct import Node
 class ParseTest(TestCase):
     def setUp(self):
         self.parser = internal_citations.InternalCitationParser(None)
+        self.parser.verify_citations = False
 
     def test_process_method(self):
         node = Node("The requirements in paragraph (a)(4)(iii) of", 
@@ -327,3 +328,31 @@ class ParseTest(TestCase):
         text = "12 CFR 1026.3(d)"
         result = self.parser.process(Node(text, label=['1111']))
         self.assertEqual(None, result)
+
+    def test_pre_process(self):
+        tree = Node(label=['1111', '2', '3'],
+                    children=[Node(label=['222', '1', '1']),
+                              Node(label=['222', '1', '1'],
+                                   children=[Node(label=['111', '34'])])])
+        parser = internal_citations.InternalCitationParser(tree)
+        parser.pre_process()
+        self.assertEqual(parser.known_citations, set([
+            ('1111', '2', '3'), ('222', '1', '1'), ('111', '34')]))
+
+    def test_verify_citations(self):
+        tree = Node(label=['1111', '2', '3'],
+                    children=[Node(label=['222', '1', '1']),
+                              Node(label=['222', '1', '1'],
+                                   children=[Node(label=['111', '34'])])])
+        parser = internal_citations.InternalCitationParser(tree)
+        parser.pre_process()
+        parser.verify_citations = False
+        text = 'Section 111.34 and paragraph (c)'
+        result = parser.process(Node(text))
+        self.assertEqual(2, len(result))
+
+        parser.verify_citations = True
+        result = parser.process(Node(text))
+        self.assertEqual(1, len(result))
+        start, end = result[0]['offsets'][0]
+        self.assertEqual('111.34', text[start:end].strip())
