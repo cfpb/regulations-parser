@@ -82,6 +82,57 @@ class AppendicesTest(TestCase):
         self.assertEqual('A-3 Some header here', a3.title)
         self.assertEqual('A-4 Another header', a4.title)
 
+    def test_process_appendix_header_depth(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <P>1. Some content</P>
+            <HD SOURCE="HD3">An Interruption</HD>
+            <P>Moo</P>
+            <P>2. More content</P>
+        </APPENDIX>"""
+        appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
+        self.assertEqual(2, len(appendix.children))
+        a1, a2 = appendix.children
+
+        self.assertEqual(['1111', 'A', '1'], a1.label)
+        self.assertEqual(1, len(a1.children))
+        self.assertEqual('1. Some content', a1.text.strip())
+
+        self.assertEqual(['1111', 'A', '2'], a2.label)
+        self.assertEqual(0, len(a2.children))
+        self.assertEqual('2. More content', a2.text.strip())
+
+    def test_header_ordering(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <HD SOURCE="HD1">A-1 Content</HD>
+            <HD SOURCE="HD3">Level 1</HD>
+            <HD SOURCE="HD2">Level 2</HD>
+            <P>Paragraph</P>
+            <HD SOURCE="HD1">A-1(A) More Content</HD>
+            <P>A1A Paragraph</P>
+        </APPENDIX>"""
+        appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
+        self.assertEqual(2, len(appendix.children))
+        a1, a1A = appendix.children
+
+        self.assertEqual(1, len(a1A.children))
+
+        self.assertEqual(['1111', 'A', '1'], a1.label)
+        self.assertEqual(1, len(a1.children))
+        a1_1 = a1.children[0]
+
+        self.assertEqual(['1111', 'A', '1', 'h1'], a1_1.label)
+        self.assertEqual(1, len(a1_1.children))
+        a1_1_1 = a1_1.children[0]
+
+        self.assertEqual(['1111', 'A', '1', 'h1', 'h2'], a1_1_1.label)
+        self.assertEqual(1, len(a1_1_1.children))
+
     def test_remove_toc(self):
         xml = u"""
         <APPENDIX>
@@ -327,6 +378,25 @@ class AppendixProcessorTest(TestCase):
         aI = appendix.children[0]
 
         self.assertEqual(1, len(aI.children))
+
+    def test_process_depth_look_forward(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <P>(a) aaaaa</P>
+            <P>(i) iiiii</P>
+            <P>Text text</P>
+            <P>(ii) ii ii ii</P>
+        </APPENDIX>
+        """
+        appendix = self.ap.process(etree.fromstring(xml), 1111)
+        self.assertEqual(1, len(appendix.children))
+        Aa = appendix.children[0]
+
+        child_labels = [child.label for child in Aa.children]
+        self.assertTrue(['1111', 'A', 'a', 'i'] in child_labels)
+        self.assertTrue(['1111', 'A', 'a', 'ii'] in child_labels)
 
     def test_process_header_depth(self):
         xml = u"""
