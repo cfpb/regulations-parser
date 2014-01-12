@@ -10,13 +10,11 @@ from regparser.utils import roman_nums
 
 def get_parent_label(node):
     """ Given a node, get the label of it's parent. """
-
     if node.node_type == Node.SUBPART:
         return node.label[0]
     else:
         parent_label = node.label[:-1]
         return '-'.join(parent_label)
-
 
 def make_label_sortable(label, roman=False):
     """ Make labels sortable, but converting them as appropriate.
@@ -56,6 +54,10 @@ class RegulationTree(object):
     def __init__(self, previous_tree):
         self.tree = copy.deepcopy(previous_tree)
 
+    def get_parent(self, node):
+        parent_label_id = get_parent_label(node)
+        return find(self.tree, parent_label_id)
+
     def add_to_root(self, node):
         """ Add a child to the root of the tree. """
         self.tree.children.append(node)
@@ -84,14 +86,19 @@ class RegulationTree(object):
             del c.sortable
         return children
 
+    def delete_from_parent(self, node):
+        parent = self.get_parent(node)
+        other_children = [c for c in parent.children if c.label != node.label]
+        parent.children = other_children
+
+    def delete(self, label_id):
+        node = find(self.tree, label_id)
+        self.delete_from_parent(node)
+
     def move(self, origin, destination):
         """ Move a node from one part in the tree to another. """
         origin = find(self.tree, origin)
-
-        parent_label = get_parent_label(origin)
-        parent = find(self.tree, parent_label)
-        other_children = [c for c in parent.children if c.label != origin.label]
-        parent.children = other_children
+        self.delete_from_parent(origin)
 
         #XXX  We'll need to fix the paragraph marker, but let's save that 
         #for later
@@ -100,10 +107,7 @@ class RegulationTree(object):
 
     def replace_node_and_subtree(self, node):
         """ Replace an existing node in the tree with node.  """
-        #find parent of node
-        parent_label = get_parent_label(node)
-        parent = find(self.tree, parent_label)
-
+        parent = self.get_parent(node)
         other_children = [c for c in parent.children if c.label != node.label]
         parent.children = self.add_child(other_children, node)
 
@@ -113,8 +117,7 @@ class RegulationTree(object):
         if node.node_type == Node.SUBPART:
             return self.add_to_root(node)
 
-        parent_label = get_parent_label(node)
-        parent = find(self.tree, parent_label)
+        parent = self.get_parent(node)
         parent.children = self.add_child(parent.children, node)
 
     def add_section(self, node, subpart_label):
@@ -239,6 +242,8 @@ def compile_regulation(previous_tree, notice_changes):
                     reg.move_to_subpart(label, change['destination'])
             elif change['action'] == 'MOVE':
                 reg.move(label, change['destination'])
+            elif change['action'] == 'DELETE':
+                reg.delete(label)
             else:
                 print "%s: %s" % (change['action'], label)
     return reg.tree
