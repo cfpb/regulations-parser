@@ -320,6 +320,16 @@ class LayerTermTest(TestCase):
         self.assertEqual((13, 26),
                          referenced['awesome sauce:88-2-b-i-A']['position'])
 
+    def test_pre_process_defined_twice(self):
+        tree = Node(u"The term “lol” means laugh out loud. "
+                    + u"How do you pronounce “lol”, though?",
+                    label=['1212', '5'])
+        t = Terms(tree)
+        t.pre_process()
+
+        self.assertEqual(t.layer['referenced']['lol:1212-5']['position'],
+                         (10, 13))
+
     def test_excluded_offsets(self):
         t = Terms(None)
         t.scoped_terms['_'] = [

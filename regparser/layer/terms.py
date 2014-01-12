@@ -114,13 +114,18 @@ class Terms(Layer):
 
         struct.walk(self.tree, per_node)
 
+        referenced = self.layer['referenced']
         for scope in self.scoped_terms:
             for ref in self.scoped_terms[scope]:
-                self.layer['referenced'][ref.term + ":" + ref.label] = {
-                    'term': ref.term,
-                    'reference': ref.label,
-                    'position': ref.position
-                }
+                key = ref.term + ":" + ref.label
+                if (key not in referenced     # New term
+                        # Or this term is earlier in the paragraph
+                        or ref.position[0] < referenced[key]['position'][0]):
+                    referenced[key] = {
+                        'term': ref.term,
+                        'reference': ref.label,
+                        'position': ref.position
+                    }
 
     def applicable_terms(self, label):
         """Find all terms that might be applicable to nodes with this label.
@@ -158,9 +163,8 @@ class Terms(Layer):
         return False
 
     def node_definitions(self, node, stack):
-        """Walk through this node and its children to find defined terms.
-        'Act' is a special case, as it is also defined as an external
-        citation."""
+        """Find defined terms in this node's text. 'Act' is a special case,
+        as it is also defined as an external citation."""
         included_defs = []
         excluded_defs = []
 
