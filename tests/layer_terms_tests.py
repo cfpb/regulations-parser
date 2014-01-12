@@ -256,6 +256,17 @@ class LayerTermTest(TestCase):
         stack.add(3, Node(label=['1002', '3', 'd', '6']))
         self.assertEqual([('1000', '3'), ('1000', '3', Node.INTERP_MARK)],
                          t.determine_scope(stack))
+        stack.add(4, Node(u'For the purposes of this § 1000.3(d)(6)(i), blah',
+                          label=['1000', '3', 'd', '6', 'i']))
+        self.assertEqual([('1000', '3', 'd', '6', 'i'),
+                          ('1000', '3', 'd', '6', 'i', Node.INTERP_MARK)],
+                         t.determine_scope(stack))
+
+        stack.add(4, Node(u'For the purposes of § 1000.3, blah',
+                          label=['1000', '3', 'd', '6', 'ii']))
+        self.assertEqual([('1000', '3'),
+                          ('1000', '3', Node.INTERP_MARK)],
+                         t.determine_scope(stack))
 
     def test_pre_process(self):
         noname_subpart = Node(

@@ -5,6 +5,7 @@ import re
 from inflection import pluralize
 
 from regparser import utils
+from regparser.citations import internal_citations, Label
 from regparser.grammar import terms as grammar
 from regparser.grammar.external_citations import uscode_exp as uscode
 from regparser.layer.layer import Layer
@@ -41,7 +42,11 @@ class ParentStack(PriorityStack):
 
 
 class Terms(Layer):
-
+    #   Regexes used in determining scope
+    part_re, subpart_re = re.compile(r"\bpart\b"), re.compile(r"\bsubpart\b")
+    sect_re, par_re = re.compile(r"\bsection\b"), re.compile(r"\bparagraph\b")
+    #   Regex to confirm scope indicator
+    scope_re = re.compile(r".*purposes of( this)?\s*$")
     def __init__(self, tree):
         Layer.__init__(self, tree)
         self.layer['referenced'] = {}
@@ -71,14 +76,28 @@ class Terms(Layer):
     def determine_scope(self, stack):
         for node in stack.lineage():
             scopes = []
-            if "purposes of this part" in node.text.lower():
-                scopes.append(node.label[:1])
-            elif "purposes of this subpart" in node.text.lower():
-                scopes.extend(self.subpart_scope(node.label))
-            elif "purposes of this section" in node.text.lower():
-                scopes.append(node.label[:2])
-            elif "purposes of this paragraph" in node.text.lower():
-                scopes.append(node.label)
+            #   First, make a list of potential scope indicators
+            citations = internal_citations(node.text, Label.from_node(node),
+                                           require_marker=True)
+            indicators = [(c.full_start, c.label.to_list()) for c in citations]
+            text = node.text.lower()
+            indicators.extend((m.start(), node.label[:1])
+                              for m in Terms.part_re.finditer(text))
+            indicators.extend((m.start(), node.label[:2])
+                              for m in Terms.sect_re.finditer(text))
+            indicators.extend((m.start(), node.label)
+                              for m in Terms.par_re.finditer(text))
+            #   Subpart's a bit more complicated, as it gets expanded into a
+            #   list of sections
+            for match in Terms.subpart_re.finditer(text):
+                indicators.extend(
+                    (match.start(), subpart_label)
+                    for subpart_label in self.subpart_scope(node.label))
+
+            #   Finally, add the scope if we verify its prefix
+            for start, label in indicators:
+                if Terms.scope_re.match(text[:start]):
+                    scopes.append(label)
 
             #   Add interpretation to scopes
             scopes = scopes + [s + [struct.Node.INTERP_MARK] for s in scopes]
