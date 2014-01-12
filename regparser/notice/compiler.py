@@ -84,6 +84,20 @@ class RegulationTree(object):
             del c.sortable
         return children
 
+    def move(self, origin, destination):
+        """ Move a node from one part in the tree to another. """
+        origin = find(self.tree, origin)
+
+        parent_label = get_parent_label(origin)
+        parent = find(self.tree, parent_label)
+        other_children = [c for c in parent.children if c.label != origin.label]
+        parent.children = other_children
+
+        #XXX  We'll need to fix the paragraph marker, but let's save that 
+        #for later
+        origin.label = destination
+        self.add_node(origin)
+
     def replace_node_and_subtree(self, node):
         """ Replace an existing node in the tree with node.  """
         #find parent of node
@@ -224,7 +238,7 @@ def compile_regulation(previous_tree, notice_changes):
                 if 'Subpart' in change['destination']:
                     reg.move_to_subpart(label, change['destination'])
             elif change['action'] == 'MOVE':
-                print 'MOVE'
+                reg.move(label, change['destination'])
             else:
                 print "%s: %s" % (change['action'], label)
     return reg.tree

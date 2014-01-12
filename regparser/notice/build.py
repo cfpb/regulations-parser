@@ -83,6 +83,11 @@ def create_changes(amended_labels, section, notice_changes):
                     notice_changes.update(n)
             elif amendment['action'] == 'DELETE':
                 notice_changes.update({label: {'action': amendment['action']}})
+            elif amendment['action'] == 'MOVE':
+                change = {'action': amendment['action']}
+                destination = [d for d in amendment['destination'] if d != '?']
+                change['destination'] = destination
+                notice_changes.update({label: change})
             else:
                 print 'NOT HANDLED: %s'  % amendment['action']
 

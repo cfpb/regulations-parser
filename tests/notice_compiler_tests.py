@@ -123,6 +123,16 @@ class CompilerTests(TestCase):
         n2a.children = [n2ai]
         self.assertEqual(reg_tree.tree, root)
 
+    def test_move(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+        reg_tree.move('205-2-a', ['205', '4', 'a'])
+
+        moved = find(reg_tree.tree, '205-4-a')
+        self.assertNotEqual(None, moved)
+        self.assertEqual(moved.text, 'n2a')
+        self.assertEqual(None, find(reg_tree.tree, '205-2-a'))
+
     def test_add_to_root(self):
         nsa = Node(
             'nsa',
