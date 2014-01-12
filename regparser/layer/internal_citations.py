@@ -1,19 +1,43 @@
 #vim: set encoding=utf-8
 from itertools import takewhile
+import logging
 import re
 import string
 
 from regparser.citations import internal_citations, Label
 from regparser.layer.layer import Layer
-from regparser.tree.struct import Node
+from regparser.tree.struct import Node, walk
 
 
 class InternalCitationParser(Layer):
+    def __init__(self, tree):
+        Layer.__init__(self, tree)
+        self.known_citations = set()
+        self.verify_citations = True
+
+    def pre_process(self):
+        """As a preprocessing step, run through the entire tree, collecting
+        all labels."""
+        def per_node(node):
+            self.known_citations.add(tuple(node.label))
+        walk(self.tree, per_node)
 
     def process(self, node):
         citations_list = self.parse(node.text, label=Label.from_node(node))
         if citations_list:
             return citations_list
+
+    def remove_missing_citations(self, citations, text):
+        """Remove any citations to labels we have not seen before (i.e.
+        those collected in the pre_processing stage)"""
+        final = []
+        for c in citations:
+            if tuple(c.label.to_list()) in self.known_citations:
+                final.append(c)
+            else:
+                logging.warning("Missing citation? %s %r"
+                                % (text[c.start:c.end], c.label))
+        return final
 
     def parse(self, text, label):
         """ Parse the provided text, pulling out all the internal
@@ -21,8 +45,10 @@ class InternalCitationParser(Layer):
 
         to_layer = lambda pc: {'offsets': [(pc.start, pc.end)],
                                'citation': pc.label.to_list()}
-        all_citations = list(map(to_layer,
-            internal_citations(text, label, require_marker=True)))
+        citations = internal_citations(text, label, require_marker=True)
+        if self.verify_citations:
+            citations = self.remove_missing_citations(citations, text)
+        all_citations = list(map(to_layer, citations))
 
         return self.strip_whitespace(text, all_citations)
 
@@ -39,4 +65,3 @@ class InternalCitationParser(Layer):
                 new_end = end - (len(string) - len(rstring))
                 citation['offsets'][i] = (new_start, new_end)
         return citations
-
