@@ -54,6 +54,15 @@ class LayerTermTest(TestCase):
         stack.add(2, Node("No defs either"))
         self.assertTrue(t.has_parent_definitions_indicator(stack))
 
+        stack.pop()
+        stack.pop()
+        stack.add(1, Node(u"(a) “Term” means some stuff"))
+        self.assertTrue(t.has_parent_definitions_indicator(stack))
+
+        stack.pop()
+        stack.add(1, Node("(a) The term Bob refers to"))
+        self.assertTrue(t.has_parent_definitions_indicator(stack))
+
     def test_is_exclusion(self):
         t = Terms(None)
         n = Node('ex ex ex', label=['1111', '2'])
@@ -247,6 +256,17 @@ class LayerTermTest(TestCase):
         stack.add(3, Node(label=['1002', '3', 'd', '6']))
         self.assertEqual([('1000', '3'), ('1000', '3', Node.INTERP_MARK)],
                          t.determine_scope(stack))
+        stack.add(4, Node(u'For the purposes of this § 1000.3(d)(6)(i), blah',
+                          label=['1000', '3', 'd', '6', 'i']))
+        self.assertEqual([('1000', '3', 'd', '6', 'i'),
+                          ('1000', '3', 'd', '6', 'i', Node.INTERP_MARK)],
+                         t.determine_scope(stack))
+
+        stack.add(4, Node(u'For the purposes of § 1000.3, blah',
+                          label=['1000', '3', 'd', '6', 'ii']))
+        self.assertEqual([('1000', '3'),
+                          ('1000', '3', Node.INTERP_MARK)],
+                         t.determine_scope(stack))
 
     def test_pre_process(self):
         noname_subpart = Node(
@@ -310,6 +330,16 @@ class LayerTermTest(TestCase):
                          referenced['awesome sauce:88-2-b-i-A']['reference'])
         self.assertEqual((13, 26),
                          referenced['awesome sauce:88-2-b-i-A']['position'])
+
+    def test_pre_process_defined_twice(self):
+        tree = Node(u"The term “lol” means laugh out loud. "
+                    + u"How do you pronounce “lol”, though?",
+                    label=['1212', '5'])
+        t = Terms(tree)
+        t.pre_process()
+
+        self.assertEqual(t.layer['referenced']['lol:1212-5']['position'],
+                         (10, 13))
 
     def test_excluded_offsets(self):
         t = Terms(None)
