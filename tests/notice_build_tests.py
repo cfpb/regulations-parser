@@ -153,7 +153,7 @@ class NoticeBuildTest(TestCase):
 
         for p, change in subpart_changes.items():
             self.assertEqual(change['destination'], ['205', 'Subpart', 'A'])
-            self.assertEqual(change['op'], 'assign')
+            self.assertEqual(change['action'], 'DESIGNATE')
 
     def test_process_amendments(self):
         xml = u"""
@@ -176,7 +176,7 @@ class NoticeBuildTest(TestCase):
         for l, c in notice['changes'].items():
             change = c[0]
             self.assertEqual(change['destination'], ['105', 'Subpart', 'A'])
-            self.assertEqual(change['op'], 'assign')
+            self.assertEqual(change['action'], 'DESIGNATE')
 
     def test_process_amendments_section(self):
         xml = u"""
@@ -202,7 +202,7 @@ class NoticeBuildTest(TestCase):
         changes = notice['changes']['105-1-b'][0]
         self.assertEqual(changes['action'], 'PUT')
         self.assertTrue(
-            changes['text'].startswith(u'(b) This part carries out.\n'))
+            changes['node']['text'].startswith(u'(b) This part carries out.\n'))
 
     def new_subpart_xml(self):
         xml = u"""
@@ -258,7 +258,8 @@ class NoticeBuildTest(TestCase):
         for l, n in changes.items():
             self.assertEqual(n['action'], 'POST')
 
-        self.assertEqual(changes['105-Subpart-B']['node_type'], 'subpart')
+        self.assertEqual(
+            changes['105-Subpart-B']['node']['node_type'], 'subpart')
 
     def test_process_amendments_subpart(self):
         xml = self.new_subpart_xml()
