@@ -39,45 +39,40 @@ def resolve_candidates(amend_map, warn=True):
                         logging.warning(mesg)
 
 
-def find_misparsed_node(section_node, label):
+def find_misparsed_node(section_node, label, change):
     candidates = find_candidate(section_node, label[-1])
     if len(candidates) == 1:
         candidate = candidates[0]
-        return {
-            'action': 'updated',
-            'node': candidate,
-            'candidate': True}
+        change['node'] = candidate
+        change['candidate'] = True
+        return change
 
 
 def match_labels_and_changes(amendments, section_node):
-    amend_map = {}
+    amend_map = defaultdict(list)
     for amend in amendments:
+        change = {'action': amend.action}
+        if amend.field is not None:
+            change['field'] = amend.field 
+
         if amend.action == 'MOVE':
-            change = {'action': amend.action, 'destination': amend.destination}
-            amend_map[amend.label_id()] = change
-            print "MOVE: %s " % amend.label_id()
+            change['destination'] = amend.destination
+            amend_map[amend.label_id()].append(change)
         elif amend.action == 'DELETE':
-            amend_map[amend.label_id()] = {'action': amend.action}
+            amend_map[amend.label_id()].append(change)
         else:
             node = struct.find(section_node, amend.label_id())
             if node is None:
-                candidate = find_misparsed_node(section_node, amend.label)
+                candidate = find_misparsed_node(
+                    section_node, amend.label, change)
                 if candidate:
-                    amend_map[amend.label_id()] = candidate
+                    amend_map[amend.label_id()].append(candidate)
             else:
-                if amend.label_id() == '1005-33-c-2-iii':
-                    print "OOPS: %s " % amend.action
-                    print node
-                amend_map[amend.label_id()] = {
-                    'node': node,
-                    'action': amend.action,
-                    'candidate': False}
-            if amend.field is not None:
-                amend_map[amend.label_id()]['field'] = amend.field
+                change['node'] = node
+                change['candidate'] = False
+                amend_map[amend.label_id()].append(change)
 
     resolve_candidates(amend_map)
-    for l, a in amend_map.items():
-        print l, a['action']
     return amend_map
 
 def format_node(node, amendment):

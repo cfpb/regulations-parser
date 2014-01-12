@@ -30,10 +30,12 @@ class ChangesTests(TestCase):
 
     def test_find_misparsed_node(self):
         n2 = Node('n1i', label=['200', 1, 'i'])
-
         root = self.build_tree()
-        result = changes.find_misparsed_node(root, 'i')
-        self.assertEqual(result['action'], 'updated')
+
+        result = {'action': 'PUT'}
+
+        result = changes.find_misparsed_node(root, 'i', result)
+        self.assertEqual(result['action'], 'PUT')
         self.assertTrue(result['candidate'])
         self.assertEqual(result['node'], n2)
 
@@ -50,7 +52,8 @@ class ChangesTests(TestCase):
         n4.children = [n5]
         root = Node('root', label=['200'], children=[n1, n3, n4])
 
-        result = changes.find_misparsed_node(root, 'i')
+        result = {}
+        result = changes.find_misparsed_node(root, 'i', result)
         self.assertEqual(None, result)
 
     def test_create_add_amendment(self):
@@ -126,13 +129,13 @@ class ChangesTests(TestCase):
         labels_amended = [Amendment('MOVE', '200-1', '200-2')]
         amend_map = changes.match_labels_and_changes(labels_amended, None)
         self.assertEqual(amend_map, {
-            '200-1': {'action': 'MOVE', 'destination': ['200', '2']}})
+            '200-1': [{'action': 'MOVE', 'destination': ['200', '2']}]})
 
     def test_match_labels_and_changes_delete(self):
         labels_amended = [Amendment('DELETE','200-1-a-i')]
         amend_map = changes.match_labels_and_changes(labels_amended, None)
         self.assertEqual(amend_map, {
-            '200-1-a-i':{'action': 'DELETE'}})
+            '200-1-a-i':[{'action': 'DELETE'}]})
 
     def section_node(self):
         n1 = Node('n2', label=['200', '2'])
@@ -151,7 +154,8 @@ class ChangesTests(TestCase):
 
         self.assertEqual(2, len(amend_map.keys()))
 
-        for label, amend in amend_map.items():
+        for label, amendments in amend_map.items():
+            amend = amendments[0]
             self.assertFalse(amend['candidate'])
             self.assertTrue(amend['action'] in ['POST', 'PUT'])
 
@@ -169,8 +173,8 @@ class ChangesTests(TestCase):
         amend_map = changes.match_labels_and_changes(
             labels_amended, root)
 
-        self.assertTrue(amend_map['200-2-a-1-i']['candidate'])
+        self.assertTrue(amend_map['200-2-a-1-i'][0]['candidate'])
         self.assertTrue(
-            amend_map['200-2-a-1-i']['node'].label_id(), '200-2-a-1-i')
+            amend_map['200-2-a-1-i'][0]['node'].label_id(), '200-2-a-1-i')
 
 

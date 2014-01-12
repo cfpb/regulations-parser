@@ -68,6 +68,25 @@ def process_new_subpart(notice, subpart_added, par):
     return subpart_changes
 
 
+def create_changes(amended_labels, section, notice_changes):
+    
+    amend_map = changes.match_labels_and_changes(amended_labels, section)
+
+    for label, amendments in amend_map.iteritems():
+        for amendment in amendments:
+            if amendment['action'] in ['POST', 'PUT']:
+                if 'field' in amendment:
+                    nodes = changes.create_field_amendment(label, amendment)
+                else:
+                    nodes = changes.create_add_amendment(amendment)
+                for n in nodes:
+                    notice_changes.update(n)
+            elif amendment['action'] == 'DELETE':
+                notice_changes.update({label: {'action': amendment['action']}})
+            else:
+                print 'NOT HANDLED: %s'  % amendment['action']
+
+
 def process_amendments(notice, notice_xml):
     """ Process the changes to the regulation that are expressed in the notice.
     """
@@ -90,21 +109,7 @@ def process_amendments(notice, notice_xml):
         if section_xml is not None:
             for section in reg_text.build_from_section(
                     notice['cfr_part'], section_xml):
-                adds_map = changes.match_labels_and_changes(
-                    amended_labels, section)
-
-                for label, amendment in adds_map.items():
-                    if amendment['action'] in ['POST', 'PUT']:
-                        if 'field' in amendment:
-                            nodes = changes.create_field_amendment(label, amendment)
-                        else:
-                            nodes = changes.create_add_amendment(amendment)
-                        for n in nodes:
-                            notice_changes.update(n)
-                    elif amendment['action'] == 'DELETE':
-                        notice_changes.update({label: {'action': amendment['action']}})
-                    else:
-                        print "NOT HANDLED: %s" % amendment['action']
+                create_changes(amended_labels, section, notice_changes)
         amends.extend(amended_labels)
     if amends:
         notice['amendments'] = amends
