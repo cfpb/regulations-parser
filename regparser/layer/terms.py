@@ -47,6 +47,7 @@ class Terms(Layer):
     sect_re, par_re = re.compile(r"\bsection\b"), re.compile(r"\bparagraph\b")
     #   Regex to confirm scope indicator
     scope_re = re.compile(r".*purposes of( this)?\s*$")
+
     def __init__(self, tree):
         Layer.__init__(self, tree)
         self.layer['referenced'] = {}
