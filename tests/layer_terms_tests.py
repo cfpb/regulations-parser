@@ -54,6 +54,15 @@ class LayerTermTest(TestCase):
         stack.add(2, Node("No defs either"))
         self.assertTrue(t.has_parent_definitions_indicator(stack))
 
+        stack.pop()
+        stack.pop()
+        stack.add(1, Node(u"(a) “Term” means some stuff"))
+        self.assertTrue(t.has_parent_definitions_indicator(stack))
+
+        stack.pop()
+        stack.add(1, Node("(a) The term Bob refers to"))
+        self.assertTrue(t.has_parent_definitions_indicator(stack))
+
     def test_is_exclusion(self):
         t = Terms(None)
         n = Node('ex ex ex', label=['1111', '2'])

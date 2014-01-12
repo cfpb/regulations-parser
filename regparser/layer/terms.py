@@ -150,7 +150,10 @@ class Terms(Layer):
         for node in stack.lineage():
             if ('Definition' in node.text
                     or 'Definition' in (node.title or '')
-                    or re.search('the term .* means', node.text.lower())):
+                    or re.search('the term .* (means|refers to)',
+                                 node.text.lower())
+                    or re.search(u'“[^”]+” (means|refers to)',
+                                 node.text.lower())):
                 return True
         return False
 
