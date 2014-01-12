@@ -24,7 +24,10 @@ class CompilerTests(TestCase):
         actual_node = Node('node text', [], ['205', 'A'], None, 'appendix')
         actual_node.tagged_text = '<E> Tagged </E> text.'
 
-        self.assertEqual(actual_node, compiler.dict_to_node(dict_node))
+        created_node = compiler.dict_to_node(dict_node)
+
+        self.assertEqual(actual_node, created_node)
+        self.assertEqual(actual_node.tagged_text, created_node.tagged_text)
 
         dict_node = {
             'text': 'node text'

@@ -149,14 +149,10 @@ class RegulationTree(object):
 
         destination = find(self.tree, '-'.join(subpart_label))
 
-        print destination
-
         if destination is None:
             destination = self.create_new_subpart(subpart_label)
 
         subpart_with_node = self.get_subpart_for_node(label)
-
-        print subpart_with_node
 
         if destination and subpart_with_node:
             node = find(subpart_with_node, label)
