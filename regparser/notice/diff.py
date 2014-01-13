@@ -1,6 +1,7 @@
 #vim: set encoding=utf-8
 from itertools import takewhile
 import re
+from copy import copy
 
 from lxml import etree
 
@@ -23,12 +24,35 @@ def remove_char(xml_node, char):
     return etree.fromstring(as_str.replace(char, ''))
 
 
+def fix_section_node(paragraphs, amdpar):
+    """ When notices are corrected, the XML for notices doesn't follow the
+    normal syntax. Namely, pargraphs aren't inside section tags. We fix that
+    here, by finding the preceding section tag and appending paragraphs to it.
+    """
+
+    sections = [s for s in amdpar.itersiblings(preceding=True)
+                if s.tag == 'SECTION']
+
+    #Let's only do this if we find one section tag. 
+    if len(sections) == 1:
+        section = copy(sections[0])
+        for paragraph in paragraphs:
+            section.append(copy(paragraph))
+        return section
+            
 def find_section(amdpar):
     """ With an AMDPAR xml, return the first section
     sibling """
+    section = None
     for sibling in amdpar.itersiblings():
         if sibling.tag == 'SECTION':
-            return sibling
+            section = sibling
+
+    if section is None:
+        paragraphs = [s for s in amdpar.itersiblings() if s.tag == 'P']
+        if len(paragraphs) > 0:
+            return fix_section_node(paragraphs, amdpar)
+    return section
 
 
 def find_subpart(amdpar):
