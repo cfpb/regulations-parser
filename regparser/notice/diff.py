@@ -24,34 +24,35 @@ def remove_char(xml_node, char):
     return etree.fromstring(as_str.replace(char, ''))
 
 
-def fix_section_node(paragraphs, amdpar):
+def fix_section_node(paragraphs, amdpar_xml):
     """ When notices are corrected, the XML for notices doesn't follow the
     normal syntax. Namely, pargraphs aren't inside section tags. We fix that
     here, by finding the preceding section tag and appending paragraphs to it.
     """
 
-    sections = [s for s in amdpar.itersiblings(preceding=True)
+    sections = [s for s in amdpar_xml.itersiblings(preceding=True)
                 if s.tag == 'SECTION']
 
-    #Let's only do this if we find one section tag. 
+    #Let's only do this if we find one section tag.
     if len(sections) == 1:
         section = copy(sections[0])
         for paragraph in paragraphs:
             section.append(copy(paragraph))
         return section
-            
-def find_section(amdpar):
+
+
+def find_section(amdpar_xml):
     """ With an AMDPAR xml, return the first section
     sibling """
     section = None
-    for sibling in amdpar.itersiblings():
+    for sibling in amdpar_xml.itersiblings():
         if sibling.tag == 'SECTION':
             section = sibling
 
     if section is None:
-        paragraphs = [s for s in amdpar.itersiblings() if s.tag == 'P']
+        paragraphs = [s for s in amdpar_xml.itersiblings() if s.tag == 'P']
         if len(paragraphs) > 0:
-            return fix_section_node(paragraphs, amdpar)
+            return fix_section_node(paragraphs, amdpar_xml)
     return section
 
 
@@ -102,6 +103,9 @@ def switch_context(token_list, carried_context):
 
 
 def parse_amdpar(par, initial_context):
+    """ Parse the <AMDPAR> tags into a list of paragraphs that have changed.
+    """
+
     text = etree.tostring(par, encoding=unicode)
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
 
@@ -169,16 +173,21 @@ def is_designate_token(token):
 
 
 def contains_one_designate_token(tokenized):
+    """ Return True if the list of tokens contains only one designate token.
+    """
+
     designate_tokens = [t for t in tokenized if is_designate_token(t)]
     return len(designate_tokens) == 1
 
 
 def contains_one_tokenlist(tokenized):
+    """ Return True if the list of tokens contains only one TokenList """
     tokens_lists = [t for t in tokenized if isinstance(t, tokens.TokenList)]
     return len(tokens_lists) == 1
 
 
 def contains_one_context(tokenized):
+    """ Returns True if the list of tokens contains only one Context. """
     contexts = [t for t in tokenized if isinstance(t, tokens.Context)]
     return len(contexts) == 1
 
@@ -300,6 +309,8 @@ def handle_subpart_amendment(tokenized):
 
 
 class Amendment(object):
+    """ An Amendment object contains all the information necessary for
+    an amendment. """
 
     TITLE = '[title]'
     TEXT = '[text]'
@@ -337,6 +348,7 @@ class Amendment(object):
             self.field = None
 
     def label_id(self):
+        """ Return the label id (dash delimited) for this label. """
         return '-'.join(self.label)
 
     def __repr__(self):
@@ -347,14 +359,16 @@ class Amendment(object):
 
     def __eq__(self, other):
         return (isinstance(other, self.__class__)
-            and self.__dict__ == other.__dict__)
+                and self.__dict__ == other.__dict__)
 
     def __ne__(self, other):
         return not self.__eq__(other)
-        
 
 
 class DesignateAmendment(Amendment):
+    """ A designate Amendment manages it's information a little differently
+    than a normal Amendment. Namely, there's more handling around Subparts."""
+
     def __init__(self, action, label_list, destination):
         self.action = action
         self.original_labels = label_list

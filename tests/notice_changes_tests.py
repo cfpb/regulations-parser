@@ -59,17 +59,17 @@ class ChangesTests(TestCase):
     def test_create_add_amendment(self):
         root = self.build_tree()
 
-        amendment = {'node':root, 'action':'POST'}
+        amendment = {'node': root, 'action': 'POST'}
         amendments = changes.create_add_amendment(amendment)
         self.assertEqual(6, len(amendments))
 
         amends = {}
         for a in amendments:
             amends.update(a)
-            
+
         for l in ['200-1-i', '200-1', '200-2', '200-3-a', '200-3', '200']:
             self.assertTrue(l in amends)
-   
+
         for label, node in amends.items():
             self.assertEqual(label, '-'.join(node['node']['label']))
             self.assertEqual(node['action'], 'POST')
@@ -85,20 +85,18 @@ class ChangesTests(TestCase):
         for n in node_list:
             self.assertEqual(n.children, [])
 
-
     def test_remove_intro(self):
         text = 'abcd[text]'
         self.assertEqual('abcd', changes.remove_intro(text))
-
 
     def test_resolve_candidates(self):
         amend_map = {}
 
         n1 = Node('n1', label=['200', '1'])
-        amend_map['200-1-a'] =  {'node': n1, 'candidate':False}
+        amend_map['200-1-a'] = {'node': n1, 'candidate': False}
 
         n2 = Node('n2', label=['200', '2', 'i'])
-        amend_map['200-2-a-i'] = {'node':n2, 'candidate':True}
+        amend_map['200-2-a-i'] = {'node': n2, 'candidate': True}
 
         self.assertNotEqual(
             amend_map['200-2-a-i']['node'].label_id(),
@@ -107,23 +105,22 @@ class ChangesTests(TestCase):
         changes.resolve_candidates(amend_map)
 
         self.assertEqual(
-            amend_map['200-2-a-i']['node'].label_id(), 
+            amend_map['200-2-a-i']['node'].label_id(),
             '200-2-a-i')
 
     def test_resolve_candidates_accounted_for(self):
         amend_map = {}
 
         n1 = Node('n1', label=['200', '1'])
-        amend_map['200-1-a'] =  {'node': n1, 'candidate':False}
+        amend_map['200-1-a'] = {'node': n1, 'candidate': False}
 
         n2 = Node('n2', label=['200', '2', 'i'])
 
-        amend_map['200-2-a-i'] = {'node':n2, 'candidate':True}
-        amend_map['200-2-i'] = {'node':n2, 'candidate':False}
+        amend_map['200-2-a-i'] = {'node': n2, 'candidate': True}
+        amend_map['200-2-i'] = {'node': n2, 'candidate': False}
 
         changes.resolve_candidates(amend_map, warn=False)
         self.assertEqual(2, len(amend_map.keys()))
-
 
     def test_match_labels_and_changes_move(self):
         labels_amended = [Amendment('MOVE', '200-1', '200-2')]
@@ -132,10 +129,10 @@ class ChangesTests(TestCase):
             '200-1': [{'action': 'MOVE', 'destination': ['200', '2']}]})
 
     def test_match_labels_and_changes_delete(self):
-        labels_amended = [Amendment('DELETE','200-1-a-i')]
+        labels_amended = [Amendment('DELETE', '200-1-a-i')]
         amend_map = changes.match_labels_and_changes(labels_amended, None)
         self.assertEqual(amend_map, {
-            '200-1-a-i':[{'action': 'DELETE'}]})
+            '200-1-a-i': [{'action': 'DELETE'}]})
 
     def section_node(self):
         n1 = Node('n2', label=['200', '2'])
@@ -146,7 +143,7 @@ class ChangesTests(TestCase):
         return root
 
     def test_match_labels_and_changes(self):
-        labels_amended = [Amendment('POST', '200-2'), 
+        labels_amended = [Amendment('POST', '200-2'),
                           Amendment('PUT', '200-2-a')]
 
         amend_map = changes.match_labels_and_changes(
@@ -176,5 +173,3 @@ class ChangesTests(TestCase):
         self.assertTrue(amend_map['200-2-a-1-i'][0]['candidate'])
         self.assertTrue(
             amend_map['200-2-a-1-i'][0]['node'].label_id(), '200-2-a-1-i')
-
-

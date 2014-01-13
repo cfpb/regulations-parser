@@ -16,6 +16,7 @@ def get_parent_label(node):
         parent_label = node.label[:-1]
         return '-'.join(parent_label)
 
+
 def make_label_sortable(label, roman=False):
     """ Make labels sortable, but converting them as appropriate.
     Also, appendices have labels that look like 30(a), we make those
@@ -55,6 +56,7 @@ class RegulationTree(object):
         self.tree = copy.deepcopy(previous_tree)
 
     def get_parent(self, node):
+        """ Get the parent of a node. Returns None if parent not found. """
         parent_label_id = get_parent_label(node)
         return find(self.tree, parent_label_id)
 
@@ -87,11 +89,15 @@ class RegulationTree(object):
         return children
 
     def delete_from_parent(self, node):
+        """ Delete node from it's parent, effectively removing it from the
+        tree. """
+
         parent = self.get_parent(node)
         other_children = [c for c in parent.children if c.label != node.label]
         parent.children = other_children
 
     def delete(self, label_id):
+        """ Delete the node with label_id from the tree. """
         node = find(self.tree, label_id)
         self.delete_from_parent(node)
 
@@ -100,7 +106,7 @@ class RegulationTree(object):
         origin = find(self.tree, origin)
         self.delete_from_parent(origin)
 
-        #XXX  We'll need to fix the paragraph marker, but let's save that 
+        #XXX  We'll need to fix the paragraph marker, but let's save that
         #for later
         origin.label = destination
         self.add_node(origin)

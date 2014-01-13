@@ -1,3 +1,7 @@
+""" This module contains functions to help parse the changes in a notice.
+Changes are the exact details of how the pargraphs, sections etc. in a
+regulation have changed.  """
+
 import logging
 import copy
 from collections import defaultdict
@@ -40,6 +44,10 @@ def resolve_candidates(amend_map, warn=True):
 
 
 def find_misparsed_node(section_node, label, change):
+    """ Nodes can get misparsed in the sense that we don't always know where
+    they are in the tree. This uses label to find a candidate for a mis-parsed
+    node and creates an appropriate change. """
+
     candidates = find_candidate(section_node, label[-1])
     if len(candidates) == 1:
         candidate = candidates[0]
@@ -49,11 +57,15 @@ def find_misparsed_node(section_node, label, change):
 
 
 def match_labels_and_changes(amendments, section_node):
+    """ Given the list of amendments, and the parsed section node, match the
+    two so that we're only changing what's been flagged as changing. This helps
+    eliminate paragraphs that are just stars for positioning, for example.  """
+
     amend_map = defaultdict(list)
     for amend in amendments:
         change = {'action': amend.action}
         if amend.field is not None:
-            change['field'] = amend.field 
+            change['field'] = amend.field
 
         if amend.action == 'MOVE':
             change['destination'] = amend.destination
@@ -75,6 +87,7 @@ def match_labels_and_changes(amendments, section_node):
     resolve_candidates(amend_map)
     return amend_map
 
+
 def format_node(node, amendment):
     """ Format a node into a dict, and add in amendment information. """
     node_as_dict = {
@@ -91,8 +104,8 @@ def format_node(node, amendment):
 
 
 def create_field_amendment(label, amendment):
-    """ If an amendment is changing just a field (text, title) then we 
-    don't need to package the rest of the paragraphs with it. Those get 
+    """ If an amendment is changing just a field (text, title) then we
+    don't need to package the rest of the paragraphs with it. Those get
     dealt with later, if appropriate. """
 
     nodes_list = []
@@ -101,6 +114,7 @@ def create_field_amendment(label, amendment):
     changed_nodes = [n for n in nodes_list if n.label_id() == label]
     nodes = [format_node(n, amendment) for n in changed_nodes]
     return nodes
+
 
 def create_add_amendment(amendment):
     """ An amendment comes in with a whole tree structure. We break apart the

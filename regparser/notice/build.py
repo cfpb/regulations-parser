@@ -59,6 +59,7 @@ def process_designate_subpart(amendment):
 
 
 def process_new_subpart(notice, subpart_added, par):
+    """ A new subpart has been added, create the notice changes. """
     subpart_changes = {}
     subpart_xml = find_subpart(par)
     subpart = reg_text.build_subpart(notice['cfr_part'], subpart_xml)
@@ -69,7 +70,9 @@ def process_new_subpart(notice, subpart_added, par):
 
 
 def create_changes(amended_labels, section, notice_changes):
-    
+    """ Match the amendments to the section nodes that got parsed, and actually
+    create the notice changes. """
+
     amend_map = changes.match_labels_and_changes(amended_labels, section)
 
     for label, amendments in amend_map.iteritems():
@@ -89,7 +92,7 @@ def create_changes(amended_labels, section, notice_changes):
                 change['destination'] = destination
                 notice_changes.update({label: change})
             else:
-                print 'NOT HANDLED: %s'  % amendment['action']
+                print 'NOT HANDLED: %s' % amendment['action']
 
 
 def process_amendments(notice, notice_xml):
@@ -122,6 +125,7 @@ def process_amendments(notice, notice_xml):
 
 
 def process_sxs(notice, notice_xml):
+    """ Find and build SXS from the notice_xml. """
     sxs = find_section_by_section(notice_xml)
     sxs = build_section_by_section(sxs, notice['cfr_part'],
                                    notice['meta']['start_page'])
@@ -147,6 +151,7 @@ def process_xml(notice, notice_xml):
 
 
 def add_footnotes(notice, notice_xml):
+    """ Parse the notice xml for footnotes and add them to the notice. """
     notice['footnotes'] = {}
     for child in notice_xml.xpath('//FTNT/*'):
         spaces_then_remove(child, 'PRTPAGE')
