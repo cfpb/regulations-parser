@@ -59,6 +59,7 @@ def process_designate_subpart(amendment):
 
 
 def process_new_subpart(notice, subpart_added, par):
+    """ A new subpart has been added, create the notice changes. """
     subpart_changes = {}
     subpart_xml = find_subpart(par)
     subpart = reg_text.build_subpart(notice['cfr_part'], subpart_xml)
@@ -66,6 +67,32 @@ def process_new_subpart(notice, subpart_added, par):
     for change in changes.create_subpart_amendment(subpart):
         subpart_changes.update(change)
     return subpart_changes
+
+
+def create_changes(amended_labels, section, notice_changes):
+    """ Match the amendments to the section nodes that got parsed, and actually
+    create the notice changes. """
+
+    amend_map = changes.match_labels_and_changes(amended_labels, section)
+
+    for label, amendments in amend_map.iteritems():
+        for amendment in amendments:
+            if amendment['action'] in ['POST', 'PUT']:
+                if 'field' in amendment:
+                    nodes = changes.create_field_amendment(label, amendment)
+                else:
+                    nodes = changes.create_add_amendment(amendment)
+                for n in nodes:
+                    notice_changes.update(n)
+            elif amendment['action'] == 'DELETE':
+                notice_changes.update({label: {'action': amendment['action']}})
+            elif amendment['action'] == 'MOVE':
+                change = {'action': amendment['action']}
+                destination = [d for d in amendment['destination'] if d != '?']
+                change['destination'] = destination
+                notice_changes.update({label: change})
+            else:
+                print 'NOT HANDLED: %s' % amendment['action']
 
 
 def process_amendments(notice, notice_xml):
@@ -90,16 +117,7 @@ def process_amendments(notice, notice_xml):
         if section_xml is not None:
             for section in reg_text.build_from_section(
                     notice['cfr_part'], section_xml):
-                adds_map = changes.match_labels_and_changes(
-                    amended_labels, section)
-
-                for label, amendment in adds_map.items():
-                    if amendment['action'] in ['POST', 'PUT']:
-                        nodes = changes.create_add_amendment(amendment)
-                        for n in nodes:
-                            notice_changes.update(n)
-                    elif amendment['action'] == 'deleted':
-                        notice_changes.update({label: {'action': 'deleted'}})
+                create_changes(amended_labels, section, notice_changes)
         amends.extend(amended_labels)
     if amends:
         notice['amendments'] = amends
@@ -107,6 +125,7 @@ def process_amendments(notice, notice_xml):
 
 
 def process_sxs(notice, notice_xml):
+    """ Find and build SXS from the notice_xml. """
     sxs = find_section_by_section(notice_xml)
     sxs = build_section_by_section(sxs, notice['cfr_part'],
                                    notice['meta']['start_page'])
@@ -132,6 +151,7 @@ def process_xml(notice, notice_xml):
 
 
 def add_footnotes(notice, notice_xml):
+    """ Parse the notice xml for footnotes and add them to the notice. """
     notice['footnotes'] = {}
     for child in notice_xml.xpath('//FTNT/*'):
         spaces_then_remove(child, 'PRTPAGE')

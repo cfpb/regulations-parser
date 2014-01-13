@@ -1,3 +1,7 @@
+""" This module contains functions to help parse the changes in a notice.
+Changes are the exact details of how the pargraphs, sections etc. in a
+regulation have changed.  """
+
 import logging
 import copy
 from collections import defaultdict
@@ -39,40 +43,77 @@ def resolve_candidates(amend_map, warn=True):
                         logging.warning(mesg)
 
 
-def find_misparsed_node(section_node, label):
+def find_misparsed_node(section_node, label, change):
+    """ Nodes can get misparsed in the sense that we don't always know where
+    they are in the tree. This uses label to find a candidate for a mis-parsed
+    node and creates an appropriate change. """
+
     candidates = find_candidate(section_node, label[-1])
     if len(candidates) == 1:
         candidate = candidates[0]
-        return {
-            'action': 'updated',
-            'node': candidate,
-            'candidate': True}
+        change['node'] = candidate
+        change['candidate'] = True
+        return change
 
 
 def match_labels_and_changes(amendments, section_node):
-    amend_map = {}
+    """ Given the list of amendments, and the parsed section node, match the
+    two so that we're only changing what's been flagged as changing. This helps
+    eliminate paragraphs that are just stars for positioning, for example.  """
+
+    amend_map = defaultdict(list)
     for amend in amendments:
+        change = {'action': amend.action}
+        if amend.field is not None:
+            change['field'] = amend.field
+
         if amend.action == 'MOVE':
-            change = {'action': amend.action, 'destination': amend.destination}
-            amend_map[amend.label_id()] = change
+            change['destination'] = amend.destination
+            amend_map[amend.label_id()].append(change)
         elif amend.action == 'DELETE':
-            amend_map[amend.label_id()] = {'action': amend.action}
+            amend_map[amend.label_id()].append(change)
         else:
             node = struct.find(section_node, amend.label_id())
             if node is None:
-                candidate = find_misparsed_node(section_node, amend.label)
+                candidate = find_misparsed_node(
+                    section_node, amend.label, change)
                 if candidate:
-                    amend_map[amend.label_id()] = candidate
+                    amend_map[amend.label_id()].append(candidate)
             else:
-                amend_map[amend.label_id()] = {
-                    'node': node,
-                    'action': amend.action,
-                    'candidate': False}
-            if amend.field is not None:
-                amend_map[amend.label_id()]['field'] = amend.field
+                change['node'] = node
+                change['candidate'] = False
+                amend_map[amend.label_id()].append(change)
 
     resolve_candidates(amend_map)
     return amend_map
+
+
+def format_node(node, amendment):
+    """ Format a node into a dict, and add in amendment information. """
+    node_as_dict = {
+        'node': node_to_dict(node),
+        'action': amendment['action'],
+    }
+
+    if 'extras' in amendment:
+        node_as_dict.update(amendment['extras'])
+
+    if 'field' in amendment:
+        node_as_dict['field'] = amendment['field']
+    return {node.label_id(): node_as_dict}
+
+
+def create_field_amendment(label, amendment):
+    """ If an amendment is changing just a field (text, title) then we
+    don't need to package the rest of the paragraphs with it. Those get
+    dealt with later, if appropriate. """
+
+    nodes_list = []
+    flatten_tree(nodes_list, amendment['node'])
+
+    changed_nodes = [n for n in nodes_list if n.label_id() == label]
+    nodes = [format_node(n, amendment) for n in changed_nodes]
+    return nodes
 
 
 def create_add_amendment(amendment):
@@ -83,22 +124,7 @@ def create_add_amendment(amendment):
 
     nodes_list = []
     flatten_tree(nodes_list, amendment['node'])
-
-    def format_node(node):
-        """ Format a node into a dict, and add in amendment information. """
-        node_as_dict = {
-            'node': node_to_dict(n),
-            'action': amendment['action'],
-        }
-
-        if 'extras' in amendment:
-            node_as_dict.update(amendment['extras'])
-
-        if 'field' in amendment:
-            node_as_dict['field'] = amendment['field']
-        return {node.label_id(): node_as_dict}
-
-    nodes = [format_node(n) for n in nodes_list]
+    nodes = [format_node(n, amendment) for n in nodes_list]
     return nodes
 
 

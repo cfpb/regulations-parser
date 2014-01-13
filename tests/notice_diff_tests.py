@@ -375,16 +375,63 @@ class NoticeDiffTests(TestCase):
 
         tokenized = [
             tokens.Paragraph(['203', '2', 'x']),
-            tokens.Verb(tokens.Verb.DESIGNATE, True)
-        ]
+            tokens.Verb(tokens.Verb.DESIGNATE, True)]
 
-        self.assertEqual(
-            switch_context(tokenized, initial_context), [])
+        self.assertEqual(switch_context(tokenized, initial_context), [])
 
         tokenized = [
             tokens.Paragraph(['105', '4', 'j', 'iv']),
-            tokens.Verb(tokens.Verb.DESIGNATE, True)
-        ]
+            tokens.Verb(tokens.Verb.DESIGNATE, True)]
 
         self.assertEqual(
             switch_context(tokenized, initial_context), initial_context)
+
+    def test_fix_section_node(self):
+        xml = u"""
+            <REGTEXT>
+            <P>paragraph 1</P>
+            <P>paragraph 2</P>
+            </REGTEXT>
+        """
+        reg_paragraphs = etree.fromstring(xml)
+        paragraphs = [p for p in reg_paragraphs if p.tag == 'P']
+
+        amdpar_xml = u"""
+            <REGTEXT>
+                <SECTION>
+                    <SECTNO> 205.4 </SECTNO>
+                    <SUBJECT>[Corrected]</SUBJECT>
+                </SECTION>
+                <AMDPAR>
+                    3. In § 105.1, revise paragraph (b) to read as follows:
+                </AMDPAR>
+            </REGTEXT>
+        """
+        amdpar = etree.fromstring(amdpar_xml)
+        par = amdpar.xpath('//AMDPAR')[0]
+        section = fix_section_node(paragraphs, par)
+        self.assertNotEqual(None, section)
+        section_paragraphs = [p for p in section if p.tag == 'P']
+        self.assertEqual(2, len(section_paragraphs))
+
+        self.assertEqual(section_paragraphs[0].text, 'paragraph 1')
+        self.assertEqual(section_paragraphs[1].text, 'paragraph 2')
+
+    def test_find_section_paragraphs(self):
+        amdpar_xml = u"""
+            <REGTEXT>
+                <SECTION>
+                    <SECTNO> 205.4 </SECTNO>
+                    <SUBJECT>[Corrected]</SUBJECT>
+                </SECTION>
+                <AMDPAR>
+                    3. In § 105.1, revise paragraph (b) to read as follows:
+                </AMDPAR>
+                <P>(b) paragraph 1</P>
+            </REGTEXT>"""
+
+        amdpar = etree.fromstring(amdpar_xml).xpath('//AMDPAR')[0]
+        section = find_section(amdpar)
+        self.assertNotEqual(None, section)
+        paragraphs = [p for p in section if p.tag == 'P']
+        self.assertEqual(paragraphs[0].text, '(b) paragraph 1')

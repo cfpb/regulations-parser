@@ -126,6 +126,16 @@ class CompilerTests(TestCase):
         n2a.children = [n2ai]
         self.assertEqual(reg_tree.tree, root)
 
+    def test_move(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+        reg_tree.move('205-2-a', ['205', '4', 'a'])
+
+        moved = find(reg_tree.tree, '205-4-a')
+        self.assertNotEqual(None, moved)
+        self.assertEqual(moved.text, 'n2a')
+        self.assertEqual(None, find(reg_tree.tree, '205-2-a'))
+
     def test_add_to_root(self):
         nsa = Node(
             'nsa',
@@ -182,6 +192,16 @@ class CompilerTests(TestCase):
         reg_tree.replace_node_text('205-2-a', change)
         changed_node = find(reg_tree.tree, '205-2-a')
         self.assertEqual(changed_node.text, 'new text')
+
+    def test_replace_node_title(self):
+        root = self.tree_with_paragraphs()
+
+        change = {'node': {'title': 'new title'}}
+        reg_tree = compiler.RegulationTree(root)
+
+        reg_tree.replace_node_title('205-2-a', change)
+        changed_node = find(reg_tree.tree, '205-2-a')
+        self.assertEqual(changed_node.title, 'new title')
 
     def test_get_subparts(self):
         nsa = Node(
@@ -355,3 +375,19 @@ class CompilerTests(TestCase):
 
         subpart_a = find(new_reg, '205-Subpart-A')
         self.assertEqual(len(subpart_a.children), 1)
+
+    def test_delete(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+
+        self.assertNotEqual(None, find(reg_tree.tree, '205-2-a'))
+        reg_tree.delete('205-2-a')
+        self.assertEqual(None, find(reg_tree.tree, '205-2-a'))
+
+    def test_get_parent(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+
+        node = find(reg_tree.tree, '205-2-a')
+        parent = reg_tree.get_parent(node)
+        self.assertEqual(parent.label, ['205', '2'])
