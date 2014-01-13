@@ -381,3 +381,10 @@ class CompilerTests(TestCase):
         reg_tree.delete('205-2-a')
         self.assertEqual(None, find(reg_tree.tree, '205-2-a'))
 
+    def test_get_parent(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+
+        node = find(reg_tree.tree, '205-2-a')
+        parent = reg_tree.get_parent(node)
+        self.assertEqual(parent.label, ['205', '2'])
