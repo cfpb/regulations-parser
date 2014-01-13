@@ -372,3 +372,12 @@ class CompilerTests(TestCase):
 
         subpart_a = find(new_reg, '205-Subpart-A')
         self.assertEqual(len(subpart_a.children), 1)
+
+    def test_delete(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+
+        self.assertNotEqual(None, find(reg_tree.tree, '205-2-a'))
+        reg_tree.delete('205-2-a')
+        self.assertEqual(None, find(reg_tree.tree, '205-2-a'))
+
