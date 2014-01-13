@@ -402,7 +402,7 @@ class NoticeDiffTests(TestCase):
                     <SECTNO> 205.4 </SECTNO>
                     <SUBJECT>[Corrected]</SUBJECT>
                 </SECTION>
-                <AMDPAR> 
+                <AMDPAR>
                     3. In § 105.1, revise paragraph (b) to read as follows:
                 </AMDPAR>
             </REGTEXT>
@@ -424,7 +424,7 @@ class NoticeDiffTests(TestCase):
                     <SECTNO> 205.4 </SECTNO>
                     <SUBJECT>[Corrected]</SUBJECT>
                 </SECTION>
-                <AMDPAR> 
+                <AMDPAR>
                     3. In § 105.1, revise paragraph (b) to read as follows:
                 </AMDPAR>
                 <P>(b) paragraph 1</P>
