@@ -14,10 +14,6 @@ class ExternalCitationParser(Layer):
     PUBLIC_LAW = 'PUBLIC_LAW'
     STATUTES_AT_LARGE = 'STATUTES_AT_LARGE'
 
-    def __init__(self, tree, act_citation):
-        Layer.__init__(self, tree)
-        self.act_citation = act_citation
-
     def citation_type(self, citation):
         """ Based on the citation parsed, return the type of the citation. """
         if citation[1] == 'CFR':

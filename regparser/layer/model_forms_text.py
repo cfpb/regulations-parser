@@ -6,9 +6,8 @@ from regparser.tree.struct import Node
 
 
 class ModelFormText(Layer):
-
-    def __init__(self, tree):
-        Layer.__init__(self, tree)
+    def __init__(self, *args, **kwargs):
+        Layer.__init__(self, *args, **kwargs)
         self.model_forms_sections = []
         self.model_forms_nodes = {}
 

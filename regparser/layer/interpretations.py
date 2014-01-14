@@ -10,8 +10,8 @@ class Interpretations(Layer):
     """Supplement I (interpretations) provides (sometimes very lengthy) extra
     information about particular paragraphs. This layer provides those
     interpretations."""
-    def __init__(self, tree):
-        Layer.__init__(self, tree)
+    def __init__(self, *args, **kwargs):
+        Layer.__init__(self, *args, **kwargs)
         self.lookup_table = defaultdict(list)
 
     def pre_process(self):

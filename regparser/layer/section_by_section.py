@@ -2,11 +2,6 @@ from layer import Layer
 
 
 class SectionBySection(Layer):
-
-    def __init__(self, tree, notices):
-        Layer.__init__(self, tree)
-        self.notices = notices
-
     def process(self, node):
         """Determine which (if any) section-by-section analyses would apply
         to this node."""

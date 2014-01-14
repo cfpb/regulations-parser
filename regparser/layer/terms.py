@@ -48,8 +48,8 @@ class Terms(Layer):
     #   Regex to confirm scope indicator
     scope_re = re.compile(r".*purposes of( this)?\s*$")
 
-    def __init__(self, tree):
-        Layer.__init__(self, tree)
+    def __init__(self, *args, **kwargs):
+        Layer.__init__(self, *args, **kwargs)
         self.layer['referenced'] = {}
         #   scope -> List[(term, definition_ref)]
         self.scoped_terms = defaultdict(list)

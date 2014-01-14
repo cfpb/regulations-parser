@@ -10,8 +10,8 @@ from regparser.tree.struct import Node, walk
 
 
 class InternalCitationParser(Layer):
-    def __init__(self, tree):
-        Layer.__init__(self, tree)
+    def __init__(self, *args, **kwargs):
+        Layer.__init__(self, *args, **kwargs)
         self.known_citations = set()
         self.verify_citations = True
 

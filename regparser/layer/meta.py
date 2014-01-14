@@ -5,13 +5,6 @@ import settings
 
 
 class Meta(Layer):
-
-    def __init__(self, tree, cfr_title, notices, version):
-        Layer.__init__(self, tree)
-        self.cfr_title = cfr_title
-        self.notices = notices
-        self.version = version
-
     def process(self, node):
         """If this is the root element, add some 'meta' information about
         this regulation, including its cfr title, effective date, and any
