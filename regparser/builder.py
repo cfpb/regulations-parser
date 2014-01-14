@@ -1,11 +1,13 @@
 from regparser import api_writer
 from regparser.federalregister import fetch_notices
-from regparser.history.notices import applicable as applicable_notices
+from regparser.history.notices import (
+    applicable as applicable_notices, group_by_eff_date)
 from regparser.history.delays import modify_effective_dates
 from regparser.layer import (
     external_citations, formatting, graphics, key_terms, internal_citations,
     interpretations, meta, paragraph_markers, section_by_section, 
     table_of_contents, terms)
+from regparser.notice.compiler import compile_regulation
 from regparser.tree.build import build_whole_regtree
 from regparser.tree.xml_parser import reg_text
 
@@ -18,9 +20,11 @@ class Builder(object):
         self.doc_number = doc_number
         self.writer = api_writer.Client()
 
-        notices = fetch_notices(self.cfr_title, self.cfr_part)
-        modify_effective_dates(notices)
-        self.notices = applicable_notices(notices, self.doc_number)
+        self.notices = fetch_notices(self.cfr_title, self.cfr_part)
+        modify_effective_dates(self.notices)
+        #   Only care about final
+        self.notices = [n for n in self.notices if 'effective_on' in n]
+        self.eff_notices = group_by_eff_date(self.notices)
 
     def write_notices(self):
         for notice in self.notices:
@@ -50,6 +54,20 @@ class Builder(object):
                                 self.notices, act_info).build()
             self.writer.layer(ident, self.cfr_part, self.doc_number).write(
                 layer)
+
+    def revision_generator(self, reg_tree):
+        relevant_notices = []
+        for date in sorted(self.eff_notices.keys()):
+            relevant_notices.extend(
+                n for n in self.eff_notices[date]
+                if 'changes' in n and n['document_number'] != self.doc_number)
+
+        for notice in relevant_notices:
+            version = notice['document_number']
+            old_tree = reg_tree
+            reg_tree = compile_regulation(old_tree, notice['changes'])
+            yield version, old_tree, reg_tree
+
 
     @staticmethod
     def reg_tree(reg_str):
