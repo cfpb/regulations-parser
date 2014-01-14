@@ -171,7 +171,8 @@ class Compare(object):
             self.add_text_opcodes(older_label, text_opcodes)
 
             if node.title:
-                title_opcodes = get_opcodes(node.title, newer_node.title)
+                title_opcodes = get_opcodes(node.title or '',
+                                            newer_node.title or '')
                 self.add_title_opcodes(older_label, title_opcodes)
 
     def added(self):
