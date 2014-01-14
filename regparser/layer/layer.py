@@ -2,7 +2,10 @@ class Layer():
     def __init__(self, tree, cfr_title=None, version=None, notices=None,
                  act_citation=None):
         self.tree = tree
-        self.notices = notices
+        if not notices:
+            self.notices = []
+        else:
+            self.notices = notices
         self.act_citation = act_citation
         self.cfr_title = cfr_title
         self.version = version
