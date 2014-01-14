@@ -6,6 +6,7 @@ import settings
 from regparser.tree.struct import NodeEncoder
 from regparser.notice.encoder import AmendmentEncoder
 
+
 class AmendmentNodeEncoder(AmendmentEncoder, NodeEncoder):
     pass
 

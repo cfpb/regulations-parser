@@ -4,6 +4,7 @@ from unittest import TestCase
 from regparser.layer import external_citations
 from regparser.tree.struct import Node
 
+
 class ParseTest(TestCase):
 
     def test_section_act(self):
@@ -48,7 +49,7 @@ class ParseTest(TestCase):
     def test_cfr(self):
         """Ensure that we successfully parse CFR references."""
         node = Node("Ref 1: 12 CFR part 1026. "
-                + "Ref 2: 12 CFR 1026.13.")
+                    + "Ref 2: 12 CFR 1026.13.")
         parser = external_citations.ExternalCitationParser(None)
         citations = parser.process(node)
         self.assertEqual(2, len(citations))

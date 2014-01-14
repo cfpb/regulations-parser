@@ -7,7 +7,7 @@ from regparser.history.notices import (
 from regparser.history.delays import modify_effective_dates
 from regparser.layer import (
     external_citations, formatting, graphics, key_terms, internal_citations,
-    interpretations, meta, paragraph_markers, section_by_section, 
+    interpretations, meta, paragraph_markers, section_by_section,
     table_of_contents, terms)
 from regparser.notice.compiler import compile_regulation
 from regparser.tree.build import build_whole_regtree

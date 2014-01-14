@@ -49,7 +49,7 @@ class LayerMetaTest(TestCase):
     def test_process_chronological(self):
         m = Meta(None,
                  cfr_title=12,
-                 notices=[{'effective_on': '2003-03-03', 
+                 notices=[{'effective_on': '2003-03-03',
                            'document_number': 'v1'},
                           {'effective_on': '2001-01-01',
                            'document_number': 'v2'}],
