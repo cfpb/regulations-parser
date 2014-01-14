@@ -78,6 +78,13 @@ MACROS_SOURCES = [
     'regcontent.macros'
 ]
 
+# list of modules implementing the __contains__ and __getitem__ methods
+# The key is the notice that needs to be modified; it should point to a dict
+# which will get merged with the notice['changes'] dict
+REGPATCHES_SOURCES = [
+    'regcontent.regpatches'
+]
+
 
 try:
     from local_settings import *

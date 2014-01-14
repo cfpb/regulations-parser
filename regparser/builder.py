@@ -1,4 +1,6 @@
-from regparser import api_writer
+import copy
+
+from regparser import api_writer, content
 from regparser.federalregister import fetch_notices
 from regparser.history.notices import (
     applicable as applicable_notices, group_by_eff_date)
@@ -65,9 +67,20 @@ class Builder(object):
         for notice in relevant_notices:
             version = notice['document_number']
             old_tree = reg_tree
-            reg_tree = compile_regulation(old_tree, notice['changes'])
+            merged_changes = self.merge_changes(version, notice['changes'])
+            reg_tree = compile_regulation(old_tree, merged_changes)
             yield version, old_tree, reg_tree
 
+    def merge_changes(self, document_number, changes):
+        patches = content.RegPatches().get(document_number)
+        if patches:
+            changes = copy.copy(changes)
+            for key in patches:
+                if key in changes:
+                    changes[key].extend(patches[key])
+                else:
+                    changes[key] = patches[key]
+        return changes
 
     @staticmethod
     def reg_tree(reg_str):
