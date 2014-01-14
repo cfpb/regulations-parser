@@ -15,6 +15,8 @@ from regparser.tree.xml_parser import reg_text
 
 
 class Builder(object):
+    """Methods used to build all versions of a single regulation, their
+    layers, etc. It is largely glue code"""
 
     def __init__(self, cfr_title, cfr_part, doc_number):
         self.cfr_title = cfr_title
