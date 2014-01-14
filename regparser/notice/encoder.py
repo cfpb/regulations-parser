@@ -8,4 +8,4 @@ class AmendmentEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Amendment):
             return repr(obj)
-        return super(NodeEncoder, self).default(self, obj)
+        return super(AmendmentEncoder, self).default(obj)
