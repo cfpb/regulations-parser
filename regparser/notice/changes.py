@@ -7,8 +7,25 @@ import copy
 from collections import defaultdict
 
 from regparser.tree import struct
+from regparser.tree.paragraph import p_levels
 from regparser.diff.treediff import node_to_dict
 
+
+def bad_label(node):
+    """ Look through a node label, and return True if it's a badly formed
+    label. We can do this because we know what type of character should up at
+    what point in the label. """
+
+    if node.node_type == struct.Node.REGTEXT:
+        if len(node.label) > 2:
+            for i, l in enumerate(node.label):
+                if i == 0 and not l.isdigit():
+                    return True
+                elif i == 1 and not l.isdigit():
+                    return True
+                elif i > 1 and l not in p_levels[i-2]:
+                    return True
+    return False            
 
 def find_candidate(root, label_last):
     """
@@ -21,7 +38,15 @@ def find_candidate(root, label_last):
     def check(node):
         if node.label[-1] == label_last and node.children == []:
             return node
+
     response = struct.walk(root, check)
+    if len(response) > 1:
+        # If there are multiple choices, look for one where the label might 
+        # be obviously broken 
+        bad_labels = [n for n in response if bad_label(n)]
+        if len(bad_labels) == 1:
+            return bad_labels
+
     return response
 
 

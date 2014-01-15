@@ -104,7 +104,7 @@ def process_amendments(notice, notice_xml):
 
     for par in notice_xml.xpath('//AMDPAR'):
         amended_labels, context = parse_amdpar(par, context)
-        
+
         for al in amended_labels:
             if isinstance(al, DesignateAmendment):
                 subpart_changes = process_designate_subpart(al)
