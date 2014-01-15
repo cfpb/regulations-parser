@@ -4,6 +4,11 @@ import requests
 import settings
 
 from regparser.tree.struct import NodeEncoder
+from regparser.notice.encoder import AmendmentEncoder
+
+
+class AmendmentNodeEncoder(AmendmentEncoder, NodeEncoder):
+    pass
 
 
 class FSWriteContent:
@@ -22,7 +27,7 @@ class FSWriteContent:
 
         full_path = settings.OUTPUT_DIR + os.path.join(*path_parts)
         with open(full_path, 'w') as out:
-            text = NodeEncoder(
+            text = AmendmentNodeEncoder(
                 sort_keys=True, indent=4,
                 separators=(', ', ': ')).encode(python_obj)
             out.write(text)
@@ -37,7 +42,7 @@ class APIWriteContent:
         """Write the object (as json) to the API"""
         requests.post(
             settings.API_BASE + self.path,
-            data=NodeEncoder().encode(python_obj),
+            data=AmendmentNodeEncoder().encode(python_obj),
             headers={'content-type': 'application/json'})
 
 

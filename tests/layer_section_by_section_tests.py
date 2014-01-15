@@ -43,7 +43,7 @@ class LayerSectionBySectionTest(TestCase):
                 }]
             }]
         }
-        s = SectionBySection(None, [notice1, notice2])
+        s = SectionBySection(None, notices=[notice1, notice2])
         self.assertEqual(None, s.process(Node(label=['100', '55'])))
         self.assertEqual(s.process(Node(label=['100', '22', 'b'])),
                          [{"reference": ('111-22', '100-22-b'),
@@ -103,7 +103,7 @@ class LayerSectionBySectionTest(TestCase):
                 }]
             }]
         }
-        s = SectionBySection(None, [notice])
+        s = SectionBySection(None, notices=[notice])
         self.assertEqual(None, s.process(Node(label=['100-22-b-2'])))
         self.assertEqual(None, s.process(Node(label=['100-22-c'])))
 
@@ -134,7 +134,7 @@ class LayerSectionBySectionTest(TestCase):
                 "children": []
             }]
         }
-        s = SectionBySection(None, [notice1, notice2])
+        s = SectionBySection(None, notices=[notice1, notice2])
         self.assertEqual(s.process(Node(label=['100', '22', 'b', '2'])), [
             {"reference": ('111-23', '100-22-b-2'),
              "publication_date": "2009-09-09",
