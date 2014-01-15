@@ -1,6 +1,14 @@
 class Layer():
-    def __init__(self, tree):
+    def __init__(self, tree, cfr_title=None, version=None, notices=None,
+                 act_citation=None):
         self.tree = tree
+        if not notices:
+            self.notices = []
+        else:
+            self.notices = notices
+        self.act_citation = act_citation
+        self.cfr_title = cfr_title
+        self.version = version
         self.layer = {}
 
     """ An interface definition for a layer. """

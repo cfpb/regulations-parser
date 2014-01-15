@@ -5,11 +5,12 @@ import re
 from inflection import pluralize
 
 from regparser import utils
+from regparser.citations import internal_citations, Label
+from regparser.grammar import terms as grammar
 from regparser.grammar.external_citations import uscode_exp as uscode
-from regparser.grammar.terms import term_parser, xml_term_parser
 from regparser.layer.layer import Layer
-from regparser.layer.paragraph_markers import ParagraphMarkers
 from regparser.tree import struct
+from regparser.tree.priority_stack import PriorityStack
 import settings
 
 
@@ -26,17 +27,34 @@ class Ref(object):
                 and self.label == other.label
                 and self.position == other.position)
 
+    def __repr__(self):
+        return 'Ref( term=%s, label=%s, position=%s )' % (
+            repr(self.term), repr(self.label), repr(self.position))
+
+
+class ParentStack(PriorityStack):
+    """Used to keep track of the parents while processing nodes to find
+    terms. This is needed as the definition may need to find its scope in
+    parents."""
+    def unwind(self):
+        """No collapsing needs to happen."""
+        self.pop()
+
 
 class Terms(Layer):
+    #   Regexes used in determining scope
+    part_re, subpart_re = re.compile(r"\bpart\b"), re.compile(r"\bsubpart\b")
+    sect_re, par_re = re.compile(r"\bsection\b"), re.compile(r"\bparagraph\b")
+    #   Regex to confirm scope indicator
+    scope_re = re.compile(r".*purposes of( this)?\s*$")
 
-    def __init__(self, tree):
-        Layer.__init__(self, tree)
+    def __init__(self, *args, **kwargs):
+        Layer.__init__(self, *args, **kwargs)
         self.layer['referenced'] = {}
         #   scope -> List[(term, definition_ref)]
         self.scoped_terms = defaultdict(list)
         #   subpart -> list[section]
         self.subpart_map = defaultdict(list)
-
 
     def add_subparts(self):
         """Document the relationship between sections and subparts"""
@@ -48,13 +66,47 @@ class Terms(Layer):
                 current_subpart[0] = node.label[2]
             elif node.node_type == struct.Node.EMPTYPART:
                 current_subpart[0] = None
-            if (len(node.label) == 2 and
-                node.node_type in (struct.Node.REGTEXT, struct.Node.APPENDIX)):
+            if (node.node_type in (struct.Node.REGTEXT, struct.Node.APPENDIX)
+                    and len(node.label) == 2):
                 #Subparts
                 section = node.label[-1]
                 self.subpart_map[current_subpart[0]].append(section)
 
         struct.walk(self.tree, per_node)
+
+    def determine_scope(self, stack):
+        for node in stack.lineage():
+            scopes = []
+            #   First, make a list of potential scope indicators
+            citations = internal_citations(node.text, Label.from_node(node),
+                                           require_marker=True)
+            indicators = [(c.full_start, c.label.to_list()) for c in citations]
+            text = node.text.lower()
+            indicators.extend((m.start(), node.label[:1])
+                              for m in Terms.part_re.finditer(text))
+            indicators.extend((m.start(), node.label[:2])
+                              for m in Terms.sect_re.finditer(text))
+            indicators.extend((m.start(), node.label)
+                              for m in Terms.par_re.finditer(text))
+            #   Subpart's a bit more complicated, as it gets expanded into a
+            #   list of sections
+            for match in Terms.subpart_re.finditer(text):
+                indicators.extend(
+                    (match.start(), subpart_label)
+                    for subpart_label in self.subpart_scope(node.label))
+
+            #   Finally, add the scope if we verify its prefix
+            for start, label in indicators:
+                if Terms.scope_re.match(text[:start]):
+                    scopes.append(label)
+
+            #   Add interpretation to scopes
+            scopes = scopes + [s + [struct.Node.INTERP_MARK] for s in scopes]
+            if scopes:
+                return [tuple(s) for s in scopes]
+
+        #   Couldn't determine scope; default to the entire reg
+        return [tuple(node.label[:1])]
 
     def pre_process(self):
         """Step through every node in the tree, finding definitions. Add
@@ -62,84 +114,109 @@ class Terms(Layer):
         subpart we are in. Finally, document all defined terms. """
 
         self.add_subparts()
+        stack = ParentStack()
 
         def per_node(node):
-            if self.has_definitions(node):
-                for scope in self.definitions_scopes(node):
-                    included, excluded = self.node_definitions(node)
-                    self.scoped_terms[scope].extend(included)
-                    self.scoped_terms['EXCLUDED'].extend(excluded)
+            if node.node_type in (struct.Node.REGTEXT, struct.Node.SUBPART,
+                                  struct.Node.EMPTYPART):
+                if (len(node.label) > 1
+                        and node.node_type == struct.Node.REGTEXT):
+                    #   Add one for the subpart level
+                    stack.add(len(node.label) + 1, node)
+                else:
+                    stack.add(len(node.label), node)
+
+                included, excluded = self.node_definitions(node, stack)
+                if included:
+                    for scope in self.determine_scope(stack):
+                        self.scoped_terms[scope].extend(included)
+                self.scoped_terms['EXCLUDED'].extend(excluded)
 
         struct.walk(self.tree, per_node)
 
+        referenced = self.layer['referenced']
         for scope in self.scoped_terms:
             for ref in self.scoped_terms[scope]:
-                self.layer['referenced'][ref.term + ":" + ref.label] = {
-                    'term': ref.term,
-                    'reference': ref.label,
-                    'position': ref.position
-                }
+                key = ref.term + ":" + ref.label
+                if (key not in referenced     # New term
+                        # Or this term is earlier in the paragraph
+                        or ref.position[0] < referenced[key]['position'][0]):
+                    referenced[key] = {
+                        'term': ref.term,
+                        'reference': ref.label,
+                        'position': ref.position
+                    }
 
-    def has_definitions(self, node):
-        """Does this node have definitions?"""
-        # Definitions cannot be in the top-most layer of the tree (the root)
-        if len(node.label) < 2:
-            return False
-        # Definitions are only in the reg text (not appendices/interprs)
-        if node.node_type != struct.Node.REGTEXT:
-            return False
-        stripped = node.text.strip(ParagraphMarkers.marker(node)).strip()
-        return (
-            stripped.lower().startswith('definition')
-            or (node.title and 'definition' in node.title.lower())
-            or re.search('the term .* means', stripped.lower())
-            )
+    def applicable_terms(self, label):
+        """Find all terms that might be applicable to nodes with this label.
+        Note that we don't have to deal with subparts as subpart_scope simply
+        applies the definition to all sections in a subpart"""
+        applicable_terms = {}
+        for segment_length in range(1, len(label) + 1):
+            scope = tuple(label[:segment_length])
+            for ref in self.scoped_terms.get(scope, []):
+                applicable_terms[ref.term] = ref    # overwrites
+        return applicable_terms
 
-    def is_exclusion(self, term, text, previous_terms):
+    def is_exclusion(self, term, node):
         """Some definitions are exceptions/exclusions of a previously
         defined term. At the moment, we do not want to include these as they
         would replace previous (correct) definitions."""
-        if term not in [t.term for t in previous_terms]:
-            return False
-        regex = 'the term .?' + re.escape(term) + '.? does not include'
-        return bool(re.search(regex, text.lower()))
+        applicable_terms = self.applicable_terms(node.label)
+        if term in applicable_terms:
+            regex = 'the term .?' + re.escape(term) + '.? does not include'
+            return bool(re.search(regex, node.text.lower()))
+        return False
 
-    def node_definitions(self, node):
-        """Walk through this node and its children to find defined terms.
-        'Act' is a special case, as it is also defined as an external
-        citation."""
+    def has_parent_definitions_indicator(self, stack):
+        """With smart quotes, we catch some false positives, phrases in quotes
+        that are not terms. This extra test lets us know that a parent of the
+        node looks like it would contain definitions."""
+        for node in stack.lineage():
+            if ('Definition' in node.text
+                    or 'Definition' in (node.title or '')
+                    or re.search('the term .* (means|refers to)',
+                                 node.text.lower())
+                    or re.search(u'“[^”]+” (means|refers to)',
+                                 node.text.lower())):
+                return True
+        return False
+
+    def node_definitions(self, node, stack):
+        """Find defined terms in this node's text. 'Act' is a special case,
+        as it is also defined as an external citation."""
         included_defs = []
         excluded_defs = []
 
         def add_match(n, term, pos):
-            add_to = included_defs
+            if ((term == 'act' and list(uscode.scanString(n.text)))
+                    or self.is_exclusion(term, n)):
+                excluded_defs.append(Ref(term, n.label_id(), pos))
+            else:
+                included_defs.append(Ref(term, n.label_id(), pos))
 
-            if term == 'act' and list(uscode.scanString(n.text)):
-                add_to = excluded_defs
-            if self.is_exclusion(term, n.text, included_defs):
-                add_to = excluded_defs
-            add_to.append(Ref(term, n.label_id(), pos))
+        if self.has_parent_definitions_indicator(stack):
+            for match, _, _ in grammar.smart_quotes.scanString(node.text):
+                term = match.term.tokens[0].lower().strip(',.;')
+                #   Don't use pos_end because we are stripping some chars
+                pos_start = match.term.pos[0]
+                add_match(node,
+                          term,
+                          (pos_start, pos_start + len(term)))
 
-        def per_node(n):
-            for match, _, _ in term_parser.scanString(n.text):
-                add_match(n,
-                          match.term.tokens[0].lower(),
-                          match.term.pos)
+        if hasattr(node, 'tagged_text'):
+            for match, _, _ in grammar.xml_term_parser.scanString(
+                    node.tagged_text):
+                """Position in match reflects XML tags, so its dropped in
+                preference of new values based on node.text."""
+                pos_start = node.text.find(match.term.tokens[0])
+                term = node.tagged_text[
+                    match.term.pos[0]:match.term.pos[1]].lower()
+                match_len = len(term)
+                add_match(node,
+                          term,
+                          (pos_start, pos_start + match_len))
 
-            if hasattr(n, 'tagged_text'):
-                for match, _, _ in xml_term_parser.scanString(n.tagged_text):
-                    """Position in match reflects XML tags, so its
-                    dropped in preference of new values based on
-                    n.text."""
-                    pos_start = n.text.find(match.term.tokens[0])
-                    term = n.tagged_text[
-                        match.term.pos[0]:match.term.pos[1]].lower()
-                    match_len = len(term)
-                    add_match(n,
-                              term,
-                              (pos_start, pos_start + match_len))
-
-        struct.walk(node, per_node)
         return included_defs, excluded_defs
 
     def subpart_scope(self, label_parts):
@@ -152,34 +229,10 @@ class Terms(Layer):
                 return [[reg, sect] for sect in self.subpart_map[subpart]]
         return []
 
-    def definitions_scopes(self, node):
-        """Try to determine the scope of definitions in this term."""
-        scopes = []
-        if "purposes of this part" in node.text.lower():
-            scopes.append(node.label[:1])
-        elif "purposes of this subpart" in node.text.lower():
-            scopes.extend(self.subpart_scope(node.label))
-        elif "purposes of this section" in node.text.lower():
-            scopes.append(node.label[:2])
-        elif "purposes of this paragraph" in node.text.lower():
-            scopes.append(node.label)
-        else:   # defaults to whole reg
-            scopes.append(node.label[:1])
-
-        for scope in list(scopes):  # second list so we can iterate
-            interp_scope = scope + [struct.Node.INTERP_MARK]
-            if interp_scope:
-                scopes.append(interp_scope)
-        return [tuple(scope) for scope in scopes]
-
     def process(self, node):
         """Determine which (if any) definitions would apply to this node,
         then find if any of those terms appear in this node"""
-        applicable_terms = {}
-        for segment_length in range(1, len(node.label)+1):
-            scope = tuple(node.label[:segment_length])
-            for ref in self.scoped_terms.get(scope, []):
-                applicable_terms[ref.term] = ref    # overwrites
+        applicable_terms = self.applicable_terms(node.label)
 
         layer_el = []
         #   Remove any definitions defined in this paragraph

@@ -48,7 +48,7 @@ class NodeEncoder(JSONEncoder):
                 if field in fields:
                     del fields[field]
             return fields
-        return JSONEncoder.default(self, obj)
+        return super(NodeEncoder, self).default(obj)
 
 
 def node_decode_hook(d):

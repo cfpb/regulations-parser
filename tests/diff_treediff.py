@@ -1,7 +1,7 @@
 #vim: set encoding=utf-8
 from unittest import TestCase
 
-from regparser.tree import reg_text
+from regparser.tree import reg_text, struct
 from regparser.diff import treediff
 
 
@@ -120,3 +120,13 @@ class TreeDiffTest(TestCase):
         words = treediff.deconstruct_text("This\nis\t\ta test\n\tpattern")
         self.assertEqual(['This', '\n', 'is', '\t\t', 'a', ' ', 'test', '\n\t',
             'pattern'], words)
+
+    def test_title_disappears(self):
+        lhs = struct.Node("Text", title="Some Title", label=['1111'])
+        rhs = struct.Node("Text", title=None, label=['1111'])
+
+        comparer = treediff.Compare(lhs, rhs)
+        comparer.compare()
+        self.assertEqual(comparer.changes['1111'],
+            {'title': [[('delete', 0, 10), ('insert', 0, '')]],
+             'op': 'modified'})

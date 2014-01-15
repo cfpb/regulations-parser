@@ -1,6 +1,6 @@
 #vim: set encoding=utf-8
 """Some common combinations"""
-from pyparsing import FollowedBy, LineEnd, Literal, OneOrMore, Optional
+from pyparsing import Empty, FollowedBy, LineEnd, Literal, OneOrMore, Optional
 from pyparsing import Suppress, SkipTo
 
 from regparser.grammar import atomic
@@ -97,6 +97,16 @@ multiple_appendix_section = (
         + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName(
             "tail", listAllMatches=True)
         + Optional(Suppress(')'))))
+
+#   Use "Empty" so we don't rename atomic.appendix
+multiple_appendices = (
+    atomic.appendices_marker
+    + (atomic.appendix + Empty()).setParseAction(keep_pos).setResultsName(
+        "head")
+    + OneOrMore(
+        atomic.conj_phrases
+        + (atomic.appendix + Empty()).setParseAction(keep_pos).setResultsName(
+            "tail", listAllMatches=True)))
 
 multiple_comments = (
     (atomic.comments_marker | atomic.comment_marker)

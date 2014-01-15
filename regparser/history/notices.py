@@ -1,3 +1,6 @@
+from collections import defaultdict
+
+
 def applicable(notices, doc_number):
     """Given a list of notices and a specific notice number, determine which
     notices in the list are relevant to that doc number."""
@@ -17,3 +20,18 @@ def applicable(notices, doc_number):
            and notice['publication_date'] < final_notice['publication_date']):
             include.append(notice)
     return include
+
+
+def group_by_eff_date(notices):
+    #   Only final notices
+    notices = [n for n in notices if 'effective_on' in n]
+    grouped = defaultdict(list)
+
+    for n in notices:
+        key = n['effective_on']
+        grouped[key].append(n)
+
+    for eff_date in grouped:
+        grouped[eff_date] = sorted(grouped[eff_date],
+                                   key=lambda n: n['publication_date'])
+    return grouped

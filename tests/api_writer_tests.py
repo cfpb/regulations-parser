@@ -7,6 +7,8 @@ from unittest import TestCase
 from mock import patch
 
 from regparser.api_writer import *
+from regparser.tree.struct import Node
+from regparser.notice.diff import Amendment, DesignateAmendment
 import settings
 
 
@@ -45,6 +47,24 @@ class FSWriteContentTest(TestCase):
         wrote = json.loads(open(settings.OUTPUT_DIR + '/replace/it').read())
         self.assertEqual(wrote, {'key': 'value'})
 
+    def test_write_encoding(self):
+        writer = FSWriteContent("replace/it")
+        writer.write(Node("Content"))
+
+        wrote = json.loads(open(settings.OUTPUT_DIR + '/replace/it').read())
+        self.assertEqual(wrote['text'], 'Content')
+
+        writer.write(Amendment("action", "label"))
+        wrote = json.loads(open(settings.OUTPUT_DIR + '/replace/it').read())
+        self.assertEqual(wrote, ['action', ['label']])
+
+        writer.write(Amendment("action", "label", 'destination'))
+        wrote = json.loads(open(settings.OUTPUT_DIR + '/replace/it').read())
+        self.assertEqual(wrote, ['action', ['label'], 'destination'])
+
+        writer.write(DesignateAmendment("action", ["label"], 'destination'))
+        wrote = json.loads(open(settings.OUTPUT_DIR + '/replace/it').read())
+        self.assertEqual(wrote, ['action', [['label']], 'destination'])
 
 class APIWriteContentTest(TestCase):
 

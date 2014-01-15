@@ -1,4 +1,5 @@
 #vim: set encoding=utf-8
+from itertools import takewhile
 import re
 import string
 
@@ -53,6 +54,11 @@ class AppendixProcessor(object):
     """Processing the appendix requires a lot of state to be carried in
     between xml nodes. Use a class to wrap that state so we can
     compartmentalize processing the various tags"""
+
+    #   Placeholder text/headers have the label p1 or h1; use that as an
+    #   identifier when determining which depth elements should be placed
+    filler_regex = re.compile(r"[ph]\d+")
+
     def set_letter(self, appendix):
         """Find (and set) the appendix letter"""
         for node in (c for c in appendix.getchildren()
@@ -72,12 +78,44 @@ class AppendixProcessor(object):
         self.paragraph_counter = 0
         self.depth = 0
 
+    def depth_from_ancestry(self, source_attr):
+        """Subheaders without explicit depth markers (e.g. Part I) are
+        tricky. We look through their parents, trying to find a previous
+        header that shared its SOURCE level (the next node would also share
+        node level). If that doesn't work, find the last header and set
+        depth on higher (as the next node is an unseen level)."""
+
+        def not_known_depth_header(pair):
+            """Hitting a know-depth header (see above) means we've gone too
+            far"""
+            lvl, parent = pair
+            return (not parent.title
+                    or not title_label_pair(parent.title,
+                                            self.appendix_letter))
+
+        #   Check if this SOURCE level matches a previous
+        for lvl, parent in takewhile(not_known_depth_header,
+                                     self.m_stack.lineage_with_level()):
+            if (parent.source_xml is not None
+                    and parent.source_xml.attrib.get('SOURCE') == source_attr):
+                return lvl
+
+        #   Second pass, search for any header; place self one lower
+        for lvl, parent in self.m_stack.lineage_with_level():
+            if parent.title:
+                pair = title_label_pair(parent.title, self.appendix_letter)
+                if pair:
+                    return pair[1]
+                else:
+                    return lvl + 1
+            if not AppendixProcessor.filler_regex.match(parent.label[-1]):
+                return lvl + 1
+
     def subheader(self, xml_node, text):
         """Each appendix may contain multiple subheaders. Some of these are
         obviously labeled (e.g. A-3 or Part III) and others are headers
         without a specific label (we give them the h + # id)"""
-        source = xml_node.attrib.get('SOURCE', 'HD1')
-        hd_level = int(source[2:])
+        source = xml_node.attrib.get('SOURCE')
 
         pair = title_label_pair(text, self.appendix_letter)
 
@@ -87,12 +125,13 @@ class AppendixProcessor(object):
             self.depth = title_depth - 1
             n = Node(node_type=Node.APPENDIX, label=[label],
                      title=text)
-        #   Try to deduce depth from SOURCE attribute
+        #   Look through parents to determine which level this should be
         else:
             self.header_count += 1
             n = Node(node_type=Node.APPENDIX, title=text,
-                     label=['h' + str(self.header_count)])
-            self.depth = hd_level
+                     label=['h' + str(self.header_count)],
+                     source_xml=xml_node)
+            self.depth = self.depth_from_ancestry(source)
 
         self.m_stack.add(self.depth, n)
 
@@ -111,6 +150,20 @@ class AppendixProcessor(object):
 
         self._indent_if_needed()
         self.m_stack.add(self.depth, n)
+
+    def find_next_text_with_marker(self, node):
+        """Scan xml nodes and their neighbors looking for text that begins
+        with a marker. When found, return it"""
+        if node.tag == 'HD':   # Next section; give up
+            return None
+        if node.tag in ('P', 'FP'):     # Potential text
+            text = tree_utils.get_node_text(node)
+            pair = initial_marker(text)
+            if pair:
+                return text
+        if node.getnext() is None:  # end of the line
+            return None
+        return self.find_next_text_with_marker(node.getnext())
 
     def split_paragraph_text(self, text, next_text=''):
         marker_positions = []
@@ -236,8 +289,8 @@ class AppendixProcessor(object):
                 if child.getnext() is None:
                     next_text = ''
                 else:
-                    next_text = tree_utils.get_node_text(child.getnext())
-
+                    next_text = self.find_next_text_with_marker(
+                        child.getnext()) or ''
                 texts = self.split_paragraph_text(text, next_text)
                 for text, next_text in zip(texts, texts[1:]):
                     self.paragraph_with_marker(text, next_text)

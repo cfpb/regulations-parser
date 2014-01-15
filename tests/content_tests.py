@@ -41,16 +41,24 @@ class MacrosTests(TestCase):
                                  ('a', 'b'), ('c', 'd')])   # source2
 
 
-class ImageOverridesTests(TestCase):
+class GetterBase(object):
+    """Shared base class for 'getter' content. See below for examples.
+    Cannot derive from TestCase, lest the test runner execute it"""
+    settings_key = None
+
     def setUp(self):
-        self._original_overrides = getattr(settings, 'OVERRIDES_SOURCES', None)
+        self._original = getattr(settings, self.settings_key, None)
+
+    def content_obj(self):
+        """Overridden in children"""
+        raise NotImplemented
 
     def tearDown(self):
-        if (self._original_overrides is None
-                and hasattr(settings, 'OVERRIDES_SOURCES')):
-            del settings.OVERRIDES_SOURCES
+        if (self._original is None
+                and hasattr(settings, self.settings_key)):
+            delattr(settings, self.settings_key)
         else:
-            settings.OVERRIDES_SOURCES = self._original_overrides
+            setattr(settings, self.settings_key, self._original)
 
     @patch('regparser.content._try_to_load')
     def test_get(self, try_to_load):
@@ -63,10 +71,25 @@ class ImageOverridesTests(TestCase):
                 return {'a': 'b', 'source': 2}
         try_to_load.side_effect = response
 
-        settings.OVERRIDES_SOURCES = ['source1', 'return_none', 'source2']
+        setattr(settings, self.settings_key, 
+                ['source1', 'return_none', 'source2'])
 
-        overrides = content.ImageOverrides()
+        overrides = self.content_obj()
         self.assertEqual(1, overrides.get('source'))
         self.assertEqual('b', overrides.get('a'))
         self.assertEqual(None, overrides.get('other'))
         self.assertEqual('foo', overrides.get('other', 'foo'))
+
+
+class ImageOverridesTests(GetterBase, TestCase):
+    settings_key = 'OVERRIDES_SOURCES'
+
+    def content_obj(self):
+        return content.ImageOverrides()
+
+
+class RegPatchesTests(GetterBase, TestCase):
+    settings_key = 'REGPATCHES_SOURCES'
+
+    def content_obj(self):
+        return content.RegPatches()

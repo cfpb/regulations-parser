@@ -4,9 +4,6 @@ import re
 
 
 class KeyTerms(Layer):
-    def __init__(self, tree):
-        Layer.__init__(self, tree)
-
     @staticmethod
     def process_node_text(node):
         """ Take a paragraph, remove the marker, and extraneous whitespaces.

@@ -25,10 +25,6 @@ beginning_of_paragraph = (
     + e_tag
 )
 
-term_parser = (
-    smart_quotes
-)
-
 xml_term_parser = (
     beginning_of_paragraph
 )
