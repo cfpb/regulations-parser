@@ -341,6 +341,30 @@ class LayerTermTest(TestCase):
         self.assertEqual(t.layer['referenced']['lol:1212-5']['position'],
                          (10, 13))
 
+    def test_pre_process_subpart(self):
+        root = Node("", label=['1212'])
+        subpartA = Node("", label=['1212', 'Subpart', 'A'], title='Subpart A')
+        section2 = Node("", label=['1212', '2'], title='1212.2')
+        def1 = Node(u"“totes” means in total", label=['1212', '2', 'a'])
+        subpartB = Node("", label=['1212', 'Subpart', 'B'], title='Subpart B')
+        section22 = Node("\nFor the purposes of this subpart",
+                         label=['1212', '22'], title='1212.22')
+        def2 = Node(u"“totes” means in extremely", label=['1212', '22', 'a'])
+
+        root.children = [subpartA, subpartB]
+        subpartA.children, subpartB.children = [section2], [section22]
+        section2.children, section22.children = [def1], [def2]
+
+        t = Terms(root)
+        t.pre_process()
+        self.assertTrue(('1212',) in t.scoped_terms)
+        self.assertEqual(len(t.scoped_terms[('1212',)]), 1)
+        self.assertEqual('1212-2-a', t.scoped_terms[('1212',)][0].label)
+
+        self.assertTrue(('1212', '22') in t.scoped_terms)
+        self.assertEqual(len(t.scoped_terms[('1212', '22')]), 1)
+        self.assertEqual('1212-22-a', t.scoped_terms[('1212', '22')][0].label)
+
     def test_excluded_offsets(self):
         t = Terms(None)
         t.scoped_terms['_'] = [
