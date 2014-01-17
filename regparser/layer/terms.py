@@ -182,7 +182,7 @@ class Terms(Layer):
                 return True
         return False
 
-    def node_definitions(self, node, stack):
+    def node_definitions(self, node, stack=None):
         """Find defined terms in this node's text. 'Act' is a special case,
         as it is also defined as an external citation."""
         included_defs = []
@@ -195,7 +195,7 @@ class Terms(Layer):
             else:
                 included_defs.append(Ref(term, n.label_id(), pos))
 
-        if self.has_parent_definitions_indicator(stack):
+        if stack and self.has_parent_definitions_indicator(stack):
             for match, _, _ in grammar.smart_quotes.scanString(node.text):
                 term = match.term.tokens[0].lower().strip(',.;')
                 #   Don't use pos_end because we are stripping some chars

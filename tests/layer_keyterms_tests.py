@@ -19,6 +19,23 @@ class LayerKeyTermTest(TestCase):
         self.assertEqual(results[0]['key_term'], 'Apples.')
         self.assertEqual(results[0]['locations'], [0])
 
+    def test_keyterm_definition(self):
+        node = Node("(a) Terminator means I'll be back",
+                    label=['101', '22', 'a'])
+        node.tagged_text = """(a) <E T="03">Terminator</E> means I'll be """
+        node.tagged_text += 'back'
+        kt = KeyTerms(None)
+        results = kt.process(node)
+        self.assertEqual(results, None)
+
+        node = Node("(1) Act means pretend", label=['101', '22', 'a', '1'])
+        node.tagged_text = """(1) <E T="03">Act</E> means pretend"""
+        node = Node("(1) Act means the Truth in Lending Act (15 U.S.C. 1601 et seq.).", label=['1026', '2', 'a', '1'])
+        node.tagged_text = """(1) <E T="03">Act</E> means the Truth in Lending Act (15 U.S.C. 1601 <E T="03">et seq.</E>)."""
+        kt = KeyTerms(None)
+        results = kt.process(node)
+        self.assertEqual(results, None)
+
     def test_emphasis_later(self):
         """ Don't pick up something that is emphasized later in a paragraph as
         a key-term. """
