@@ -78,7 +78,9 @@ def get_collapsed_markers(text):
 
     #   remove any that overlap with citations
     matches = [m for m, start, end in matches
-               if not any(e.start <= start and e.end >= end
+               if not any((e.start <= start and e.end >= start)
+                          or (e.start <= end and e.end >= end)
+                          or (start <= e.start and end >= e.end)
                           for e in internal_citations(text))]
 
     #   get the letters; poor man's flatten

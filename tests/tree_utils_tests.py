@@ -87,3 +87,9 @@ class TreeUtilsTest(unittest.TestCase):
 
         text = u'(a) <E T="03">Keyterm</E>—(1)(i) Content'
         self.assertEqual(['1', 'i'], tree_utils.get_collapsed_markers(text))
+
+        text = "(C) The information required by paragraphs (a)(2), "
+        text += "(a)(4)(iii), (a)(5), (b) through (d), (i), (l) through (p)"
+        self.assertEqual([], tree_utils.get_collapsed_markers(text))
+
+
