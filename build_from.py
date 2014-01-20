@@ -2,12 +2,20 @@ import codecs
 import logging
 import sys
 
+try:
+    import requests_cache
+    requests_cache.install_cache('fr_cache')
+except ImportError:
+    pass
+
 from regparser.diff import treediff
 from regparser.builder import Builder
+
 
 logger = logging.getLogger('build_from')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 6:
@@ -43,12 +51,13 @@ if __name__ == "__main__":
     builder.gen_and_write_layers(reg_tree, sys.argv[4:6])
     if len(sys.argv) < 7 or sys.argv[6].lower() == 'true':
         all_versions = {doc_number: reg_tree}
-        for version, old, new_tree in builder.revision_generator(reg_tree):
+        for version, old, new_tree, notices in builder.revision_generator(
+                reg_tree):
             logger.info("Version %s", version)
             all_versions[version] = new_tree
             builder.doc_number = version
             builder.write_regulation(new_tree)
-            builder.gen_and_write_layers(new_tree, sys.argv[4:6])
+            builder.gen_and_write_layers(new_tree, sys.argv[4:6], notices)
 
         # now build diffs - include "empty" diffs comparing a version to itself
         for lhs_version, lhs_tree in all_versions.iteritems():
