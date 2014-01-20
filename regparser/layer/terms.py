@@ -46,7 +46,7 @@ class Terms(Layer):
     part_re, subpart_re = re.compile(r"\bpart\b"), re.compile(r"\bsubpart\b")
     sect_re, par_re = re.compile(r"\bsection\b"), re.compile(r"\bparagraph\b")
     #   Regex to confirm scope indicator
-    scope_re = re.compile(r".*purposes of( this)?\s*$")
+    scope_re = re.compile(r".*purposes of( this)?\s*$", re.DOTALL)
 
     def __init__(self, *args, **kwargs):
         Layer.__init__(self, *args, **kwargs)
@@ -112,20 +112,22 @@ class Terms(Layer):
         """Step through every node in the tree, finding definitions. Add
         these definition to self.scoped_terms. Also keep track of which
         subpart we are in. Finally, document all defined terms. """
-
         self.add_subparts()
         stack = ParentStack()
 
         def per_node(node):
+            if len(node.label) > 1 and node.node_type == struct.Node.REGTEXT:
+                #   Add one for the subpart level
+                stack.add(len(node.label) + 1, node)
+            elif node.node_type in (struct.Node.SUBPART,
+                                    struct.Node.EMPTYPART):
+                #   Subparts all on the same level
+                stack.add(2, node)
+            else:
+                stack.add(len(node.label), node)
+
             if node.node_type in (struct.Node.REGTEXT, struct.Node.SUBPART,
                                   struct.Node.EMPTYPART):
-                if (len(node.label) > 1
-                        and node.node_type == struct.Node.REGTEXT):
-                    #   Add one for the subpart level
-                    stack.add(len(node.label) + 1, node)
-                else:
-                    stack.add(len(node.label), node)
-
                 included, excluded = self.node_definitions(node, stack)
                 if included:
                     for scope in self.determine_scope(stack):
@@ -182,7 +184,7 @@ class Terms(Layer):
                 return True
         return False
 
-    def node_definitions(self, node, stack):
+    def node_definitions(self, node, stack=None):
         """Find defined terms in this node's text. 'Act' is a special case,
         as it is also defined as an external citation."""
         included_defs = []
@@ -195,7 +197,7 @@ class Terms(Layer):
             else:
                 included_defs.append(Ref(term, n.label_id(), pos))
 
-        if self.has_parent_definitions_indicator(stack):
+        if stack and self.has_parent_definitions_indicator(stack):
             for match, _, _ in grammar.smart_quotes.scanString(node.text):
                 term = match.term.tokens[0].lower().strip(',.;')
                 #   Don't use pos_end because we are stripping some chars

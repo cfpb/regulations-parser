@@ -1,5 +1,6 @@
 from layer import Layer
 from regparser.layer.paragraph_markers import ParagraphMarkers
+from regparser.layer.terms import Terms
 import re
 
 
@@ -29,7 +30,11 @@ class KeyTerms(Layer):
         pattern = re.compile(ur'.*?<E T="03">([^<]*?)</E>.*?', re.UNICODE)
         matches = pattern.match(node.tagged_text)
         if matches and KeyTerms.keyterm_is_first(node, matches.groups()[0]):
-            return matches.groups()[0]
+            included, excluded = Terms(None).node_definitions(node)
+            terms = included + excluded
+            keyterm_as_term = matches.groups()[0].lower()
+            if not any(ref.term == keyterm_as_term for ref in terms):
+                return matches.groups()[0]
 
     def process(self, node):
         """ Get keyterms if we have text in the node that preserves the

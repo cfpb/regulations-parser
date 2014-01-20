@@ -1,7 +1,9 @@
 #vim: set encoding=utf-8
 import itertools
+import logging
 import re
 import string
+
 from pyparsing import Word, LineStart, Regex, Suppress
 
 from regparser.citations import Label
@@ -67,6 +69,7 @@ def interp_inner_child(child_node, stack):
     node_text = tree_utils.get_node_text(child_node)
     text_with_tags = tree_utils.get_node_text_tags_preserved(child_node)
     first_marker = get_first_interp_marker(text_with_tags)
+    paragraph_count = 0
 
     collapsed_markers = []
     for marker in _first_markers:
@@ -87,6 +90,11 @@ def interp_inner_child(child_node, stack):
         stack.push_last((interpretation_level(first_marker), n))
     else:
         node_level = interpretation_level(first_marker, last[0][0])
+        if node_level is None:
+            paragraph_count += 1
+            logging.warning("Couldn't determine node_level for this "
+                            + "interpretation paragraph: " + n.text)
+            node_level = last[0][0] + 1
         stack.add(node_level, n)
 
     #   Collapsed-marker children
@@ -158,19 +166,29 @@ def build_supplement_tree(reg_part, node):
     supplement_nodes = [root]
 
     last_label = [reg_part, Node.INTERP_MARK]
+    header_count = 0
     for ch in node:
         node = Node(label=last_label, node_type=Node.INTERP)
         label_obj = Label.from_node(node)
-        labels = [] if not is_title(ch) else text_to_labels(ch.text,
-                                                            label_obj)
-        if labels:
-            label = merge_labels(labels)
+
+        #   Explicitly ignore "subpart" headers, as they are inconsistent
+        #   and they will be reconstructed as subterps client-side
+        text = tree_utils.get_node_text(ch)
+        if is_title(ch) and 'subpart' not in text.lower():
+            labels = text_to_labels(text, label_obj)
+            if labels:
+                label = merge_labels(labels)
+            else:   # Header without a label, like an Introduction, etc.
+                header_count += 1
+                label = [reg_part, Node.INTERP_MARK, 'h%d' % header_count]
+
             inner_stack = tree_utils.NodeStack()
             missing = missing_levels(last_label, label)
             supplement_nodes.extend(missing)
             last_label = label
 
-            node = Node(node_type=Node.INTERP, label=label, title=ch.text)
+            node = Node(node_type=Node.INTERP, label=label,
+                        title=text.strip())
             inner_stack.add(2, node)
 
             process_inner_children(inner_stack, ch)

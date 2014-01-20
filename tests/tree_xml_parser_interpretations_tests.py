@@ -114,7 +114,7 @@ class InterpretationsTest(TestCase):
         self.assertEqual(3, len(tree.children))
         aGH, aG, aH = tree.children
 
-        self.assertEqual(['737', 'G:H', 'Interp'], aGH.label)
+        self.assertEqual(['737', 'G_H', 'Interp'], aGH.label)
         self.assertEqual(['737', 'G', 'Interp'], aG.label)
         self.assertEqual(['737', 'H', 'Interp'], aH.label)
 
@@ -179,27 +179,40 @@ class InterpretationsTest(TestCase):
         self.assertEqual(['737', 'H', 'b', 'Interp', '1'], iHb1.label)
         self.assertEqual(['737', 'H', 'b', '5', 'Interp'], iHb5.label)
 
-    def test_build_supplement_tree_repeats(self):
+    def test_build_supplement_intro_section(self):
         """Integration test"""
         xml = """<APPENDIX>
             <HD SOURCE="HED">
                 Supplement I to Part 737-Official Interpretations</HD>
-            <HD SOURCE="HD2">Appendices G and H-Content</HD>
-            <P>1. G:H</P>
+            <HD SOURCE="HD1">Introduction</HD>
+            <P>1. Some content. (a) Badly named</P>
+            <P>(b) Badly named</P>
+            <HD SOURCE="HD1">Subpart A</HD>
+            <HD SOURCE="HD2">Section 737.13</HD>
+            <P><E>13(a) Some Stuff!</E></P>
+            <P>1. 131313</P>
             <HD SOURCE="HD2">Appendix G</HD>
             <P>1. G</P>
-            <HD SOURCE="HD2">Appendix H</HD>
-            <P>1. H</P>
         </APPENDIX>"""
         tree = interpretations.build_supplement_tree('737',
                                                      etree.fromstring(xml))
         self.assertEqual(['737', 'Interp'], tree.label)
         self.assertEqual(3, len(tree.children))
-        aGH, aG, aH = tree.children
+        h1, s13, g = tree.children
 
-        self.assertEqual(['737', 'G_H', 'Interp'], aGH.label)
-        self.assertEqual(['737', 'G', 'Interp'], aG.label)
-        self.assertEqual(['737', 'H', 'Interp'], aH.label)
+        self.assertEqual(['737', 'Interp', 'h1'], h1.label)
+        self.assertEqual(['737', '13', 'Interp'], s13.label)
+        self.assertEqual(['737', 'G', 'Interp'], g.label)
+
+        self.assertEqual(len(h1.children), 1)
+        self.assertEqual('1. Some content. (a) Badly named',
+                         h1.children[0].text.strip())
+        self.assertEqual(len(h1.children[0].children), 1)
+        self.assertEqual('(b) Badly named',
+                         h1.children[0].children[0].text.strip())
+
+        self.assertEqual(1, len(s13.children))
+        self.assertEqual('13(a) Some Stuff!', s13.children[0].title)
 
     def test_process_inner_child(self):
         xml = """
