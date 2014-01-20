@@ -40,10 +40,29 @@ def fix_section_node(paragraphs, amdpar_xml):
             section.append(copy(paragraph))
         return section
 
-
+def find_lost_section(amdpar_xml):
+    """ This amdpar doesn't have any following siblings, so we 
+    look in the next regtext """
+    reg_text = amdpar_xml.getparent()
+    reg_text_siblings = [s for s in reg_text.itersiblings() 
+                         if s.tag == 'REGTEXT']
+    if len(reg_text_siblings) > 0:
+        candidate_reg_text = reg_text_siblings[0]
+        amdpars = [a for a in candidate_reg_text if a.tag == 'AMDPAR']
+        if len(amdpars) == 0:
+            #Only do this if there are not AMDPARS
+            for c in candidate_reg_text:
+                if c.tag == 'SECTION':
+                    return c
+            
 def find_section(amdpar_xml):
     """ With an AMDPAR xml, return the first section
     sibling """
+    siblings = [s for s in amdpar_xml.itersiblings()]
+
+    if len(siblings) == 0:
+        return find_lost_section(amdpar_xml)
+
     section = None
     for sibling in amdpar_xml.itersiblings():
         if sibling.tag == 'SECTION':
@@ -101,6 +120,28 @@ def switch_context(token_list, carried_context):
                 return []
     return carried_context
 
+def contains_one_instance(tokenized, element):
+    contexts = [t for t in tokenized if isinstance(t, element)]
+    return len(contexts) == 1
+
+def contains_one_paragraph(tokenized):
+    return contains_one_instance(tokenized, tokens.Paragraph)
+
+def contains_delete(tokenized):
+    contexts = [t for t in tokenized 
+                if isinstance(t, tokens.Verb) and t.verb == 'DELETE']
+    return len(contexts) > 0
+
+def remove_false_deletes(tokenized, text):
+    """ Sometimes a statement like 'Removing the 'x' from the end of 
+    paragraph can be confused as removing the paragraph. Ensure that 
+    doesn't happen here. Likely this method needs a little more work. """
+
+    if contains_delete(tokenized):
+        if contains_one_paragraph(tokenized):
+            if 'end of paragraph' in text:
+                return []
+    return tokenized
 
 def parse_amdpar(par, initial_context):
     """ Parse the <AMDPAR> tags into a list of paragraphs that have changed.
@@ -109,6 +150,7 @@ def parse_amdpar(par, initial_context):
     text = etree.tostring(par, encoding=unicode)
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
 
+    tokenized = remove_false_deletes(tokenized, text)
     tokenized = switch_passive(tokenized)
     tokenized, subpart = deal_with_subpart_adds(tokenized)
     tokenized = context_to_paragraph(tokenized)
@@ -175,7 +217,6 @@ def is_designate_token(token):
 def contains_one_designate_token(tokenized):
     """ Return True if the list of tokens contains only one designate token.
     """
-
     designate_tokens = [t for t in tokenized if is_designate_token(t)]
     return len(designate_tokens) == 1
 
