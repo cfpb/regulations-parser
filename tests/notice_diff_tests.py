@@ -471,4 +471,3 @@ class NoticeDiffTests(TestCase):
         amdpar = etree.fromstring(amdpar_xml).xpath('//AMDPAR')[0]
         section = find_section(amdpar)
         self.assertNotEqual(None, section)
-

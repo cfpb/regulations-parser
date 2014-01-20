@@ -46,7 +46,6 @@ class ChangesTests(TestCase):
         self.assertTrue(result['candidate'])
         self.assertEqual(result['node'], n2)
 
-
     def test_create_add_amendment(self):
         root = self.build_tree()
 
