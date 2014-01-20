@@ -435,3 +435,40 @@ class NoticeDiffTests(TestCase):
         self.assertNotEqual(None, section)
         paragraphs = [p for p in section if p.tag == 'P']
         self.assertEqual(paragraphs[0].text, '(b) paragraph 1')
+
+    def test_find_lost_section(self):
+        amdpar_xml = u"""
+            <PART>
+            <REGTEXT>
+                <AMDPAR>
+                    3. In § 105.1, revise paragraph (b) to read as follows:
+                </AMDPAR>
+            </REGTEXT>
+            <REGTEXT>
+                <SECTION>
+                    <SECTNO> 205.4 </SECTNO>
+                    <SUBJECT>[Corrected]</SUBJECT>
+                </SECTION>
+            </REGTEXT></PART>"""
+        amdpar = etree.fromstring(amdpar_xml).xpath('//AMDPAR')[0]
+        section = find_lost_section(amdpar)
+        self.assertNotEqual(None, section)
+
+    def test_find_section_lost(self):
+        amdpar_xml = u"""
+            <PART>
+            <REGTEXT>
+                <AMDPAR>
+                    3. In § 105.1, revise paragraph (b) to read as follows:
+                </AMDPAR>
+            </REGTEXT>
+            <REGTEXT>
+                <SECTION>
+                    <SECTNO> 205.4 </SECTNO>
+                    <SUBJECT>[Corrected]</SUBJECT>
+                </SECTION>
+            </REGTEXT></PART>"""
+        amdpar = etree.fromstring(amdpar_xml).xpath('//AMDPAR')[0]
+        section = find_section(amdpar)
+        self.assertNotEqual(None, section)
+
