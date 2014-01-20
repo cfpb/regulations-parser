@@ -53,20 +53,19 @@ def find_candidate(root, label_last):
 def resolve_candidates(amend_map, warn=True):
     """Ensure candidate isn't actually accounted for elsewhere, and fix
     it's label. """
-
-    for label, node in amend_map.items():
-        if 'node' in node:
-            node_label = node['node'].label_id()
-            if node['candidate']:
-                if node_label not in amend_map:
-                    node['node'].label = label.split('-')
-                else:
-                    del amend_map[label]
-                    if warn:
-                        mesg = 'Unable to match amendment'
-                        mesg += ' to change for: %s ' % label
-                        logging.warning(mesg)
-
+    for label, nodes in amend_map.items():
+        for node in nodes:
+            if 'node' in node:
+                node_label = node['node'].label_id()
+                if node['candidate']:
+                    if node_label not in amend_map:
+                        node['node'].label = label.split('-')
+                    else:
+                        del amend_map[label]
+                        if warn:
+                            mesg = 'Unable to match amendment'
+                            mesg += ' to change for: %s ' % label
+                            logging.warning(mesg)
 
 def find_misparsed_node(section_node, label, change):
     """ Nodes can get misparsed in the sense that we don't always know where
@@ -99,7 +98,7 @@ def match_labels_and_changes(amendments, section_node):
             amend_map[amend.label_id()].append(change)
         else:
             node = struct.find(section_node, amend.label_id())
-            if node is None:
+            if node is None:    
                 candidate = find_misparsed_node(
                     section_node, amend.label, change)
                 if candidate:
