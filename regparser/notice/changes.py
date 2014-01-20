@@ -17,14 +17,13 @@ def bad_label(node):
     what point in the label. """
 
     if node.node_type == struct.Node.REGTEXT:
-        if len(node.label) > 2:
-            for i, l in enumerate(node.label):
-                if i == 0 and not l.isdigit():
-                    return True
-                elif i == 1 and not l.isdigit():
-                    return True
-                elif i > 1 and l not in p_levels[i-2]:
-                    return True
+        for i, l in enumerate(node.label):
+            if i == 0 and not l.isdigit():
+                return True
+            elif i == 1 and not l.isdigit():
+                return True
+            elif i > 1 and l not in p_levels[i-2]:
+                return True
     return False
 
 

@@ -156,3 +156,17 @@ class ChangesTests(TestCase):
         self.assertTrue(amend_map['200-2-a-1-i'][0]['candidate'])
         self.assertTrue(
             amend_map['200-2-a-1-i'][0]['node'].label_id(), '200-2-a-1-i')
+
+    def test_bad_label(self):
+        label = ['205', '4', 'a', '1', 'ii', 'A']
+        node = Node('text', label=label, node_type=Node.REGTEXT)
+        self.assertFalse(changes.bad_label(node))
+
+        node.label = ['205', '38', 'i', 'vii', 'A']
+        self.assertTrue(changes.bad_label(node))
+
+        node.label = ['205', 'ii']
+        self.assertTrue(changes.bad_label(node))
+
+        node.label = ['205', '38', 'A', 'vii', 'A']
+        self.assertTrue(changes.bad_label(node))
