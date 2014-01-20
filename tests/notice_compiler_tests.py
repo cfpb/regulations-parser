@@ -391,3 +391,23 @@ class CompilerTests(TestCase):
         node = find(reg_tree.tree, '205-2-a')
         parent = reg_tree.get_parent(node)
         self.assertEqual(parent.label, ['205', '2'])
+
+    def test_create_empty(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+        reg_tree.create_empty_node('205-4-a')
+
+        node = find(reg_tree.tree, '205-4-a')
+        self.assertNotEqual(None, node)
+        self.assertEqual(node.label, ['205', '4', 'a'])
+
+    def test_add_node_no_parent(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+
+        node = Node('', label=['205', '3', 'a'], node_type=Node.REGTEXT)
+        reg_tree.add_node(node)
+
+        parent = find(reg_tree.tree, '205-3')
+        self.assertNotEqual(None, parent)
+        self.assertEqual(parent.text, '')
