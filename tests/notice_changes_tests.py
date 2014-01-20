@@ -1,7 +1,7 @@
 #vim: set encoding=utf-8
 from unittest import TestCase
 from regparser.notice import changes
-from regparser.tree.struct import Node
+from regparser.tree.struct import Node, find
 from regparser.notice.diff import Amendment
 
 
@@ -23,6 +23,13 @@ class ChangesTests(TestCase):
         result = changes.find_candidate(root, 'i')[0]
         self.assertEqual(u'n1i', result.text)
 
+        n2c = Node('n3c', label=['200', '2', 'i', 'i'])
+        n2 = find(root, '200-2')
+        n2.children = [n2c]
+
+        result = changes.find_candidate(root, 'i')[0]
+        self.assertEqual(result.label, ['200', '2', 'i', 'i'])
+
     def test_not_find_candidate(self):
         root = self.build_tree()
         result = changes.find_candidate(root, 'j')
@@ -38,6 +45,7 @@ class ChangesTests(TestCase):
         self.assertEqual(result['action'], 'PUT')
         self.assertTrue(result['candidate'])
         self.assertEqual(result['node'], n2)
+
 
     def test_create_add_amendment(self):
         root = self.build_tree()
