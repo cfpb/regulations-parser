@@ -40,11 +40,12 @@ def fix_section_node(paragraphs, amdpar_xml):
             section.append(copy(paragraph))
         return section
 
+
 def find_lost_section(amdpar_xml):
-    """ This amdpar doesn't have any following siblings, so we 
+    """ This amdpar doesn't have any following siblings, so we
     look in the next regtext """
     reg_text = amdpar_xml.getparent()
-    reg_text_siblings = [s for s in reg_text.itersiblings() 
+    reg_text_siblings = [s for s in reg_text.itersiblings()
                          if s.tag == 'REGTEXT']
     if len(reg_text_siblings) > 0:
         candidate_reg_text = reg_text_siblings[0]
@@ -54,7 +55,8 @@ def find_lost_section(amdpar_xml):
             for c in candidate_reg_text:
                 if c.tag == 'SECTION':
                     return c
-            
+
+
 def find_section(amdpar_xml):
     """ With an AMDPAR xml, return the first section
     sibling """
@@ -75,9 +77,9 @@ def find_section(amdpar_xml):
     return section
 
 
-def find_subpart(amdpar):
+def find_subpart(amdpar_tag):
     """ Look amongst an amdpar tag's siblings to find a subpart. """
-    for sibling in amdpar.itersiblings():
+    for sibling in amdpar_tag.itersiblings():
         if sibling.tag == 'SUBPART':
             return sibling
 
@@ -108,7 +110,7 @@ def switch_context(token_list, carried_context):
     CFR part changes, empty out the context that we carry forward. """
 
     def is_valid_label(label):
-        return (label and label[0] is not None)
+        return label and label[0] is not None
 
     if carried_context and carried_context[0] is not None:
         token_list = [t for t in token_list if not isinstance(t, tokens.Verb)]
@@ -120,21 +122,29 @@ def switch_context(token_list, carried_context):
                 return []
     return carried_context
 
+
 def contains_one_instance(tokenized, element):
+    """ Return True if tokenized contains only one instance of the class
+    element. """
     contexts = [t for t in tokenized if isinstance(t, element)]
     return len(contexts) == 1
 
+
 def contains_one_paragraph(tokenized):
+    """ Returns True if tokenized contains only one tokens.Paragraph """
     return contains_one_instance(tokenized, tokens.Paragraph)
 
+
 def contains_delete(tokenized):
-    contexts = [t for t in tokenized 
+    """ Returns True if tokenized contains at least one DELETE. """
+    contexts = [t for t in tokenized
                 if isinstance(t, tokens.Verb) and t.verb == 'DELETE']
     return len(contexts) > 0
 
+
 def remove_false_deletes(tokenized, text):
-    """ Sometimes a statement like 'Removing the 'x' from the end of 
-    paragraph can be confused as removing the paragraph. Ensure that 
+    """ Sometimes a statement like 'Removing the 'x' from the end of
+    paragraph can be confused as removing the paragraph. Ensure that
     doesn't happen here. Likely this method needs a little more work. """
 
     if contains_delete(tokenized):
@@ -142,6 +152,7 @@ def remove_false_deletes(tokenized, text):
             if 'end of paragraph' in text:
                 return []
     return tokenized
+
 
 def parse_amdpar(par, initial_context):
     """ Parse the <AMDPAR> tags into a list of paragraphs that have changed.
