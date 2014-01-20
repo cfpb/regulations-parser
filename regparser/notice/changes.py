@@ -25,7 +25,8 @@ def bad_label(node):
                     return True
                 elif i > 1 and l not in p_levels[i-2]:
                     return True
-    return False            
+    return False
+
 
 def find_candidate(root, label_last):
     """
@@ -36,13 +37,14 @@ def find_candidate(root, label_last):
         markers.
     """
     def check(node):
+        """ Match last part of label, and no children.  """
         if node.label[-1] == label_last and node.children == []:
             return node
 
     response = struct.walk(root, check)
     if len(response) > 1:
-        # If there are multiple choices, look for one where the label might 
-        # be obviously broken 
+        # If there are multiple choices, look for one where the label might
+        # be obviously broken
         bad_labels = [n for n in response if bad_label(n)]
         if len(bad_labels) == 1:
             return bad_labels
@@ -66,6 +68,7 @@ def resolve_candidates(amend_map, warn=True):
                             mesg = 'Unable to match amendment'
                             mesg += ' to change for: %s ' % label
                             logging.warning(mesg)
+
 
 def find_misparsed_node(section_node, label, change):
     """ Nodes can get misparsed in the sense that we don't always know where
@@ -98,7 +101,7 @@ def match_labels_and_changes(amendments, section_node):
             amend_map[amend.label_id()].append(change)
         else:
             node = struct.find(section_node, amend.label_id())
-            if node is None:    
+            if node is None:
                 candidate = find_misparsed_node(
                     section_node, amend.label, change)
                 if candidate:

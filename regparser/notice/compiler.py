@@ -118,8 +118,8 @@ class RegulationTree(object):
         other_children = [c for c in parent.children if c.label != node.label]
         parent.children = self.add_child(other_children, node)
 
-    def create_empty_node(self, node_label): 
-        """ In rare cases, we need to flush out the tree by adding 
+    def create_empty_node(self, node_label):
+        """ In rare cases, we need to flush out the tree by adding
         an empty node. """
         node_label = node_label.split('-')
         node = Node('', [], node_label, None, Node.REGTEXT)
@@ -136,7 +136,7 @@ class RegulationTree(object):
         parent = self.get_parent(node)
         if parent is None:
             # This is a corner case, where we're trying to add a child
-            # to a parent that should exist. 
+            # to a parent that should exist.
             logging.warning('No existing parent for: %s' % node.label_id())
             parent = self.create_empty_node(get_parent_label(node))
         parent.children = self.add_child(parent.children, node)
