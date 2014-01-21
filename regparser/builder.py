@@ -24,7 +24,8 @@ class Builder(object):
         self.doc_number = doc_number
         self.writer = api_writer.Client()
 
-        self.notices = fetch_notices(self.cfr_title, self.cfr_part)
+        self.notices = fetch_notices(self.cfr_title, self.cfr_part,
+                                     only_final=True)
         modify_effective_dates(self.notices)
         #   Only care about final
         self.notices = [n for n in self.notices if 'effective_on' in n]
@@ -39,7 +40,9 @@ class Builder(object):
     def write_regulation(self, reg_tree):
         self.writer.regulation(self.cfr_part, self.doc_number).write(reg_tree)
 
-    def gen_and_write_layers(self, reg_tree, act_info):
+    def gen_and_write_layers(self, reg_tree, act_info, notices=None):
+        if notices is None:
+            notices = applicable_notices(self.notices, self.doc_number)
         for ident, layer_class in (
                 ('external-citations',
                     external_citations.ExternalCitationParser),
@@ -55,7 +58,7 @@ class Builder(object):
                 ('formatting', formatting.Formatting),
                 ('graphics', graphics.Graphics)):
             layer = layer_class(reg_tree, self.cfr_title, self.doc_number,
-                                self.notices, act_info).build()
+                                notices, act_info).build()
             self.writer.layer(ident, self.cfr_part, self.doc_number).write(
                 layer)
 
@@ -65,13 +68,13 @@ class Builder(object):
             relevant_notices.extend(
                 n for n in self.eff_notices[date]
                 if 'changes' in n and n['document_number'] != self.doc_number)
-
         for notice in relevant_notices:
             version = notice['document_number']
             old_tree = reg_tree
             merged_changes = self.merge_changes(version, notice['changes'])
             reg_tree = compile_regulation(old_tree, merged_changes)
-            yield version, old_tree, reg_tree
+            notices = applicable_notices(self.notices, version)
+            yield version, old_tree, reg_tree, notices
 
     def merge_changes(self, document_number, changes):
         patches = content.RegPatches().get(document_number)
