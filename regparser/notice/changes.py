@@ -7,7 +7,24 @@ import copy
 from collections import defaultdict
 
 from regparser.tree import struct
+from regparser.tree.paragraph import p_levels
 from regparser.diff.treediff import node_to_dict
+
+
+def bad_label(node):
+    """ Look through a node label, and return True if it's a badly formed
+    label. We can do this because we know what type of character should up at
+    what point in the label. """
+
+    if node.node_type == struct.Node.REGTEXT:
+        for i, l in enumerate(node.label):
+            if i == 0 and not l.isdigit():
+                return True
+            elif i == 1 and not l.isdigit():
+                return True
+            elif i > 1 and l not in p_levels[i-2]:
+                return True
+    return False
 
 
 def find_candidate(root, label_last):
@@ -19,28 +36,37 @@ def find_candidate(root, label_last):
         markers.
     """
     def check(node):
+        """ Match last part of label, and no children.  """
         if node.label[-1] == label_last and node.children == []:
             return node
+
     response = struct.walk(root, check)
+    if len(response) > 1:
+        # If there are multiple choices, look for one where the label might
+        # be obviously broken
+        bad_labels = [n for n in response if bad_label(n)]
+        if len(bad_labels) == 1:
+            return bad_labels
+
     return response
 
 
 def resolve_candidates(amend_map, warn=True):
     """Ensure candidate isn't actually accounted for elsewhere, and fix
     it's label. """
-
-    for label, node in amend_map.items():
-        if 'node' in node:
-            node_label = node['node'].label_id()
-            if node['candidate']:
-                if node_label not in amend_map:
-                    node['node'].label = label.split('-')
-                else:
-                    del amend_map[label]
-                    if warn:
-                        mesg = 'Unable to match amendment'
-                        mesg += ' to change for: %s ' % label
-                        logging.warning(mesg)
+    for label, nodes in amend_map.items():
+        for node in nodes:
+            if 'node' in node:
+                node_label = node['node'].label_id()
+                if node['candidate']:
+                    if node_label not in amend_map:
+                        node['node'].label = label.split('-')
+                    else:
+                        del amend_map[label]
+                        if warn:
+                            mesg = 'Unable to match amendment'
+                            mesg += ' to change for: %s ' % label
+                            logging.warning(mesg)
 
 
 def find_misparsed_node(section_node, label, change):

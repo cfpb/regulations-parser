@@ -270,3 +270,23 @@ class GrammarAmdParTests(TestCase):
 
         v = tokens.Paragraph([None, None, None, 'a', '3', 'v'])
         self.assertTrue(v in second_token_list)
+
+    def test_example_20(self):
+        text = "Section 105.32 is amended by" 
+        text += " adding paragraph (b)(3) through (6)"
+
+        result = [m[0] for m,_,_ in token_patterns.scanString(text)]
+        result = [l for l in result if isinstance(l, tokens.TokenList)]
+        token_list = result[0]
+
+        b3 = tokens.Paragraph([None, None, None, 'b', '3']) 
+        self.assertTrue(b3 in token_list)
+
+        b4 = tokens.Paragraph([None, None, None, 'b', '4']) 
+        self.assertTrue(b4 in token_list)
+
+        b5 = tokens.Paragraph([None, None, None, 'b', '5']) 
+        self.assertTrue(b5 in token_list)
+
+        b6 = tokens.Paragraph([None, None, None, None, '6']) 
+        self.assertTrue(b6 in token_list)

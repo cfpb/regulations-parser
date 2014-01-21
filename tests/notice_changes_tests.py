@@ -1,7 +1,7 @@
 #vim: set encoding=utf-8
 from unittest import TestCase
 from regparser.notice import changes
-from regparser.tree.struct import Node
+from regparser.tree.struct import Node, find
 from regparser.notice.diff import Amendment
 
 
@@ -23,6 +23,13 @@ class ChangesTests(TestCase):
         result = changes.find_candidate(root, 'i')[0]
         self.assertEqual(u'n1i', result.text)
 
+        n2c = Node('n3c', label=['200', '2', 'i', 'i'])
+        n2 = find(root, '200-2')
+        n2.children = [n2c]
+
+        result = changes.find_candidate(root, 'i')[0]
+        self.assertEqual(result.label, ['200', '2', 'i', 'i'])
+
     def test_not_find_candidate(self):
         root = self.build_tree()
         result = changes.find_candidate(root, 'j')
@@ -38,23 +45,6 @@ class ChangesTests(TestCase):
         self.assertEqual(result['action'], 'PUT')
         self.assertTrue(result['candidate'])
         self.assertEqual(result['node'], n2)
-
-    def test_too_many_candidates(self):
-        n1 = Node('n1', label=['200', '1'])
-        n2 = Node('n1i', label=['200', 1, 'i'])
-        n3 = Node('n2', label=['200', '2'])
-        n4 = Node('n3', label=['200', '3'])
-        n5 = Node('n3a', label=['200', '3', 'a'])
-
-        n6 = Node('n1ai', label=['200', '1', 'a', 'i'])
-
-        n1.children = [n6, n2]
-        n4.children = [n5]
-        root = Node('root', label=['200'], children=[n1, n3, n4])
-
-        result = {}
-        result = changes.find_misparsed_node(root, 'i', result)
-        self.assertEqual(None, result)
 
     def test_create_add_amendment(self):
         root = self.build_tree()
@@ -93,31 +83,31 @@ class ChangesTests(TestCase):
         amend_map = {}
 
         n1 = Node('n1', label=['200', '1'])
-        amend_map['200-1-a'] = {'node': n1, 'candidate': False}
+        amend_map['200-1-a'] = [{'node': n1, 'candidate': False}]
 
         n2 = Node('n2', label=['200', '2', 'i'])
-        amend_map['200-2-a-i'] = {'node': n2, 'candidate': True}
+        amend_map['200-2-a-i'] = [{'node': n2, 'candidate': True}]
 
         self.assertNotEqual(
-            amend_map['200-2-a-i']['node'].label_id(),
+            amend_map['200-2-a-i'][0]['node'].label_id(),
             '200-2-a-i')
 
         changes.resolve_candidates(amend_map)
 
         self.assertEqual(
-            amend_map['200-2-a-i']['node'].label_id(),
+            amend_map['200-2-a-i'][0]['node'].label_id(),
             '200-2-a-i')
 
     def test_resolve_candidates_accounted_for(self):
         amend_map = {}
 
         n1 = Node('n1', label=['200', '1'])
-        amend_map['200-1-a'] = {'node': n1, 'candidate': False}
+        amend_map['200-1-a'] = [{'node': n1, 'candidate': False}]
 
         n2 = Node('n2', label=['200', '2', 'i'])
 
-        amend_map['200-2-a-i'] = {'node': n2, 'candidate': True}
-        amend_map['200-2-i'] = {'node': n2, 'candidate': False}
+        amend_map['200-2-a-i'] = [{'node': n2, 'candidate': True}]
+        amend_map['200-2-i'] = [{'node': n2, 'candidate': False}]
 
         changes.resolve_candidates(amend_map, warn=False)
         self.assertEqual(2, len(amend_map.keys()))
@@ -173,3 +163,17 @@ class ChangesTests(TestCase):
         self.assertTrue(amend_map['200-2-a-1-i'][0]['candidate'])
         self.assertTrue(
             amend_map['200-2-a-1-i'][0]['node'].label_id(), '200-2-a-1-i')
+
+    def test_bad_label(self):
+        label = ['205', '4', 'a', '1', 'ii', 'A']
+        node = Node('text', label=label, node_type=Node.REGTEXT)
+        self.assertFalse(changes.bad_label(node))
+
+        node.label = ['205', '38', 'i', 'vii', 'A']
+        self.assertTrue(changes.bad_label(node))
+
+        node.label = ['205', 'ii']
+        self.assertTrue(changes.bad_label(node))
+
+        node.label = ['205', '38', 'A', 'vii', 'A']
+        self.assertTrue(changes.bad_label(node))

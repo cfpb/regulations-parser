@@ -4,6 +4,7 @@ module contains code to compile a regulation from a notice's changes. """
 import copy
 import itertools
 import re
+import logging
 from regparser.tree.struct import Node, find
 from regparser.utils import roman_nums
 
@@ -117,6 +118,15 @@ class RegulationTree(object):
         other_children = [c for c in parent.children if c.label != node.label]
         parent.children = self.add_child(other_children, node)
 
+    def create_empty_node(self, node_label):
+        """ In rare cases, we need to flush out the tree by adding
+        an empty node. """
+        node_label = node_label.split('-')
+        node = Node('', [], node_label, None, Node.REGTEXT)
+        parent = self.get_parent(node)
+        parent.children = self.add_child(parent.children, node)
+        return parent
+
     def add_node(self, node):
         """ Add an entirely new node to the regulation tree. """
 
@@ -124,6 +134,11 @@ class RegulationTree(object):
             return self.add_to_root(node)
 
         parent = self.get_parent(node)
+        if parent is None:
+            # This is a corner case, where we're trying to add a child
+            # to a parent that should exist.
+            logging.warning('No existing parent for: %s' % node.label_id())
+            parent = self.create_empty_node(get_parent_label(node))
         parent.children = self.add_child(parent.children, node)
 
     def add_section(self, node, subpart_label):
