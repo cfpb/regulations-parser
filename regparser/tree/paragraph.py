@@ -13,9 +13,20 @@ p_levels = [
     list(itertools.islice(roman_nums(), 0, 50)),
     list(string.ascii_uppercase),
     ['<E T="03">' + str(i) + '</E>' for i in range(1, 51)],
-    ['<E T="03">' + i + '</E>' 
+    ['<E T="03">' + i + '</E>'
      for i in itertools.islice(roman_nums(), 0, 50)]
 ]
+
+
+def p_level_of(marker):
+    """Given a marker(string), determine the possible paragraph levels it
+    could fall into. This is useful for determining the order of
+    paragraphs"""
+    potential_levels = []
+    for idx, lvl in enumerate(p_levels):
+        if marker in lvl:
+            potential_levels.append(idx)
+    return potential_levels
 
 
 class ParagraphParser():
