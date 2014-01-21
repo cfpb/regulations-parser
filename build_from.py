@@ -6,6 +6,8 @@ try:
     import requests_cache
     requests_cache.install_cache('fr_cache')
 except ImportError:
+    # If the cache library isn't present, do nothing -- we'll just make full
+    # HTTP requests rather than looking it up from the cache
     pass
 
 from regparser.diff import treediff
