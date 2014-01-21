@@ -5,7 +5,6 @@ from regparser.grammar import tokens
 from regparser.grammar.amdpar import *
 #from regparser.grammar.amdpar import token_patterns, multiple_paragraph_sections, multiple_pars
 from regparser.citations import internal_citations
-from regparser.grammar import unified
 
 class GrammarAmdParTests(TestCase):
 
