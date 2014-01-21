@@ -42,6 +42,8 @@ This repository is part of a larger project. To read about it, please see
 * pyparsing (1.5.7) - Used to do generic parsing on the plain text
 * inflection (0.1.2) - Helps determine pluralization (for terms layer)
 * requests (1.2.3) - Client library for writing output to an API
+* requests_cache (0.4.4) - *Optional* - Library for caching request results
+  (speeds up rebuilding regulations)
 
 If running tests:
 
