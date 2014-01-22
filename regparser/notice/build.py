@@ -55,7 +55,6 @@ def _check_local_version(url):
     path = parsed_url.path.replace('/', os.sep)
     for xml_path in settings.LOCAL_XML_PATHS:
         if os.path.isfile(xml_path + path):
-            print xml_path + path
             with open(xml_path + path, 'r') as f:
                 return f.read()
 
