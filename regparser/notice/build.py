@@ -1,3 +1,6 @@
+import os
+from urlparse import urlparse
+
 from lxml import etree
 import requests
 
@@ -10,6 +13,7 @@ from regparser.notice.sxs import build_section_by_section
 from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
 from regparser.notice import changes
 from regparser.tree.xml_parser import reg_text
+import settings
 
 
 def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
@@ -38,11 +42,23 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
         notice['meta'][key] = fr_notice[key]
 
     if fr_notice['full_text_xml_url'] and do_process_xml:
-        notice_str = requests.get(fr_notice['full_text_xml_url']).content
+        notice_str = _check_local_version(fr_notice['full_text_xml_url'])
         notice_xml = etree.fromstring(notice_str)
         process_xml(notice, notice_xml)
 
     return notice
+
+
+def _check_local_version(url):
+    """Use any local copies (potentially with modifications of the FR XML)"""
+    parsed_url = urlparse(url)
+    path = parsed_url.path.replace('/', os.sep)
+    for xml_path in settings.LOCAL_XML_PATHS:
+        if os.path.isfile(xml_path + path):
+            with open(xml_path + path, 'r') as f:
+                return f.read()
+
+    return requests.get(url).content
 
 
 def process_designate_subpart(amendment):

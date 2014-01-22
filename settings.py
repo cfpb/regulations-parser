@@ -85,6 +85,10 @@ REGPATCHES_SOURCES = [
     'regcontent.regpatches'
 ]
 
+# In some cases, it is beneficial to tweak the XML the Federal Register
+# provides. This setting specifies file paths to look through for local
+# versions of their XML
+LOCAL_XML_PATHS = []
 
 try:
     from local_settings import *
