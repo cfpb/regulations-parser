@@ -23,9 +23,9 @@ def p_level_of(marker):
     could fall into. This is useful for determining the order of
     paragraphs"""
     potential_levels = []
-    for idx, lvl in enumerate(p_levels):
-        if marker in lvl:
-            potential_levels.append(idx)
+    for level, markers in enumerate(p_levels):
+        if marker in markers:
+            potential_levels.append(level)
     return potential_levels
 
 
