@@ -1,11 +1,29 @@
 #vim: set encoding=utf-8
+import os
+import shutil
+import tempfile
+from unittest import TestCase
+
 from lxml import etree
+from mock import patch
+
+
 from regparser.notice import build
 from regparser.notice.diff import DesignateAmendment
-from unittest import TestCase
+import settings
 
 
 class NoticeBuildTest(TestCase):
+    def setUp(self):
+        self.original_local_xml_paths = settings.LOCAL_XML_PATHS
+        settings.LOCAL_XML_PATHS = []
+        self.dir1 = tempfile.mkdtemp()
+        self.dir2 = tempfile.mkdtemp()
+
+    def tearDown(self):
+        settings.LOCAL_XML_PATHS = self.original_local_xml_paths
+        shutil.rmtree(self.dir1)
+        shutil.rmtree(self.dir2)
 
     def test_build_notice(self):
         fr = {
@@ -345,3 +363,22 @@ class NoticeBuildTest(TestCase):
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual(2, len(notice['changes']['106-2']))
+
+    @patch('regparser.notice.build.requests')
+    def test_check_local_version(self, requests):
+        url = 'http://example.com/some/url'
+        build._check_local_version(url)
+        self.assertEqual(url, requests.get.call_args[0][0])
+
+        settings.LOCAL_XML_PATHS = [self.dir1, self.dir2]
+        os.mkdir(self.dir2 + '/some')
+        f = open(self.dir2 + '/some/url', 'w')
+        f.write('aaaaa')
+        f.close()
+        self.assertEqual('aaaaa', build._check_local_version(url))
+
+        os.mkdir(self.dir1 + '/some')
+        f = open(self.dir1 + '/some/url', 'w')
+        f.write('bbbbb')
+        f.close()
+        self.assertEqual('bbbbb', build._check_local_version(url))
