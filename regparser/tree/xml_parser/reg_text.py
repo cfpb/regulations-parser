@@ -6,7 +6,7 @@ from lxml import etree
 
 from regparser import content
 from regparser.tree.struct import Node
-from regparser.tree.paragraph import p_levels
+from regparser.tree.paragraph import p_level_of, p_levels
 from regparser.tree.xml_parser.appendices import build_non_reg_text
 from regparser.tree import reg_text
 from regparser.tree.xml_parser import tree_utils
@@ -16,11 +16,10 @@ def determine_level(c, current_level, next_marker=None):
     """ Regulation paragraphs are hierarchical. This determines which level
     the paragraph is at. Convert between p_level indexing and depth here by
     adding one"""
-    potential = [i for i in range(len(p_levels)) if c in p_levels[i]]
+    potential = p_level_of(c)
 
     if len(potential) > 1 and next_marker:     # resolve ambiguity
-        following = [i for i in range(len(p_levels))
-                     if next_marker in p_levels[i]]
+        following = p_level_of(next_marker)
 
         #   Add character index
         potential = [(level, p_levels[level].index(c)) for level in potential]
@@ -133,9 +132,22 @@ def build_subpart(reg_part, subpart_xml):
 
 
 def get_markers(text):
-    """ Extract all the paragraph markers from text  """
+    """ Extract all the paragraph markers from text. Do some checks on the
+    collapsed markers."""
     markers = tree_utils.get_paragraph_markers(text)
     collapsed_markers = tree_utils.get_collapsed_markers(text)
+
+    #   Check that the collapsed markers make sense (i.e. are at least one
+    #   level below the initial marker)
+    if markers and collapsed_markers:
+        initial_marker_levels = p_level_of(markers[-1])
+        final_collapsed_markers = []
+        for collapsed_marker in collapsed_markers:
+            collapsed_marker_levels = p_level_of(collapsed_marker)
+            if any(c > f for f in initial_marker_levels
+                    for c in collapsed_marker_levels):
+                final_collapsed_markers.append(collapsed_marker)
+        collapsed_markers = final_collapsed_markers
     markers_list = [m for m in markers] + [m for m in collapsed_markers]
 
     return markers_list
