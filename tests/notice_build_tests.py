@@ -219,8 +219,8 @@ class NoticeBuildTest(TestCase):
 
         changes = notice['changes']['105-1-b'][0]
         self.assertEqual(changes['action'], 'PUT')
-        self.assertTrue(
-            changes['node']['text'].startswith(u'(b) This part carries out.\n'))
+        self.assertTrue(changes['node']['text'].startswith(
+            u'(b) This part carries out.\n'))
 
     def new_subpart_xml(self):
         xml = u"""
@@ -311,7 +311,7 @@ class NoticeBuildTest(TestCase):
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual({}, notice['changes'])
-    
+
     def test_introductory_text(self):
         """ Sometimes notices change just the introductory text of a paragraph
         (instead of changing the entire paragraph tree).  """
@@ -330,7 +330,7 @@ class NoticeBuildTest(TestCase):
         """
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part':'106'}
+        notice = {'cfr_part': '106'}
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual('[text]', notice['changes']['106-2'][0]['field'])
@@ -359,7 +359,7 @@ class NoticeBuildTest(TestCase):
         """
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part':'106'}
+        notice = {'cfr_part': '106'}
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual(2, len(notice['changes']['106-2']))
