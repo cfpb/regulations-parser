@@ -1,7 +1,8 @@
 #vim: set encoding=utf-8
 from lxml import etree
 from regparser.notice import build
-from regparser.notice.diff import DesignateAmendment
+from regparser.notice.diff import DesignateAmendment, Amendment
+from regparser.tree.struct import Node
 from unittest import TestCase
 
 
@@ -345,3 +346,14 @@ class NoticeBuildTest(TestCase):
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual(2, len(notice['changes']['106-2']))
+
+    def test_create_changes_reserve(self):
+        labels_amended = [Amendment('RESERVE', '200-2-a')]
+
+        n2a = Node('[Reserved]', label=['200', '2', 'a'])
+        n2 = Node('n2', label=['200', '2'], children=[n2a])
+        root = Node('root', label=['200'], children=[n2])
+
+        notice_changes = {}
+        build.create_changes(labels_amended, root, notice_changes)
+        self.assertEqual({}, notice_changes)

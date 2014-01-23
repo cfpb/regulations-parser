@@ -91,6 +91,8 @@ def create_changes(amended_labels, section, notice_changes):
                 destination = [d for d in amendment['destination'] if d != '?']
                 change['destination'] = destination
                 notice_changes.update({label: change})
+            elif amendment['action'] == 'RESERVE':  
+                nodes = changes.create_reserve_amendment(amendment)
             else:
                 print 'NOT HANDLED: %s' % amendment['action']
 

@@ -124,6 +124,17 @@ class ChangesTests(TestCase):
         self.assertEqual(amend_map, {
             '200-1-a-i': [{'action': 'DELETE'}]})
 
+    def test_match_labels_and_changes_reserve(self):
+        labels_amended = [Amendment('RESERVE', '200-2-a')]
+        amend_map = changes.match_labels_and_changes(
+            labels_amended, self.section_node())
+        self.assertEqual(['200-2-a'], amend_map.keys())
+
+        amendments = amend_map['200-2-a']
+        self.assertEqual(amendments[0]['action'], 'RESERVE')
+        self.assertEqual(
+            amendments[0]['node'], Node('n2a', label=['200', '2', 'a']))
+
     def section_node(self):
         n1 = Node('n2', label=['200', '2'])
         n2 = Node('n2a', label=['200', '2', 'a'])
