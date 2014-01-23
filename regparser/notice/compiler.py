@@ -48,8 +48,9 @@ def make_root_sortable(label, node_type):
     elif node_type == Node.INTERP:
         return (2,)
 
+
 def replace_first_sentence(text, replacement):
-    """ Replace the first sentence in text with replacement. This makes 
+    """ Replace the first sentence in text with replacement. This makes
     some incredibly simplifying assumptions - so buyer beware. """
     no_periods_replacement = replacement.replace('.', '')
 
@@ -172,8 +173,8 @@ class RegulationTree(object):
         node.title = change['node']['title']
 
     def replace_node_heading(self, label, change):
-        """ A node's heading is it's keyterm. Currently we do 
-        nothing with this. """
+        """ A node's heading is it's keyterm. We handle this here, but not
+        well, I think. """
         node = find(self.tree, label)
         node.text = replace_first_sentence(node.text, change['node']['text'])
 
@@ -254,8 +255,9 @@ def sort_labels(labels):
 
     return subparts + non_subparts
 
+
 def replace_node_field(reg, label, change):
-    """ Call one of the field appropriate methods if we're changing just 
+    """ Call one of the field appropriate methods if we're changing just
     a field on a node. """
 
     if change['action'] == 'PUT' and change['field'] == '[text]':
@@ -264,13 +266,14 @@ def replace_node_field(reg, label, change):
         reg.replace_node_title(label, change)
     elif change['action'] == 'PUT' and change['field'] == '[heading]':
         reg.replace_node_heading(label, change)
-   
+
+
 def compile_regulation(previous_tree, notice_changes):
     """ Given a last full regulation tree, and the set of changes from the
     next final notice, construct the next full regulation tree. """
     reg = RegulationTree(previous_tree)
-
     labels = sort_labels(notice_changes.keys())
+    field_list = ['[text]', '[title]', '[heading]']
 
     for label in labels:
         changes = notice_changes[label]
@@ -280,7 +283,7 @@ def compile_regulation(previous_tree, notice_changes):
             if change['action'] == 'PUT' and replace_subtree:
                 node = dict_to_node(change['node'])
                 reg.replace_node_and_subtree(node)
-            elif change['action'] == 'PUT' and change['field'] in ['[text]', '[title]', '[heading]']:
+            elif change['action'] == 'PUT' and change['field'] in field_list:
                 replace_node_field(reg, label, change)
             elif change['action'] == 'POST':
                 node = dict_to_node(change['node'])

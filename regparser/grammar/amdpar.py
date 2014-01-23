@@ -1,8 +1,8 @@
 #vim: set encoding=utf-8
 import string
 
-from pyparsing import CaselessLiteral, Literal, OneOrMore, Optional, Regex
-from pyparsing import Suppress, Word, WordEnd, WordStart, LineEnd
+from pyparsing import CaselessLiteral, OneOrMore, Optional
+from pyparsing import Suppress, Word, LineEnd
 
 from regparser.grammar import atomic, tokens, unified
 from regparser.grammar.utils import Marker, WordBoundaries
@@ -118,7 +118,7 @@ section_heading_of = (
 paragraph_heading_of = (
     Marker("heading") + Marker("of")
     + unified.marker_paragraph.copy()
-    ).setParseAction(lambda m: tokens.Paragraph([None, None, None, 
+    ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
         m.p1, m.p2, m.p3, m.p4, m.p5],
         field=tokens.Paragraph.KEYTERM_FIELD))
 
@@ -234,7 +234,7 @@ multiple_paragraphs = (
 #   grammar which captures all of these possibilities
 token_patterns = (
     put_active | put_passive | post_active | post_passive
-    | delete_active | delete_passive | move_active | move_passive 
+    | delete_active | delete_passive | move_active | move_passive
     | designate_active
 
     | interp | marker_subpart | appendix
