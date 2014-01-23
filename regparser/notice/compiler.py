@@ -51,9 +51,11 @@ def make_root_sortable(label, node_type):
 def replace_first_sentence(text, replacement):
     """ Replace the first sentence in text with replacement. This makes 
     some incredibly simplifying assumptions - so buyer beware. """
+    no_periods_replacement = replacement.replace('.', '')
+
     sentences = text.split('.', 1)
     if len(sentences) > 1:
-        sentences[0] = replacement
+        sentences[0] = no_periods_replacement
         return '.'.join(sentences)
     else:
         return replacement
