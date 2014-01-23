@@ -114,6 +114,14 @@ section_heading_of = (
     + unified.marker_part_section
     ).setParseAction(lambda m: tokens.Paragraph([m.part, None, m.section],
         field=tokens.Paragraph.TEXT_FIELD))
+
+paragraph_heading_of = (
+    Marker("heading") + Marker("of")
+    + unified.marker_paragraph.copy()
+    ).setParseAction(lambda m: tokens.Paragraph([None, None, None, 
+        m.p1, m.p2, m.p3, m.p4, m.p5],
+        field=tokens.Paragraph.KEYTERM_FIELD))
+
 intro_text_of = (
     intro_text_marker + Marker("of")
     + unified.marker_paragraph.copy()
@@ -232,7 +240,7 @@ token_patterns = (
     | interp | marker_subpart | appendix
     | comment_context_with_section | comment_context_without_section
 
-    | section_heading | section_heading_of | intro_text_of
+    | paragraph_heading_of | section_heading | section_heading_of | intro_text_of
     | multiple_paragraph_sections | section_single_par
 
     | multiple_sections | multiple_paragraphs | multiple_appendices

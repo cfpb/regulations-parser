@@ -366,11 +366,13 @@ class Amendment(object):
 
     TITLE = '[title]'
     TEXT = '[text]'
+    HEADING = '[heading]'
 
     def remove_intro(self, l):
         """ Remove the marker that indicates this is a change to introductory
         text. """
-        return l.replace(self.TITLE, '').replace(self.TEXT, '')
+        l = l.replace(self.TITLE, '').replace(self.TEXT, '')
+        return l.replace(self.HEADING, '')
 
     def fix_label(self, label):
         """ The labels that come back from parsing the list of amendments have
@@ -396,6 +398,8 @@ class Amendment(object):
             self.field = self.TITLE
         elif self.TEXT in self.original_label:
             self.field = self.TEXT
+        elif self.HEADING in self.original_label:
+            self.field = self.HEADING
         else:
             self.field = None
 

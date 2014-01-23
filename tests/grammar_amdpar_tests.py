@@ -290,3 +290,12 @@ class GrammarAmdParTests(TestCase):
 
         b6 = tokens.Paragraph([None, None, None, None, '6']) 
         self.assertTrue(b6 in token_list)
+
+    def test_example_21(self):
+        text = "Section 102.36 is amended by"
+        text +=  " revising the heading of paragraph (a)"
+
+        result = [m[0] for m,_,_ in token_patterns.scanString(text)]
+        paragraph = [p for p in result if isinstance(p, tokens.Paragraph)][0]
+        p_object = tokens.Paragraph([None, None, None, 'a'], field='heading')
+        self.assertEqual(p_object, paragraph)
