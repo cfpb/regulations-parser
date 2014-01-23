@@ -6,6 +6,7 @@ from copy import copy
 from lxml import etree
 
 from regparser.grammar import amdpar, tokens
+from regparser.tree.struct import Node
 from regparser.tree.xml_parser.reg_text import build_from_section
 
 
@@ -373,14 +374,26 @@ class Amendment(object):
         return l.replace(self.TITLE, '').replace(self.TEXT, '')
 
     def fix_label(self, label):
-        """ The labels that come back from parsing the list of amendments have
-        question marks (for the subpart) and other markers. Remove those here.
-        """
+        """ The labels that come back from parsing the list of amendments
+        are not the same type we use in the rest of parsing. Convert between
+        the two here (removing question markers, converting to interp
+        format, etc.)"""
         def wanted(l):
             return l != '?' and 'Subpart' not in l
 
         components = label.split('-')
-        return [self.remove_intro(l) for l in components if wanted(l)]
+        components = [self.remove_intro(l) for l in components if wanted(l)]
+        if ['Interpretations'] == components[1:2] and len(components) > 2:
+            new_style = [components[0], components[2]]
+            # Add paragraphs
+            if len(components) > 3:
+                paragraphs = [p.strip('()') for p in components[3].split(')(')]
+                new_style.extend(paragraphs)
+            new_style.append(Node.INTERP_MARK)
+            # Add any paragraphs of the comment
+            new_style.extend(components[4:])
+            components = new_style
+        return components
 
     def __init__(self, action, label, destination=None):
         self.action = action

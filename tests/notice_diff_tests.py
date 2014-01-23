@@ -481,3 +481,14 @@ class NoticeDiffTests(TestCase):
         new_tokenized = remove_false_deletes(tokenized, text)
         self.assertEqual([], new_tokenized)
 
+
+class AmendmentTests(TestCase):
+    def test_fix_label(self):
+        amd = Amendment('action', '1005-Interpretations-31-(b)(1)-3')
+        self.assertEqual(amd.label, ['1005', '31', 'b', '1', 'Interp', '3'])
+
+        amd = Amendment('action', '1005-Interpretations-31-(b)(1)-3[title]')
+        self.assertEqual(amd.label, ['1005', '31', 'b', '1', 'Interp', '3'])
+
+        amd = Amendment('action', '1005-Interpretations-31-(c)-2-xi')
+        self.assertEqual(amd.label, ['1005', '31', 'c', 'Interp', '2', 'xi'])
