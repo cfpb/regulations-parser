@@ -473,8 +473,8 @@ class NoticeDiffTests(TestCase):
 
     def test_remove_false_deletes(self):
         tokenized = [
-        tokens.Paragraph(['444']),
-        tokens.Verb(tokens.Verb.DELETE, active=True)]
+            tokens.Paragraph(['444']),
+            tokens.Verb(tokens.Verb.DELETE, active=True)]
 
         text = "Remove the semi-colong at the end of paragraph 444"
         new_tokenized = remove_false_deletes(tokenized, text)
