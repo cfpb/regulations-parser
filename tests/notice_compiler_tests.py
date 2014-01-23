@@ -411,3 +411,24 @@ class CompilerTests(TestCase):
         parent = find(reg_tree.tree, '205-3')
         self.assertNotEqual(None, parent)
         self.assertEqual(parent.text, '')
+
+    def test_get_parent_label(self):
+        node = Node(node_type=Node.REGTEXT)
+        node.label = ['205', '3', 'a']
+        self.assertEqual(compiler.get_parent_label(node), "205-3")
+
+        node.label = ['205', '3', 'a', '5', 'ii', 'R']
+        self.assertEqual(compiler.get_parent_label(node), "205-3-a-5-ii")
+
+        node.node_type = Node.SUBPART
+        self.assertEqual(compiler.get_parent_label(node), "205")
+
+        node.node_type = Node.INTERP
+        node.label = ['205', '3', 'a', Node.INTERP_MARK, '1', 'i']
+        self.assertEqual(compiler.get_parent_label(node), "205-3-a-Interp-1")
+
+        node.label = ['205', '3', 'a', Node.INTERP_MARK, '1']
+        self.assertEqual(compiler.get_parent_label(node), "205-3-a-Interp")
+
+        node.label = ['205', '3', 'a', Node.INTERP_MARK]
+        self.assertEqual(compiler.get_parent_label(node), "205-3-Interp")

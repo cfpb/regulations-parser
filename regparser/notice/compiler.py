@@ -13,6 +13,16 @@ def get_parent_label(node):
     """ Given a node, get the label of it's parent. """
     if node.node_type == Node.SUBPART:
         return node.label[0]
+    elif node.node_type == Node.INTERP:
+        marker_position = node.label.index(Node.INTERP_MARK)
+        interpreting = node.label[:marker_position]
+        comment_pars = node.label[marker_position + 1:]
+        if comment_pars:                # 111-3-a-Interp-4-i
+            return '-'.join(node.label[:-1])
+        elif len(interpreting) > 1:     # 111-3-a-Interp
+            return '-'.join(interpreting[:-1] + [Node.INTERP_MARK])
+        else:                           # 111-Interp
+            return node.label[0]
     else:
         parent_label = node.label[:-1]
         return '-'.join(parent_label)
