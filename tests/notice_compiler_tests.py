@@ -411,3 +411,14 @@ class CompilerTests(TestCase):
         parent = find(reg_tree.tree, '205-3')
         self.assertNotEqual(None, parent)
         self.assertEqual(parent.text, '')
+
+    def test_replace_first_sentence(self):
+        text = "First sentence. Second sentence."
+        replacement = "Replaced sentence."
+        result = compiler.replace_first_sentence(text, replacement)
+        self.assertEqual(result, "Replaced sentence. Second sentence.")
+
+        text = "First sentence."
+        replacement = "Replaced sentence."
+        result = compiler.replace_first_sentence(text, replacement)
+        self.assertEqual(result, "Replaced sentence.")
