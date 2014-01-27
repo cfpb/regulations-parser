@@ -80,10 +80,6 @@ class NoticeBuildTest(TestCase):
                     <P>Extra instructions</P>
                 </ADD>
                 <HD SOURCE="HED">Supplementary Info</HD>
-                <EFFDATE>
-                    <HD>DATES:</HD>
-                    <P>This act is effective on September 9, 1956</P>
-                </EFFDATE>
                 <HD SOURCE="HD1">V. Section-by-Section Analysis</HD>
                 <HD SOURCE="HD2">8(q) Words</HD>
                 <P>Content</P>
@@ -137,6 +133,25 @@ class NoticeBuildTest(TestCase):
                 'label': '9292-8-q'
             }],
         })
+
+    def test_process_xml_fill_effective_date(self):
+        xml = """
+        <ROOT>
+            <DATES>
+                <P>Effective January 1, 2002</P>
+            </DATES>
+        </ROOT>"""
+        xml = etree.fromstring(xml)
+
+        notice = {'cfr_part': '902', 'meta': {'start_page': 10},
+                  'effective_on': '2002-02-02'}
+        notice = build.process_xml(notice, xml)
+        self.assertEqual('2002-02-02', notice['effective_on'])
+
+        notice = {'cfr_part': '902', 'meta': {'start_page': 10}}
+        notice = build.process_xml(notice, xml)
+        # Uses the date found in the XML
+        self.assertEqual('2002-01-01', notice['effective_on'])
 
     def test_add_footnotes(self):
         xml = """

@@ -8,6 +8,7 @@ from regparser.notice.diff import parse_amdpar, find_section, find_subpart
 from regparser.notice.diff import new_subpart_added
 from regparser.notice.diff import DesignateAmendment
 from regparser.notice.address import fetch_addresses
+from regparser.notice.dates import fetch_dates
 from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
 from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
@@ -158,6 +159,11 @@ def process_xml(notice, notice_xml):
     addresses = fetch_addresses(notice_xml)
     if addresses:
         notice['addresses'] = addresses
+
+    if 'effective_on' not in notice:
+        dates = fetch_dates(notice_xml)
+        if dates and 'effective' in dates:
+            notice['effective_on'] = dates['effective'][0]
 
     process_sxs(notice, notice_xml)
     process_amendments(notice, notice_xml)
