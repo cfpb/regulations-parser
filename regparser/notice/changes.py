@@ -154,6 +154,11 @@ def create_add_amendment(amendment):
     return nodes
 
 
+def create_reserve_amendment(amendment):
+    """ Create a RESERVE related amendment. """
+    return format_node(amendment['node'], amendment)
+
+
 def create_subpart_amendment(subpart_node):
     """ Create an amendment that describes a subpart. In particular
     when the list of nodes added gets flattened, each node specifies which

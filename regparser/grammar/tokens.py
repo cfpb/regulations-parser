@@ -21,6 +21,7 @@ class Verb:
     MOVE = 'MOVE'
     DELETE = 'DELETE'
     DESIGNATE = 'DESIGNATE'
+    RESERVE = 'RESERVE'
 
     def __init__(self, verb, active):
         self.verb = verb

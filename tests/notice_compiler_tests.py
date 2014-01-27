@@ -114,6 +114,31 @@ class CompilerTests(TestCase):
         self.assertEqual(new_tree, reg_tree.tree)
         self.assertEqual(None, find(reg_tree.tree, '205-2-a'))
 
+    def test_reserve_add_new(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+
+        n2ai = Node('[Reserved]', label=['205', '2', 'a', '1'])
+        reg_tree.reserve('205-2-a-1', n2ai)
+        self.assertNotEqual(reg_tree.tree, root)
+        reserved_node = find(reg_tree.tree, '205-2-a-1')
+        self.assertEqual(reserved_node.text, '[Reserved]')
+
+    def test_reserve_existing(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+
+        before_reserve = find(reg_tree.tree, '205-2-a')
+        self.assertNotEqual(before_reserve.text, '[Reserved]')
+
+        n2 = Node('[Reserved]', label=['205', '2'])
+        reg_tree.reserve('205-2', n2)
+        after_reserve = find(reg_tree.tree, '205-2')
+        self.assertEqual(after_reserve.text, '[Reserved]')
+
+        reserve_child = find(reg_tree.tree, '205-2-a')
+        self.assertEqual(None, reserve_child)
+
     def test_add_node(self):
         root = self.tree_with_paragraphs()
         reg_tree = compiler.RegulationTree(root)
