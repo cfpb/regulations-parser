@@ -309,6 +309,13 @@ class RegTextTest(TestCase):
         self.assertEqual(('<E T="03">1</E>', ('(1) 1111',
                                               '(<E T="03">1</E>) 1111')), a1)
 
+    def test_get_markers_bad_citation(self):
+        text = '(vi)<E T="03">Keyterm.</E>The information required by '
+        text += 'paragraphs (a)(2), (a)(4)(iii), (a)(5), (b) through (d), '
+        text += '(f), and (g) with respect to something, (i), (j), (l) '
+        text += 'through (p), (q)(1), and (r) with respect to something.'
+        self.assertEqual(['vi'], get_markers(text))
+
     @patch('regparser.tree.xml_parser.reg_text.content')
     def test_preprocess_xml(self, content):
         xml = etree.fromstring("""

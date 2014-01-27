@@ -61,6 +61,7 @@ class Paragraph:
 
     TEXT_FIELD = 'text'
     HEADING_FIELD = 'title'
+    KEYTERM_FIELD = 'heading'
 
     def __init__(self, label, field=None):
         # replace with Nones

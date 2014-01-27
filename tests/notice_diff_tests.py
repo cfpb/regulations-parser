@@ -47,7 +47,6 @@ class NoticeDiffTests(TestCase):
             tokens.Paragraph(['777'])
         ]
         amends = make_amendments(tokenized)
-        print amends
         self.assertEqual(amends,
                          [Amendment(tokens.Verb.PUT, '222'),
                           Amendment(tokens.Verb.PUT, '333'),
@@ -474,10 +473,15 @@ class NoticeDiffTests(TestCase):
 
     def test_remove_false_deletes(self):
         tokenized = [
-        tokens.Paragraph(['444']),
-        tokens.Verb(tokens.Verb.DELETE, active=True)]
+            tokens.Paragraph(['444']),
+            tokens.Verb(tokens.Verb.DELETE, active=True)]
 
         text = "Remove the semi-colong at the end of paragraph 444"
         new_tokenized = remove_false_deletes(tokenized, text)
         self.assertEqual([], new_tokenized)
 
+    def test_amendment_heading(self):
+        amendment = Amendment('PUT', '100-2-a[heading]')
+        self.assertEqual(amendment.action, 'PUT')
+        self.assertEqual(amendment.label, ['100', '2', 'a'])
+        self.assertEqual(amendment.field, '[heading]')
