@@ -90,8 +90,12 @@ class RegulationTree(object):
         children.append(node)
 
         for c in children:
-            c.sortable = make_label_sortable(
-                c.label[-1], roman=(len(c.label) == 5))
+            if c.label[-1] == Node.INTERP_MARK:
+                c.sortable = make_label_sortable(
+                    c.label[-2], roman=(len(c.label) == 5))
+            else:
+                c.sortable = make_label_sortable(
+                    c.label[-1], roman=(len(c.label) == 5))
 
         children.sort(key=lambda x: x.sortable)
 
