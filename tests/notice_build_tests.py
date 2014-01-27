@@ -153,6 +153,12 @@ class NoticeBuildTest(TestCase):
         # Uses the date found in the XML
         self.assertEqual('2002-01-01', notice['effective_on'])
 
+        notice = {'cfr_part': '902', 'meta': {'start_page': 10},
+                  'effective_on': None}
+        notice = build.process_xml(notice, xml)
+        # Uses the date found in the XML
+        self.assertEqual('2002-01-01', notice['effective_on'])
+
     def test_add_footnotes(self):
         xml = """
         <ROOT>

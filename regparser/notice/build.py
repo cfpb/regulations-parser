@@ -160,7 +160,7 @@ def process_xml(notice, notice_xml):
     if addresses:
         notice['addresses'] = addresses
 
-    if 'effective_on' not in notice:
+    if not notice.get('effective_on'):
         dates = fetch_dates(notice_xml)
         if dates and 'effective' in dates:
             notice['effective_on'] = dates['effective'][0]
