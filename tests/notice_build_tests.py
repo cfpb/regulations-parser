@@ -8,7 +8,7 @@ from lxml import etree
 from mock import patch
 
 
-from regparser.notice import build
+from regparser.notice import build, changes
 from regparser.notice.diff import DesignateAmendment, Amendment
 from regparser.tree.struct import Node
 from unittest import TestCase
@@ -373,9 +373,12 @@ class NoticeBuildTest(TestCase):
         n2 = Node('n2', label=['200', '2'], children=[n2a])
         root = Node('root', label=['200'], children=[n2])
 
-        notice_changes = {}
+        notice_changes = changes.NoticeChanges()
         build.create_changes(labels_amended, root, notice_changes)
-        self.assertEqual({}, notice_changes)
+
+        reserve =  notice_changes.changes['200-2-a'][0]
+        self.assertEqual(reserve['action'], 'RESERVE')
+        self.assertEqual(reserve['node']['text'], u'[Reserved]')
 
     @patch('regparser.notice.build.requests')
     def test_check_local_version(self, requests):
