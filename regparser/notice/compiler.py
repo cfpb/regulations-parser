@@ -121,8 +121,6 @@ class RegulationTree(object):
         represented in the FR XML. We simply use that represenation here 
         instead of doing something else. """
 
-        print 'RESERVING'
-        
         existing_node = find(self.tree, label_id)
         if existing_node is None:
             self.add_node(node)
