@@ -230,6 +230,18 @@ class CompilerTests(TestCase):
         changed_node = find(reg_tree.tree, '205-2-a')
         self.assertEqual(changed_node.title, 'new title')
 
+    def test_replace_node_heading(self):
+        root = self.tree_with_paragraphs()
+        n2a = find(root, '205-2-a')
+        n2a.text = 'Previous keyterm. Remainder.'
+        reg_tree = compiler.RegulationTree(root)
+
+        change = {'node': {'text': 'Replaced.'}}
+        reg_tree.replace_node_heading('205-2-a', change)
+
+        changed_node = find(reg_tree.tree, '205-2-a')
+        self.assertEqual(changed_node.text, 'Replaced. Remainder.')
+
     def test_get_subparts(self):
         nsa = Node(
             'nsa',
@@ -459,3 +471,14 @@ class CompilerTests(TestCase):
 
         node.label = ['205', '3', 'a', Node.INTERP_MARK]
         self.assertEqual(compiler.get_parent_label(node), "205-3-Interp")
+
+    def test_replace_first_sentence(self):
+        text = "First sentence. Second sentence."
+        replacement = "Replaced sentence."
+        result = compiler.replace_first_sentence(text, replacement)
+        self.assertEqual(result, "Replaced sentence. Second sentence.")
+
+        text = "First sentence."
+        replacement = "Replaced sentence."
+        result = compiler.replace_first_sentence(text, replacement)
+        self.assertEqual(result, "Replaced sentence.")

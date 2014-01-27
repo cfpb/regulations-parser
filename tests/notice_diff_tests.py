@@ -479,8 +479,9 @@ class NoticeDiffTests(TestCase):
         self.assertNotEqual(None, section)
 
     def test_remove_false_deletes(self):
-        tokenized = [tokens.Paragraph(['444']),
-                     tokens.Verb(tokens.Verb.DELETE, active=True)]
+        tokenized = [
+            tokens.Paragraph(['444']),
+            tokens.Verb(tokens.Verb.DELETE, active=True)]
 
         text = "Remove the semi-colong at the end of paragraph 444"
         new_tokenized = remove_false_deletes(tokenized, text)
@@ -547,6 +548,12 @@ class AmendmentTests(TestCase):
 
         amd = Amendment('action', '1005-Interpretations-Appendix:A-2')
         self.assertEqual(amd.label, ['1005', 'A', '2', 'Interp'])
+
+    def test_amendment_heading(self):
+        amendment = Amendment('PUT', '100-2-a[heading]')
+        self.assertEqual(amendment.action, 'PUT')
+        self.assertEqual(amendment.label, ['100', '2', 'a'])
+        self.assertEqual(amendment.field, '[heading]')
 
 
 class DesignateAmendmentTests(TestCase):

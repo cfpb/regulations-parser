@@ -59,6 +59,19 @@ def make_root_sortable(label, node_type):
         return (2,)
 
 
+def replace_first_sentence(text, replacement):
+    """ Replace the first sentence in text with replacement. This makes
+    some incredibly simplifying assumptions - so buyer beware. """
+    no_periods_replacement = replacement.replace('.', '')
+
+    sentences = text.split('.', 1)
+    if len(sentences) > 1:
+        sentences[0] = no_periods_replacement
+        return '.'.join(sentences)
+    else:
+        return replacement
+
+
 class RegulationTree(object):
     """ This encapsulates a regulation tree, and methods to change that tree.
     """
@@ -178,6 +191,16 @@ class RegulationTree(object):
         node = find(self.tree, label)
         node.title = change['node']['title']
 
+    def replace_node_heading(self, label, change):
+        """ A node's heading is it's keyterm. We handle this here, but not
+        well, I think. """
+        node = find(self.tree, label)
+        node.text = replace_first_sentence(node.text, change['node']['text'])
+
+        if hasattr(node, 'tagged_text') and 'tagged_text' in change['node']:
+            node.tagged_text = replace_first_sentence(
+                node.tagged_text, change['node']['tagged_text'])
+
     def get_subparts(self):
         """ Get all the subparts and empty parts in the tree.  """
 
@@ -252,12 +275,24 @@ def sort_labels(labels):
     return subparts + non_subparts
 
 
+def replace_node_field(reg, label, change):
+    """ Call one of the field appropriate methods if we're changing just
+    a field on a node. """
+
+    if change['action'] == 'PUT' and change['field'] == '[text]':
+        reg.replace_node_text(label, change)
+    elif change['action'] == 'PUT' and change['field'] == '[title]':
+        reg.replace_node_title(label, change)
+    elif change['action'] == 'PUT' and change['field'] == '[heading]':
+        reg.replace_node_heading(label, change)
+
+
 def compile_regulation(previous_tree, notice_changes):
     """ Given a last full regulation tree, and the set of changes from the
     next final notice, construct the next full regulation tree. """
     reg = RegulationTree(previous_tree)
-
     labels = sort_labels(notice_changes.keys())
+    field_list = ['[text]', '[title]', '[heading]']
 
     for label in labels:
         changes = notice_changes[label]
@@ -267,10 +302,8 @@ def compile_regulation(previous_tree, notice_changes):
             if change['action'] == 'PUT' and replace_subtree:
                 node = dict_to_node(change['node'])
                 reg.replace_node_and_subtree(node)
-            elif change['action'] == 'PUT' and change['field'] == '[text]':
-                reg.replace_node_text(label, change)
-            elif change['action'] == 'PUT' and change['field'] == '[title]':
-                reg.replace_node_title(label, change)
+            elif change['action'] == 'PUT' and change['field'] in field_list:
+                replace_node_field(reg, label, change)
             elif change['action'] == 'POST':
                 node = dict_to_node(change['node'])
                 if 'subpart' in change and len(node.label) == 2:

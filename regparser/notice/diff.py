@@ -396,11 +396,13 @@ class Amendment(object):
 
     TITLE = '[title]'
     TEXT = '[text]'
+    HEADING = '[heading]'
 
     def remove_intro(self, l):
         """ Remove the marker that indicates this is a change to introductory
         text. """
-        return l.replace(self.TITLE, '').replace(self.TEXT, '')
+        l = l.replace(self.TITLE, '').replace(self.TEXT, '')
+        return l.replace(self.HEADING, '')
 
     def fix_interp_format(self, components):
         """Convert between the interp format of amendments and the normal,
@@ -444,6 +446,8 @@ class Amendment(object):
             self.field = self.TITLE
         elif self.TEXT in self.original_label:
             self.field = self.TEXT
+        elif self.HEADING in self.original_label:
+            self.field = self.HEADING
         else:
             self.field = None
 
