@@ -140,7 +140,7 @@ def process_amendments(notice, notice_xml):
             exists[0].append(par)
         else:
             amdpars_by_parent.append(AmdparByParent(parent, par))
-    
+
     for aXp in amdpars_by_parent:
         amended_labels = []
         for par in aXp.amdpars:
