@@ -546,6 +546,9 @@ class AmendmentTests(TestCase):
         amd = Amendment('action', '1005-Interpretations-31-(c)-2-xi')
         self.assertEqual(amd.label, ['1005', '31', 'c', 'Interp', '2', 'xi'])
 
+        amd = Amendment('action', '1005-Interpretations-Appendix:A-2')
+        self.assertEqual(amd.label, ['1005', 'A', '2', 'Interp'])
+
 
 class DesignateAmendmentTests(TestCase):
     def test_fix_interp_format(self):

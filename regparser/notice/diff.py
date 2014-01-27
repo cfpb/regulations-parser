@@ -406,7 +406,7 @@ class Amendment(object):
         """Convert between the interp format of amendments and the normal,
         node label format"""
         if ['Interpretations'] == components[1:2] and len(components) > 2:
-            new_style = [components[0], components[2]]
+            new_style = [components[0], components[2].replace('Appendix:', '')]
             # Add paragraphs
             if len(components) > 3:
                 paragraphs = [p.strip('()') for p in components[3].split(')(')]
