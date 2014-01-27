@@ -129,7 +129,7 @@ def process_inner_children(inner_stack, node):
     """Process the following nodes as children of this interpretation"""
     children = itertools.takewhile(
         lambda x: not is_title(x), node.itersiblings())
-    for c in children:
+    for c in filter(lambda c: c.tag == 'P', children):
         node_text = tree_utils.get_node_text(c)
 
         interp_inner_child(c, inner_stack)
@@ -153,21 +153,12 @@ def missing_levels(last_label, label):
     return missing
 
 
-def build_supplement_tree(reg_part, node):
-    """ Build the tree for the supplement section. """
-    m_stack = tree_utils.NodeStack()
-
-    title = get_app_title(node)
-    root = Node(
-        node_type=Node.INTERP,
-        label=[reg_part, Node.INTERP_MARK],
-        title=title)
-
+def parse_from_xml(root, xml_nodes):
     supplement_nodes = [root]
 
-    last_label = [reg_part, Node.INTERP_MARK]
+    last_label = root.label
     header_count = 0
-    for ch in node:
+    for ch in xml_nodes:
         node = Node(label=last_label, node_type=Node.INTERP)
         label_obj = Label.from_node(node)
 
@@ -180,7 +171,7 @@ def build_supplement_tree(reg_part, node):
                 label = merge_labels(labels)
             else:   # Header without a label, like an Introduction, etc.
                 header_count += 1
-                label = [reg_part, Node.INTERP_MARK, 'h%d' % header_count]
+                label = root.label[:2] + ['h%d' % header_count]
 
             inner_stack = tree_utils.NodeStack()
             missing = missing_levels(last_label, label)
@@ -209,6 +200,17 @@ def build_supplement_tree(reg_part, node):
         per_node(node)
 
     return supplement_tree[0]
+
+
+def build_supplement_tree(reg_part, node):
+    """ Build the tree for the supplement section. """
+    title = get_app_title(node)
+    root = Node(
+        node_type=Node.INTERP,
+        label=[reg_part, Node.INTERP_MARK],
+        title=title)
+
+    return parse_from_xml(root, node.getchildren())
 
 
 def get_app_title(node):

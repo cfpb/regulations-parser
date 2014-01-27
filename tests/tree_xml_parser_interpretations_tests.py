@@ -219,6 +219,7 @@ class InterpretationsTest(TestCase):
         <ROOT>
             <HD>Title</HD>
             <P>1. 111. i. iii</P>
+            <STARS />
             <P>A. AAA</P>
             <P><E T="03">1.</E> eee</P>
         </ROOT>"""
