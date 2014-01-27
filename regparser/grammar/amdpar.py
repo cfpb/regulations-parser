@@ -237,7 +237,7 @@ multiple_paragraphs = (
 #   grammar which captures all of these possibilities
 token_patterns = (
     put_active | put_passive | post_active | post_passive
-    | delete_active | delete_passive | move_active | move_passive 
+    | delete_active | delete_passive | move_active | move_passive
     | designate_active | reserve_active
 
     | interp | marker_subpart | appendix

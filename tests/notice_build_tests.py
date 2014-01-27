@@ -376,7 +376,7 @@ class NoticeBuildTest(TestCase):
         notice_changes = changes.NoticeChanges()
         build.create_changes(labels_amended, root, notice_changes)
 
-        reserve =  notice_changes.changes['200-2-a'][0]
+        reserve = notice_changes.changes['200-2-a'][0]
         self.assertEqual(reserve['action'], 'RESERVE')
         self.assertEqual(reserve['node']['text'], u'[Reserved]')
 

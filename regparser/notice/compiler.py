@@ -116,9 +116,9 @@ class RegulationTree(object):
         self.delete_from_parent(node)
 
     def reserve(self, label_id, node):
-        """ Reserve either an existing node (by replacing it) or 
-        reserve by adding a new node. When a node is reserved, it's 
-        represented in the FR XML. We simply use that represenation here 
+        """ Reserve either an existing node (by replacing it) or
+        reserve by adding a new node. When a node is reserved, it's
+        represented in the FR XML. We simply use that represenation here
         instead of doing something else. """
 
         existing_node = find(self.tree, label_id)
