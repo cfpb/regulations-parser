@@ -92,7 +92,12 @@ class RegulationTree(object):
         for c in children:
             if c.label[-1] == Node.INTERP_MARK:
                 c.sortable = make_label_sortable(
-                    c.label[-2], roman=(len(c.label) == 5))
+                    c.label[-2], roman=(len(c.label) == 6))
+            elif Node.INTERP_MARK in c.label:
+                marker_idx = c.label.index(Node.INTERP_MARK)
+                comment_pars = c.label[marker_idx + 1:]
+                c.sortable = make_label_sortable(
+                    comment_pars[-1], roman=(len(comment_pars) == 2))
             else:
                 c.sortable = make_label_sortable(
                     c.label[-1], roman=(len(c.label) == 5))

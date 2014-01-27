@@ -75,20 +75,31 @@ class CompilerTests(TestCase):
             self.assertFalse(hasattr(c, 'sortable'))
 
     def test_add_child_interp(self):
-        n1 = Node('n1', label=['205', '1', 'Interp'])
-        n2 = Node('n2', label=['205', '2', 'Interp'])
-        n4 = Node('n4', label=['205', '4', 'Interp'])
-
-        children = [n1, n2, n4]
-
         reg_tree = compiler.RegulationTree(None)
+        n1 = Node('n1', label=['205', '1', 'Interp'])
+        n5 = Node('n5', label=['205', '5', 'Interp'])
+        n9 = Node('n9', label=['205', '9', 'Interp'])
+        n10 = Node('n10', label=['205', '10', 'Interp'])
 
-        n3 = Node('n3', label=['205', '3', 'Interp'])
-        reg_tree.add_child(children, n3)
+        children = [n1, n5, n10]
+        reg_tree.add_child(children, n9)
+        self.assertEqual(children, [n1, n5, n9, n10])
 
-        self.assertEqual(children, [n1, n2, n3, n4])
-        for c in children:
-            self.assertFalse(hasattr(c, 'sortable'))
+        n1.label = ['205', '1', 'a', '1', 'i', 'Interp']
+        n5.label = ['205', '1', 'a', '1', 'v', 'Interp']
+        n9.label = ['205', '1', 'a', '1', 'ix', 'Interp']
+        n10.label = ['205', '1', 'a', '1', 'x', 'Interp']
+        children = [n1, n5, n10]
+        reg_tree.add_child(children, n9)
+        self.assertEqual(children, [n1, n5, n9, n10])
+
+        n1.label = ['205', '1', 'a', 'Interp', '1', 'i']
+        n5.label = ['205', '1', 'a', 'Interp', '1', 'v']
+        n9.label = ['205', '1', 'a', 'Interp', '1', 'ix']
+        n10.label = ['205', '1', 'a', 'Interp', '1', 'x']
+        children = [n1, n5, n10]
+        reg_tree.add_child(children, n9)
+        self.assertEqual(children, [n1, n5, n9, n10])
 
     def tree_with_paragraphs(self):
         n1 = Node('n1', label=['205', '1'])
