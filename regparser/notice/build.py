@@ -163,9 +163,10 @@ def process_amendments(notice, notice_xml):
 
         if any(not isinstance(al, DesignateAmendment)
                and 'Interp' in al.label for al in amended_labels):
-            interp = parse_interp_changes(notice['cfr_part'], aXp.parent)
-            if interp:
-                create_changes(amended_labels, interp, notice_changes)
+            pass
+            #interp = parse_interp_changes(notice['cfr_part'], aXp.parent)
+            #if interp:
+            #    create_changes(amended_labels, interp, notice_changes)
 
         amends.extend(amended_labels)
     if amends:
@@ -218,6 +219,9 @@ def add_footnotes(notice, notice_xml):
 
 
 def parse_interp_changes(cfr_part, parent_xml):
+    """Figure out which parts of the parent_xml are relevant to
+    interpretations. Pass those on to interpretations.parse_from_xml and
+    return the results"""
     # First, we try to standardize the xml. We will assume a format of
     # Supplement I header followed by HDs, STARS, and Ps.
     parent_xml = deepcopy(parent_xml)

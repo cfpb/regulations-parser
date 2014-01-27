@@ -154,6 +154,10 @@ def missing_levels(last_label, label):
 
 
 def parse_from_xml(root, xml_nodes):
+    """Core of supplement processing; shared by whole XML parsing and notice
+    parsing. root is the root interpretation node (e.g. a Node with label
+    '1005-Interp'). xml_nodes contains all XML nodes which will be relevant
+    to the interpretations"""
     supplement_nodes = [root]
 
     last_label = root.label
