@@ -115,6 +115,20 @@ class RegulationTree(object):
         node = find(self.tree, label_id)
         self.delete_from_parent(node)
 
+    def reserve(self, label_id, node):
+        """ Reserve either an existing node (by replacing it) or 
+        reserve by adding a new node. When a node is reserved, it's 
+        represented in the FR XML. We simply use that represenation here 
+        instead of doing something else. """
+
+        print 'RESERVING'
+        
+        existing_node = find(self.tree, label_id)
+        if existing_node is None:
+            self.add_node(node)
+        else:
+            self.replace_node_and_subtree(node)
+
     def move(self, origin, destination):
         """ Move a node from one part in the tree to another. """
         origin = find(self.tree, origin)
@@ -298,6 +312,9 @@ def compile_regulation(previous_tree, notice_changes):
                 reg.move(label, change['destination'])
             elif change['action'] == 'DELETE':
                 reg.delete(label)
+            elif change['action'] == 'RESERVE':
+                node = dict_to_node(change['node'])
+                reg.reserve(label, node)
             else:
                 print "%s: %s" % (change['action'], label)
     return reg.tree
