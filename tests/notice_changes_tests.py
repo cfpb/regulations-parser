@@ -112,6 +112,19 @@ class ChangesTests(TestCase):
         changes.resolve_candidates(amend_map, warn=False)
         self.assertEqual(2, len(amend_map.keys()))
 
+    def test_resolve_candidates_double_delete(self):
+        """In the unfortunate case where *two* candidates are wrong make
+        sure we don't blow up"""
+        amend_map = {}
+
+        n1 = Node('n1', label=['200', '1', 'i'])
+        n2 = Node('n2', label=['200', '1', 'i'])
+        amend_map['200-1-a-i'] = [{'node': n1, 'candidate': True},
+                                  {'node': n2, 'candidate': True}]
+        amend_map['200-1-i'] = []
+        changes.resolve_candidates(amend_map, warn=False)
+        self.assertEqual(1, len(amend_map.keys()))
+
     def test_match_labels_and_changes_move(self):
         labels_amended = [Amendment('MOVE', '200-1', '200-2')]
         amend_map = changes.match_labels_and_changes(labels_amended, None)
@@ -123,6 +136,17 @@ class ChangesTests(TestCase):
         amend_map = changes.match_labels_and_changes(labels_amended, None)
         self.assertEqual(amend_map, {
             '200-1-a-i': [{'action': 'DELETE'}]})
+
+    def test_match_labels_and_changes_reserve(self):
+        labels_amended = [Amendment('RESERVE', '200-2-a')]
+        amend_map = changes.match_labels_and_changes(
+            labels_amended, self.section_node())
+        self.assertEqual(['200-2-a'], amend_map.keys())
+
+        amendments = amend_map['200-2-a']
+        self.assertEqual(amendments[0]['action'], 'RESERVE')
+        self.assertEqual(
+            amendments[0]['node'], Node('n2a', label=['200', '2', 'a']))
 
     def section_node(self):
         n1 = Node('n2', label=['200', '2'])

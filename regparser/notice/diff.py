@@ -6,6 +6,7 @@ from copy import copy
 from lxml import etree
 
 from regparser.grammar import amdpar, tokens
+from regparser.tree.struct import Node
 from regparser.tree.xml_parser.reg_text import build_from_section
 
 
@@ -162,6 +163,7 @@ def parse_amdpar(par, initial_context):
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
 
     tokenized = remove_false_deletes(tokenized, text)
+    tokenized = multiple_moves(tokenized)
     tokenized = switch_passive(tokenized)
     tokenized, subpart = deal_with_subpart_adds(tokenized)
     tokenized = context_to_paragraph(tokenized)
@@ -171,6 +173,34 @@ def parse_amdpar(par, initial_context):
     tokenized, final_context = compress_context(tokenized, initial_context)
     amends = make_amendments(tokenized, subpart)
     return amends, final_context
+
+
+def multiple_moves(tokenized):
+    """Phrases like paragraphs 1 and 2 are redesignated paragraphs 3 and 4
+    are replaced with Move(active), paragraph 1, paragraph 3, Move(active)
+    paragraph 2, paragraph 4"""
+    converted = []
+    skip = 0
+    for idx, el0 in enumerate(tokenized):
+        if skip:
+            skip -= 1
+        elif idx < len(tokenized) - 2:
+            el1, el2 = tokenized[idx+1:idx+3]
+            if (isinstance(el0, tokens.TokenList)
+                    and isinstance(el1, tokens.Verb) and not el1.active
+                    and el1.verb == tokens.Verb.MOVE
+                    and isinstance(el2, tokens.TokenList)
+                    and len(el0.tokens) == len(el2.tokens)):
+                skip = 2
+                for tidx in range(len(el0.tokens)):
+                    converted.append(tokens.Verb(tokens.Verb.MOVE, True))
+                    converted.append(el0.tokens[tidx])
+                    converted.append(el2.tokens[tidx])
+            else:
+                converted.append(el0)
+        else:
+            converted.append(el0)
+    return converted
 
 
 def switch_passive(tokenized):
@@ -374,15 +404,33 @@ class Amendment(object):
         l = l.replace(self.TITLE, '').replace(self.TEXT, '')
         return l.replace(self.HEADING, '')
 
+    def fix_interp_format(self, components):
+        """Convert between the interp format of amendments and the normal,
+        node label format"""
+        if ['Interpretations'] == components[1:2] and len(components) > 2:
+            new_style = [components[0], components[2].replace('Appendix:', '')]
+            # Add paragraphs
+            if len(components) > 3:
+                paragraphs = [p.strip('()') for p in components[3].split(')(')]
+                new_style.extend(paragraphs)
+            new_style.append(Node.INTERP_MARK)
+            # Add any paragraphs of the comment
+            new_style.extend(components[4:])
+            return new_style
+        return components
+
     def fix_label(self, label):
-        """ The labels that come back from parsing the list of amendments have
-        question marks (for the subpart) and other markers. Remove those here.
-        """
+        """ The labels that come back from parsing the list of amendments
+        are not the same type we use in the rest of parsing. Convert between
+        the two here (removing question markers, converting to interp
+        format, etc.)"""
         def wanted(l):
             return l != '?' and 'Subpart' not in l
 
         components = label.split('-')
-        return [self.remove_intro(l) for l in components if wanted(l)]
+        components = [self.remove_intro(l) for l in components if wanted(l)]
+        components = self.fix_interp_format(components)
+        return components
 
     def __init__(self, action, label, destination=None):
         self.action = action
@@ -390,7 +438,7 @@ class Amendment(object):
         self.label = self.fix_label(self.original_label)
 
         if destination and '-' in destination:
-            self.destination = destination.split('-')
+            self.destination = self.fix_interp_format(destination.split('-'))
         else:
             self.destination = destination
 
@@ -436,7 +484,7 @@ class DesignateAmendment(Amendment):
             _, subpart_letter = destination.split(':')
             self.destination = [reg_part, 'Subpart', subpart_letter]
         elif '-' in destination:
-            self.destination = destination.split('-')
+            self.destination = self.fix_interp_format(destination.split('-'))
         else:
             self.destination = destination
 

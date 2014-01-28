@@ -13,6 +13,16 @@ def get_parent_label(node):
     """ Given a node, get the label of it's parent. """
     if node.node_type == Node.SUBPART:
         return node.label[0]
+    elif node.node_type == Node.INTERP:
+        marker_position = node.label.index(Node.INTERP_MARK)
+        interpreting = node.label[:marker_position]
+        comment_pars = node.label[marker_position + 1:]
+        if comment_pars:                # 111-3-a-Interp-4-i
+            return '-'.join(node.label[:-1])
+        elif len(interpreting) > 1:     # 111-3-a-Interp
+            return '-'.join(interpreting[:-1] + [Node.INTERP_MARK])
+        else:                           # 111-Interp
+            return node.label[0]
     else:
         parent_label = node.label[:-1]
         return '-'.join(parent_label)
@@ -95,8 +105,17 @@ class RegulationTree(object):
         children.append(node)
 
         for c in children:
-            c.sortable = make_label_sortable(
-                c.label[-1], roman=(len(c.label) == 5))
+            if c.label[-1] == Node.INTERP_MARK:
+                c.sortable = make_label_sortable(
+                    c.label[-2], roman=(len(c.label) == 6))
+            elif Node.INTERP_MARK in c.label:
+                marker_idx = c.label.index(Node.INTERP_MARK)
+                comment_pars = c.label[marker_idx + 1:]
+                c.sortable = make_label_sortable(
+                    comment_pars[-1], roman=(len(comment_pars) == 2))
+            else:
+                c.sortable = make_label_sortable(
+                    c.label[-1], roman=(len(c.label) == 5))
 
         children.sort(key=lambda x: x.sortable)
 
@@ -116,6 +135,18 @@ class RegulationTree(object):
         """ Delete the node with label_id from the tree. """
         node = find(self.tree, label_id)
         self.delete_from_parent(node)
+
+    def reserve(self, label_id, node):
+        """ Reserve either an existing node (by replacing it) or
+        reserve by adding a new node. When a node is reserved, it's
+        represented in the FR XML. We simply use that represenation here
+        instead of doing something else. """
+
+        existing_node = find(self.tree, label_id)
+        if existing_node is None:
+            self.add_node(node)
+        else:
+            self.replace_node_and_subtree(node)
 
     def move(self, origin, destination):
         """ Move a node from one part in the tree to another. """
@@ -300,6 +331,9 @@ def compile_regulation(previous_tree, notice_changes):
                 reg.move(label, change['destination'])
             elif change['action'] == 'DELETE':
                 reg.delete(label)
+            elif change['action'] == 'RESERVE':
+                node = dict_to_node(change['node'])
+                reg.reserve(label, node)
             else:
                 print "%s: %s" % (change['action'], label)
     return reg.tree

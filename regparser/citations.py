@@ -134,7 +134,7 @@ def match_to_label(match, initial_label, comment=False):
         field_map = {}
     for field in ('part', 'section', 'appendix', 'appendix_section', 'p1',
                   'p2', 'p3', 'p4', 'p5', 'p6', 'c1', 'c2', 'c3'):
-        value = getattr(match, field)
+        value = getattr(match, field) or getattr(match, 'plaintext_' + field)
         if value:
             field_map[field] = value
 

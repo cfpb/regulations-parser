@@ -8,8 +8,10 @@ from lxml import etree
 from mock import patch
 
 
-from regparser.notice import build
-from regparser.notice.diff import DesignateAmendment
+from regparser.notice import build, changes
+from regparser.notice.diff import DesignateAmendment, Amendment
+from regparser.tree.struct import Node
+from unittest import TestCase
 import settings
 
 
@@ -243,6 +245,37 @@ class NoticeBuildTest(TestCase):
         self.assertTrue(changes['node']['text'].startswith(
             u'(b) This part carries out.\n'))
 
+    def test_process_amendments_multiple_in_same_parent(self):
+        xml = u"""
+            <REGTEXT PART="105" TITLE="12">
+                <AMDPAR>
+                    1. In § 105.1, revise paragraph (b) to read as follows:
+                </AMDPAR>
+                <AMDPAR>2. Also, revise paragraph (c):</AMDPAR>
+                <SECTION>
+                    <SECTNO>§ 105.1</SECTNO>
+                    <SUBJECT>Purpose.</SUBJECT>
+                    <STARS/>
+                    <P>(b) This part carries out.</P>
+                    <P>(c) More stuff</P>
+                </SECTION>
+            </REGTEXT>"""
+
+        notice_xml = etree.fromstring(xml)
+        notice = {'cfr_part': '105'}
+        build.process_amendments(notice, notice_xml)
+
+        self.assertEqual(notice['changes'].keys(), ['105-1-b', '105-1-c'])
+
+        changes = notice['changes']['105-1-b'][0]
+        self.assertEqual(changes['action'], 'PUT')
+        self.assertEqual(changes['node']['text'].strip(),
+                         u'(b) This part carries out.')
+        changes = notice['changes']['105-1-c'][0]
+        self.assertEqual(changes['action'], 'PUT')
+        self.assertTrue(changes['node']['text'].strip(),
+                        u'(c) More stuff')
+
     def new_subpart_xml(self):
         xml = u"""
             <RULE>
@@ -385,6 +418,20 @@ class NoticeBuildTest(TestCase):
 
         self.assertEqual(2, len(notice['changes']['106-2']))
 
+    def test_create_changes_reserve(self):
+        labels_amended = [Amendment('RESERVE', '200-2-a')]
+
+        n2a = Node('[Reserved]', label=['200', '2', 'a'])
+        n2 = Node('n2', label=['200', '2'], children=[n2a])
+        root = Node('root', label=['200'], children=[n2])
+
+        notice_changes = changes.NoticeChanges()
+        build.create_changes(labels_amended, root, notice_changes)
+
+        reserve = notice_changes.changes['200-2-a'][0]
+        self.assertEqual(reserve['action'], 'RESERVE')
+        self.assertEqual(reserve['node']['text'], u'[Reserved]')
+
     @patch('regparser.notice.build.requests')
     def test_check_local_version(self, requests):
         url = 'http://example.com/some/url'
@@ -403,3 +450,35 @@ class NoticeBuildTest(TestCase):
         f.write('bbbbb')
         f.close()
         self.assertEqual('bbbbb', build._check_local_version(url))
+
+    @patch('regparser.notice.build.interpretations')
+    def test_parse_interp_changes(self, interpretations):
+        xml_str = """
+            <REGTEXT>
+                <EXTRACT>
+                    <P>Something</P>
+                    <STARS />
+                    <HD>Supplement I</HD>
+                    <HD>A</HD>
+                    <T1>a</T1>
+                    <P>b</P>
+                </EXTRACT>
+            </REGTEXT>"""
+        build.parse_interp_changes('111', etree.fromstring(xml_str))
+        root, nodes = interpretations.parse_from_xml.call_args[0]
+        self.assertEqual(root.label, ['111', 'Interp'])
+        self.assertEqual(['HD', 'T1', 'P'], [n.tag for n in nodes])
+
+        xml_str = """
+            <REGTEXT>
+                <P>Something</P>
+                <STARS />
+                <SUBSECT><HD>Supplement I</HD></SUBSECT>
+                <HD>A</HD>
+                <T1>a</T1>
+                <P>b</P>
+            </REGTEXT>"""
+        build.parse_interp_changes('111', etree.fromstring(xml_str))
+        root, nodes = interpretations.parse_from_xml.call_args[0]
+        self.assertEqual(root.label, ['111', 'Interp'])
+        self.assertEqual(['HD', 'T1', 'P'], [n.tag for n in nodes])

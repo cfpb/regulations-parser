@@ -1,3 +1,4 @@
+from copy import deepcopy
 import os
 from urlparse import urlparse
 
@@ -13,7 +14,8 @@ from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
 from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
 from regparser.notice import changes
-from regparser.tree.xml_parser import reg_text
+from regparser.tree.struct import Node
+from regparser.tree.xml_parser import reg_text, interpretations
 import settings
 
 
@@ -108,8 +110,23 @@ def create_changes(amended_labels, section, notice_changes):
                 destination = [d for d in amendment['destination'] if d != '?']
                 change['destination'] = destination
                 notice_changes.update({label: change})
+            elif amendment['action'] == 'RESERVE':
+                change = changes.create_reserve_amendment(amendment)
+                notice_changes.update(change)
             else:
                 print 'NOT HANDLED: %s' % amendment['action']
+
+
+class AmdparByParent(object):
+    """Not all AMDPARs have a single REGTEXT/etc. section associated with them,
+    particularly for interpretations/appendices. This simple class wraps those
+    fields"""
+    def __init__(self, parent, first_amdpar):
+        self.parent = parent
+        self.amdpars = [first_amdpar]
+
+    def append(self, next_amdpar):
+        self.amdpars.append(next_amdpar)
 
 
 def process_amendments(notice, notice_xml):
@@ -119,8 +136,20 @@ def process_amendments(notice, notice_xml):
     amends = []
     notice_changes = changes.NoticeChanges()
 
+    amdpars_by_parent = []
     for par in notice_xml.xpath('//AMDPAR'):
-        amended_labels, context = parse_amdpar(par, context)
+        parent = par.getparent()
+        exists = filter(lambda aXp: aXp.parent == parent, amdpars_by_parent)
+        if exists:
+            exists[0].append(par)
+        else:
+            amdpars_by_parent.append(AmdparByParent(parent, par))
+
+    for aXp in amdpars_by_parent:
+        amended_labels = []
+        for par in aXp.amdpars:
+            als, context = parse_amdpar(par, context)
+            amended_labels.extend(als)
 
         for al in amended_labels:
             if isinstance(al, DesignateAmendment):
@@ -135,6 +164,14 @@ def process_amendments(notice, notice_xml):
             for section in reg_text.build_from_section(
                     notice['cfr_part'], section_xml):
                 create_changes(amended_labels, section, notice_changes)
+
+        if any(not isinstance(al, DesignateAmendment)
+               and 'Interp' in al.label for al in amended_labels):
+            pass
+            #interp = parse_interp_changes(notice['cfr_part'], aXp.parent)
+            #if interp:
+            #    create_changes(amended_labels, interp, notice_changes)
+
         amends.extend(amended_labels)
     if amends:
         notice['amendments'] = amends
@@ -188,3 +225,32 @@ def add_footnotes(notice, notice_xml):
                 content += etree.tostring(cc)
             content += child.tail
             notice['footnotes'][ref[0].text] = content.strip()
+
+
+def parse_interp_changes(cfr_part, parent_xml):
+    """Figure out which parts of the parent_xml are relevant to
+    interpretations. Pass those on to interpretations.parse_from_xml and
+    return the results"""
+    # First, we try to standardize the xml. We will assume a format of
+    # Supplement I header followed by HDs, STARS, and Ps.
+    parent_xml = deepcopy(parent_xml)
+    for extract in parent_xml.xpath(".//EXTRACT"):
+        ex_parent = extract.getparent()
+        idx = ex_parent.index(extract)
+        for child in extract:
+            ex_parent.insert(idx, child)
+            idx += 1
+        ex_parent.remove(extract)
+
+    # Skip over everything until 'Supplement I'
+    seen_header = False
+    xml_nodes = []
+    for child in parent_xml:
+        if ('Supplement I' in (child.text or '')
+                or child.xpath(".//*[contains(., 'Supplement I')]")):
+            seen_header = True
+        elif seen_header:
+            xml_nodes.append(child)
+
+    root = Node(label=[cfr_part, Node.INTERP_MARK], node_type=Node.INTERP)
+    return interpretations.parse_from_xml(root, xml_nodes)

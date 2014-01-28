@@ -245,7 +245,8 @@ class GrammarAmdParTests(TestCase):
         ])
 
     def test_example18(self):
-        text = 'Section 106.52(b)(1)(ii)(A) and (B) is revised to read as follows'
+        text = 'Section 106.52(b)(1)(ii)(A) and (B) is revised' 
+        text += ' to read as follows'
         result = parse_text(text)
 
         self.assertEqual(result, [
@@ -293,6 +294,14 @@ class GrammarAmdParTests(TestCase):
 
         b6 = tokens.Paragraph([None, None, None, None, '6'])
         self.assertTrue(b6 in token_list)
+
+    def test_reserving(self):
+        text = "Section 105.32 is amended by"
+        text += " removing and reserving paragraph (b)(2)"
+
+        result = [m[0] for m, _, _ in token_patterns.scanString(text)]
+        reserve_token = tokens.Verb(tokens.Verb.RESERVE, active=True)
+        self.assertTrue(reserve_token in result)
 
     def test_example_21(self):
         text = "Section 102.36 is amended by"

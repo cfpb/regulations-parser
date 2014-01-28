@@ -13,12 +13,16 @@ intro_text_marker = (
     Marker("introductory") + WordBoundaries(CaselessLiteral("text")))
 
 
+passive_marker = Marker("is") | Marker("are") | Marker("was") | Marker("were")
+
+
 #Verbs
 def generate_verb(word_list, verb, active):
     """Short hand for making tokens.Verb from a list of trigger words"""
-    grammar = reduce(
-        lambda l, r: l | r,
-        map(lambda w: CaselessLiteral(w), word_list))
+    word_list = [CaselessLiteral(w) for w in word_list]
+    if not active:
+        word_list = [passive_marker + w for w in word_list]
+    grammar = reduce(lambda l, r: l | r, word_list)
     grammar = WordBoundaries(grammar)
     grammar = grammar.setParseAction(lambda _: tokens.Verb(verb, active))
     return grammar
@@ -46,6 +50,9 @@ move_passive = generate_verb(['redesignated'], tokens.Verb.MOVE, active=False)
 designate_active = generate_verb(
     ['designate'],
     tokens.Verb.DESIGNATE, active=True)
+
+reserve_active = generate_verb(['reserve', 'reserving'],
+                               tokens.Verb.RESERVE, active=True)
 
 
 #   Context
@@ -235,7 +242,7 @@ multiple_paragraphs = (
 token_patterns = (
     put_active | put_passive | post_active | post_passive
     | delete_active | delete_passive | move_active | move_passive
-    | designate_active
+    | designate_active | reserve_active
 
     | interp | marker_subpart | appendix
     | comment_context_with_section | comment_context_without_section

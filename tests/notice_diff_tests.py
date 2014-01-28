@@ -385,6 +385,13 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(
             switch_context(tokenized, initial_context), initial_context)
 
+        tokenized = [
+            tokens.Context(['', '4', 'j', 'iv']),
+            tokens.Verb(tokens.Verb.DESIGNATE, True)]
+
+        self.assertEqual(
+            switch_context(tokenized, initial_context), initial_context)
+
     def test_fix_section_node(self):
         xml = u"""
             <REGTEXT>
@@ -480,8 +487,78 @@ class NoticeDiffTests(TestCase):
         new_tokenized = remove_false_deletes(tokenized, text)
         self.assertEqual([], new_tokenized)
 
+    def test_multiple_moves(self):
+        tokenized = [
+            tokens.TokenList([tokens.Paragraph(['444', '1']),
+                              tokens.Paragraph(['444', '2'])]),
+            tokens.Verb(tokens.Verb.MOVE, active=False),
+            tokens.TokenList([tokens.Paragraph(['444', '3']),
+                              tokens.Paragraph(['444', '4'])])]
+        tokenized = multiple_moves(tokenized)
+        self.assertEqual(
+            tokenized, [tokens.Verb(tokens.Verb.MOVE, active=True),
+                        tokens.Paragraph(['444', '1']),
+                        tokens.Paragraph(['444', '3']),
+                        tokens.Verb(tokens.Verb.MOVE, active=True),
+                        tokens.Paragraph(['444', '2']),
+                        tokens.Paragraph(['444', '4'])])
+
+        # Not even number of elements on either side
+        tokenized = [
+            tokens.TokenList([tokens.Paragraph(['444', '1']),
+                              tokens.Paragraph(['444', '2'])]),
+            tokens.Verb(tokens.Verb.MOVE, active=False),
+            tokens.TokenList([tokens.Paragraph(['444', '3'])])]
+        self.assertEqual(tokenized, multiple_moves(tokenized))
+
+        # Paragraphs on either side of a move
+        tokenized = [tokens.Paragraph(['444', '1']),
+                     tokens.Verb(tokens.Verb.MOVE, active=False),
+                     tokens.Paragraph(['444', '3'])]
+        self.assertEqual(tokenized, multiple_moves(tokenized))
+
+    def test_parse_amdpar_newly_redesignated(self):
+        text = "Paragraphs 3.ii, 3.iii, 4 and newly redesignated paragraph "
+        text += "10 are revised."
+        xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
+        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations', '2', '(a)'])
+        self.assertEqual(4, len(amends))
+        self.assertEqual(['1111', '2', 'a', 'Interp', '3', 'ii'],
+                         amends[0].label)
+        self.assertEqual(['1111', '2', 'a', 'Interp', '3', 'iii'],
+                         amends[1].label)
+        self.assertEqual(['1111', '2', 'a', 'Interp', '4'],
+                         amends[2].label)
+        self.assertEqual(['1111', '2', 'a', 'Interp', '10'],
+                         amends[3].label)
+        for amend in amends:
+            self.assertEqual(amend.action, 'PUT')
+
+
+class AmendmentTests(TestCase):
+    def test_fix_label(self):
+        amd = Amendment('action', '1005-Interpretations-31-(b)(1)-3')
+        self.assertEqual(amd.label, ['1005', '31', 'b', '1', 'Interp', '3'])
+
+        amd = Amendment('action', '1005-Interpretations-31-(b)(1)-3[title]')
+        self.assertEqual(amd.label, ['1005', '31', 'b', '1', 'Interp', '3'])
+
+        amd = Amendment('action', '1005-Interpretations-31-(c)-2-xi')
+        self.assertEqual(amd.label, ['1005', '31', 'c', 'Interp', '2', 'xi'])
+
+        amd = Amendment('action', '1005-Interpretations-Appendix:A-2')
+        self.assertEqual(amd.label, ['1005', 'A', '2', 'Interp'])
+
     def test_amendment_heading(self):
         amendment = Amendment('PUT', '100-2-a[heading]')
         self.assertEqual(amendment.action, 'PUT')
         self.assertEqual(amendment.label, ['100', '2', 'a'])
         self.assertEqual(amendment.field, '[heading]')
+
+
+class DesignateAmendmentTests(TestCase):
+    def test_fix_interp_format(self):
+        amd = DesignateAmendment('action', [],
+                                 '1005-Interpretations-31-(b)(1)-3')
+        self.assertEqual(amd.destination,
+                         ['1005', '31', 'b', '1', 'Interp', '3'])
