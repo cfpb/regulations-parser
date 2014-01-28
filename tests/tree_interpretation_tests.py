@@ -242,6 +242,11 @@ class DepthInterpretationTreeTest(TestCase):
                          text_to_labels(text, Label(part='1111',
                                                     comment=True)))
 
+        text = "Paragraph 38(l)(7)(i)(A)(2)."
+        self.assertEqual([['1111', '38', 'l', '7', 'i', 'A', '2', 'Interp']],
+                         text_to_labels(text, Label(part='1111',
+                                                    comment=True)))
+
     def test_merge_labels(self):
         labels = [['1021', 'A'], ['1021', 'B']]
         self.assertEqual(['1021', 'A_B'], merge_labels(labels))
