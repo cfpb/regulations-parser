@@ -24,6 +24,8 @@ class CitationsTest(TestCase):
             ("22(d)(5)(x)(Q) Content", ['101', '22', 'd', '5', 'x', 'Q']),
             ("Appendix A Heading", ['101', 'A']),
             ("Comment 21(c)-1 Heading", ['101', '21', 'c', 'Interp', '1']),
+            ("Paragraph 38(l)(7)(i)(A)(2).",
+                ['101', '38', 'l', '7', 'i', 'A', '2']),
             (u'Official Interpretations of § 102.33(c)(2)',
                 ['102', '33', 'c', '2', 'Interp'])]:
 

@@ -74,6 +74,33 @@ class CompilerTests(TestCase):
         for c in children:
             self.assertFalse(hasattr(c, 'sortable'))
 
+    def test_add_child_interp(self):
+        reg_tree = compiler.RegulationTree(None)
+        n1 = Node('n1', label=['205', '1', 'Interp'])
+        n5 = Node('n5', label=['205', '5', 'Interp'])
+        n9 = Node('n9', label=['205', '9', 'Interp'])
+        n10 = Node('n10', label=['205', '10', 'Interp'])
+
+        children = [n1, n5, n10]
+        reg_tree.add_child(children, n9)
+        self.assertEqual(children, [n1, n5, n9, n10])
+
+        n1.label = ['205', '1', 'a', '1', 'i', 'Interp']
+        n5.label = ['205', '1', 'a', '1', 'v', 'Interp']
+        n9.label = ['205', '1', 'a', '1', 'ix', 'Interp']
+        n10.label = ['205', '1', 'a', '1', 'x', 'Interp']
+        children = [n1, n5, n10]
+        reg_tree.add_child(children, n9)
+        self.assertEqual(children, [n1, n5, n9, n10])
+
+        n1.label = ['205', '1', 'a', 'Interp', '1', 'i']
+        n5.label = ['205', '1', 'a', 'Interp', '1', 'v']
+        n9.label = ['205', '1', 'a', 'Interp', '1', 'ix']
+        n10.label = ['205', '1', 'a', 'Interp', '1', 'x']
+        children = [n1, n5, n10]
+        reg_tree.add_child(children, n9)
+        self.assertEqual(children, [n1, n5, n9, n10])
+
     def tree_with_paragraphs(self):
         n1 = Node('n1', label=['205', '1'])
         n2 = Node('n2', label=['205', '2'])
@@ -448,6 +475,27 @@ class CompilerTests(TestCase):
         parent = find(reg_tree.tree, '205-3')
         self.assertNotEqual(None, parent)
         self.assertEqual(parent.text, '')
+
+    def test_get_parent_label(self):
+        node = Node(node_type=Node.REGTEXT)
+        node.label = ['205', '3', 'a']
+        self.assertEqual(compiler.get_parent_label(node), "205-3")
+
+        node.label = ['205', '3', 'a', '5', 'ii', 'R']
+        self.assertEqual(compiler.get_parent_label(node), "205-3-a-5-ii")
+
+        node.node_type = Node.SUBPART
+        self.assertEqual(compiler.get_parent_label(node), "205")
+
+        node.node_type = Node.INTERP
+        node.label = ['205', '3', 'a', Node.INTERP_MARK, '1', 'i']
+        self.assertEqual(compiler.get_parent_label(node), "205-3-a-Interp-1")
+
+        node.label = ['205', '3', 'a', Node.INTERP_MARK, '1']
+        self.assertEqual(compiler.get_parent_label(node), "205-3-a-Interp")
+
+        node.label = ['205', '3', 'a', Node.INTERP_MARK]
+        self.assertEqual(compiler.get_parent_label(node), "205-3-Interp")
 
     def test_replace_first_sentence(self):
         text = "First sentence. Second sentence."

@@ -13,12 +13,16 @@ intro_text_marker = (
     Marker("introductory") + WordBoundaries(CaselessLiteral("text")))
 
 
+passive_marker = Marker("is") | Marker("are") | Marker("was") | Marker("were")
+
+
 #Verbs
 def generate_verb(word_list, verb, active):
     """Short hand for making tokens.Verb from a list of trigger words"""
-    grammar = reduce(
-        lambda l, r: l | r,
-        map(lambda w: CaselessLiteral(w), word_list))
+    word_list = [CaselessLiteral(w) for w in word_list]
+    if not active:
+        word_list = [passive_marker + w for w in word_list]
+    grammar = reduce(lambda l, r: l | r, word_list)
     grammar = WordBoundaries(grammar)
     grammar = grammar.setParseAction(lambda _: tokens.Verb(verb, active))
     return grammar

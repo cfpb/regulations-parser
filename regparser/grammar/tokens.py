@@ -42,7 +42,8 @@ class Context:
     that this is only context, (e.g. "In Subpart A"), use 'certain'"""
 
     def __init__(self, label, certain=False):
-        self.label = label
+        # replace with Nones
+        self.label = [p or None for p in label]
         self.certain = certain
 
     def __repr__(self):

@@ -55,18 +55,15 @@ def resolve_candidates(amend_map, warn=True):
     """Ensure candidate isn't actually accounted for elsewhere, and fix
     it's label. """
     for label, nodes in amend_map.items():
-        for node in nodes:
-            if 'node' in node:
-                node_label = node['node'].label_id()
-                if node['candidate']:
-                    if node_label not in amend_map:
-                        node['node'].label = label.split('-')
-                    else:
-                        del amend_map[label]
-                        if warn:
-                            mesg = 'Unable to match amendment'
-                            mesg += ' to change for: %s ' % label
-                            logging.warning(mesg)
+        for node in filter(lambda n: 'node' in n and n['candidate'], nodes):
+            node_label = node['node'].label_id()
+            if node_label not in amend_map:
+                node['node'].label = label.split('-')
+            elif label in amend_map:
+                del amend_map[label]
+                if warn:
+                    mesg = 'Unable to match amendment to change for: %s'
+                    logging.warning(mesg, label)
 
 
 def find_misparsed_node(section_node, label, change):
