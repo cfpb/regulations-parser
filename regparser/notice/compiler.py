@@ -18,6 +18,9 @@ def get_parent_label(node):
         return '-'.join(parent_label)
 
 
+_label_regex = re.compile(r"([0-9]+)([\(])([a-z]+)([\)])", re.I)
+
+
 def make_label_sortable(label, roman=False):
     """ Make labels sortable, but converting them as appropriate.
     Also, appendices have labels that look like 30(a), we make those
@@ -25,15 +28,14 @@ def make_label_sortable(label, roman=False):
 
     if label.isdigit():
         return (int(label),)
-    if label.isalpha():
-        if roman:
-            romans = list(itertools.islice(roman_nums(), 0, 50))
-            return 1 + romans.index(label)
-        else:
-            return (label,)
+    match = _label_regex.match(label)
+    if match:
+        return (int(match.groups()[0]), match.groups()[2])
+    if roman:
+        romans = list(itertools.islice(roman_nums(), 0, 50))
+        return 1 + romans.index(label)
     else:
-        m = re.match(r"([0-9]+)([\(])([a-z]+)([\)])", label, re.I)
-        return (int(m.groups()[0]), m.groups()[2])
+        return (label,)
 
 
 def make_root_sortable(label, node_type):
