@@ -298,6 +298,7 @@ class InterpretationsTest(TestCase):
             "<HD SOURCE='HD1'>Some Title</HD>",
             "<HD SOURCE='HD2'>Some Title</HD>",
             "<P><E T='03'>Section 111.22</E></P>",
+            "<P><E T='03'>21(b) Contents</E>.</P>",
         ]
         for title in titles:
             self.assertTrue(interpretations.is_title(etree.fromstring(title)))

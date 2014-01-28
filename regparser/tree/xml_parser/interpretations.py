@@ -121,7 +121,7 @@ def is_title(xml_node):
         or (xml_node.tag.upper() == 'P'
             and (xml_node.text is None or not xml_node.text.strip())
             and len(xml_node.getchildren()) == 1
-            and (child.tail is None or not child.tail.strip())
+            and (child.tail is None or not child.tail.strip(" \n\t."))
             and text_to_labels(child.text, Label(), warn=False)))
 
 
