@@ -125,8 +125,8 @@ class LayerTermTest(TestCase):
              Ref('blue', '11-11', (39, 43))),
             ('For purposes of paragraph (a)(1) of this section, the term '
              + 'cool bro means hip cat', Ref('cool bro', '11-22', (59, 67))),
-            ('For purposes of this paragraph, billy jean means not my lover',
-             Ref('billy jean', '11-33', (32, 42)))]
+            ('For purposes of this paragraph, po jo means "poor Joe"',
+             Ref('po jo', '11-33', (32, 37)))]
 
         stack = ParentStack()
         stack.add(0, Node(label=['999']))
