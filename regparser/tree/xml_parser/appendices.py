@@ -135,15 +135,6 @@ class AppendixProcessor(object):
 
         self.m_stack.add(self.depth, n)
 
-    def subheader_is_paragraph(self, text):
-        """In some cases, what appears to be a header should actually be
-        treated like a paragraph. At the moment, this doesn't look for the
-        next marker, so ambiguities may arise."""
-        marker_text = initial_marker(text)[1]
-        texts = self.split_paragraph_text(text, '')
-        for text, next_text in zip(texts, texts[1:]):
-            self.paragraph_with_marker(text, next_text)
-
     def _indent_if_needed(self):
         """Indents one level if preceded by a header"""
         last = self.m_stack.peek()
@@ -290,13 +281,11 @@ class AppendixProcessor(object):
             if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
                     or child.tag == 'RESERVED'):
                 self.hed(part, text)
-            elif child.tag == 'HD' and initial_marker(text):
-                self.subheader_is_paragraph(text)
-            elif (child.tag == 'HD'
+            elif ((child.tag == 'HD' and not initial_marker(text))
                   or (child.tag in ('P', 'FP')
                       and title_label_pair(text, self.appendix_letter))):
                 self.subheader(child, text)
-            elif initial_marker(text) and child.tag in ('P', 'FP'):
+            elif initial_marker(text) and child.tag in ('P', 'FP', 'HD'):
                 if child.getnext() is None:
                     next_text = ''
                 else:
