@@ -44,24 +44,54 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
         notice['meta'][key] = fr_notice[key]
 
     if fr_notice['full_text_xml_url'] and do_process_xml:
-        notice_str = _check_local_version(fr_notice['full_text_xml_url'])
-        notice_xml = etree.fromstring(notice_str)
-        process_xml(notice, notice_xml)
+        local_notices = _check_local_version_list(fr_notice['full_text_xml_url'])
 
+        if len(local_notices) > 0:
+            return process_local_notices(local_notices, notice)
+        else:
+            notice_str = requests.get(url).content
+            return [process_notice(notice, f.read())]
+    return [notice]
+
+
+def process_local_notices(local_notices, partial_notice):
+    """ If we have any local notices, process them. Note that this takes into
+    account split notices (a single notice split into two because of different
+    effective dates"""
+
+    notices = []
+
+    if len(local_notices) > 1:
+        #If the notice is split, pick up the effective date from the XML
+        partial_notice['effective_on'] = None
+
+    for local_notice_file in local_notices:
+        with open(local_notice_file, 'r') as f:
+            notices.append(process_notice(partial_notice, f.read()))
+    return notices
+
+def process_notice(partial_notice, notice_str):
+    notice_xml = etree.fromstring(notice_str)
+    notice = dict(partial_notice)
+    process_xml(notice, notice_xml)
     return notice
 
-
-def _check_local_version(url):
+def _check_local_version_list(url):
     """Use any local copies (potentially with modifications of the FR XML)"""
     parsed_url = urlparse(url)
     path = parsed_url.path.replace('/', os.sep)
+    notice_dir_suffix, file_name = os.path.split(path)
     for xml_path in settings.LOCAL_XML_PATHS:
         if os.path.isfile(xml_path + path):
-            with open(xml_path + path, 'r') as f:
-                return f.read()
-
-    return requests.get(url).content
-
+            return [xml_path + path]
+        else:
+            notice_directory = xml_path + notice_dir_suffix
+            notices = os.listdir(notice_directory)
+            prefix = file_name.split('.')[0]
+            relevant_notices = [os.path.join(notice_directory, n) 
+                                for n in notices if n.startswith(prefix)]
+            return relevant_notices
+    return []
 
 def process_designate_subpart(amendment):
     """ Process the designate amendment if it adds a subpart. """
