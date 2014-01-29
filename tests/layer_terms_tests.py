@@ -120,6 +120,14 @@ class LayerTermTest(TestCase):
             (u'This term means should not match',
              u'<E T="03">This term</E> means should not match')]
 
+        scope_term_defs = [
+            ('For purposes of this section, the term blue means the color',
+             Ref('blue', '11-11', (39, 43))),
+            ('For purposes of paragraph (a)(1) of this section, the term '
+             + 'cool bro means hip cat', Ref('cool bro', '11-22', (59, 67))),
+            ('For purposes of this paragraph, billy jean means not my lover',
+             Ref('billy jean', '11-33', (32, 42)))]
+
         stack = ParentStack()
         stack.add(0, Node(label=['999']))
         for txt in no_defs:
@@ -140,6 +148,11 @@ class LayerTermTest(TestCase):
             node = Node(txt, label=[ref.label])
             node.tagged_text = xml
             defs, exc = t.node_definitions(node, stack)
+            self.assertEqual([ref], defs)
+            self.assertEqual([], exc)
+        for txt, ref in scope_term_defs:
+            defs, exc = t.node_definitions(
+                Node(txt, label=ref.label.split('-')), stack)
             self.assertEqual([ref], defs)
             self.assertEqual([], exc)
 
