@@ -1,5 +1,4 @@
 from copy import deepcopy
-import logging
 import os
 from urlparse import urlparse
 

@@ -112,7 +112,7 @@ def get_node_text(node, add_spaces=False):
     if add_spaces:
         final_text = ''
         for part in filter(bool, parts):
-            if part[:1]:
+            if not final_text[-1:].isspace() and not part[:1].isspace():
                 final_text += " " + part
             else:
                 final_text += part
