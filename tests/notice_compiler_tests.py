@@ -74,6 +74,15 @@ class CompilerTests(TestCase):
         for c in children:
             self.assertFalse(hasattr(c, 'sortable'))
 
+    def test_add_child_appendix(self):
+        n1 = Node('M1', label=['205', 'M1'])
+        n2 = Node('M2', label=['205', 'M2'])
+
+        children = [n2]
+        compiler.RegulationTree(None).add_child(children, n1)
+
+        self.assertEqual(children, [n1, n2])
+
     def test_add_child_interp(self):
         reg_tree = compiler.RegulationTree(None)
         n1 = Node('n1', label=['205', '1', 'Interp'])
