@@ -1,6 +1,7 @@
 #vim: set encoding=utf-8
-from pyparsing import SkipTo, Suppress, Regex, Literal, Word, srange, OneOrMore
-from regparser.grammar.utils import DocLiteral, keep_pos
+from pyparsing import (
+    Literal, OneOrMore, Optional, Regex, SkipTo, srange, Suppress, Word)
+from regparser.grammar.utils import DocLiteral, keep_pos, Marker
 from regparser.grammar.unified import any_depth_p
 
 smart_quotes = (
@@ -28,3 +29,11 @@ beginning_of_paragraph = (
 xml_term_parser = (
     beginning_of_paragraph
 )
+
+scope_term_type_parser = (
+    Marker("purposes") + Marker("of") + Optional(Marker("this"))
+    + SkipTo(",").setResultsName("scope") + Literal(",")
+    + Optional(Marker("the") + Marker("term"))
+    + SkipTo(Marker("means")
+             | (Marker("refers") + Marker("to"))
+             ).setParseAction(keep_pos).setResultsName("term"))

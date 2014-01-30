@@ -74,34 +74,42 @@ class Terms(Layer):
 
         struct.walk(self.tree, per_node)
 
+    def scope_of_text(self, text, label_struct, verify_prefix=True):
+        """Given specific text, try to determine the definition scope it
+        indicates. Implicit return None if none is found."""
+        scopes = []
+        #   First, make a list of potential scope indicators
+        citations = internal_citations(text, label_struct,
+                                       require_marker=True)
+        indicators = [(c.full_start, c.label.to_list()) for c in citations]
+        text = text.lower()
+        label_list = label_struct.to_list()
+        indicators.extend((m.start(), label_list[:1])
+                          for m in Terms.part_re.finditer(text))
+        indicators.extend((m.start(), label_list[:2])
+                          for m in Terms.sect_re.finditer(text))
+        indicators.extend((m.start(), label_list)
+                          for m in Terms.par_re.finditer(text))
+        #   Subpart's a bit more complicated, as it gets expanded into a
+        #   list of sections
+        for match in Terms.subpart_re.finditer(text):
+            indicators.extend(
+                (match.start(), subpart_label)
+                for subpart_label in self.subpart_scope(label_list))
+
+        #   Finally, add the scope if we verify its prefix
+        for start, label in indicators:
+            if not verify_prefix or Terms.scope_re.match(text[:start]):
+                scopes.append(label)
+
+        #   Add interpretation to scopes
+        scopes = scopes + [s + [struct.Node.INTERP_MARK] for s in scopes]
+        if scopes:
+            return [tuple(s) for s in scopes]
+
     def determine_scope(self, stack):
         for node in stack.lineage():
-            scopes = []
-            #   First, make a list of potential scope indicators
-            citations = internal_citations(node.text, Label.from_node(node),
-                                           require_marker=True)
-            indicators = [(c.full_start, c.label.to_list()) for c in citations]
-            text = node.text.lower()
-            indicators.extend((m.start(), node.label[:1])
-                              for m in Terms.part_re.finditer(text))
-            indicators.extend((m.start(), node.label[:2])
-                              for m in Terms.sect_re.finditer(text))
-            indicators.extend((m.start(), node.label)
-                              for m in Terms.par_re.finditer(text))
-            #   Subpart's a bit more complicated, as it gets expanded into a
-            #   list of sections
-            for match in Terms.subpart_re.finditer(text):
-                indicators.extend(
-                    (match.start(), subpart_label)
-                    for subpart_label in self.subpart_scope(node.label))
-
-            #   Finally, add the scope if we verify its prefix
-            for start, label in indicators:
-                if Terms.scope_re.match(text[:start]):
-                    scopes.append(label)
-
-            #   Add interpretation to scopes
-            scopes = scopes + [s + [struct.Node.INTERP_MARK] for s in scopes]
+            scopes = self.scope_of_text(node.text, Label.from_node(node))
             if scopes:
                 return [tuple(s) for s in scopes]
 
@@ -205,6 +213,16 @@ class Terms(Layer):
                 add_match(node,
                           term,
                           (pos_start, pos_start + len(term)))
+
+        for match, _, _ in grammar.scope_term_type_parser.scanString(
+                node.text):
+            # Check that both scope and term look valid
+            if (self.scope_of_text(match.scope, Label.from_node(node),
+                                   verify_prefix=False)
+                    and re.match("[a-z ]+", match.term.tokens[0])):
+                term = match.term.tokens[0].strip()
+                pos_start = node.text.index(term, match.term.pos[0])
+                add_match(node, term, (pos_start, pos_start + len(term)))
 
         if hasattr(node, 'tagged_text'):
             for match, _, _ in grammar.xml_term_parser.scanString(
