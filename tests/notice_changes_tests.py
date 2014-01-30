@@ -20,19 +20,19 @@ class ChangesTests(TestCase):
 
     def test_find_candidate(self):
         root = self.build_tree()
-        result = changes.find_candidate(root, 'i')[0]
+        result = changes.find_candidate(root, 'i', [])[0]
         self.assertEqual(u'n1i', result.text)
 
         n2c = Node('n3c', label=['200', '2', 'i', 'i'])
         n2 = find(root, '200-2')
         n2.children = [n2c]
 
-        result = changes.find_candidate(root, 'i')[0]
+        result = changes.find_candidate(root, 'i', [])[0]
         self.assertEqual(result.label, ['200', '2', 'i', 'i'])
 
     def test_not_find_candidate(self):
         root = self.build_tree()
-        result = changes.find_candidate(root, 'j')
+        result = changes.find_candidate(root, 'j', [])
         self.assertEqual(result, [])
 
     def test_find_misparsed_node(self):
@@ -41,7 +41,7 @@ class ChangesTests(TestCase):
 
         result = {'action': 'PUT'}
 
-        result = changes.find_misparsed_node(root, 'i', result)
+        result = changes.find_misparsed_node(root, 'i', result, [])
         self.assertEqual(result['action'], 'PUT')
         self.assertTrue(result['candidate'])
         self.assertEqual(result['node'], n2)
