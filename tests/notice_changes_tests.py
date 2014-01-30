@@ -201,3 +201,11 @@ class ChangesTests(TestCase):
 
         node.label = ['205', '38', 'A', 'vii', 'A']
         self.assertTrue(changes.bad_label(node))
+
+    def test_impossible_label(self):
+        amended_labels = ['205-35-c-1', '205-35-c-2']
+        node = Node('', label = ['205','35','v'])
+        self.assertTrue(changes.impossible_label(node, amended_labels))
+
+        node = Node('', label=['205', '35', 'c', '1', 'i'])
+        self.assertFalse(changes.impossible_label(node, amended_labels))

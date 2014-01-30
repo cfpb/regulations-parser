@@ -499,3 +499,10 @@ class NoticeBuildTest(TestCase):
         root, nodes = interpretations.parse_from_xml.call_args[0]
         self.assertEqual(root.label, ['111', 'Interp'])
         self.assertEqual(['HD', 'T1', 'P'], [n.tag for n in nodes])
+
+    def test_split_doc_num(self):
+        doc_num = '2013-2222'
+        effective_date = '2014-10-11'
+        self.assertEqual(
+            '2013-2222_20141011', 
+            build.split_doc_num(doc_num, effective_date))
