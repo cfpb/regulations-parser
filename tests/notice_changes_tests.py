@@ -35,6 +35,23 @@ class ChangesTests(TestCase):
         result = changes.find_candidate(root, 'j', [])
         self.assertEqual(result, [])
 
+    def test_find_candidate_impossible_label(self):
+        n1 = Node('', label=['200', '1'])
+        n1a = Node('', label=['200', '1', 'a'])
+
+        n1a1i = Node('', label=['200', '1', 'a', '1', 'i'])
+        n1a.children = [n1a1i]
+
+        n1b = Node('', label=['200', '1', 'b'])
+        n1i = Node('', label=['200', '1', 'i']) 
+        n1.children = [n1a, n1b, n1i]
+
+        root = Node('root', label=['200'], children=[n1])
+        candidate = changes.find_candidate(
+            root, 'i', ['200-1-a', '200-1-b'])[0]
+
+        self.assertEqual(candidate.label, ['200', '1', 'i'])
+
     def test_find_misparsed_node(self):
         n2 = Node('n1i', label=['200', 1, 'i'])
         root = self.build_tree()
@@ -45,6 +62,7 @@ class ChangesTests(TestCase):
         self.assertEqual(result['action'], 'PUT')
         self.assertTrue(result['candidate'])
         self.assertEqual(result['node'], n2)
+
 
     def test_create_add_amendment(self):
         root = self.build_tree()
