@@ -1,7 +1,3 @@
-import json
-import settings
-
-from lxml import etree
 import requests
 
 from regparser.notice.build import build_notice
