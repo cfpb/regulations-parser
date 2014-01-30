@@ -104,6 +104,36 @@ class AppendicesTest(TestCase):
         self.assertEqual(0, len(a2.children))
         self.assertEqual('2. More content', a2.text.strip())
 
+    def test_process_appendix_header_is_paragraph(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <HD SOURCE="HD2">A-1 - First kind of awesome</HD>
+            <HD SOURCE="HD3">(A) First Subkind</HD>
+            <P>1. Content</P>
+            <HD SOURCE="HD3">(B) Next Subkind</HD>
+            <P>1. Moar Contents</P>
+        </APPENDIX>"""
+        appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
+        self.assertEqual(1, len(appendix.children))
+        a1 = appendix.children[0]
+
+        self.assertEqual(['1111', 'A', '1'], a1.label)
+        self.assertEqual(2, len(a1.children))
+        self.assertEqual('A-1 - First kind of awesome', a1.title.strip())
+        a1a, a1B = a1.children
+
+        self.assertEqual(['1111', 'A', '1', 'A'], a1a.label)
+        self.assertEqual(1, len(a1a.children))
+        self.assertEqual('(A) First Subkind', a1a.text.strip())
+        self.assertEqual('1. Content', a1a.children[0].text.strip())
+
+        self.assertEqual(['1111', 'A', '1', 'B'], a1B.label)
+        self.assertEqual(1, len(a1B.children))
+        self.assertEqual('(B) Next Subkind', a1B.text.strip())
+        self.assertEqual('1. Moar Contents', a1B.children[0].text.strip())
+
     def test_header_ordering(self):
         xml = u"""
         <APPENDIX>
