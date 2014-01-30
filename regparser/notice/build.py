@@ -45,7 +45,8 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
         notice['meta'][key] = fr_notice[key]
 
     if fr_notice['full_text_xml_url'] and do_process_xml:
-        local_notices = _check_local_version_list(fr_notice['full_text_xml_url'])
+        local_notices = _check_local_version_list(
+            fr_notice['full_text_xml_url'])
 
         if len(local_notices) > 0:
             return process_local_notices(local_notices, notice)
@@ -54,11 +55,13 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
             return [process_notice(notice, notice_str)]
     return [notice]
 
+
 def split_doc_num(doc_num, effective_date):
-    """ If we have a split notice, we construct a document number 
+    """ If we have a split notice, we construct a document number
     based on the original document number and the effective date. """
     effective_date = ''.join(effective_date.split('-'))
     return '%s_%s' % (doc_num, effective_date)
+
 
 def process_local_notices(local_notices, partial_notice):
     """ If we have any local notices, process them. Note that this takes into
@@ -81,11 +84,13 @@ def process_local_notices(local_notices, partial_notice):
             notices.append(notice)
     return notices
 
+
 def process_notice(partial_notice, notice_str):
     notice_xml = etree.fromstring(notice_str)
     notice = dict(partial_notice)
     process_xml(notice, notice_xml)
     return notice
+
 
 def _check_local_version_list(url):
     """Use any local copies (potentially with modifications of the FR XML)"""
@@ -100,10 +105,11 @@ def _check_local_version_list(url):
             if os.path.exists(notice_directory):
                 notices = os.listdir(notice_directory)
                 prefix = file_name.split('.')[0]
-                relevant_notices = [os.path.join(notice_directory, n) 
+                relevant_notices = [os.path.join(notice_directory, n)
                                     for n in notices if n.startswith(prefix)]
                 return relevant_notices
     return []
+
 
 def process_designate_subpart(amendment):
     """ Process the designate amendment if it adds a subpart. """
