@@ -26,8 +26,14 @@ def bad_label(node):
                 return True
     return False
 
+def impossible_label(n, amended_labels):
+    """ Return True if n is not in the same family as amended_labels. """
+    for l in amended_labels:
+        if n.label_id().startswith(l):
+            return False
+    return True
 
-def find_candidate(root, label_last):
+def find_candidate(root, label_last, amended_labels):
     """
         Look through the tree for a node that has the same paragraph marker as
         the one we're looking for (and also has no children).  That might be a
@@ -36,19 +42,29 @@ def find_candidate(root, label_last):
         markers.
     """
     def check(node):
-        """ Match last part of label, and no children.  """
-        if node.label[-1] == label_last and node.children == []:
+        """ Match last part of label."""
+        if node.label[-1] == label_last:
             return node
 
-    response = struct.walk(root, check)
-    if len(response) > 1:
-        # If there are multiple choices, look for one where the label might
-        # be obviously broken
-        bad_labels = [n for n in response if bad_label(n)]
+    candidates = struct.walk(root, check)
+    if len(candidates) > 1:
+        # Look for mal-formed labels, labels that can't exist (because we're
+        # not amending that part of the reg, or eventually a parent with no
+        # children. 
+
+        bad_labels = [n for n in candidates if bad_label(n)]
+        impossible_labels = [n for n in candidates 
+                             if impossible_label(n, amended_labels)]
+        no_children = [n for n in candidates if n.children == []]
+
+        #If we have a single option in any of the categories, return that. 
         if len(bad_labels) == 1:
             return bad_labels
-
-    return response
+        elif len(impossible_labels) == 1:
+            return impossible_labels
+        elif len(no_children) == 1:
+            return no_children
+    return candidates
 
 
 def resolve_candidates(amend_map, warn=True):
@@ -66,12 +82,12 @@ def resolve_candidates(amend_map, warn=True):
                     logging.warning(mesg, label)
 
 
-def find_misparsed_node(section_node, label, change):
+def find_misparsed_node(section_node, label, change, amended_labels):
     """ Nodes can get misparsed in the sense that we don't always know where
     they are in the tree. This uses label to find a candidate for a mis-parsed
     node and creates an appropriate change. """
 
-    candidates = find_candidate(section_node, label[-1])
+    candidates = find_candidate(section_node, label[-1], amended_labels)
     if len(candidates) == 1:
         candidate = candidates[0]
         change['node'] = candidate
@@ -83,6 +99,7 @@ def match_labels_and_changes(amendments, section_node):
     """ Given the list of amendments, and the parsed section node, match the
     two so that we're only changing what's been flagged as changing. This helps
     eliminate paragraphs that are just stars for positioning, for example.  """
+    amended_labels = [a.label_id() for a in amendments]
 
     amend_map = defaultdict(list)
     for amend in amendments:
@@ -99,7 +116,7 @@ def match_labels_and_changes(amendments, section_node):
             node = struct.find(section_node, amend.label_id())
             if node is None:
                 candidate = find_misparsed_node(
-                    section_node, amend.label, change)
+                    section_node, amend.label, change, amended_labels)
                 if candidate:
                     amend_map[amend.label_id()].append(candidate)
             else:
