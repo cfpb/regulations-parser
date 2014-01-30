@@ -43,7 +43,7 @@ class ChangesTests(TestCase):
         n1a.children = [n1a1i]
 
         n1b = Node('', label=['200', '1', 'b'])
-        n1i = Node('', label=['200', '1', 'i']) 
+        n1i = Node('', label=['200', '1', 'i'])
         n1.children = [n1a, n1b, n1i]
 
         root = Node('root', label=['200'], children=[n1])
@@ -62,7 +62,6 @@ class ChangesTests(TestCase):
         self.assertEqual(result['action'], 'PUT')
         self.assertTrue(result['candidate'])
         self.assertEqual(result['node'], n2)
-
 
     def test_create_add_amendment(self):
         root = self.build_tree()
@@ -222,7 +221,7 @@ class ChangesTests(TestCase):
 
     def test_impossible_label(self):
         amended_labels = ['205-35-c-1', '205-35-c-2']
-        node = Node('', label = ['205','35','v'])
+        node = Node('', label=['205', '35', 'v'])
         self.assertTrue(changes.impossible_label(node, amended_labels))
 
         node = Node('', label=['205', '35', 'c', '1', 'i'])

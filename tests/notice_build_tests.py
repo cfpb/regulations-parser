@@ -504,5 +504,5 @@ class NoticeBuildTest(TestCase):
         doc_num = '2013-2222'
         effective_date = '2014-10-11'
         self.assertEqual(
-            '2013-2222_20141011', 
+            '2013-2222_20141011',
             build.split_doc_num(doc_num, effective_date))
