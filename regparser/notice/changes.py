@@ -26,12 +26,14 @@ def bad_label(node):
                 return True
     return False
 
+
 def impossible_label(n, amended_labels):
     """ Return True if n is not in the same family as amended_labels. """
     for l in amended_labels:
         if n.label_id().startswith(l):
             return False
     return True
+
 
 def find_candidate(root, label_last, amended_labels):
     """
@@ -50,14 +52,14 @@ def find_candidate(root, label_last, amended_labels):
     if len(candidates) > 1:
         # Look for mal-formed labels, labels that can't exist (because we're
         # not amending that part of the reg, or eventually a parent with no
-        # children. 
+        # children.
 
         bad_labels = [n for n in candidates if bad_label(n)]
-        impossible_labels = [n for n in candidates 
+        impossible_labels = [n for n in candidates
                              if impossible_label(n, amended_labels)]
         no_children = [n for n in candidates if n.children == []]
 
-        #If we have a single option in any of the categories, return that. 
+        #If we have a single option in any of the categories, return that.
         if len(bad_labels) == 1:
             return bad_labels
         elif len(impossible_labels) == 1:
