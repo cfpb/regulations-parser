@@ -50,10 +50,15 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
         if len(local_notices) > 0:
             return process_local_notices(local_notices, notice)
         else:
-            notice_str = requests.get(url).content
-            return [process_notice(notice, f.read())]
+            notice_str = requests.get(fr_notice['full_text_xml_url']).content
+            return [process_notice(notice, notice_str)]
     return [notice]
 
+def split_doc_num(doc_num, effective_date):
+    """ If we have a split notice, we construct a document number 
+    based on the original document number and the effective date. """
+    effective_date = ''.join(effective_date.split('-'))
+    return '%s_%s' % (doc_num, effective_date)
 
 def process_local_notices(local_notices, partial_notice):
     """ If we have any local notices, process them. Note that this takes into
@@ -68,7 +73,12 @@ def process_local_notices(local_notices, partial_notice):
 
     for local_notice_file in local_notices:
         with open(local_notice_file, 'r') as f:
-            notices.append(process_notice(partial_notice, f.read()))
+            print local_notice_file
+            notice = process_notice(partial_notice, f.read())
+
+            notice['document_number'] = split_doc_num(
+                notice['document_number'], notice['effective_on'])
+            notices.append(notice)
     return notices
 
 def process_notice(partial_notice, notice_str):
@@ -87,11 +97,12 @@ def _check_local_version_list(url):
             return [xml_path + path]
         else:
             notice_directory = xml_path + notice_dir_suffix
-            notices = os.listdir(notice_directory)
-            prefix = file_name.split('.')[0]
-            relevant_notices = [os.path.join(notice_directory, n) 
-                                for n in notices if n.startswith(prefix)]
-            return relevant_notices
+            if os.path.exists(notice_directory):
+                notices = os.listdir(notice_directory)
+                prefix = file_name.split('.')[0]
+                relevant_notices = [os.path.join(notice_directory, n) 
+                                    for n in notices if n.startswith(prefix)]
+                return relevant_notices
     return []
 
 def process_designate_subpart(amendment):
