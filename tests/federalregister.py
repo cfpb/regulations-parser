@@ -13,7 +13,7 @@ class FederalRegisterTest(TestCase):
         requests.get.return_value.json.return_value = {
             "results": [{"some": "thing"}, {"another": "thing"}]}
 
-        build_note.return_value = 'NOTICE!'
+        build_note.return_value = ['NOTICE!']
 
         notices = fetch_notices(23, 1222)
 
