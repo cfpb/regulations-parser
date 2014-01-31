@@ -20,20 +20,37 @@ class ChangesTests(TestCase):
 
     def test_find_candidate(self):
         root = self.build_tree()
-        result = changes.find_candidate(root, 'i')[0]
+        result = changes.find_candidate(root, 'i', [])[0]
         self.assertEqual(u'n1i', result.text)
 
         n2c = Node('n3c', label=['200', '2', 'i', 'i'])
         n2 = find(root, '200-2')
         n2.children = [n2c]
 
-        result = changes.find_candidate(root, 'i')[0]
+        result = changes.find_candidate(root, 'i', [])[0]
         self.assertEqual(result.label, ['200', '2', 'i', 'i'])
 
     def test_not_find_candidate(self):
         root = self.build_tree()
-        result = changes.find_candidate(root, 'j')
+        result = changes.find_candidate(root, 'j', [])
         self.assertEqual(result, [])
+
+    def test_find_candidate_impossible_label(self):
+        n1 = Node('', label=['200', '1'])
+        n1a = Node('', label=['200', '1', 'a'])
+
+        n1a1i = Node('', label=['200', '1', 'a', '1', 'i'])
+        n1a.children = [n1a1i]
+
+        n1b = Node('', label=['200', '1', 'b'])
+        n1i = Node('', label=['200', '1', 'i'])
+        n1.children = [n1a, n1b, n1i]
+
+        root = Node('root', label=['200'], children=[n1])
+        candidate = changes.find_candidate(
+            root, 'i', ['200-1-a', '200-1-b'])[0]
+
+        self.assertEqual(candidate.label, ['200', '1', 'i'])
 
     def test_find_misparsed_node(self):
         n2 = Node('n1i', label=['200', 1, 'i'])
@@ -41,7 +58,7 @@ class ChangesTests(TestCase):
 
         result = {'action': 'PUT'}
 
-        result = changes.find_misparsed_node(root, 'i', result)
+        result = changes.find_misparsed_node(root, 'i', result, [])
         self.assertEqual(result['action'], 'PUT')
         self.assertTrue(result['candidate'])
         self.assertEqual(result['node'], n2)
@@ -201,3 +218,11 @@ class ChangesTests(TestCase):
 
         node.label = ['205', '38', 'A', 'vii', 'A']
         self.assertTrue(changes.bad_label(node))
+
+    def test_impossible_label(self):
+        amended_labels = ['205-35-c-1', '205-35-c-2']
+        node = Node('', label=['205', '35', 'v'])
+        self.assertTrue(changes.impossible_label(node, amended_labels))
+
+        node = Node('', label=['205', '35', 'c', '1', 'i'])
+        self.assertFalse(changes.impossible_label(node, amended_labels))

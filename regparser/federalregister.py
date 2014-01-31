@@ -1,7 +1,3 @@
-import json
-import settings
-
-from lxml import etree
 import requests
 
 from regparser.notice.build import build_notice
@@ -36,5 +32,5 @@ def fetch_notices(cfr_title, cfr_part, only_final=False):
     """Search and then convert to notice objects (including parsing)"""
     notices = []
     for result in fetch_notice_json(cfr_title, cfr_part, only_final):
-        notices.append(build_notice(cfr_title, cfr_part, result))
+        notices.extend(build_notice(cfr_title, cfr_part, result))
     return notices

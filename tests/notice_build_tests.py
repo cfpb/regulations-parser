@@ -46,7 +46,7 @@ class NoticeBuildTest(TestCase):
             'type': 'Rule',
             'volume': 66,
         }
-        self.assertEqual(build.build_notice('5', '9292', fr), {
+        self.assertEqual(build.build_notice('5', '9292', fr), [{
             'abstract': 'sum sum sum',
             'action': 'actact',
             'agency_names': ['Agency 1', 'Agency 2'],
@@ -66,7 +66,7 @@ class NoticeBuildTest(TestCase):
             },
             'publication_date': '1955-12-10',
             'regulation_id_numbers': ['a231a-232q'],
-        })
+        }])
 
     def test_process_xml(self):
         """Integration test for xml processing"""
@@ -432,24 +432,51 @@ class NoticeBuildTest(TestCase):
         self.assertEqual(reserve['action'], 'RESERVE')
         self.assertEqual(reserve['node']['text'], u'[Reserved]')
 
-    @patch('regparser.notice.build.requests')
-    def test_check_local_version(self, requests):
+    def test_local_version_list(self):
         url = 'http://example.com/some/url'
-        build._check_local_version(url)
-        self.assertEqual(url, requests.get.call_args[0][0])
 
         settings.LOCAL_XML_PATHS = [self.dir1, self.dir2]
         os.mkdir(self.dir2 + '/some')
         f = open(self.dir2 + '/some/url', 'w')
         f.write('aaaaa')
         f.close()
-        self.assertEqual('aaaaa', build._check_local_version(url))
+
+        local_file = self.dir2 + '/some/url'
+        self.assertEqual([local_file], build._check_local_version_list(url))
 
         os.mkdir(self.dir1 + '/some')
         f = open(self.dir1 + '/some/url', 'w')
         f.write('bbbbb')
         f.close()
-        self.assertEqual('bbbbb', build._check_local_version(url))
+        local_file_2 = self.dir1 + '/some/url'
+        self.assertEqual([local_file_2], build._check_local_version_list(url))
+
+    def test_local_version_list_split(self):
+        settings.LOCAL_XML_PATHS = [self.dir1, self.dir2]
+
+        os.mkdir(self.dir2 + '/xml/')
+        f = open(self.dir2 + '/xml/503-1.xml', 'w')
+        f.write('first_file')
+        f.close()
+
+        f = open(self.dir2 + '/xml/503-2.xml', 'w')
+        f.write('second_file')
+
+        url = 'http://example.com/xml/503.xml'
+
+        first = self.dir2 + '/xml/503-1.xml'
+        second = self.dir2 + '/xml/503-2.xml'
+        
+        local_versions = build._check_local_version_list(url)
+        local_versions.sort()
+        self.assertEqual([first, second], local_versions)
+
+    def test_split_doc_num(self):
+        doc_num = '2013-2222'
+        effective_date = '2014-10-11'
+        self.assertEqual(
+            '2013-2222_20141011',
+            build.split_doc_num(doc_num, effective_date))
 
     @patch('regparser.notice.build.interpretations')
     def test_parse_interp_changes(self, interpretations):
@@ -464,6 +491,7 @@ class NoticeBuildTest(TestCase):
                     <P>b</P>
                 </EXTRACT>
             </REGTEXT>"""
+
         xml_str2 = """
             <REGTEXT>
                 <P>Something</P>
