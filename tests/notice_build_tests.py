@@ -466,7 +466,10 @@ class NoticeBuildTest(TestCase):
 
         first = self.dir2 + '/xml/503-1.xml'
         second = self.dir2 + '/xml/503-2.xml'
-        self.assertEqual([first, second], build._check_local_version_list(url))
+        
+        local_versions = build._check_local_version_list(url)
+        local_versions.sort()
+        self.assertEqual([first, second], local_versions)
 
     @patch('regparser.notice.build.interpretations')
     def test_parse_interp_changes(self, interpretations):
