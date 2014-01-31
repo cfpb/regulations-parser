@@ -240,10 +240,11 @@ def parse_interp_changes(cfr_part, parent_xml):
     for child in parent_xml:
         if seen_header:
             xml_nodes.append(child)
-        if child.tag == 'HD' and contains_supp(child):
-            seen_header = True
-        for hd in filter(contains_supp, child.xpath(".//HD")):
-            seen_header = True
+        else:
+            if child.tag == 'HD' and contains_supp(child):
+                seen_header = True
+            for hd in filter(contains_supp, child.xpath(".//HD")):
+                seen_header = True
 
     root = Node(label=[cfr_part, Node.INTERP_MARK], node_type=Node.INTERP)
     return interpretations.parse_from_xml(root, xml_nodes)
