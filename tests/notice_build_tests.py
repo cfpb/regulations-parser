@@ -11,7 +11,6 @@ from mock import patch
 from regparser.notice import build, changes
 from regparser.notice.diff import DesignateAmendment, Amendment
 from regparser.tree.struct import Node
-from unittest import TestCase
 import settings
 
 
@@ -466,7 +465,7 @@ class NoticeBuildTest(TestCase):
 
         first = self.dir2 + '/xml/503-1.xml'
         second = self.dir2 + '/xml/503-2.xml'
-        
+
         local_versions = build._check_local_version_list(url)
         local_versions.sort()
         self.assertEqual([first, second], local_versions)
@@ -530,3 +529,16 @@ class NoticeBuildTest(TestCase):
             root, nodes = interpretations.parse_from_xml.call_args[0]
             self.assertEqual(root.label, ['111', 'Interp'])
             self.assertEqual(['HD', 'T1', 'P'], [n.tag for n in nodes])
+
+    def test_set_document_numbers(self):
+        notice = {'document_number': '111', 'effective_on': '2013-10-08'}
+        notices = build.set_document_numbers([notice])
+        self.assertEqual(notices[0]['document_number'], '111')
+
+        second_notice = {'document_number': '222',
+                         'effective_on': '2013-10-10'}
+
+        notices = build.set_document_numbers([notice, second_notice])
+
+        self.assertEqual(notices[0]['document_number'], '111_20131008')
+        self.assertEqual(notices[1]['document_number'], '222_20131010')
