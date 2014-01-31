@@ -471,9 +471,16 @@ class NoticeBuildTest(TestCase):
         local_versions.sort()
         self.assertEqual([first, second], local_versions)
 
+    def test_split_doc_num(self):
+        doc_num = '2013-2222'
+        effective_date = '2014-10-11'
+        self.assertEqual(
+            '2013-2222_20141011',
+            build.split_doc_num(doc_num, effective_date))
+
     @patch('regparser.notice.build.interpretations')
     def test_parse_interp_changes(self, interpretations):
-        xml_str = """
+        xml_str1 = """
             <REGTEXT>
                 <EXTRACT>
                     <P>Something</P>
@@ -484,12 +491,8 @@ class NoticeBuildTest(TestCase):
                     <P>b</P>
                 </EXTRACT>
             </REGTEXT>"""
-        build.parse_interp_changes('111', etree.fromstring(xml_str))
-        root, nodes = interpretations.parse_from_xml.call_args[0]
-        self.assertEqual(root.label, ['111', 'Interp'])
-        self.assertEqual(['HD', 'T1', 'P'], [n.tag for n in nodes])
 
-        xml_str = """
+        xml_str2 = """
             <REGTEXT>
                 <P>Something</P>
                 <STARS />
@@ -498,14 +501,32 @@ class NoticeBuildTest(TestCase):
                 <T1>a</T1>
                 <P>b</P>
             </REGTEXT>"""
-        build.parse_interp_changes('111', etree.fromstring(xml_str))
-        root, nodes = interpretations.parse_from_xml.call_args[0]
-        self.assertEqual(root.label, ['111', 'Interp'])
-        self.assertEqual(['HD', 'T1', 'P'], [n.tag for n in nodes])
+        xml_str3 = """
+            <REGTEXT>
+                <AMDPAR>1. In Supplement I to part 111, under...</AMDPAR>
+                <P>Something</P>
+                <STARS />
+                <HD>SUPPLEMENT I</HD>
+                <HD>A</HD>
+                <T1>a</T1>
+                <P>b</P>
+            </REGTEXT>"""
+        xml_str4 = """
+            <REGTEXT>
+                <AMDPAR>1. In Supplement I to part 111, under...</AMDPAR>
+                <P>Something</P>
+                <STARS />
+                <APPENDIX>
+                    <HD>SUPPLEMENT I</HD>
+                </APPENDIX>
+                <HD>A</HD>
+                <T1>a</T1>
+                <P>b</P>
+                <PRTPAGE />
+            </REGTEXT>"""
 
-    def test_split_doc_num(self):
-        doc_num = '2013-2222'
-        effective_date = '2014-10-11'
-        self.assertEqual(
-            '2013-2222_20141011',
-            build.split_doc_num(doc_num, effective_date))
+        for xml_str in (xml_str1, xml_str2, xml_str3, xml_str4):
+            build.parse_interp_changes('111', etree.fromstring(xml_str))
+            root, nodes = interpretations.parse_from_xml.call_args[0]
+            self.assertEqual(root.label, ['111', 'Interp'])
+            self.assertEqual(['HD', 'T1', 'P'], [n.tag for n in nodes])

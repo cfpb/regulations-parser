@@ -103,13 +103,22 @@ def get_paragraph_markers(text):
     return []
 
 
-def get_node_text(node):
+def get_node_text(node, add_spaces=False):
     """ Extract all the text from an XML node (including the
     text of it's children). """
     parts = [node.text] +\
         list(chain(*([c.text, c.tail] for c in node.getchildren()))) +\
         [node.tail]
-    return ''.join(filter(None, parts))
+    if add_spaces:
+        final_text = ''
+        for part in filter(bool, parts):
+            if not final_text[-1:].isspace() and not part[:1].isspace():
+                final_text += " " + part
+            else:
+                final_text += part
+        return final_text.strip()
+    else:
+        return ''.join(filter(None, parts))
 
 
 def get_node_text_tags_preserved(node):

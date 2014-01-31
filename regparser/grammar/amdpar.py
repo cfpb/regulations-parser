@@ -80,6 +80,14 @@ comment_context_with_section = (
     ).setParseAction(lambda m: tokens.Context([None, 'Interpretations',
         m.section, '(' + ')('.join(p for p in [m.p1, m.p2, m.p3, m.p4, m.p5]
                                    if p) + ')'], bool(m.certain)))
+# Mild modification of the above; catches "under 2(b)"
+comment_context_under_with_section = (
+    Marker("under")
+    + atomic.section
+    + unified.depth1_p
+    ).setParseAction(lambda m: tokens.Context([None, 'Interpretations',
+        m.section, '(' + ')('.join(p for p in [m.p1, m.p2, m.p3, m.p4, m.p5]
+                                   if p) + ')'], True))
 comment_context_without_section = (
     context_certainty
     + atomic.paragraph_marker
@@ -246,6 +254,7 @@ token_patterns = (
 
     | interp | marker_subpart | appendix
     | comment_context_with_section | comment_context_without_section
+    | comment_context_under_with_section
 
     | paragraph_heading_of | section_heading | section_heading_of | intro_text_of
     | multiple_paragraph_sections | section_single_par

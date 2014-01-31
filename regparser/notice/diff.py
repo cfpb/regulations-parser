@@ -8,6 +8,7 @@ from lxml import etree
 from regparser.grammar import amdpar, tokens
 from regparser.tree.struct import Node
 from regparser.tree.xml_parser.reg_text import build_from_section
+from regparser.tree.xml_parser.tree_utils import get_node_text
 
 
 def clear_between(xml_node, start_char, end_char):
@@ -159,7 +160,7 @@ def parse_amdpar(par, initial_context):
     """ Parse the <AMDPAR> tags into a list of paragraphs that have changed.
     """
 
-    text = etree.tostring(par, encoding=unicode)
+    text = get_node_text(par, add_spaces=True)
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
 
     tokenized = remove_false_deletes(tokenized, text)

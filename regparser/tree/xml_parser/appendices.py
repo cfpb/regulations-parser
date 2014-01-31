@@ -281,11 +281,11 @@ class AppendixProcessor(object):
             if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
                     or child.tag == 'RESERVED'):
                 self.hed(part, text)
-            elif (child.tag == 'HD'
+            elif ((child.tag == 'HD' and not initial_marker(text))
                   or (child.tag in ('P', 'FP')
                       and title_label_pair(text, self.appendix_letter))):
                 self.subheader(child, text)
-            elif initial_marker(text) and child.tag in ('P', 'FP'):
+            elif initial_marker(text) and child.tag in ('P', 'FP', 'HD'):
                 if child.getnext() is None:
                     next_text = ''
                 else:
