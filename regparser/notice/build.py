@@ -76,7 +76,6 @@ def process_local_notices(local_notices, partial_notice):
 
     for local_notice_file in local_notices:
         with open(local_notice_file, 'r') as f:
-            print local_notice_file
             notice = process_notice(partial_notice, f.read())
 
             notice['document_number'] = split_doc_num(
