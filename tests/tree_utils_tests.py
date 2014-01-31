@@ -55,6 +55,18 @@ class TreeUtilsTest(unittest.TestCase):
 
         self.assertEquals('(a)Fruit.Apps, and pins', result)
 
+        text = '<P>(a)<E T="03">Fruit.</E>Apps,<PRTPAGE P="102"/> and pins</P>'
+        doc = etree.fromstring(text)
+        result = tree_utils.get_node_text(doc, add_spaces=True)
+
+        self.assertEquals('(a) Fruit. Apps, and pins', result)
+
+        text = '<P>(a) <E T="03">Fruit.</E> Apps, and pins</P>'
+        doc = etree.fromstring(text)
+        result = tree_utils.get_node_text(doc, add_spaces=True)
+
+        self.assertEquals('(a) Fruit. Apps, and pins', result)
+
     def test_unwind_stack(self):
         level_one_n = Node(label=['272'])
         level_two_n = Node(label=['a'])

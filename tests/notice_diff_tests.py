@@ -534,6 +534,19 @@ class NoticeDiffTests(TestCase):
         for amend in amends:
             self.assertEqual(amend.action, 'PUT')
 
+    def test_parse_amdpar_interp_phrase(self):
+        text = u"In Supplement I to part 999, under"
+        text += u'<E T="03">Section 999.3—Header,</E>'
+        text += u"under"
+        text += u'<E T="03">3(b) Subheader,</E>'
+        text += u"new paragraph 1.iv is added:"
+        xml = etree.fromstring(u'<AMDPAR>%s</AMDPAR>' % text)
+        amends, _ = parse_amdpar(xml, ['1111'])
+        self.assertEqual(1, len(amends))
+        self.assertEqual('POST', amends[0].action)
+        self.assertEqual(['999', '3', 'b', 'Interp', '1', 'iv'],
+                         amends[0].label)
+
 
 class AmendmentTests(TestCase):
     def test_fix_label(self):

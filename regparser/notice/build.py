@@ -233,7 +233,7 @@ def parse_interp_changes(cfr_part, parent_xml):
     return the results"""
     # First, we try to standardize the xml. We will assume a format of
     # Supplement I header followed by HDs, STARS, and Ps.
-    parent_xml = deepcopy(parent_xml)
+    parent_xml = spaces_then_remove(deepcopy(parent_xml), 'PRTPAGE')
     for extract in parent_xml.xpath(".//EXTRACT"):
         ex_parent = extract.getparent()
         idx = ex_parent.index(extract)
@@ -242,15 +242,18 @@ def parse_interp_changes(cfr_part, parent_xml):
             idx += 1
         ex_parent.remove(extract)
 
-    # Skip over everything until 'Supplement I'
+    # Skip over everything until 'Supplement I' in a header
     seen_header = False
     xml_nodes = []
+    contains_supp = lambda n: 'supplement i' in (n.text.lower() or '')
     for child in parent_xml:
-        if ('Supplement I' in (child.text or '')
-                or child.xpath(".//*[contains(., 'Supplement I')]")):
-            seen_header = True
-        elif seen_header:
+        if seen_header:
             xml_nodes.append(child)
+        else:
+            if child.tag == 'HD' and contains_supp(child):
+                seen_header = True
+            for hd in filter(contains_supp, child.xpath(".//HD")):
+                seen_header = True
 
     root = Node(label=[cfr_part, Node.INTERP_MARK], node_type=Node.INTERP)
     return interpretations.parse_from_xml(root, xml_nodes)
