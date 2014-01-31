@@ -349,3 +349,12 @@ class RegTextTest(TestCase):
         </CFRGRANULE>""")
 
         self.assertEqual(etree.tostring(xml), etree.tostring(should_be))
+
+    def test_next_marker_stars(self):
+        xml = etree.fromstring("""
+            <ROOT>
+                <P>(i) Content</P>
+                <STARS />
+                <P>(xi) More</P>
+            </ROOT>""")
+        self.assertEqual('xi', next_marker(xml.getchildren()[0], []))
