@@ -77,10 +77,20 @@ def process_local_notices(local_notices, partial_notice):
     for local_notice_file in local_notices:
         with open(local_notice_file, 'r') as f:
             notice = process_notice(partial_notice, f.read())
+            notices.append(notice)
 
+    notices = set_document_numbers(notices)
+    return notices
+
+
+def set_document_numbers(notices):
+    """ If we have multiple notices, we need to fix their document
+    numbers. """
+
+    if len(notices) > 1:
+        for notice in notices:
             notice['document_number'] = split_doc_num(
                 notice['document_number'], notice['effective_on'])
-            notices.append(notice)
     return notices
 
 
