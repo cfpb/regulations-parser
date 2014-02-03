@@ -325,7 +325,8 @@ class CompilerTests(TestCase):
 
         reg_tree = compiler.RegulationTree(root)
 
-        new_section = Node('new_section', label=['205', '3'], node_type=Node.REGTEXT)
+        new_section = Node(
+            'new_section', label=['205', '3'], node_type=Node.REGTEXT)
         reg_tree.replace_node_and_subtree(new_section)
 
         subpart = find(reg_tree.tree, '205-Subpart-B')
