@@ -125,10 +125,10 @@ def is_title(xml_node):
             and text_to_labels(child.text, Label(), warn=False)))
 
 
-def process_inner_children(inner_stack, node):
+def process_inner_children(inner_stack, xml_node):
     """Process the following nodes as children of this interpretation"""
     children = itertools.takewhile(
-        lambda x: not is_title(x), node.itersiblings())
+        lambda x: not is_title(x), xml_node.itersiblings())
     for c in filter(lambda c: c.tag == 'P', children):
         node_text = tree_utils.get_node_text(c)
 

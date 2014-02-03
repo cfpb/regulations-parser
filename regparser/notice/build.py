@@ -1,21 +1,20 @@
-from copy import deepcopy
 import os
 from urlparse import urlparse
 
 from lxml import etree
 import requests
 
+from regparser.notice.address import fetch_addresses
+from regparser.notice.build_interp import parse_interp_changes
 from regparser.notice.diff import parse_amdpar, find_section, find_subpart
 from regparser.notice.diff import new_subpart_added
 from regparser.notice.diff import DesignateAmendment
-from regparser.notice.address import fetch_addresses
 from regparser.notice.dates import fetch_dates
 from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
 from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
 from regparser.notice import changes
-from regparser.tree.struct import Node
-from regparser.tree.xml_parser import reg_text, interpretations
+from regparser.tree.xml_parser import reg_text
 import settings
 
 
@@ -221,12 +220,10 @@ def process_amendments(notice, notice_xml):
                     notice['cfr_part'], section_xml):
                 create_changes(amended_labels, section, notice_changes)
 
-        if any(not isinstance(al, DesignateAmendment)
-               and 'Interp' in al.label for al in amended_labels):
-            pass
-            #interp = parse_interp_changes(notice['cfr_part'], aXp.parent)
-            #if interp:
-            #    create_changes(amended_labels, interp, notice_changes)
+        interp = parse_interp_changes(amended_labels, notice['cfr_part'],
+                                      aXp.parent)
+        if interp:
+            create_changes(amended_labels, interp, notice_changes)
 
         amends.extend(amended_labels)
     if amends:
@@ -281,35 +278,3 @@ def add_footnotes(notice, notice_xml):
                 content += etree.tostring(cc)
             content += child.tail
             notice['footnotes'][ref[0].text] = content.strip()
-
-
-def parse_interp_changes(cfr_part, parent_xml):
-    """Figure out which parts of the parent_xml are relevant to
-    interpretations. Pass those on to interpretations.parse_from_xml and
-    return the results"""
-    # First, we try to standardize the xml. We will assume a format of
-    # Supplement I header followed by HDs, STARS, and Ps.
-    parent_xml = spaces_then_remove(deepcopy(parent_xml), 'PRTPAGE')
-    for extract in parent_xml.xpath(".//EXTRACT"):
-        ex_parent = extract.getparent()
-        idx = ex_parent.index(extract)
-        for child in extract:
-            ex_parent.insert(idx, child)
-            idx += 1
-        ex_parent.remove(extract)
-
-    # Skip over everything until 'Supplement I' in a header
-    seen_header = False
-    xml_nodes = []
-    contains_supp = lambda n: 'supplement i' in (n.text.lower() or '')
-    for child in parent_xml:
-        if seen_header:
-            xml_nodes.append(child)
-        else:
-            if child.tag == 'HD' and contains_supp(child):
-                seen_header = True
-            for hd in filter(contains_supp, child.xpath(".//HD")):
-                seen_header = True
-
-    root = Node(label=[cfr_part, Node.INTERP_MARK], node_type=Node.INTERP)
-    return interpretations.parse_from_xml(root, xml_nodes)

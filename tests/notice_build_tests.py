@@ -5,8 +5,6 @@ import tempfile
 from unittest import TestCase
 
 from lxml import etree
-from mock import patch
-
 
 from regparser.notice import build, changes
 from regparser.notice.diff import DesignateAmendment, Amendment
@@ -207,7 +205,7 @@ class NoticeBuildTest(TestCase):
         </REGTEXT>"""
 
         notice_xml = etree.fromstring(xml)
-        notice = {}
+        notice = {'cfr_part': '105'}
         build.process_amendments(notice, notice_xml)
 
         section_list = ['105-2', '105-3', '105-1']
@@ -476,59 +474,6 @@ class NoticeBuildTest(TestCase):
         self.assertEqual(
             '2013-2222_20141011',
             build.split_doc_num(doc_num, effective_date))
-
-    @patch('regparser.notice.build.interpretations')
-    def test_parse_interp_changes(self, interpretations):
-        xml_str1 = """
-            <REGTEXT>
-                <EXTRACT>
-                    <P>Something</P>
-                    <STARS />
-                    <HD>Supplement I</HD>
-                    <HD>A</HD>
-                    <T1>a</T1>
-                    <P>b</P>
-                </EXTRACT>
-            </REGTEXT>"""
-
-        xml_str2 = """
-            <REGTEXT>
-                <P>Something</P>
-                <STARS />
-                <SUBSECT><HD>Supplement I</HD></SUBSECT>
-                <HD>A</HD>
-                <T1>a</T1>
-                <P>b</P>
-            </REGTEXT>"""
-        xml_str3 = """
-            <REGTEXT>
-                <AMDPAR>1. In Supplement I to part 111, under...</AMDPAR>
-                <P>Something</P>
-                <STARS />
-                <HD>SUPPLEMENT I</HD>
-                <HD>A</HD>
-                <T1>a</T1>
-                <P>b</P>
-            </REGTEXT>"""
-        xml_str4 = """
-            <REGTEXT>
-                <AMDPAR>1. In Supplement I to part 111, under...</AMDPAR>
-                <P>Something</P>
-                <STARS />
-                <APPENDIX>
-                    <HD>SUPPLEMENT I</HD>
-                </APPENDIX>
-                <HD>A</HD>
-                <T1>a</T1>
-                <P>b</P>
-                <PRTPAGE />
-            </REGTEXT>"""
-
-        for xml_str in (xml_str1, xml_str2, xml_str3, xml_str4):
-            build.parse_interp_changes('111', etree.fromstring(xml_str))
-            root, nodes = interpretations.parse_from_xml.call_args[0]
-            self.assertEqual(root.label, ['111', 'Interp'])
-            self.assertEqual(['HD', 'T1', 'P'], [n.tag for n in nodes])
 
     def test_set_document_numbers(self):
         notice = {'document_number': '111', 'effective_on': '2013-10-08'}
