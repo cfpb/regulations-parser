@@ -213,6 +213,20 @@ class RegTextTest(TestCase):
         node = node.children[0]
         self.assertEqual(node.label, ['8675', '309', 'a', '1', 'i', 'A', '1'])
 
+    def test_build_from_section_bad_spaces(self):
+        xml = u"""
+            <SECTION>
+                <SECTNO>§ 8675.16</SECTNO>
+                <SUBJECT>Subby Sub Sub.</SUBJECT>
+                <STARS/>
+                <P>(b)<E T="03">General.</E>Content Content.</P>
+            </SECTION>
+        """
+        node = build_from_section('8675', etree.fromstring(xml))[0]
+        self.assertEqual(1, len(node.children))
+        nb = node.children[0]
+        self.assertEqual(nb.text.strip(), "(b) General. Content Content.")
+
     def test_get_title(self):
         xml = u"""
             <PART>

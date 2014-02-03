@@ -103,6 +103,16 @@ def get_paragraph_markers(text):
     return []
 
 
+def _should_add_space(prev_text, next_text):
+    """Logic to determine where to add spaces to XML. Generally this is just
+    as matter of checking for space characters, but there are some
+    outliers"""
+    prev_text, next_text = prev_text[-1:], next_text[:1]
+    return (not prev_text.isspace() and not next_text.isspace()
+            and next_text
+            and prev_text != '(' and next_text != ')')
+
+
 def get_node_text(node, add_spaces=False):
     """ Extract all the text from an XML node (including the
     text of it's children). """
@@ -112,7 +122,7 @@ def get_node_text(node, add_spaces=False):
     if add_spaces:
         final_text = ''
         for part in filter(bool, parts):
-            if not final_text[-1:].isspace() and not part[:1].isspace():
+            if _should_add_space(final_text, part):
                 final_text += " " + part
             else:
                 final_text += part
