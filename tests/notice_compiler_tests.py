@@ -335,6 +335,24 @@ class CompilerTests(TestCase):
         subpart_a = find(reg_tree.tree, '205-Subpart-A')
         self.assertEqual(len(subpart_a.children), 0)
 
+    def test_get_section_parent(self):
+        root = self.tree_with_subparts()
+        section = Node('section', label=['205', '3'], node_type=Node.REGTEXT)
+        subpart = find(root, '205-Subpart-B')
+        subpart.children = [section]
+
+        reg_tree = compiler.RegulationTree(root)
+        parent = reg_tree.get_section_parent(section)
+        self.assertEqual(parent.label_id(), '205-Subpart-B')
+
+    def test_get_section_parent_no_subpart(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+
+        parent = reg_tree.get_section_parent(
+            Node('', label=['205', '1'], node_type=Node.REGTEXT))
+        self.assertEqual(parent.label_id(), '205')
+
     def test_create_new_subpart(self):
         root = self.tree_with_subparts()
 
