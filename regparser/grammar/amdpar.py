@@ -1,7 +1,7 @@
 #vim: set encoding=utf-8
 import string
 
-from pyparsing import CaselessLiteral, OneOrMore, Optional
+from pyparsing import CaselessLiteral, FollowedBy, OneOrMore, Optional
 from pyparsing import Suppress, Word, LineEnd
 
 from regparser.grammar import atomic, tokens, unified
@@ -66,6 +66,11 @@ interp = (
 ).setParseAction(lambda m: tokens.Context([m.part, 'Interpretations'],
                                           bool(m.certain)))
 
+
+def _paren_join(elements):
+    return '(' + ')('.join(el for el in elements if el) + ')'
+
+
 marker_subpart = (
     context_certainty
     + unified.marker_subpart
@@ -77,24 +82,25 @@ comment_context_with_section = (
     + (Marker("comment") | Marker("paragraph"))
     + atomic.section
     + unified.depth1_p
-    ).setParseAction(lambda m: tokens.Context([None, 'Interpretations',
-        m.section, '(' + ')('.join(p for p in [m.p1, m.p2, m.p3, m.p4, m.p5]
-                                   if p) + ')'], bool(m.certain)))
+    + ~FollowedBy("-")
+    ).setParseAction(lambda m: tokens.Context(
+        [None, 'Interpretations', m.section,
+         _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5])], bool(m.certain)))
 # Mild modification of the above; catches "under 2(b)"
 comment_context_under_with_section = (
     Marker("under")
     + atomic.section
     + unified.depth1_p
-    ).setParseAction(lambda m: tokens.Context([None, 'Interpretations',
-        m.section, '(' + ')('.join(p for p in [m.p1, m.p2, m.p3, m.p4, m.p5]
-                                   if p) + ')'], True))
+    ).setParseAction(lambda m: tokens.Context(
+        [None, 'Interpretations', m.section,
+         _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5])], True))
 comment_context_without_section = (
     context_certainty
     + atomic.paragraph_marker
     + unified.depth2_p
-    ).setParseAction(lambda m: tokens.Context([None, 'Interpretations', None,
-        '(' + ')('.join(p for p in [m.p2, m.p3, m.p4, m.p5]
-            if p) + ')'], bool(m.certain)))
+    ).setParseAction(lambda m: tokens.Context(
+        [None, 'Interpretations', None,
+         _paren_join([m.p2, m.p3, m.p4, m.p5])], bool(m.certain)))
 appendix = (
     context_certainty
     + unified.marker_appendix
@@ -156,6 +162,16 @@ section_single_par = (
     ).setParseAction(lambda m: tokens.Paragraph([m.part, None,
         m.section, m.p1, m.p2, m.p3, m.p4, m.p5],
         field=(tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
+single_comment_with_section = (
+    Marker("comment")
+    + atomic.section
+    + unified.depth1_p
+    + "-"
+    + comment_p
+    ).setParseAction(lambda m: tokens.Paragraph(
+        [None, 'Interpretations', m.section,
+         _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5]), m.level2, m.level3,
+         m.level4]))
 single_comment_par = (
     atomic.paragraph_marker
     + comment_p
@@ -235,9 +251,9 @@ multiple_comment_pars = (
 multiple_comments = (
     Marker("comments")
     + make_multiple(atomic.section + unified.depth1_p)
-    ).setParseAction(make_par_list(lambda m: [None, 'Interpretations',
-        m.section, '(' + ')('.join(p for p in [m.p1, m.p2, m.p3, m.p4, m.p5]
-                                   if p) + ')']))
+    ).setParseAction(make_par_list(
+        lambda m: [None, 'Interpretations', m.section,
+                   _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5])]))
 
 multiple_paragraphs = (
     (atomic.paragraphs_marker | atomic.paragraph_marker)
@@ -264,7 +280,7 @@ token_patterns = (
     #   Must come after multiple_pars
     | single_par
     #   Must come after multiple_comment_pars
-    | single_comment_par
+    | single_comment_with_section | single_comment_par
     #   Must come after section_single_par
     | section
     #   Must come after intro_text_of
