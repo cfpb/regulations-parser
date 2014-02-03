@@ -158,9 +158,24 @@ class RegulationTree(object):
         origin.label = destination
         self.add_node(origin)
 
+    def get_section_parent(self, node):
+        """ If we're trying to get the parent of an existing section, it
+        might be part of a subpart. So, let's find the correct subpart. """
+
+        subpart = self.get_subpart_for_node(node.label_id())
+        if subpart is not None:
+            return subpart
+        else:
+            return self.get_parent(node)
+
     def replace_node_and_subtree(self, node):
-        """ Replace an existing node in the tree with node.  """
-        parent = self.get_parent(node)
+        """ Replace an existing node in the tree with node. """
+
+        if len(node.label) == 2 and node.node_type == Node.REGTEXT:
+            parent = self.get_section_parent(node)
+        else:
+            parent = self.get_parent(node)
+
         other_children = [c for c in parent.children if c.label != node.label]
         parent.children = self.add_child(other_children, node)
 
@@ -178,6 +193,10 @@ class RegulationTree(object):
 
         if node.node_type == Node.SUBPART:
             return self.add_to_root(node)
+
+        existing_node = find(self.tree, node.label_id())
+        if existing_node is not None:
+            logging.warning('Node already exists: %s' % node.label_id())
 
         parent = self.get_parent(node)
         if parent is None:
@@ -232,13 +251,13 @@ class RegulationTree(object):
         self.add_to_root(subpart_node)
         return subpart_node
 
-    def get_subpart_for_node(self, label):
+    def get_subpart_for_node(self, label_id):
         """ Return the subpart a node resides in. Note that this can't be
         determined by simply looking at a node's label. """
 
         subparts = self.get_subparts()
         subparts_with_label = [s for s in subparts
-                               if find(s, label) is not None]
+                               if find(s, label_id) is not None]
 
         if len(subparts_with_label) > 0:
             return subparts_with_label[0]

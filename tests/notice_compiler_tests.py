@@ -315,6 +315,45 @@ class CompilerTests(TestCase):
         root.children = [nsa, nsb, nappa]
         return root
 
+    def test_replace_subpart_section(self):
+        """ Replace a section that already exists in a subpart. """
+
+        root = self.tree_with_subparts()
+        section = Node('section', label=['205', '3'], node_type=Node.REGTEXT)
+        subpart = find(root, '205-Subpart-B')
+        subpart.children = [section]
+
+        reg_tree = compiler.RegulationTree(root)
+
+        new_section = Node(
+            'new_section', label=['205', '3'], node_type=Node.REGTEXT)
+        reg_tree.replace_node_and_subtree(new_section)
+
+        subpart = find(reg_tree.tree, '205-Subpart-B')
+        self.assertEqual(len(subpart.children), 1)
+        self.assertEqual(subpart.children[0].text, 'new_section')
+        self.assertEqual(len(reg_tree.tree.children), 3)
+        subpart_a = find(reg_tree.tree, '205-Subpart-A')
+        self.assertEqual(len(subpart_a.children), 0)
+
+    def test_get_section_parent(self):
+        root = self.tree_with_subparts()
+        section = Node('section', label=['205', '3'], node_type=Node.REGTEXT)
+        subpart = find(root, '205-Subpart-B')
+        subpart.children = [section]
+
+        reg_tree = compiler.RegulationTree(root)
+        parent = reg_tree.get_section_parent(section)
+        self.assertEqual(parent.label_id(), '205-Subpart-B')
+
+    def test_get_section_parent_no_subpart(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+
+        parent = reg_tree.get_section_parent(
+            Node('', label=['205', '1'], node_type=Node.REGTEXT))
+        self.assertEqual(parent.label_id(), '205')
+
     def test_create_new_subpart(self):
         root = self.tree_with_subparts()
 
