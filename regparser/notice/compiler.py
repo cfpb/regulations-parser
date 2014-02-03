@@ -159,7 +159,7 @@ class RegulationTree(object):
         self.add_node(origin)
 
     def get_section_parent(self, node):
-        """ If we're trying to get the parent of an existing section, it 
+        """ If we're trying to get the parent of an existing section, it
         might be part of a subpart. So, let's find the correct subpart. """
 
         subpart = self.get_subpart_for_node(node.label_id())
@@ -167,7 +167,7 @@ class RegulationTree(object):
             return subpart
         else:
             return self.get_parent(node)
-        
+
     def replace_node_and_subtree(self, node):
         """ Replace an existing node in the tree with node. """
 
@@ -251,13 +251,13 @@ class RegulationTree(object):
         self.add_to_root(subpart_node)
         return subpart_node
 
-    def get_subpart_for_node(self, label):
+    def get_subpart_for_node(self, label_id):
         """ Return the subpart a node resides in. Note that this can't be
         determined by simply looking at a node's label. """
 
         subparts = self.get_subparts()
         subparts_with_label = [s for s in subparts
-                               if find(s, label) is not None]
+                               if find(s, label_id) is not None]
 
         if len(subparts_with_label) > 0:
             return subparts_with_label[0]
@@ -333,8 +333,6 @@ def compile_regulation(previous_tree, notice_changes):
             replace_subtree = 'field' not in change
 
             if change['action'] == 'PUT' and replace_subtree:
-                if label == '1026-35':
-                    print 'SECTION SECTION PUT'
                 node = dict_to_node(change['node'])
                 reg.replace_node_and_subtree(node)
             elif change['action'] == 'PUT' and change['field'] in field_list:
