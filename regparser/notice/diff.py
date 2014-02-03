@@ -214,13 +214,17 @@ def switch_passive(tokenized):
         to_add = list(takewhile(
             lambda t: not isinstance(t, tokens.Verb), remaining))
         if len(to_add) < len(remaining):
-            #also take the verb
+            #   also take the verb
             verb = remaining[len(to_add)]
             to_add.append(verb)
+            #   switch verb to the beginning
             if not verb.active:
-                #switch it to the beginning
                 to_add = to_add[-1:] + to_add[:-1]
                 verb.active = True
+                #   may need to grab one more if the verb is move
+                if (verb.verb == tokens.Verb.MOVE
+                    and len(to_add) < len(remaining)):
+                    to_add.append(remaining[len(to_add)])
         converted.extend(to_add)
         remaining = remaining[len(to_add):]
     return converted

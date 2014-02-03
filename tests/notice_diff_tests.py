@@ -181,6 +181,21 @@ class NoticeDiffTests(TestCase):
             tokens.Context(['2']),
             tokens.Context(['3']),
         ])
+        
+        tokenized = [
+            tokens.Context(['1']),
+            tokens.Verb(tokens.Verb.MOVE, active=False),
+            tokens.Context(['2']),
+            tokens.Context(['3']),
+            tokens.Verb(tokens.Verb.PUT, active=False)]
+        converted = switch_passive(tokenized)
+        self.assertEqual(converted, [
+            tokens.Verb(tokens.Verb.MOVE, active=True),
+            tokens.Context(['1']),
+            tokens.Context(['2']),
+            tokens.Verb(tokens.Verb.PUT, active=True),
+            tokens.Context(['3']),
+        ])
 
     def test_find_section(self):
         xml = u"""
