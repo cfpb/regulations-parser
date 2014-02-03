@@ -167,7 +167,7 @@ single_comment_with_section = (
     + atomic.section
     + unified.depth1_p
     + "-"
-    + comment_p
+    + Optional("(") + comment_p + Optional(")")
     ).setParseAction(lambda m: tokens.Paragraph(
         [None, 'Interpretations', m.section,
          _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5]), m.level2, m.level3,
