@@ -223,7 +223,7 @@ def switch_passive(tokenized):
                 verb.active = True
                 #   may need to grab one more if the verb is move
                 if (verb.verb == tokens.Verb.MOVE
-                    and len(to_add) < len(remaining)):
+                        and len(to_add) < len(remaining)):
                     to_add.append(remaining[len(to_add)])
         converted.extend(to_add)
         remaining = remaining[len(to_add):]

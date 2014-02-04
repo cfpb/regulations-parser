@@ -70,7 +70,7 @@ def process_without_headers(cfr_part, parent_xml, amended_labels):
     by trying to match up amended_labels with paragraphs"""
     parent_xml = standardize_xml(parent_xml)
 
-    relevant_labels = [al.label for al in 
+    relevant_labels = [al.label for al in
                        filter(_is_interp_amend, amended_labels)]
     label_indices = []
     for idx, child in enumerate(parent_xml):

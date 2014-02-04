@@ -245,7 +245,7 @@ class GrammarAmdParTests(TestCase):
         ])
 
     def test_example18(self):
-        text = 'Section 106.52(b)(1)(ii)(A) and (B) is revised' 
+        text = 'Section 106.52(b)(1)(ii)(A) and (B) is revised'
         text += ' to read as follows'
         result = parse_text(text)
 

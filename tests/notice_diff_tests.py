@@ -181,7 +181,7 @@ class NoticeDiffTests(TestCase):
             tokens.Context(['2']),
             tokens.Context(['3']),
         ])
-        
+
         tokenized = [
             tokens.Context(['1']),
             tokens.Verb(tokens.Verb.MOVE, active=False),
