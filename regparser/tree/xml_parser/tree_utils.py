@@ -110,7 +110,8 @@ def _should_add_space(prev_text, next_text):
     prev_text, next_text = prev_text[-1:], next_text[:1]
     return (not prev_text.isspace() and not next_text.isspace()
             and next_text
-            and prev_text != '(' and next_text != ')')
+            and prev_text not in '([/<'
+            and next_text not in ').;,]>/')
 
 
 def get_node_text(node, add_spaces=False):
