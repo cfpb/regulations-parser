@@ -200,7 +200,27 @@ def preprocess_notice_xml(notice_xml):
             if parent.getnext() is not None:
                 parent.remove(amdpar)
                 parent.getnext().insert(0, amdpar)
-    return deepcopy(notice_xml)
+
+    # Supplement I AMDPARs are often incorrect (labelled as Ps)
+    xpath = "//REGTEXT//HD[@SOURCE='HD1' and contains(., '"
+    xpath += "Supplement I to Part')]"
+    for supp_header in notice_xml.xpath(xpath):
+        if (not any("supplement i" in amdpar.text.lower() for amdpar in
+                    supp_header.getparent().xpath("./AMDPAR"))
+            and any('supplement i' in p.text.lower() for p in
+                    supp_header.getparent().xpath("./P"))):
+            pred = supp_header.getprevious()
+            while pred is not None:
+                if pred.tag != 'P':
+                    pred = pred.getprevious()
+                else:
+                    pred.tag = 'AMDPAR'
+                    if 'supplement i' in pred.text.lower():
+                        pred = None
+                    else:
+                        pred = pred.getprevious()
+
+    return notice_xml
 
 
 def process_amendments(notice, notice_xml):
