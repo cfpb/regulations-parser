@@ -16,6 +16,7 @@ def parse_interp_changes(amended_labels, cfr_part, parent_xml):
     interp tree with the assumption that interpretation headers (e.g.
     "22(b)") are present; if that doesn't work, try matching paragraphs by
     looking at the amended labels"""
+    return
     if any(_is_interp_amend(al) for al in amended_labels):
         return (
             process_with_headers(cfr_part, parent_xml)
