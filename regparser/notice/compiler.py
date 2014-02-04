@@ -188,14 +188,20 @@ class RegulationTree(object):
         parent.children = self.add_child(parent.children, node)
         return parent
 
+    def contains(self, label):
+        """Is this label already in the tree? label can be a list of a
+        string"""
+        if isinstance(label, list):
+            label = '-'.join(label)
+        return bool(find(self.tree, label))
+
     def add_node(self, node):
         """ Add an entirely new node to the regulation tree. """
 
         if node.node_type == Node.SUBPART:
             return self.add_to_root(node)
 
-        existing_node = find(self.tree, node.label_id())
-        if existing_node is not None:
+        if self.contains(node.label_id()):
             logging.warning('Node already exists: %s' % node.label_id())
 
         parent = self.get_parent(node)
@@ -320,39 +326,69 @@ def replace_node_field(reg, label, change):
         reg.replace_node_heading(label, change)
 
 
+def one_change(reg, label, change):
+    """Notices are generally composed of many changes; this method handles a
+    single change to the tree."""
+    field_list = ['[text]', '[title]', '[heading]']
+    replace_subtree = 'field' not in change
+
+    if change['action'] == 'PUT' and replace_subtree:
+        node = dict_to_node(change['node'])
+        reg.replace_node_and_subtree(node)
+    elif change['action'] == 'PUT' and change['field'] in field_list:
+        replace_node_field(reg, label, change)
+    elif change['action'] == 'POST':
+        node = dict_to_node(change['node'])
+        if 'subpart' in change and len(node.label) == 2:
+            reg.add_section(node, change['subpart'])
+        else:
+            reg.add_node(node)
+    elif change['action'] == 'DESIGNATE':
+        if 'Subpart' in change['destination']:
+            reg.move_to_subpart(label, change['destination'])
+    elif change['action'] == 'MOVE':
+        reg.move(label, change['destination'])
+    elif change['action'] == 'DELETE':
+        reg.delete(label)
+    elif change['action'] == 'RESERVE':
+        node = dict_to_node(change['node'])
+        reg.reserve(label, node)
+    else:
+        print "%s: %s" % (change['action'], label)
+
+
+def _needs_delay(reg, change):
+    """Determine whether we should delay processing this change. This will
+    be used in a second pass when compiling the reg"""
+    action = change['action']
+    return (
+        (action == 'MOVE' and reg.contains(change['destination']))
+        or (action == 'POST' and reg.contains(change['node']['label'])))
+
+
 def compile_regulation(previous_tree, notice_changes):
     """ Given a last full regulation tree, and the set of changes from the
     next final notice, construct the next full regulation tree. """
     reg = RegulationTree(previous_tree)
     labels = sort_labels(notice_changes.keys())
-    field_list = ['[text]', '[title]', '[heading]']
 
-    for label in labels:
-        changes = notice_changes[label]
-        for change in changes:
-            replace_subtree = 'field' not in change
+    next_pass = [(label, change)
+                 for label in labels
+                 for change in notice_changes[label]]
+    pass_len = len(next_pass) + 1
 
-            if change['action'] == 'PUT' and replace_subtree:
-                node = dict_to_node(change['node'])
-                reg.replace_node_and_subtree(node)
-            elif change['action'] == 'PUT' and change['field'] in field_list:
-                replace_node_field(reg, label, change)
-            elif change['action'] == 'POST':
-                node = dict_to_node(change['node'])
-                if 'subpart' in change and len(node.label) == 2:
-                    reg.add_section(node, change['subpart'])
-                else:
-                    reg.add_node(node)
-            elif change['action'] == 'DESIGNATE':
-                if 'Subpart' in change['destination']:
-                    reg.move_to_subpart(label, change['destination'])
-            elif change['action'] == 'MOVE':
-                reg.move(label, change['destination'])
-            elif change['action'] == 'DELETE':
-                reg.delete(label)
-            elif change['action'] == 'RESERVE':
-                node = dict_to_node(change['node'])
-                reg.reserve(label, node)
+    #   Monotonically decreasing length - guarantees we'll end
+    while pass_len > len(next_pass):
+        pass_len = len(next_pass)
+        current_pass, next_pass = next_pass, []
+        for label, change in current_pass:
+            if _needs_delay(reg, change):
+                next_pass.append((label, change))
             else:
-                print "%s: %s" % (change['action'], label)
+                one_change(reg, label, change)
+
+    # Force any remaining changes -- generally means something went wrong
+    for label, change in next_pass:
+        logging.warning('Conflicting Change: %s:%s', label, change['action'])
+        one_change(reg, label, change)
     return reg.tree

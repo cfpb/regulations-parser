@@ -1,5 +1,6 @@
 #vim: set encoding=utf-8
 from unittest import TestCase
+
 from regparser.notice import compiler
 from regparser.tree.struct import Node, find
 
@@ -555,3 +556,27 @@ class CompilerTests(TestCase):
         replacement = "Replaced sentence."
         result = compiler.replace_first_sentence(text, replacement)
         self.assertEqual(result, "Replaced sentence.")
+
+    def test_compile_regulation_delete_move(self):
+        prev_tree = self.tree_with_paragraphs()
+        changes = {
+            '205-2-a': [
+                {'action': 'MOVE', 'destination': ['205', '2', 'b']},
+                {'action': 'POST', 'node': {'text': 'aaa',
+                                            'label': ['205', '2', 'a'],
+                                            'node_type': Node.REGTEXT}}],
+            '205-2-b': [{'action': 'DELETE'}]}
+
+        class SortedKeysDict(object):
+            def keys(self):
+                return list(sorted(changes.keys()))
+
+            def __getitem__(self, key):
+                return changes[key]
+
+        new_tree = compiler.compile_regulation(prev_tree, SortedKeysDict())
+        s1, s2, s4 = new_tree.children
+        self.assertEqual(2, len(s2.children))
+        s2a, s2b = s2.children
+        self.assertEqual("aaa", s2a.text)
+        self.assertEqual("n2a", s2b.text)
