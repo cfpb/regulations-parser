@@ -1,3 +1,4 @@
+from copy import deepcopy
 import os
 from urlparse import urlparse
 
@@ -96,6 +97,7 @@ def set_document_numbers(notices):
 def process_notice(partial_notice, notice_str):
     notice_xml = etree.fromstring(notice_str)
     notice = dict(partial_notice)
+    notice_xml = preprocess_notice_xml(notice_xml)
     process_xml(notice, notice_xml)
     return notice
 
@@ -182,6 +184,23 @@ class AmdparByParent(object):
 
     def append(self, next_amdpar):
         self.amdpars.append(next_amdpar)
+
+
+def preprocess_notice_xml(notice_xml):
+    """Unfortunately, the notice xml is often inaccurate. This function
+    attempts to fix some of those (general) flaws. For specific issues, we
+    tend to instead use the files in settings.LOCAL_XML_PATHS"""
+    notice_xml = deepcopy(notice_xml)   # We will be destructive
+
+    # Last amdpar in a section; probably meant to add the amdpar to the
+    # next section
+    for amdpar in notice_xml.xpath("//AMDPAR"):
+        if amdpar.getnext() is None:
+            parent = amdpar.getparent()
+            if parent.getnext() is not None:
+                parent.remove(amdpar)
+                parent.getnext().insert(0, amdpar)
+    return deepcopy(notice_xml)
 
 
 def process_amendments(notice, notice_xml):
