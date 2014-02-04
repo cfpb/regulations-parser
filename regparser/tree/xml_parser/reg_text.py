@@ -154,7 +154,7 @@ def get_markers(text):
 
 
 def get_markers_and_text(node, markers_list):
-    node_text = tree_utils.get_node_text(node)
+    node_text = tree_utils.get_node_text(node, add_spaces=True)
     text_with_tags = tree_utils.get_node_text_tags_preserved(node)
 
     if len(markers_list) > 1:
@@ -191,14 +191,12 @@ def build_from_section(reg_part, section_xml):
     m_stack = tree_utils.NodeStack()
     section_texts = []
     for ch in (ch for ch in section_xml.getchildren() if ch.tag == 'P'):
-        text = tree_utils.get_node_text(ch)
+        text = tree_utils.get_node_text(ch, add_spaces=True)
         tagged_text = tree_utils.get_node_text_tags_preserved(ch)
         markers_list = get_markers(tagged_text)
 
         if not markers_list:
-            node_text = tree_utils.get_node_text(ch)
-            tagged_text = tree_utils.get_node_text_tags_preserved(ch)
-            section_texts.append((node_text, tagged_text))
+            section_texts.append((text, tagged_text))
         else:
             markers_and_text = get_markers_and_text(ch, markers_list)
 

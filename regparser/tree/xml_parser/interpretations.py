@@ -66,7 +66,7 @@ _first_markers = [re.compile(ur'[\.|,|;|-|—]\s*(' + marker + ')\.')
 def interp_inner_child(child_node, stack):
     """ Build an inner child node (basically a node that's after
     -Interp- in the tree) """
-    node_text = tree_utils.get_node_text(child_node)
+    node_text = tree_utils.get_node_text(child_node, add_spaces=True)
     text_with_tags = tree_utils.get_node_text_tags_preserved(child_node)
     first_marker = get_first_interp_marker(text_with_tags)
     paragraph_count = 0
@@ -130,7 +130,7 @@ def process_inner_children(inner_stack, node):
     children = itertools.takewhile(
         lambda x: not is_title(x), node.itersiblings())
     for c in filter(lambda c: c.tag == 'P', children):
-        node_text = tree_utils.get_node_text(c)
+        node_text = tree_utils.get_node_text(c, add_spaces=True)
 
         interp_inner_child(c, inner_stack)
 
@@ -168,7 +168,7 @@ def parse_from_xml(root, xml_nodes):
 
         #   Explicitly ignore "subpart" headers, as they are inconsistent
         #   and they will be reconstructed as subterps client-side
-        text = tree_utils.get_node_text(ch)
+        text = tree_utils.get_node_text(ch, add_spaces=True)
         if is_title(ch) and 'subpart' not in text.lower():
             labels = text_to_labels(text, label_obj)
             if labels:

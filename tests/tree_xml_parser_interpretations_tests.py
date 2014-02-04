@@ -96,6 +96,41 @@ class InterpretationsTest(TestCase):
         self.assertEqual(i5a1iiA3.tagged_text, '<E T="03">3. Keyterms</E>')
         self.assertEqual(0, len(i5a1iiA3.children))
 
+    def test_build_supplement_tree_spacing(self):
+        """Integration test"""
+        xml = """<APPENDIX>
+            <HD SOURCE="HED">
+                Supplement I to Part 737-Official Interpretations</HD>
+            <HD SOURCE="HD2">Section 737.5 NASCAR</HD>
+            <P>1.<E T="03">Phrase</E>. More Content</P>
+            <P>i. I like<PRTPAGE />ice cream</P>
+            <P>A. Aaaaah</P>
+            <P><E T="03">1.</E>More info</P>
+        </APPENDIX>"""
+        tree = interpretations.build_supplement_tree('737',
+                                                     etree.fromstring(xml))
+        self.assertEqual(['737', 'Interp'], tree.label)
+        self.assertEqual(1, len(tree.children))
+
+        s5 = tree.children[0]
+        self.assertEqual(1, len(s5.children))
+
+        s51 = s5.children[0]
+        self.assertEqual(s51.text.strip(), "1. Phrase. More Content")
+        self.assertEqual(1, len(s51.children))
+
+        s51i = s51.children[0]
+        self.assertEqual(s51i.text.strip(), "i. I like ice cream")
+        self.assertEqual(1, len(s51i.children))
+
+        s51iA = s51i.children[0]
+        self.assertEqual(s51iA.text.strip(), "A. Aaaaah")
+        self.assertEqual(1, len(s51iA.children))
+
+        s51iA1 = s51iA.children[0]
+        self.assertEqual(s51iA1.text.strip(), "1. More info")
+        self.assertEqual(0, len(s51iA1.children))
+
     def test_build_supplement_tree_repeats(self):
         """Integration test"""
         xml = """<APPENDIX>

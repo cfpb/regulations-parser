@@ -242,7 +242,7 @@ class NoticeBuildTest(TestCase):
         changes = notice['changes']['105-1-b'][0]
         self.assertEqual(changes['action'], 'PUT')
         self.assertTrue(changes['node']['text'].startswith(
-            u'(b) This part carries out.\n'))
+            u'(b) This part carries out.'))
 
     def test_process_amendments_multiple_in_same_parent(self):
         xml = u"""
