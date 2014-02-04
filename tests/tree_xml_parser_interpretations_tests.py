@@ -118,7 +118,7 @@ class InterpretationsTest(TestCase):
         s51 = s5.children[0]
         self.assertEqual(s51.text.strip(), "1. Phrase. More Content")
         self.assertEqual(1, len(s51.children))
-        
+
         s51i = s51.children[0]
         self.assertEqual(s51i.text.strip(), "i. I like ice cream")
         self.assertEqual(1, len(s51i.children))
