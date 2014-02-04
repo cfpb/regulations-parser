@@ -179,7 +179,7 @@ def next_marker(xml_node, remaining_markers):
 
     #   Check the next xml node; skip over stars
     sib = xml_node.getnext()
-    if sib is not None and sib.tag == 'STARS':
+    while sib is not None and sib.tag == 'STARS':
         sib = sib.getnext()
     if sib is not None:
         next_text = tree_utils.get_node_text(sib)

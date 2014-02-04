@@ -355,6 +355,7 @@ class RegTextTest(TestCase):
             <ROOT>
                 <P>(i) Content</P>
                 <STARS />
+                <STARS />
                 <P>(xi) More</P>
             </ROOT>""")
         self.assertEqual('xi', next_marker(xml.getchildren()[0], []))
