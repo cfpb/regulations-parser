@@ -245,7 +245,7 @@ class GrammarAmdParTests(TestCase):
         ])
 
     def test_example18(self):
-        text = 'Section 106.52(b)(1)(ii)(A) and (B) is revised' 
+        text = 'Section 106.52(b)(1)(ii)(A) and (B) is revised'
         text += ' to read as follows'
         result = parse_text(text)
 
@@ -311,3 +311,17 @@ class GrammarAmdParTests(TestCase):
         paragraph = [p for p in result if isinstance(p, tokens.Paragraph)][0]
         p_object = tokens.Paragraph([None, None, None, 'a'], field='heading')
         self.assertEqual(p_object, paragraph)
+
+    def test_example_22(self):
+        text = "comment 33(c)-5 is redesignated as comment 33(c)-6 and "
+        text += "republished, and comment 33(c)-(5) is added."
+
+        result = parse_text(text)
+        self.assertEqual(5, len(result))
+        old, verb, new, new_new, verb2 = result
+        self.assertEqual(old.label,
+                         [None, 'Interpretations', '33', '(c)', '5'])
+        self.assertEqual(new.label,
+                         [None, 'Interpretations', '33', '(c)', '6'])
+        self.assertEqual(new_new.label,
+                         [None, 'Interpretations', '33', '(c)', '5'])

@@ -95,6 +95,23 @@ def join_text(node):
     return ''.join(bits)
 
 
+def merge_duplicates(nodes):
+    """Given a list of nodes with the same-length label, merge any
+    duplicates (by combining their children)"""
+    found_pair = None
+    for lidx, lhs in enumerate(nodes):
+        for ridx, rhs in enumerate(nodes[lidx + 1:], lidx + 1):
+            if lhs.label == rhs.label:
+                found_pair = (lidx, ridx)
+    if found_pair:
+        lidx, ridx = found_pair
+        lhs, rhs = nodes[lidx], nodes[ridx]
+        lhs.children.extend(rhs.children)
+        return merge_duplicates(nodes[:ridx] + nodes[ridx + 1:])
+    else:
+        return nodes
+
+
 def treeify(nodes):
     """Given a list of nodes, convert those nodes into the appropriate tree
     structure based on their labels. This assumes that all nodes will fall
@@ -110,6 +127,7 @@ def treeify(nodes):
         elif len(node.label) < min_len:
             min_len = len(node.label)
             with_min = [node]
+    with_min = merge_duplicates(with_min)
 
     roots = []
     for root in with_min:
@@ -117,7 +135,7 @@ def treeify(nodes):
             is_child = lambda n: n.label[:len(root.label)-1] == root.label[:-1]
         else:
             is_child = lambda n: n.label[:len(root.label)] == root.label
-        children = [n for n in nodes if n != root and is_child(n)]
+        children = [n for n in nodes if n.label != root.label and is_child(n)]
         root.children = root.children + treeify(children)
         roots.append(root)
     return roots
