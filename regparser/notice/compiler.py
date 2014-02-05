@@ -139,7 +139,7 @@ class RegulationTree(object):
     def reserve(self, label_id, node):
         """ Reserve either an existing node (by replacing it) or
         reserve by adding a new node. When a node is reserved, it's
-        represented in the FR XML. We simply use that represenation here
+        represented in the FR XML. We simply use that representation here
         instead of doing something else. """
 
         existing_node = find(self.tree, label_id)
@@ -194,9 +194,18 @@ class RegulationTree(object):
         if node.node_type == Node.SUBPART:
             return self.add_to_root(node)
 
-        existing_node = find(self.tree, node.label_id())
-        if existing_node is not None:
-            logging.warning('Node already exists: %s' % node.label_id())
+        existing = find(self.tree, node.label_id())
+        if existing is not None:
+            reserved_title = existing.title and '[Reserved]' in existing.title
+            reserved_text = existing.text and '[Reserved]' in existing.text
+            if reserved_title or reserved_text: 
+                logging.warning('Replacing reserved node: %s' % node.label_id())
+                return self.replace_node_and_subtree(node)
+            else:
+                logging.warning(
+                    'Adding a node that already exists: %s' % node.label_id())
+                print '%s %s' % (existing.text, node.label)
+                print '----'
 
         parent = self.get_parent(node)
         if parent is None:
