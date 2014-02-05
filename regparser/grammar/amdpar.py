@@ -143,6 +143,15 @@ paragraph_heading_of = (
         m.p1, m.p2, m.p3, m.p4, m.p5],
         field=tokens.Paragraph.KEYTERM_FIELD))
 
+comment_heading = (
+    Marker("heading")
+    + (Marker("of") | Marker("for"))
+    + atomic.section
+    + unified.depth1_p).setParseAction(
+    lambda m: tokens.Paragraph([None, "Interpretations", m.section,
+                                _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5])],
+                               field=tokens.Paragraph.HEADING_FIELD)) 
+
 intro_text_of = (
     intro_text_marker + Marker("of")
     + unified.marker_paragraph.copy()
@@ -272,7 +281,10 @@ token_patterns = (
     | comment_context_with_section | comment_context_without_section
     | comment_context_under_with_section
 
-    | paragraph_heading_of | section_heading | section_heading_of | intro_text_of
+    | paragraph_heading_of | section_heading_of | intro_text_of
+    | comment_heading
+    # Must come after other headings as it is a catch-all
+    | section_heading
     | multiple_paragraph_sections | section_single_par
 
     | multiple_sections | multiple_paragraphs | multiple_appendices

@@ -562,6 +562,15 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(['999', '3', 'b', 'Interp', '1', 'iv'],
                          amends[0].label)
 
+    def test_parse_amdpar_interp_heading(self):
+        text = "ii. The heading for 35(b) blah blah is revised."
+        xml = etree.fromstring(u'<AMDPAR>%s</AMDPAR>' % text)
+        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        self.assertEqual(1, len(amends))
+        self.assertEqual('PUT', amends[0].action)
+        self.assertEqual('[title]', amends[0].field)
+        self.assertEqual(['1111', '35', 'b', 'Interp'], amends[0].label)
+
 
 class AmendmentTests(TestCase):
     def test_fix_label(self):
