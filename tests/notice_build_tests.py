@@ -513,3 +513,46 @@ class NoticeBuildTest(TestCase):
                          "(b) Content")
         self.assertEqual(amd2a.getparent().xpath(".//P")[0].text.strip(),
                          "(a) Content")
+
+    def test_preprocess_notice_xml_interp_amds_are_ps(self):
+        notice_xml = etree.fromstring(u"""
+            <PART>
+                <REGTEXT>
+                    <AMDPAR>1. In § 105.1, revise paragraph (b):</AMDPAR>
+                    <SECTION>
+                        <STARS />
+                        <P>(b) Content</P>
+                    </SECTION>
+                    <P>2. In Supplement I to Part 105,</P>
+                    <P>A. Under Section 105.1, 1(b), paragraph 2 is revised</P>
+                    <P>The revisions are as follows</P>
+                    <HD SOURCE="HD1">Supplement I to Part 105</HD>
+                    <STARS />
+                    <P><E T="03">1(b) Heading</E></P>
+                    <STARS />
+                    <P>2. New Content</P>
+                </REGTEXT>
+            </PART>""")
+        notice_xml = build.preprocess_notice_xml(notice_xml)
+        amd1, amd2, amd2A, amd_other = notice_xml.xpath("//AMDPAR")
+        self.assertEqual(amd2A.text.strip(), "A. Under Section 105.1, 1(b), "
+                                             + "paragraph 2 is revised")
+
+    def test_preprocess_notice_xml_interp_amds_are_ps2(self):
+        notice_xml = etree.fromstring(u"""
+            <PART>
+                <REGTEXT>
+                    <AMDPAR>1. In Supplement I to Part 105,</AMDPAR>
+                    <P>A. Under Section 105.1, 1(b), paragraph 2 is revised</P>
+                    <P>The revisions are as follows</P>
+                    <HD SOURCE="HD1">Supplement I to Part 105</HD>
+                    <STARS />
+                    <P><E T="03">1(b) Heading</E></P>
+                    <STARS />
+                    <P>2. New Content</P>
+                </REGTEXT>
+            </PART>""")
+        notice_xml = build.preprocess_notice_xml(notice_xml)
+        amd1, amd1A, amd_other = notice_xml.xpath("//AMDPAR")
+        self.assertEqual(amd1A.text.strip(), "A. Under Section 105.1, 1(b), "
+                                             + "paragraph 2 is revised")

@@ -202,16 +202,15 @@ def preprocess_notice_xml(notice_xml):
                 parent.getnext().insert(0, amdpar)
 
     # Supplement I AMDPARs are often incorrect (labelled as Ps)
-    xpath = "//REGTEXT//HD[@SOURCE='HD1' and contains(., '"
-    xpath += "Supplement I to Part')]"
+    xpath_contains_supp = "contains(., 'Supplement I')"
+    xpath = "//REGTEXT//HD[@SOURCE='HD1' and %s]" % xpath_contains_supp
     for supp_header in notice_xml.xpath(xpath):
-        if (not any("supplement i" in amdpar.text.lower() for amdpar in
-                    supp_header.getparent().xpath("./AMDPAR"))
-            and any('supplement i' in p.text.lower() for p in
-                    supp_header.getparent().xpath("./P"))):
+        parent = supp_header.getparent()
+        if (parent.xpath("./AMDPAR[%s]" % xpath_contains_supp)
+                or parent.xpath("./P[%s]" % xpath_contains_supp)):
             pred = supp_header.getprevious()
             while pred is not None:
-                if pred.tag != 'P':
+                if pred.tag not in ('P', 'AMDPAR'):
                     pred = pred.getprevious()
                 else:
                     pred.tag = 'AMDPAR'
