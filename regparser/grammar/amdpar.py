@@ -259,7 +259,7 @@ multiple_paragraphs = (
     (atomic.paragraphs_marker | atomic.paragraph_marker)
     + make_multiple(unified.any_depth_p)
     ).setParseAction(make_par_list(lambda m: [m.part, None, m.section,
-        m.p1, m.p2, m.p3, m.p4, m.p5]))
+        m.p1, m.p2, m.p3, m.p4, m.plaintext_p5]))
 
 
 #   grammar which captures all of these possibilities
