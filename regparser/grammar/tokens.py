@@ -103,3 +103,14 @@ class TokenList:
 
     def __iter__(self):
         return iter(self.tokens)
+
+
+class AndToken(object):
+    """The word 'and' can help us determine if a Context token should be a
+    Paragraph token. Note that 'and' might also trigger the creation of a
+    TokenList, which takes precedent"""
+    def __eq__(self, other):
+        return isinstance(other, AndToken)
+
+    def __repr__(self):
+        return "AndToken()"

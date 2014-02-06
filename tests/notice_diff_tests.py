@@ -99,6 +99,14 @@ class NoticeDiffTests(TestCase):
                               '5'])
         ])
 
+    def test_resolve_confused_context(self):
+        tokenized = [tokens.Context([None, None, '12', 'a', '2', 'iii'])]
+        converted = resolve_confused_context(tokenized,
+                                             ['123', 'Interpretations'])
+        self.assertEqual(
+            converted, [tokens.Context([None, 'Interpretations', '12',
+                                        '(a)(2)(iii)'])])
+
     def test_compress(self):
         self.assertEqual([1, 2, 3], compress([1, 2, 3], []))
         self.assertEqual([1, 6, 3], compress([1, 2, 3, 4, 5], [None, 6, None]))
@@ -570,6 +578,22 @@ class NoticeDiffTests(TestCase):
         self.assertEqual('PUT', amends[0].action)
         self.assertEqual('[title]', amends[0].field)
         self.assertEqual(['1111', '35', 'b', 'Interp'], amends[0].label)
+
+    def test_parse_amdpar_interp_context(self):
+        text = "b. 35(b)(1) Some title and paragraphs 1, 2, and 3 are added."
+        xml = etree.fromstring(u'<AMDPAR>%s</AMDPAR>' % text)
+        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        self.assertEqual(4, len(amends))
+        for amd in amends:
+            self.assertEqual('POST', amd.action)
+        amd35b1, amd35b1_1, amd35b1_2, amd35b1_3 = amends
+        self.assertEqual(['1111', '35', 'b', '1', 'Interp'], amd35b1.label)
+        self.assertEqual(['1111', '35', 'b', '1', 'Interp', '1'],
+                         amd35b1_1.label)
+        self.assertEqual(['1111', '35', 'b', '1', 'Interp', '2'],
+                         amd35b1_2.label)
+        self.assertEqual(['1111', '35', 'b', '1', 'Interp', '3'],
+                         amd35b1_3.label)
 
 
 class AmendmentTests(TestCase):

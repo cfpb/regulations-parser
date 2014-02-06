@@ -16,6 +16,9 @@ intro_text_marker = (
 passive_marker = Marker("is") | Marker("are") | Marker("was") | Marker("were")
 
 
+and_token = Marker("and").setParseAction(lambda _: tokens.AndToken())
+
+
 #Verbs
 def generate_verb(word_list, verb, active):
     """Short hand for making tokens.Verb from a list of trigger words"""
@@ -65,6 +68,16 @@ interp = (
     context_certainty + atomic.comment_marker + unified.marker_part
 ).setParseAction(lambda m: tokens.Context([m.part, 'Interpretations'],
                                           bool(m.certain)))
+
+
+# This may be a regtext paragraph or it may be an interpretation
+paragraph_context = (
+    atomic.section
+    + unified.depth1_p
+    + ~FollowedBy("-")
+    ).setParseAction(
+    lambda m: tokens.Context([None, None, m.section, m.p1, m.p2, m.p3, m.p4,
+                              m.p5]))
 
 
 def _paren_join(elements):
@@ -297,6 +310,9 @@ token_patterns = (
     | section
     #   Must come after intro_text_of
     | intro_text
+
+    | paragraph_context
+    | and_token
 )
 
 subpart_label = (atomic.part + Suppress('-')
