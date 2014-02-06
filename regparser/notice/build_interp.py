@@ -27,7 +27,7 @@ def standardize_xml(xml):
     """We will assume a format of Supplement I header followed by HDs,
     STARS, and Ps, so move anything in an EXTRACT up a level"""
     xml = spaces_then_remove(deepcopy(xml), 'PRTPAGE')
-    for extract in xml.xpath(".//EXTRACT"):
+    for extract in xml.xpath(".//EXTRACT") + xml.xpath(".//APPENDIX"):
         ex_parent = extract.getparent()
         idx = ex_parent.index(extract)
         for child in extract:

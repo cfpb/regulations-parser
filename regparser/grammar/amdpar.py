@@ -16,6 +16,9 @@ intro_text_marker = (
 passive_marker = Marker("is") | Marker("are") | Marker("was") | Marker("were")
 
 
+and_token = Marker("and").setParseAction(lambda _: tokens.AndToken())
+
+
 #Verbs
 def generate_verb(word_list, verb, active):
     """Short hand for making tokens.Verb from a list of trigger words"""
@@ -65,6 +68,16 @@ interp = (
     context_certainty + atomic.comment_marker + unified.marker_part
 ).setParseAction(lambda m: tokens.Context([m.part, 'Interpretations'],
                                           bool(m.certain)))
+
+
+# This may be a regtext paragraph or it may be an interpretation
+paragraph_context = (
+    atomic.section
+    + unified.depth1_p
+    + ~FollowedBy("-")
+    ).setParseAction(
+    lambda m: tokens.Context([None, None, m.section, m.p1, m.p2, m.p3, m.p4,
+                              m.p5]))
 
 
 def _paren_join(elements):
@@ -142,6 +155,15 @@ paragraph_heading_of = (
     ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
         m.p1, m.p2, m.p3, m.p4, m.p5],
         field=tokens.Paragraph.KEYTERM_FIELD))
+
+comment_heading = (
+    Marker("heading")
+    + (Marker("of") | Marker("for"))
+    + atomic.section
+    + unified.depth1_p).setParseAction(
+    lambda m: tokens.Paragraph([None, "Interpretations", m.section,
+                                _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5])],
+                               field=tokens.Paragraph.HEADING_FIELD)) 
 
 intro_text_of = (
     intro_text_marker + Marker("of")
@@ -272,7 +294,10 @@ token_patterns = (
     | comment_context_with_section | comment_context_without_section
     | comment_context_under_with_section
 
-    | paragraph_heading_of | section_heading | section_heading_of | intro_text_of
+    | paragraph_heading_of | section_heading_of | intro_text_of
+    | comment_heading
+    # Must come after other headings as it is a catch-all
+    | section_heading
     | multiple_paragraph_sections | section_single_par
 
     | multiple_sections | multiple_paragraphs | multiple_appendices
@@ -285,6 +310,9 @@ token_patterns = (
     | section
     #   Must come after intro_text_of
     | intro_text
+
+    | paragraph_context
+    | and_token
 )
 
 subpart_label = (atomic.part + Suppress('-')

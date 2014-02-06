@@ -144,6 +144,7 @@ class GrammarAmdParTests(TestCase):
         result = parse_text(text)
         self.assertEqual(result, [
             tokens.Paragraph([None, None, None, 'b']),
+            tokens.AndToken(),
             tokens.Paragraph([None, None, None, 'c'],
                              field=tokens.Paragraph.TEXT_FIELD)
         ])
@@ -157,10 +158,12 @@ class GrammarAmdParTests(TestCase):
             tokens.Context(['1005', None, '36']),
             tokens.Verb(tokens.Verb.PUT, active=True),
             tokens.Paragraph([], field=tokens.Paragraph.HEADING_FIELD),
+            tokens.AndToken(),
             tokens.TokenList([
                 tokens.Paragraph([None, None, None, 'a']),
                 tokens.Paragraph([None, None, None, 'b']),
             ]),
+            tokens.AndToken(),
             tokens.Verb(tokens.Verb.POST, active=True),
             tokens.Paragraph([None, None, None, 'd']),
         ])
@@ -199,6 +202,7 @@ class GrammarAmdParTests(TestCase):
         text = "and removing paragraph (c)(5) to read as follows:"
         result = parse_text(text)
         self.assertEqual(result, [
+            tokens.AndToken(),
             tokens.Verb(tokens.Verb.DELETE, active=True),
             tokens.Paragraph([None, None, None, 'c', '5'])
         ])
@@ -317,8 +321,8 @@ class GrammarAmdParTests(TestCase):
         text += "republished, and comment 33(c)-(5) is added."
 
         result = parse_text(text)
-        self.assertEqual(5, len(result))
-        old, verb, new, new_new, verb2 = result
+        self.assertEqual(7, len(result))
+        old, verb, new, and1, and2, new_new, verb2 = result
         self.assertEqual(old.label,
                          [None, 'Interpretations', '33', '(c)', '5'])
         self.assertEqual(new.label,

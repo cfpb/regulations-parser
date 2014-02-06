@@ -115,7 +115,7 @@ def switch_context(token_list, carried_context):
         return label and label[0] is not None
 
     if carried_context and carried_context[0] is not None:
-        token_list = [t for t in token_list if not isinstance(t, tokens.Verb)]
+        token_list = [t for t in token_list if hasattr(t, 'label')]
         reg_parts = [t.label[0] for t in token_list if is_valid_label(t.label)]
 
         if len(reg_parts) > 0:
@@ -163,9 +163,11 @@ def parse_amdpar(par, initial_context):
     text = get_node_text(par, add_spaces=True)
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
 
+    tokenized = resolve_confused_context(tokenized, initial_context)
     tokenized = remove_false_deletes(tokenized, text)
     tokenized = multiple_moves(tokenized)
     tokenized = switch_passive(tokenized)
+    tokenized = and_token_resolution(tokenized)
     tokenized, subpart = deal_with_subpart_adds(tokenized)
     tokenized = context_to_paragraph(tokenized)
     if not subpart:
@@ -228,6 +230,49 @@ def switch_passive(tokenized):
         converted.extend(to_add)
         remaining = remaining[len(to_add):]
     return converted
+
+
+def resolve_confused_context(tokenized, initial_context):
+    """Resolve situation where a Context thinks it is regtext, but it
+    *should* be an interpretation"""
+    if initial_context[1:2] == ['Interpretations']:
+        final_tokens = []
+        for token in tokenized:
+            if isinstance(token, tokens.Context) and token.label[1] is None:
+                final_tokens.append(tokens.Context(
+                    [token.label[0], 'Interpretations', token.label[2],
+                     '(' + ')('.join(l for l in token.label[3:] if l) + ')'],
+                    token.certain))
+            else:
+                final_tokens.append(token)
+        return final_tokens
+    else:
+        return tokenized
+
+
+def and_token_resolution(tokenized):
+    """Troublesome case where a Context should be a Paragraph, but the only
+    indicator is the presence of an "and" token afterwards. We'll likely
+    want to expand this step in the future, but for now, we only catch a few
+    cases"""
+    final_tokens = []
+    idx = 0
+    while idx < len(tokenized) - 3:
+        t1, t2, t3, t4 = tokenized[idx:idx + 4]
+        if (isinstance(t1, tokens.Verb) and isinstance(t2, tokens.Context)
+                and isinstance(t3, tokens.AndToken)
+                and (isinstance(t4, tokens.Paragraph)
+                    or isinstance(t4, tokens.TokenList))):
+            final_tokens.append(t1)
+            final_tokens.append(tokens.Paragraph(t2.label))
+            final_tokens.append(t4)
+            idx += 4
+        elif t1 != tokens.AndToken:
+            final_tokens.append(t1)
+        idx += 1
+
+    final_tokens.extend(tokenized[idx:])
+    return final_tokens
 
 
 def context_to_paragraph(tokenized):
@@ -337,11 +382,10 @@ def compress_context(tokenized, initial_context):
     converted = []
     for token in tokenized:
         if isinstance(token, tokens.Context):
-            #   One corner case: interpretations of appendices
+            # Interpretations of appendices
             if (len(context) > 1 and len(token.label) > 1
-                and context[1] == 'Interpretations'
-                    and token.label[1]
-                    and token.label[1].startswith('Appendix')):
+                    and context[1] == 'Interpretations'
+                    and (token.label[1] or '').startswith('Appendix')):
                 context = compress(
                     context,
                     [token.label[0], None, token.label[1]] + token.label[2:])
