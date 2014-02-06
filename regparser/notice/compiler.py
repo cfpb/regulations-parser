@@ -189,11 +189,21 @@ class RegulationTree(object):
         return parent
 
     def contains(self, label):
-        """Is this label already in the tree? label can be a list of a
+        """Is this label already in the tree? label can be a list or a
         string"""
         if isinstance(label, list):
             label = '-'.join(label)
         return bool(find(self.tree, label))
+
+    def find_node(self, label):
+        if isinstance(label, list):
+            label = '-'.join(label)
+        return find(self.tree, label)
+
+    def is_reserved_node(self, existing):
+        reserved_title = existing.title and '[Reserved]' in existing.title
+        reserved_text = existing.text and '[Reserved]' in existing.text
+        return (reserved_title or reserved_text)
 
     def add_node(self, node):
         """ Add an entirely new node to the regulation tree. """
@@ -203,9 +213,7 @@ class RegulationTree(object):
 
         existing = find(self.tree, node.label_id())
         if existing is not None:
-            reserved_title = existing.title and '[Reserved]' in existing.title
-            reserved_text = existing.text and '[Reserved]' in existing.text
-            if reserved_title or reserved_text: 
+            if self.is_reserved_node(existing):
                 logging.warning('Replacing reserved node: %s' % node.label_id())
                 return self.replace_node_and_subtree(node)
             else:
@@ -371,9 +379,13 @@ def _needs_delay(reg, change):
     """Determine whether we should delay processing this change. This will
     be used in a second pass when compiling the reg"""
     action = change['action']
-    return (
-        (action == 'MOVE' and reg.contains(change['destination']))
-        or (action == 'POST' and reg.contains(change['node']['label'])))
+
+    if action == 'MOVE':
+        return reg.contains(change['destination'])
+    if action == 'POST':
+        existing = reg.find_node(change['node']['label'])
+        return existing and not reg.is_reserved_node(existing)
+    return False
 
 
 def compile_regulation(previous_tree, notice_changes):
