@@ -73,6 +73,10 @@ def replace_first_sentence(text, replacement):
     else:
         return replacement
 
+def is_reserved_node(existing):
+    reserved_title = existing.title and '[Reserved]' in existing.title
+    reserved_text = existing.text and '[Reserved]' in existing.text
+    return (reserved_title or reserved_text)
 
 class RegulationTree(object):
     """ This encapsulates a regulation tree, and methods to change that tree.
@@ -200,10 +204,6 @@ class RegulationTree(object):
             label = '-'.join(label)
         return find(self.tree, label)
 
-    def is_reserved_node(self, existing):
-        reserved_title = existing.title and '[Reserved]' in existing.title
-        reserved_text = existing.text and '[Reserved]' in existing.text
-        return (reserved_title or reserved_text)
 
     def add_node(self, node):
         """ Add an entirely new node to the regulation tree. """
@@ -213,7 +213,7 @@ class RegulationTree(object):
 
         existing = find(self.tree, node.label_id())
         if existing is not None:
-            if self.is_reserved_node(existing):
+            if is_reserved_node(existing):
                 logging.warning('Replacing reserved node: %s' % node.label_id())
                 return self.replace_node_and_subtree(node)
             else:
@@ -384,7 +384,7 @@ def _needs_delay(reg, change):
         return reg.contains(change['destination'])
     if action == 'POST':
         existing = reg.find_node(change['node']['label'])
-        return existing and not reg.is_reserved_node(existing)
+        return existing and not is_reserved_node(existing)
     return False
 
 
