@@ -73,10 +73,13 @@ def replace_first_sentence(text, replacement):
     else:
         return replacement
 
-def is_reserved_node(existing):
-    reserved_title = existing.title and '[Reserved]' in existing.title
-    reserved_text = existing.text and '[Reserved]' in existing.text
+
+def is_reserved_node(node):
+    """ Return true if the node is reserved. """
+    reserved_title = node.title and '[Reserved]' in node.title
+    reserved_text = node.text and '[Reserved]' in node.text
     return (reserved_title or reserved_text)
+
 
 class RegulationTree(object):
     """ This encapsulates a regulation tree, and methods to change that tree.
@@ -204,7 +207,6 @@ class RegulationTree(object):
             label = '-'.join(label)
         return find(self.tree, label)
 
-
     def add_node(self, node):
         """ Add an entirely new node to the regulation tree. """
 
@@ -214,7 +216,8 @@ class RegulationTree(object):
         existing = find(self.tree, node.label_id())
         if existing is not None:
             if is_reserved_node(existing):
-                logging.warning('Replacing reserved node: %s' % node.label_id())
+                logging.warning(
+                    'Replacing reserved node: %s' % node.label_id())
                 return self.replace_node_and_subtree(node)
             else:
                 logging.warning(
