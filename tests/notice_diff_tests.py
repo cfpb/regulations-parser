@@ -384,13 +384,16 @@ class NoticeDiffTests(TestCase):
 
     def test_new_subpart_added(self):
         amended_label = Amendment('POST', '200-Subpart:B')
-        self.assertTrue(new_subpart_added(amended_label))
+        self.assertTrue(new_subpart_added(amended_label, '200'))
 
         amended_label = Amendment('PUT', '200-Subpart:B')
-        self.assertFalse(new_subpart_added(amended_label))
+        self.assertFalse(new_subpart_added(amended_label, '200'))
 
         amended_label = Amendment('POST', '200-Subpart:B-a-3')
-        self.assertFalse(new_subpart_added(amended_label))
+        self.assertFalse(new_subpart_added(amended_label, '200'))
+
+        amended_label = Amendment('POST', '200-Subpart:Z')
+        self.assertFalse(new_subpart_added(amended_label, '205'))
 
     def test_switch_context(self):
         initial_context = ['105', '2']
