@@ -212,18 +212,17 @@ class GrammarAmdParTests(TestCase):
         text += 'text and (c)(2)(ii)(A)(<E T="03">2</E>) redesignating '
         text += "paragraph (c)(2)(iii) as paragraph (c)(2)(iv),"
         result = parse_text(text)
-        self.assertEqual(result, [
-            tokens.TokenList([
-                tokens.Paragraph([None, None, None, 'a', '1', 'iii']),
-                tokens.Paragraph([None, None, None, 'a', '1', 'iv', 'B']),
-                tokens.Paragraph([None, None, None, 'c', '2'],
-                                 field=tokens.Paragraph.TEXT_FIELD),
-                tokens.Paragraph([None, None, None, 'c', '2', 'ii', 'A', '2']),
-            ]),
+        expected = [tokens.TokenList([
+            tokens.Paragraph([None, None, None, 'a', '1', 'iii']),
+            tokens.Paragraph([None, None, None, 'a', '1', 'iv', 'B']),
+            tokens.Paragraph(
+                [None, None, None, 'c', '2'],
+                field=tokens.Paragraph.TEXT_FIELD),
+            tokens.Paragraph([None, None, None, 'c', '2', 'ii', 'A'])]),
             tokens.Verb(tokens.Verb.MOVE, active=True),
             tokens.Paragraph([None, None, None, 'c', '2', 'iii']),
-            tokens.Paragraph([None, None, None, 'c', '2', 'iv']),
-        ])
+            tokens.Paragraph([None, None, None, 'c', '2', 'iv'])]
+        self.assertEqual(result, expected)
 
     def test_example16(self):
         text = " A-30(a), A-30(b), A-30(c), A-30(d) are added"

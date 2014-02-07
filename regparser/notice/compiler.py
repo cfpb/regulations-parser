@@ -74,6 +74,13 @@ def replace_first_sentence(text, replacement):
         return replacement
 
 
+def is_reserved_node(node):
+    """ Return true if the node is reserved. """
+    reserved_title = node.title and '[Reserved]' in node.title
+    reserved_text = node.text and '[Reserved]' in node.text
+    return (reserved_title or reserved_text)
+
+
 class RegulationTree(object):
     """ This encapsulates a regulation tree, and methods to change that tree.
     """
@@ -139,7 +146,7 @@ class RegulationTree(object):
     def reserve(self, label_id, node):
         """ Reserve either an existing node (by replacing it) or
         reserve by adding a new node. When a node is reserved, it's
-        represented in the FR XML. We simply use that represenation here
+        represented in the FR XML. We simply use that representation here
         instead of doing something else. """
 
         existing_node = find(self.tree, label_id)
@@ -189,11 +196,14 @@ class RegulationTree(object):
         return parent
 
     def contains(self, label):
-        """Is this label already in the tree? label can be a list of a
+        """Is this label already in the tree? label can be a list or a
         string"""
+        return bool(self.find_node(label))
+
+    def find_node(self, label):
         if isinstance(label, list):
             label = '-'.join(label)
-        return bool(find(self.tree, label))
+        return find(self.tree, label)
 
     def add_node(self, node):
         """ Add an entirely new node to the regulation tree. """
@@ -201,8 +211,17 @@ class RegulationTree(object):
         if node.node_type == Node.SUBPART:
             return self.add_to_root(node)
 
-        if self.contains(node.label_id()):
-            logging.warning('Node already exists: %s' % node.label_id())
+        existing = find(self.tree, node.label_id())
+        if existing is not None:
+            if is_reserved_node(existing):
+                logging.warning(
+                    'Replacing reserved node: %s' % node.label_id())
+                return self.replace_node_and_subtree(node)
+            else:
+                logging.warning(
+                    'Adding a node that already exists: %s' % node.label_id())
+                print '%s %s' % (existing.text, node.label)
+                print '----'
 
         parent = self.get_parent(node)
         if parent is None:
@@ -361,9 +380,13 @@ def _needs_delay(reg, change):
     """Determine whether we should delay processing this change. This will
     be used in a second pass when compiling the reg"""
     action = change['action']
-    return (
-        (action == 'MOVE' and reg.contains(change['destination']))
-        or (action == 'POST' and reg.contains(change['node']['label'])))
+
+    if action == 'MOVE':
+        return reg.contains(change['destination'])
+    if action == 'POST':
+        existing = reg.find_node(change['node']['label'])
+        return existing and not is_reserved_node(existing)
+    return False
 
 
 def compile_regulation(previous_tree, notice_changes):
