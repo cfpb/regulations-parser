@@ -198,9 +198,7 @@ class RegulationTree(object):
     def contains(self, label):
         """Is this label already in the tree? label can be a list or a
         string"""
-        if isinstance(label, list):
-            label = '-'.join(label)
-        return bool(find(self.tree, label))
+        return bool(self.find_node(label))
 
     def find_node(self, label):
         if isinstance(label, list):

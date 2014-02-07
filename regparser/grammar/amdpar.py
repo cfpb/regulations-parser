@@ -170,8 +170,8 @@ single_comment_with_section = (
     + Optional("(") + comment_p + Optional(")")
     ).setParseAction(lambda m: tokens.Paragraph(
         [None, 'Interpretations', m.section,
-         _paren_join([m.p1, m.p2, m.p3, m.p4, m.plaintext_p5]), m.level2, m.level3,
-         m.level4]))
+         _paren_join([m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6]),
+         m.level2, m.level3, m.level4]))
 single_comment_par = (
     atomic.paragraph_marker
     + comment_p
@@ -253,7 +253,8 @@ multiple_comments = (
     + make_multiple(atomic.section + unified.depth1_p)
     ).setParseAction(make_par_list(
         lambda m: [None, 'Interpretations', m.section,
-                   _paren_join([m.p1, m.p2, m.p3, m.p4, m.plaintext_p5])]))
+                   _paren_join([
+                    m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6])]))
 
 multiple_paragraphs = (
     (atomic.paragraphs_marker | atomic.paragraph_marker)
