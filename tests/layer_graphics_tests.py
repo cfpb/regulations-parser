@@ -72,7 +72,8 @@ class LayerGraphicsTest(TestCase):
         settings.DEFAULT_IMAGE_URL = "%s.png"
         g = Graphics(None)
         with patch('regparser.layer.graphics.requests') as requests:
-            requests.head.return_value = response = Mock()
+            response = Mock()
+            requests.head.return_value = response
             requests.codes.not_implemented = 501
             requests.codes.ok = 200
             response.status_code = 200
@@ -86,7 +87,8 @@ class LayerGraphicsTest(TestCase):
         settings.DEFAULT_IMAGE_URL = "%s.png"
         g = Graphics(None)
         with patch('regparser.layer.graphics.requests') as requests:
-            requests.head.return_value = response = Mock()
+            response = Mock()
+            requests.head.return_value = response
             response.status_code = 404
             results = g.process(node)
 
