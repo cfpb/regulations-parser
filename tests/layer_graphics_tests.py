@@ -73,6 +73,8 @@ class LayerGraphicsTest(TestCase):
         g = Graphics(None)
         with patch('regparser.layer.graphics.requests') as requests:
             requests.head.return_value = response = Mock()
+            requests.codes.not_implemented = 501
+            requests.codes.ok = 200
             response.status_code = 200
             results = g.process(node)
 

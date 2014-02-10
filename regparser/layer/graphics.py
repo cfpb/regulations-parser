@@ -14,12 +14,10 @@ class Graphics(Layer):
         thumb_url = re.sub(r'(.(png|gif|jpg))$', '.thumb' + '\\1', url)
         response = requests.head(thumb_url)
 
-        """ 501 is Not Implemented. If the remote server doesn't support
-        HTTP HEAD requests, try a full GET."""
-        if response.status_code == 501:
+        if response.status_code == requests.codes.not_implemented:
             response = requests.get(thumb_url)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             return thumb_url
 
     def process(self, node):
