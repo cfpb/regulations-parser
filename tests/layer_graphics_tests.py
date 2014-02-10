@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mock import patch
+from mock import patch, Mock
 
 from regparser.layer.graphics import Graphics
 from regparser.tree.struct import Node
@@ -54,7 +54,8 @@ class LayerGraphicsTest(TestCase):
 
         node = Node("![Alt1](img1)   ![Alt2](f)  ![Alt3](a)")
         g = Graphics(None)
-        results = g.process(node)
+        with patch('regparser.layer.graphics.requests') as requests:
+            results = g.process(node)
         self.assertEqual(3, len(results))
         found = [False, False, False]
         for result in results:
@@ -65,3 +66,31 @@ class LayerGraphicsTest(TestCase):
             elif result['alt'] == 'Alt3' and result['url'] == 'AAA':
                 found[2] = True
         self.assertEqual([True, True, True], found)
+
+    def test_find_thumb1(self):
+        node = Node("![alt1](img1)")
+        settings.DEFAULT_IMAGE_URL = "%s.png"
+        g = Graphics(None)
+        with patch('regparser.layer.graphics.requests') as requests:
+            response = Mock()
+            requests.head.return_value = response
+            requests.codes.not_implemented = 501
+            requests.codes.ok = 200
+            response.status_code = 200
+            results = g.process(node)
+
+        for result in results:
+            self.assertEqual(result['thumb_url'], 'img1.thumb.png')
+
+    def test_find_thumb2(self):
+        node = Node("![alt2](img2)")
+        settings.DEFAULT_IMAGE_URL = "%s.png"
+        g = Graphics(None)
+        with patch('regparser.layer.graphics.requests') as requests:
+            response = Mock()
+            requests.head.return_value = response
+            response.status_code = 404
+            results = g.process(node)
+
+        for result in results:
+            self.assertTrue('thumb_url' not in result)
