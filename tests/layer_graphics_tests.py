@@ -68,8 +68,8 @@ class LayerGraphicsTest(TestCase):
         self.assertEqual([True, True, True], found)
 
     def test_find_thumb1(self):
-        node = Node("![alt1](img1.png)")
-        settings.DEFAULT_IMAGE_URL = "%s"
+        node = Node("![alt1](img1)")
+        settings.DEFAULT_IMAGE_URL = "%s.png"
         g = Graphics(None)
         with patch('regparser.layer.graphics.requests') as requests:
             requests.head.return_value = response = Mock()
@@ -80,8 +80,8 @@ class LayerGraphicsTest(TestCase):
             self.assertEqual(result['thumb_url'], 'img1.thumb.png')
 
     def test_find_thumb2(self):
-        node = Node("![alt2](img2.png)")
-        settings.DEFAULT_IMAGE_URL = "%s"
+        node = Node("![alt2](img2)")
+        settings.DEFAULT_IMAGE_URL = "%s.png"
         g = Graphics(None)
         with patch('regparser.layer.graphics.requests') as requests:
             requests.head.return_value = response = Mock()
