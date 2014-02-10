@@ -14,6 +14,8 @@ class Graphics(Layer):
         thumb_url = re.sub(r'(.(png|gif|jpg))$', '.thumb' + '\\1', url)
         response = requests.head(thumb_url)
 
+        """ 501 is Not Implemented. If the remote server doesn't support
+        HTTP HEAD requests, try a full GET."""
         if response.status_code == 501:
             response = requests.get(thumb_url)
 
@@ -41,7 +43,7 @@ class Graphics(Layer):
             thumb_url = self.check_for_thumb(url)
 
             if thumb_url:
-                layer_el_vals['thumb'] = thumb_url
+                layer_el_vals['thumb_url'] = thumb_url
             layer_el.append(layer_el_vals)
 
         if layer_el:
