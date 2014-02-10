@@ -98,7 +98,7 @@ comment_context_with_section = (
     + ~FollowedBy("-")
     ).setParseAction(lambda m: tokens.Context(
         [None, 'Interpretations', m.section,
-         _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5])], bool(m.certain)))
+         _paren_join([m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6])], bool(m.certain)))
 # Mild modification of the above; catches "under 2(b)"
 comment_context_under_with_section = (
     Marker("under")
@@ -106,14 +106,14 @@ comment_context_under_with_section = (
     + unified.depth1_p
     ).setParseAction(lambda m: tokens.Context(
         [None, 'Interpretations', m.section,
-         _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5])], True))
+         _paren_join([m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6])], True))
 comment_context_without_section = (
     context_certainty
     + atomic.paragraph_marker
     + unified.depth2_p
     ).setParseAction(lambda m: tokens.Context(
         [None, 'Interpretations', None,
-         _paren_join([m.p2, m.p3, m.p4, m.p5])], bool(m.certain)))
+         _paren_join([m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6])], bool(m.certain)))
 appendix = (
     context_certainty
     + unified.marker_appendix
@@ -153,7 +153,7 @@ paragraph_heading_of = (
     Marker("heading") + Marker("of")
     + unified.marker_paragraph.copy()
     ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
-        m.p1, m.p2, m.p3, m.p4, m.p5],
+        m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6],
         field=tokens.Paragraph.KEYTERM_FIELD))
 
 comment_heading = (
@@ -169,20 +169,20 @@ intro_text_of = (
     intro_text_marker + Marker("of")
     + unified.marker_paragraph.copy()
     ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
-        m.p1, m.p2, m.p3, m.p4, m.p5],
+        m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6],
         field=tokens.Paragraph.TEXT_FIELD))
 single_par = (
     unified.marker_paragraph
     + Optional(intro_text_marker)
     ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
-        m.p1, m.p2, m.p3, m.p4, m.p5],
+        m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6],
         field=(tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
 section_single_par = (
     unified.marker_part_section
     + unified.depth1_p
     + Optional(intro_text_marker)
     ).setParseAction(lambda m: tokens.Paragraph([m.part, None,
-        m.section, m.p1, m.p2, m.p3, m.p4, m.p5],
+        m.section, m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6],
         field=(tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
 single_comment_with_section = (
     Marker("comment")
@@ -192,8 +192,8 @@ single_comment_with_section = (
     + Optional("(") + comment_p + Optional(")")
     ).setParseAction(lambda m: tokens.Paragraph(
         [None, 'Interpretations', m.section,
-         _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5]), m.level2, m.level3,
-         m.level4]))
+         _paren_join([m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6]),
+         m.level2, m.level3, m.level4]))
 single_comment_par = (
     atomic.paragraph_marker
     + comment_p
@@ -256,12 +256,12 @@ multiple_paragraph_sections = (
     atomic.section_marker
     + make_multiple(Optional(unified.part_section) + unified.any_depth_p)
     ).setParseAction(make_par_list(lambda m: [m.part, None, m.section,
-        m.p1, m.p2, m.p3, m.p4, m.p5]))
+        m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6]))
 
 multiple_appendices = make_multiple(unified.appendix_with_section
     ).setParseAction(make_par_list(
         lambda m: [None, 'Appendix:' + m.appendix, m.appendix_section, m.p1,
-                   m.p2, m.p3, m.p4, m.p5]))
+                   m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6]))
 
 multiple_comment_pars = (
     atomic.paragraphs_marker
@@ -275,13 +275,14 @@ multiple_comments = (
     + make_multiple(atomic.section + unified.depth1_p)
     ).setParseAction(make_par_list(
         lambda m: [None, 'Interpretations', m.section,
-                   _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5])]))
+                   _paren_join([
+                    m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6])]))
 
 multiple_paragraphs = (
     (atomic.paragraphs_marker | atomic.paragraph_marker)
     + make_multiple(unified.any_depth_p)
     ).setParseAction(make_par_list(lambda m: [m.part, None, m.section,
-        m.p1, m.p2, m.p3, m.p4, m.p5]))
+        m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6]))
 
 
 #   grammar which captures all of these possibilities

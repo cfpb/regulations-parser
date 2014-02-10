@@ -249,7 +249,7 @@ def process_amendments(notice, notice_xml):
                 subpart_changes = process_designate_subpart(al)
                 if subpart_changes:
                     notice_changes.update(subpart_changes)
-            elif new_subpart_added(al):
+            elif new_subpart_added(al, notice['cfr_part']):
                 notice_changes.update(process_new_subpart(notice, al, par))
 
         section_xml = find_section(par)

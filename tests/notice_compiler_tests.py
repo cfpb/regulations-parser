@@ -188,6 +188,23 @@ class CompilerTests(TestCase):
         n2a.children = [n2ai]
         self.assertEqual(reg_tree.tree, root)
 
+    def test_add_node_reserved(self):
+        root = self.tree_with_paragraphs()
+        reserved_node = Node('[Reserved]', label=['205', '2', 'a', '1'])
+        n2a = find(root, '205-2-a')
+        n2a.children = [reserved_node]
+
+        reg_tree = compiler.RegulationTree(root)
+
+        parent = find(reg_tree.tree, '205-2-a')
+        self.assertEqual(len(parent.children), 1)
+        new_node = Node('(i) new content', label=['205', '2', 'a', '1'])
+        reg_tree.add_node(new_node)
+
+        added_node = find(reg_tree.tree, '205-2-a-1')
+        self.assertEqual(added_node.text, '(i) new content')
+        self.assertEqual(len(parent.children), 1)
+
     def test_move(self):
         root = self.tree_with_paragraphs()
         reg_tree = compiler.RegulationTree(root)
@@ -580,3 +597,13 @@ class CompilerTests(TestCase):
         s2a, s2b = s2.children
         self.assertEqual("aaa", s2a.text)
         self.assertEqual("n2a", s2b.text)
+
+    def test_is_reserved_node(self):
+        n = Node('[Reserved]', label=['205', '4', 'a'])
+        self.assertTrue(compiler.is_reserved_node(n))
+
+        n = Node('(i) a real paragraph', label=['205', '6'])
+        self.assertFalse(compiler.is_reserved_node(n))
+
+        n = Node('', title='[Reserved]', label=['205', '7', 'a'])
+        self.assertTrue(compiler.is_reserved_node(n))
