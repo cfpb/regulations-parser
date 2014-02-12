@@ -155,6 +155,48 @@ def remove_false_deletes(tokenized, text):
     return tokenized
 
 
+def paragraph_in_context_moved(tokenized, initial_context):
+    """Catches this situation: "Paragraph 1 under subheading 51(b)(1) is
+    redesignated as paragraph 7 under subheading 51(b)", i.e. a Paragraph
+    within a Context moved to another Paragraph within a Context. The
+    contexts and paragraphs in this situation need to be swapped."""
+    final_tokens = []
+    idx = 0
+    while idx < len(tokenized) - 4:
+        par1, cont1, verb, par2, cont2 = tokenized[idx:idx + 5]
+        if (par1.match(tokens.Paragraph) and cont1.match(tokens.Context)
+                and verb.match(tokens.Verb, verb=tokens.Verb.MOVE,
+                               active=False)
+                and par2.match(tokens.Paragraph)
+                and cont2.match(tokens.Context)
+                and all(tok.label[1:2] == ['Interpretations']
+                        for tok in (par1, cont1, par2, cont2))):
+            batch, initial_context = compress_context(
+                [cont1, par1, verb, cont2, par2], initial_context)
+            final_tokens.extend(batch)
+            idx += 5
+        else:
+            final_tokens.append(tokenized[idx])
+            idx += 1
+    final_tokens.extend(tokenized[idx:])
+    return final_tokens
+
+
+def move_then_modify(tokenized):
+    """The subject of modification may be implicit in the preceding move
+    operation: A is redesignated B and changed. We assume the past-tense
+    switch has already occurred."""
+    if len(tokenized) == 4:
+        move, p1, p2, edit = tokenized
+        if (move.match(tokens.Verb, verb=tokens.Verb.MOVE, active=True)
+                and p1.match(tokens.Paragraph)
+                and p2.match(tokens.Paragraph)
+                and edit.match(tokens.Verb, verb=tokens.Verb.PUT,
+                               active=True, and_prefix=True)):
+            return [move, p1, p2, edit, p2]
+    return tokenized
+
+
 def parse_amdpar(par, initial_context):
     """ Parse the <AMDPAR> tags into a list of paragraphs that have changed.
     """
@@ -162,13 +204,16 @@ def parse_amdpar(par, initial_context):
     text = get_node_text(par, add_spaces=True)
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
 
+    tokenized = compress_context_in_tokenlists(tokenized)
     tokenized = resolve_confused_context(tokenized, initial_context)
+    tokenized = paragraph_in_context_moved(tokenized, initial_context)
     tokenized = remove_false_deletes(tokenized, text)
     tokenized = multiple_moves(tokenized)
     tokenized = switch_passive(tokenized)
     tokenized = and_token_resolution(tokenized)
     tokenized, subpart = deal_with_subpart_adds(tokenized)
     tokenized = context_to_paragraph(tokenized)
+    tokenized = move_then_modify(tokenized)
     if not subpart:
         tokenized = separate_tokenlist(tokenized)
     initial_context = switch_context(tokenized, initial_context)
@@ -368,6 +413,25 @@ def compress(lhs_label, rhs_label):
     for i in range(len(rhs_label)):
         label[i] = rhs_label[i] or label[i]
     return label
+
+
+def compress_context_in_tokenlists(tokenized):
+    """Use compress (above) on elements within a tokenlist."""
+    final = []
+    for token in tokenized:
+        if token.match(tokens.TokenList):
+            subtokens = []
+            label_so_far = []
+            for subtoken in token.tokens:
+                if hasattr(subtoken, 'label'):
+                    label_so_far = compress(label_so_far, subtoken.label)
+                    subtokens.append(subtoken.copy(label=label_so_far))
+                else:
+                    subtokens.append(subtoken)
+            final.append(token.copy(tokens=subtokens))
+        else:
+            final.append(token)
+    return final
 
 
 def compress_context(tokenized, initial_context):
