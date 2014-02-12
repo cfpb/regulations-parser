@@ -520,6 +520,7 @@ class Amendment(object):
             # Add paragraphs
             if len(components) > 3:
                 paragraphs = [p.strip('()') for p in components[3].split(')(')]
+                paragraphs = filter(bool, paragraphs)
                 new_style.extend(paragraphs)
             new_style.append(Node.INTERP_MARK)
             # Add any paragraphs of the comment
