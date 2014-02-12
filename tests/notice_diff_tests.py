@@ -260,7 +260,7 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(headings[0].text, u"Subpart B—Requirements")
 
     def test_is_designate_token(self):
-        class Noun:
+        class Noun(tokens.Token):
             def __init__(self, noun):
                 self.noun = noun
 

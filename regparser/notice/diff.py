@@ -139,8 +139,7 @@ def contains_one_paragraph(tokenized):
 
 def contains_delete(tokenized):
     """ Returns True if tokenized contains at least one DELETE. """
-    contexts = [t for t in tokenized
-                if isinstance(t, tokens.Verb) and t.verb == 'DELETE']
+    contexts = [t for t in tokenized if t.match(tokens.Verb, verb='DELETE')]
     return len(contexts) > 0
 
 
@@ -189,14 +188,13 @@ def multiple_moves(tokenized):
             skip -= 1
         elif idx < len(tokenized) - 2:
             el1, el2 = tokenized[idx+1:idx+3]
-            if (isinstance(el0, tokens.TokenList)
-                    and isinstance(el1, tokens.Verb) and not el1.active
-                    and el1.verb == tokens.Verb.MOVE
-                    and isinstance(el2, tokens.TokenList)
+            if (el0.match(tokens.TokenList) and el2.match(tokens.TokenList)
+                    and el1.match(tokens.Verb, verb=tokens.Verb.MOVE,
+                                  active=False)
                     and len(el0.tokens) == len(el2.tokens)):
                 skip = 2
                 for tidx in range(len(el0.tokens)):
-                    converted.append(tokens.Verb(tokens.Verb.MOVE, True))
+                    converted.append(el1.copy(active=True))
                     converted.append(el0.tokens[tidx])
                     converted.append(el2.tokens[tidx])
             else:
@@ -209,7 +207,7 @@ def multiple_moves(tokenized):
 def switch_passive(tokenized):
     """Passive verbs are modifying the phrase before them rather than the
     phrase following. For consistency, we flip the order of such verbs"""
-    if all(not isinstance(t, tokens.Verb) or t.active for t in tokenized):
+    if all(not t.match(tokens.Verb, active=False) for t in tokenized):
         return tokenized
     converted, remaining = [], tokenized
     while remaining:
@@ -217,7 +215,7 @@ def switch_passive(tokenized):
             lambda t: not isinstance(t, tokens.Verb), remaining))
         if len(to_add) < len(remaining):
             #   also take the verb
-            verb = remaining[len(to_add)]
+            verb = remaining[len(to_add)].copy()
             to_add.append(verb)
             #   switch verb to the beginning
             if not verb.active:
@@ -259,14 +257,13 @@ def and_token_resolution(tokenized):
     idx = 0
     while idx < len(tokenized) - 3:
         t1, t2, t3, t4 = tokenized[idx:idx + 4]
-        if (isinstance(t1, tokens.Verb) and isinstance(t2, tokens.Context)
-                and isinstance(t3, tokens.AndToken)
-                and (isinstance(t4, tokens.Paragraph)
-                    or isinstance(t4, tokens.TokenList))):
+        if (t1.match(tokens.Verb) and t2.match(tokens.Context)
+                and t3.match(tokens.AndToken)
+                and t4.match(tokens.Paragraph, tokens.TokenList)):
             final_tokens.append(t1)
             final_tokens.append(tokens.Paragraph(t2.label))
             final_tokens.append(t4)
-            idx += 4
+            idx += 3    # not 4 as one will appear below
         elif t1 != tokens.AndToken:
             final_tokens.append(t1)
         idx += 1
@@ -293,16 +290,14 @@ def context_to_paragraph(tokenized):
         token = converted[i]
         if isinstance(token, tokens.Verb):
             verb_seen = True
-        elif (verb_seen and isinstance(token, tokens.Context)
-                and not token.certain):
+        elif verb_seen and token.match(tokens.Context, certain=False):
             converted[i] = tokens.Paragraph(token.label)
     return converted
 
 
 def is_designate_token(token):
     """ This is a designate token """
-    designate = tokens.Verb.DESIGNATE
-    return isinstance(token, tokens.Verb) and token.verb == designate
+    return token.match(tokens.Verb, verb=tokens.Verb.DESIGNATE)
 
 
 def contains_one_designate_token(tokenized):
