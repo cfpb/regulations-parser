@@ -197,3 +197,12 @@ def internal_citations(text, initial_label=None, require_marker=False):
             final_citations.append(cit)
 
     return final_citations
+
+
+def remove_citation_overlaps(text, possible_markers):
+    """Given a list of markers, remove any that overlap with citations"""
+    return [(m, start, end) for m, start, end in possible_markers
+            if not any((e.start <= start and e.end >= start)
+                       or (e.start <= end and e.end >= end)
+                       or (start <= e.start and end >= e.end)
+                       for e in internal_citations(text))]

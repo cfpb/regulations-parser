@@ -315,6 +315,20 @@ class InterpretationsTest(TestCase):
             stack.unwind()
         self.assertEqual(2, len(stack.m_stack[0]))
 
+    def test_process_inner_child_has_citation(self):
+        xml = """
+        <ROOT>
+            <HD>Title</HD>
+            <P>1. Something something see comment 22(a)-2.i. please</P>
+        </ROOT>"""
+        node = etree.fromstring(xml).xpath('//HD')[0]
+        stack = tree_utils.NodeStack()
+        interpretations.process_inner_children(stack, node)
+        while stack.size() > 1:
+            stack.unwind()
+        tree = stack.m_stack[0][0][1]
+        self.assertEqual(0, len(tree.children))
+
     def test_interpretation_level(self):
         self.assertEqual(3, interpretations.interpretation_level('1'))
         self.assertEqual(4, interpretations.interpretation_level('ii'))
