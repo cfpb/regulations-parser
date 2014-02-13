@@ -349,3 +349,17 @@ class GrammarAmdParTests(TestCase):
                                    field=tokens.Paragraph.TEXT_FIELD))
         self.assertTrue(and_tok.match(tokens.AndToken))
         self.assertTrue(toklist.match(tokens.TokenList))
+
+    def test_example_25(self):
+        texts = ["Revising the heading of 12(c)",
+                 "Revising the heading for 12(c)",
+                 "Revising heading 12(c)"]
+        for text in texts:
+            result = parse_text(text)
+            self.assertEqual(2, len(result))
+            verb, par = result
+            self.assertTrue(verb.match(tokens.Verb))
+            self.assertTrue(par.match(
+                tokens.Paragraph,
+                label=[None, 'Interpretations', '12', '(c)'],
+                field=tokens.Paragraph.HEADING_FIELD))

@@ -164,7 +164,7 @@ paragraph_heading_of = (
 
 comment_heading = (
     Marker("heading")
-    + (Marker("of") | Marker("for"))
+    + Optional(Marker("of") | Marker("for"))
     + atomic.section
     + unified.depth1_p).setParseAction(
     lambda m: tokens.Paragraph([None, "Interpretations", m.section,
