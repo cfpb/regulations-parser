@@ -1,12 +1,11 @@
 from copy import deepcopy
-from itertools import chain, dropwhile, takewhile
+from itertools import dropwhile, takewhile
 
 from lxml import etree
 
 from regparser.citations import internal_citations, Label
 from regparser.notice.util import body_to_string, spaces_then_remove
 from regparser.notice.util import swap_emphasis_tags
-from regparser.tree.struct import Node
 
 
 def find_section_by_section(xml_tree):
@@ -18,10 +17,12 @@ def find_section_by_section(xml_tree):
         or 'section-by-section' not in el.text.lower()), xml_children)
 
     try:
-        #Ignore Header
+        # Ignore Header
         sxs.next()
+        # Remove any intro paragraphs
+        sxs = dropwhile(lambda el: el.tag != 'HD', sxs)
         sxs = takewhile(
-            lambda e: e.tag != 'HD' or e.get('SOURCE') != 'HD1', sxs)
+            lambda el: el.tag != 'HD' or el.get('SOURCE') != 'HD1', sxs)
 
         return list(sxs)
     except StopIteration:
