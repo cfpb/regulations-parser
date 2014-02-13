@@ -366,3 +366,20 @@ class GrammarAmdParTests(TestCase):
                 tokens.Paragraph,
                 label=[None, 'Interpretations', '12', '(c)'],
                 field=tokens.Paragraph.HEADING_FIELD))
+
+    def test_example_26(self):
+        text = "Entries for 15(a), (b)(3) and (4) are added."
+        result = parse_text(text)
+        self.assertEqual(2, len(result))
+        toklist, verb = result
+        self.assertTrue(toklist.match(tokens.TokenList))
+        self.assertTrue(verb.match(tokens.Verb))
+
+        self.assertEqual(3, len(toklist.tokens))
+        a, b3, b4 = toklist.tokens
+        self.assertTrue(a.match(
+            tokens.Paragraph, label=[None, None, '15', 'a']))
+        self.assertTrue(b3.match(
+            tokens.Paragraph, label=[None, None, None, 'b', '3']))
+        self.assertTrue(b4.match(
+            tokens.Paragraph, label=[None, None, None, None, '4']))

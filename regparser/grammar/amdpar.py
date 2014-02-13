@@ -285,6 +285,17 @@ multiple_comments = (
                    _paren_join([
                     m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6])]))
 
+multiple_interp_entries = (
+    Marker("entries") + Marker("for")
+    + (atomic.section + unified.depth1_p).setResultsName("head")
+    + OneOrMore((
+        atomic.conj_phrases
+        + unified.any_depth_p
+    ).setResultsName("tail", listAllMatches=True))
+    ).setParseAction(make_par_list(
+    lambda m: [None, None, m.section, m.p1, m.p2, m.p3, m.p4, m.plaintext_p5,
+               m.plaintext_p6]))
+
 multiple_paragraphs = (
     (atomic.paragraphs_marker | atomic.paragraph_marker)
     + make_multiple(unified.any_depth_p)
@@ -307,6 +318,7 @@ token_patterns = (
     # Must come after other headings as it is a catch-all
     | section_heading
     | multiple_paragraph_sections | section_single_par
+    | multiple_interp_entries
 
     | multiple_sections | multiple_paragraphs | multiple_appendices
     | multiple_comment_pars | multiple_comments
