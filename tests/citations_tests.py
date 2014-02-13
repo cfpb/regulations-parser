@@ -45,6 +45,8 @@ class CitationsTest(TestCase):
              + 'of this section', 'paragraph (b)', ['102', '6', 'b']),
             ("And Section 222.87(d)(2)(i) says something",
              'Section 222.87(d)(2)(i)', ['222', '87', 'd', '2', 'i']),
+            ("More in paragraph 22(a)(4).", "paragraph 22(a)(4)",
+             ["102", "22", "a", "4"]),
             ("See comment 32(b)(3) blah blah", 'comment 32(b)(3)',
              ['102', '32', 'b', '3', 'Interp']),
             ("refer to comment 36(a)(2)-3 of thing", 'comment 36(a)(2)-3',

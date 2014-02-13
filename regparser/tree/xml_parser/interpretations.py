@@ -6,7 +6,7 @@ import string
 
 from pyparsing import Word, LineStart, Regex, Suppress
 
-from regparser.citations import Label
+from regparser.citations import Label, remove_citation_overlaps
 from regparser.tree.interpretation import merge_labels, text_to_labels
 from regparser.tree.struct import Node, treeify
 from regparser.tree.xml_parser import tree_utils
@@ -73,8 +73,12 @@ def interp_inner_child(child_node, stack):
 
     collapsed_markers = []
     for marker in _first_markers:
-        collapsed_markers.extend(m for m in marker.finditer(node_text)
-                                 if m.start() > 0)
+        possible_markers = ((m, m.start(), m.end()) 
+                            for m in marker.finditer(node_text)
+                            if m.start() > 0)
+        collapsed_markers.extend(
+            m for m, _, _ in remove_citation_overlaps(node_text,
+                                                      possible_markers))
 
     #   -2 throughout to account for matching the character + period
     ends = [m.end() - 2 for m in collapsed_markers[1:]] + [len(node_text)]

@@ -6,7 +6,7 @@ import re
 from lxml import etree
 from pyparsing import Literal, Optional, Regex, StringStart, Suppress
 
-from regparser.citations import internal_citations
+from regparser.citations import remove_citation_overlaps
 from regparser.grammar.unified import any_depth_p
 from regparser.tree.paragraph import p_levels
 from regparser.tree.priority_stack import PriorityStack
@@ -77,11 +77,7 @@ def get_collapsed_markers(text):
         matches = matches[1:]
 
     #   remove any that overlap with citations
-    matches = [m for m, start, end in matches
-               if not any((e.start <= start and e.end >= start)
-                          or (e.start <= end and e.end >= end)
-                          or (start <= e.start and end >= e.end)
-                          for e in internal_citations(text))]
+    matches = [m for m, _, _ in remove_citation_overlaps(text, matches)]
 
     #   get the letters; poor man's flatten
     return reduce(lambda lhs, rhs: list(lhs) + list(rhs), matches, [])
