@@ -50,6 +50,29 @@ class NoticeSxsTests(TestCase):
         computed = find_section_by_section(etree.fromstring(full_xml))
         self.assertEqual(sxs_texts, map(lambda el: el.text, computed))
 
+    def test_find_section_by_section_intro_text(self):
+        sxs_xml = """
+            <P>Some intro text</P>
+            <P>This text includes a reference to Section 8675.309(a)</P>
+            <HD SOURCE="HD2">Section 8675.309 Stuff</HD>
+            <P>Content</P>"""
+        full_xml = """
+        <ROOT>
+            <SUPLINF>
+                <HD SOURCE="HED">Supplementary Info</HD>
+                <HD SOURCE="HD1">Stuff Here</HD>
+                <P>Some Content</P>
+                <HD SOURCE="HD1">X. Section-by-Section Analysis</HD>
+                %s
+                <HD SOURCE="HD1">Section that follows</HD>
+                <P>Following Content</P>
+            </SUPLINF>
+        </ROOT>""" % sxs_xml
+
+        sxs_texts = ['Section 8675.309 Stuff', 'Content']
+        computed = find_section_by_section(etree.fromstring(full_xml))
+        self.assertEqual(sxs_texts, map(lambda el: el.text, computed))
+
     def test_find_section_by_section_not_present(self):
         full_xml = """
         <ROOT>
