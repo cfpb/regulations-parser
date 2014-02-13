@@ -10,7 +10,9 @@ from regparser.tree.paragraph import p_levels
 
 
 intro_text_marker = (
-    Marker("introductory") + WordBoundaries(CaselessLiteral("text")))
+    (Marker("introductory") + WordBoundaries(CaselessLiteral("text")))
+    | (Marker("subject") + Marker("heading")).setParseAction(lambda _: "text")
+)
 
 
 passive_marker = (

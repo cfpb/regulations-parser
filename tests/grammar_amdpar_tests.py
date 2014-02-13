@@ -337,3 +337,15 @@ class GrammarAmdParTests(TestCase):
         old, redes, new, revised = result
         self.assertEqual(revised, tokens.Verb(tokens.Verb.PUT, active=False,
                                               and_prefix=True))
+
+    def test_example_24(self):
+        text = "a. Revising the paragraph (c) subject heading and "
+        text += "paragraphs (c)(1)(ii) through (iv);"
+        result = parse_text(text)
+        self.assertEqual(4, len(result))
+        verb, subj, and_tok, toklist = result
+        self.assertTrue(verb.match(tokens.Verb))
+        self.assertTrue(subj.match(tokens.Paragraph,
+                                   field=tokens.Paragraph.TEXT_FIELD))
+        self.assertTrue(and_tok.match(tokens.AndToken))
+        self.assertTrue(toklist.match(tokens.TokenList))
