@@ -316,18 +316,21 @@ class GrammarAmdParTests(TestCase):
         self.assertEqual(p_object, paragraph)
 
     def test_example_22(self):
-        text = "comment 33(c)-5 is redesignated as comment 33(c)-6 and "
-        text += "republished, and comment 33(c)-(5) is added."
+        text = "%(mark)s 33(c)-5 is redesignated as %(mark)s 33(c)-6 and "
+        text += "republished, and %(mark)s 33(c)-(5) is added."
+        texts = [text % {"mark": marker}
+                 for marker in ("comment", "paragraph")]
 
-        result = parse_text(text)
-        self.assertEqual(7, len(result))
-        old, verb, new, and1, and2, new_new, verb2 = result
-        self.assertEqual(old.label,
-                         [None, 'Interpretations', '33', '(c)', '5'])
-        self.assertEqual(new.label,
-                         [None, 'Interpretations', '33', '(c)', '6'])
-        self.assertEqual(new_new.label,
-                         [None, 'Interpretations', '33', '(c)', '5'])
+        for text in texts:
+            result = parse_text(text)
+            self.assertEqual(7, len(result))
+            old, verb, new, and1, and2, new_new, verb2 = result
+            self.assertEqual(old.label,
+                             [None, 'Interpretations', '33', '(c)', '5'])
+            self.assertEqual(new.label,
+                             [None, 'Interpretations', '33', '(c)', '6'])
+            self.assertEqual(new_new.label,
+                             [None, 'Interpretations', '33', '(c)', '5'])
 
     def test_example_23(self):
         text = "comment 33(c)-5 is redesignated comment 33(c)-6 and revised"

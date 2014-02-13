@@ -191,12 +191,13 @@ section_single_par = (
         m.section, m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6],
         field=(tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
 single_comment_with_section = (
-    Marker("comment")
+    (Marker("comment") | Marker("paragraph"))
     + atomic.section
     + unified.depth1_p
     + "-"
     + Optional("(") + comment_p + Optional(")")
-    ).setParseAction(lambda m: tokens.Paragraph(
+    ).setParseAction(
+    lambda m: tokens.Paragraph(
         [None, 'Interpretations', m.section,
          _paren_join([m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6]),
          m.level2, m.level3, m.level4]))
