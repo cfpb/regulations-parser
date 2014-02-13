@@ -62,6 +62,33 @@ class NoticeBuildInterpTest(TestCase):
             self.assertEqual(root.label, ['111', 'Interp'])
             self.assertEqual(['HD', 'T1', 'P'], [n.tag for n in nodes])
 
+    def test_process_with_headers_subpart_confusion(self):
+        xml_str = u"""
+            <REGTEXT>
+                <AMDPAR>
+                    1. In Supplement I to part 111, under Section 33,
+                    paragraph 5 is added.
+                </AMDPAR>
+                <HD>Supplement I</HD>
+                <SUBPART>
+                    <SECTION>
+                        <SECTNO>§ 111.33</SECTNO>
+                        <SUBJECT>Stubby Subby</SUBJECT>
+                        <STARS />
+                        <P>5. Some Content</P>
+                    </SECTION>
+                </SUBPART>
+            </REGTEXT>"""
+        xml = etree.fromstring(xml_str)
+
+        interp = build_interp.process_with_headers('111', xml)
+        self.assertEqual(1, len(interp.children))
+        c33 = interp.children[0]
+        self.assertEqual(c33.label, ['111', '33', 'Interp'])
+        self.assertEqual(1, len(c33.children))
+        c335 = c33.children[0]
+        self.assertEqual(c335.label, ['111', '33', 'Interp', '5'])
+
     def test_process_without_headers(self):
         xml = """
             <REGTEXT>

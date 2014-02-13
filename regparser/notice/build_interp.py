@@ -1,4 +1,7 @@
+#vim: set encoding=utf-8
 from copy import deepcopy
+
+from lxml import etree
 
 from regparser.notice.diff import DesignateAmendment
 from regparser.notice.util import spaces_then_remove
@@ -27,7 +30,7 @@ def standardize_xml(xml):
     """We will assume a format of Supplement I header followed by HDs,
     STARS, and Ps, so move anything in an EXTRACT up a level"""
     xml = spaces_then_remove(deepcopy(xml), 'PRTPAGE')
-    for extract in xml.xpath(".//EXTRACT") + xml.xpath(".//APPENDIX"):
+    for extract in xml.xpath(".//EXTRACT|.//APPENDIX|.//SUBPART"):
         ex_parent = extract.getparent()
         idx = ex_parent.index(extract)
         for child in extract:
@@ -48,7 +51,18 @@ def process_with_headers(cfr_part, parent_xml):
     xml_nodes = []
     contains_supp = lambda n: 'supplement i' in (n.text.lower() or '')
     for child in parent_xml:
-        if seen_header:
+        # SECTION shouldn't be in this part of the XML, but often is. Expand
+        # it to proceed
+        if seen_header and child.tag == 'SECTION':
+            sectno = child.xpath('./SECTNO')[0]
+            subject = child.xpath('./SUBJECT')[0]
+            header = etree.Element("HD", SOURCE="HD2")
+            header.text = sectno.text + u'—' + subject.text
+            child.insert(child.index(sectno), header)
+            child.remove(sectno)
+            child.remove(subject)
+            xml_nodes.extend(child.getchildren())
+        elif seen_header:
             xml_nodes.append(child)
         else:
             if child.tag == 'HD' and contains_supp(child):
