@@ -646,6 +646,19 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(['1111', '12', 'c', '3', 'ix', 'B', 'Interp'],
                          b.label)
 
+    def test_parse_amdpar_and_and(self):
+        text = "12(a) 'Titles and Paragraphs' and paragraph 3 are added"
+        xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
+        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        self.assertEqual(2, len(amends))
+        a, b = amends
+        self.assertEqual('POST', a.action)
+        self.assertEqual(['1111', '12', 'a', 'Interp'],
+                         a.label)
+        self.assertEqual('POST', b.action)
+        self.assertEqual(['1111', '12', 'a', 'Interp', '3'],
+                         b.label)
+
 
 class AmendmentTests(TestCase):
     def test_fix_label(self):

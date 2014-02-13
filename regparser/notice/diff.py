@@ -303,6 +303,12 @@ def and_token_resolution(tokenized):
     indicator is the presence of an "and" token afterwards. We'll likely
     want to expand this step in the future, but for now, we only catch a few
     cases"""
+    # compress "and" tokens 
+    tokenized = zip(tokenized, tokenized[1:] + [None])
+    tokenized = [l for l, r in tokenized
+                 if l != r or not l.match(tokens.AndToken)]
+
+    # check for the pattern in question
     final_tokens = []
     idx = 0
     while idx < len(tokenized) - 3:
