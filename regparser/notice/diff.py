@@ -281,11 +281,16 @@ def resolve_confused_context(tokenized, initial_context):
     if initial_context[1:2] == ['Interpretations']:
         final_tokens = []
         for token in tokenized:
-            if isinstance(token, tokens.Context) and token.label[1] is None:
-                final_tokens.append(tokens.Context(
-                    [token.label[0], 'Interpretations', token.label[2],
-                     '(' + ')('.join(l for l in token.label[3:] if l) + ')'],
-                    token.certain))
+            if (token.match(tokens.Context, tokens.Paragraph)
+                    and len(token.label) > 1 and token.label[1] is None):
+                final_tokens.append(token.copy(
+                    label=[token.label[0], 'Interpretations', token.label[2],
+                           '(' + ')('.join(l for l in token.label[3:] if l)
+                           + ')']))
+            elif token.match(tokens.TokenList):
+                sub_tokens = resolve_confused_context(token.tokens,
+                                                      initial_context)
+                final_tokens.append(token.copy(tokens=sub_tokens))
             else:
                 final_tokens.append(token)
         return final_tokens

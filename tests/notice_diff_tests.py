@@ -633,6 +633,19 @@ class NoticeDiffTests(TestCase):
         self.assertEqual('PUT', put.action)
         self.assertEqual(['1111', '51', 'b', '1', 'Interp', '2'], put.label)
 
+    def test_parse_amdpar_interp_entries(self):
+        text = "Entries for 12(c)(3)(ix)(A) and (B) are added."
+        xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
+        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        self.assertEqual(2, len(amends))
+        a, b = amends
+        self.assertEqual('POST', a.action)
+        self.assertEqual(['1111', '12', 'c', '3', 'ix', 'A', 'Interp'],
+                         a.label)
+        self.assertEqual('POST', b.action)
+        self.assertEqual(['1111', '12', 'c', '3', 'ix', 'B', 'Interp'],
+                         b.label)
+
 
 class AmendmentTests(TestCase):
     def test_fix_label(self):
