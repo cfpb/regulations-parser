@@ -13,7 +13,10 @@ intro_text_marker = (
     Marker("introductory") + WordBoundaries(CaselessLiteral("text")))
 
 
-passive_marker = Marker("is") | Marker("are") | Marker("was") | Marker("were")
+passive_marker = (
+    Marker("is") | Marker("are") | Marker("was") | Marker("were")
+    | Marker("and").setResultsName("and_prefix").setParseAction(
+        lambda _: True))
 
 
 and_token = Marker("and").setParseAction(lambda _: tokens.AndToken())
@@ -27,7 +30,8 @@ def generate_verb(word_list, verb, active):
         word_list = [passive_marker + w for w in word_list]
     grammar = reduce(lambda l, r: l | r, word_list)
     grammar = WordBoundaries(grammar)
-    grammar = grammar.setParseAction(lambda _: tokens.Verb(verb, active))
+    grammar = grammar.setParseAction(
+        lambda m: tokens.Verb(verb, active, bool(m.and_prefix)))
     return grammar
 
 put_active = generate_verb(
@@ -77,7 +81,7 @@ paragraph_context = (
     + ~FollowedBy("-")
     ).setParseAction(
     lambda m: tokens.Context([None, None, m.section, m.p1, m.p2, m.p3, m.p4,
-                              m.p5]))
+                              m.plaintext_p5, m.plaintext_p6]))
 
 
 def _paren_join(elements):

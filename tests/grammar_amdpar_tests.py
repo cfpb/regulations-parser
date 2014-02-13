@@ -328,3 +328,12 @@ class GrammarAmdParTests(TestCase):
                          [None, 'Interpretations', '33', '(c)', '6'])
         self.assertEqual(new_new.label,
                          [None, 'Interpretations', '33', '(c)', '5'])
+
+    def test_example_23(self):
+        text = "comment 33(c)-5 is redesignated comment 33(c)-6 and revised"
+
+        result = parse_text(text)
+        self.assertEqual(4, len(result))
+        old, redes, new, revised = result
+        self.assertEqual(revised, tokens.Verb(tokens.Verb.PUT, active=False,
+                                              and_prefix=True))

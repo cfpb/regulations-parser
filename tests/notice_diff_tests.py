@@ -99,6 +99,27 @@ class NoticeDiffTests(TestCase):
                               '5'])
         ])
 
+    def test_compress_context_in_tokenlists(self):
+        tokenized = [
+            tokens.Context(['123', 'Interpretations']),
+            tokens.Paragraph(['123', None, '23', 'a']),
+            tokens.Verb(tokens.Verb.PUT, True),
+            tokens.TokenList([
+                tokens.Verb(tokens.Verb.POST, True),
+                tokens.Paragraph(['123', None, '23', 'a', '1']),
+                tokens.Paragraph([None, None, None, None, None, 'i']),
+                tokens.Paragraph([None, None, '23', 'b'])])]
+        converted = compress_context_in_tokenlists(tokenized)
+        self.assertEqual(converted, [
+            tokens.Context(['123', 'Interpretations']),
+            tokens.Paragraph(['123', None, '23', 'a']),
+            tokens.Verb(tokens.Verb.PUT, True),
+            tokens.TokenList([
+                tokens.Verb(tokens.Verb.POST, True),
+                tokens.Paragraph(['123', None, '23', 'a', '1']),
+                tokens.Paragraph(['123', None, '23', 'a', '1', 'i']),
+                tokens.Paragraph(['123', None, '23', 'b'])])])
+
     def test_resolve_confused_context(self):
         tokenized = [tokens.Context([None, None, '12', 'a', '2', 'iii'])]
         converted = resolve_confused_context(tokenized,
@@ -260,7 +281,7 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(headings[0].text, u"Subpart B—Requirements")
 
     def test_is_designate_token(self):
-        class Noun:
+        class Noun(tokens.Token):
             def __init__(self, noun):
                 self.noun = noun
 
@@ -598,6 +619,20 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(['1111', '35', 'b', '1', 'Interp', '3'],
                          amd35b1_3.label)
 
+    def test_parse_amdpar_interp_redesignated(self):
+        text = "Paragraph 1 under 51(b) is redesignated as paragraph 2 "
+        text += "under subheading 51(b)(1) and revised"
+        xml = etree.fromstring(u'<AMDPAR>%s</AMDPAR>' % text)
+        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        self.assertEqual(2, len(amends))
+        move, put = amends
+        self.assertEqual('MOVE', move.action)
+        self.assertEqual(['1111', '51', 'b', 'Interp', '1'], move.label)
+        self.assertEqual(['1111', '51', 'b', '1', 'Interp', '2'],
+                         move.destination)
+        self.assertEqual('PUT', put.action)
+        self.assertEqual(['1111', '51', 'b', '1', 'Interp', '2'], put.label)
+
 
 class AmendmentTests(TestCase):
     def test_fix_label(self):
@@ -609,6 +644,9 @@ class AmendmentTests(TestCase):
 
         amd = Amendment('action', '1005-Interpretations-31-(c)-2-xi')
         self.assertEqual(amd.label, ['1005', '31', 'c', 'Interp', '2', 'xi'])
+
+        amd = Amendment('action', '1005-Interpretations-31-()-2-xi')
+        self.assertEqual(amd.label, ['1005', '31', 'Interp', '2', 'xi'])
 
         amd = Amendment('action', '1005-Interpretations-Appendix:A-2')
         self.assertEqual(amd.label, ['1005', 'A', '2', 'Interp'])
