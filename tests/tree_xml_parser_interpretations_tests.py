@@ -348,6 +348,9 @@ class InterpretationsTest(TestCase):
             "<HD SOURCE='HD2'>Some Title</HD>",
             "<P><E T='03'>Section 111.22</E></P>",
             "<P><E T='03'>21(b) Contents</E>.</P>",
+            "<P>31(r) Contents.</P>",
+            "<P>Section 111.31 Contents.</P>",
+            "<P>Paragraph 51(b)(1)(i).</P>",
         ]
         for title in titles:
             self.assertTrue(interpretations.is_title(etree.fromstring(title)))
@@ -355,7 +358,7 @@ class InterpretationsTest(TestCase):
         non_titles = [
             "<HD SOURCE='HED'>Some Header</HD>",
             "<IMG>Some Image</IMG>",
-            "<P>Section 22.111</P>",
+            "<P>Then Section 22.111</P>",
             "<P><E T='03'>Section 222.33</E> More text</P>",
             "<P><E T='03'>Keyterm.</E> More text</P>",
         ]

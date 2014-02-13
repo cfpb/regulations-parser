@@ -126,7 +126,12 @@ def is_title(xml_node):
             and (xml_node.text is None or not xml_node.text.strip())
             and len(xml_node.getchildren()) == 1
             and (child.tail is None or not child.tail.strip(" \n\t."))
-            and text_to_labels(child.text, Label(), warn=False)))
+            and text_to_labels(child.text, Label(), warn=False))
+        or (xml_node.tag.upper() == 'P'
+            and len(xml_node.getchildren()) == 0
+            and xml_node.text and not get_first_interp_marker(xml_node.text)
+            and text_to_labels(xml_node.text, Label(), warn=False,
+                               force_start=True)))
 
 
 def process_inner_children(inner_stack, xml_node):
@@ -134,8 +139,6 @@ def process_inner_children(inner_stack, xml_node):
     children = itertools.takewhile(
         lambda x: not is_title(x), xml_node.itersiblings())
     for c in filter(lambda c: c.tag == 'P', children):
-        node_text = tree_utils.get_node_text(c, add_spaces=True)
-
         interp_inner_child(c, inner_stack)
 
 

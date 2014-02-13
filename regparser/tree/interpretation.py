@@ -64,12 +64,19 @@ def segment_tree(text, part, parent_label):
     return interpParser.build_tree(body, 1, exclude, label, title)
 
 
-def text_to_labels(text, initial_label, warn=True):
+def text_to_labels(text, initial_label, warn=True, force_start=False):
+    """Convert header text used in interpretations into the interpretation
+    label associated with them (e.g. 22(a) becomes XXX-22-a-Interp).
+    warn: lets us know if there was an error in the conversion.
+    force_start: ensure that the citations is at the *beginning* of the
+                 text"""
     all_citations = internal_citations(text.strip(), initial_label)
     all_citations = sorted(all_citations, key=lambda c: c.start)
 
     #   We care only about the first citation and its clauses
     citations = all_citations[:1]
+    if force_start:
+        citations = [c for c in citations if c.full_start == 0]
 
     #   Under certain situations, we need to infer from context
     initial_pars = list(match for match, start, _
