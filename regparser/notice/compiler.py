@@ -81,6 +81,14 @@ def is_reserved_node(node):
     return (reserved_title or reserved_text)
 
 
+def is_interp_placeholder(node):
+    """Interpretations may have nodes that exist purely to enforce
+    structure. Knowing if a node is such a placeholder makes it easier to
+    know if a POST should really just modify the existing placeholder."""
+    return (Node.INTERP_MARK in node.label
+            and not node.text and not node.title)
+
+
 class RegulationTree(object):
     """ This encapsulates a regulation tree, and methods to change that tree.
     """
@@ -212,24 +220,28 @@ class RegulationTree(object):
             return self.add_to_root(node)
 
         existing = find(self.tree, node.label_id())
-        if existing is not None:
-            if is_reserved_node(existing):
-                logging.warning(
-                    'Replacing reserved node: %s' % node.label_id())
-                return self.replace_node_and_subtree(node)
-            else:
+        if existing and is_reserved_node(existing):
+            logging.warning('Replacing reserved node: %s' % node.label_id())
+            return self.replace_node_and_subtree(node)
+        elif existing and is_interp_placeholder(existing):
+            existing.title = node.title
+            existing.text = node.text
+            if hasattr(node, 'tagged_text'):
+                existing.tagged_text = node.tagged_text
+        else:
+            if existing:
                 logging.warning(
                     'Adding a node that already exists: %s' % node.label_id())
                 print '%s %s' % (existing.text, node.label)
                 print '----'
 
-        parent = self.get_parent(node)
-        if parent is None:
-            # This is a corner case, where we're trying to add a child
-            # to a parent that should exist.
-            logging.warning('No existing parent for: %s' % node.label_id())
-            parent = self.create_empty_node(get_parent_label(node))
-        parent.children = self.add_child(parent.children, node)
+            parent = self.get_parent(node)
+            if parent is None:
+                # This is a corner case, where we're trying to add a child
+                # to a parent that should exist.
+                logging.warning('No existing parent for: %s' % node.label_id())
+                parent = self.create_empty_node(get_parent_label(node))
+            parent.children = self.add_child(parent.children, node)
 
     def add_section(self, node, subpart_label):
         """ Add a new section to a subpart. """

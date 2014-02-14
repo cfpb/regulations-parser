@@ -542,6 +542,44 @@ class CompilerTests(TestCase):
         self.assertNotEqual(None, parent)
         self.assertEqual(parent.text, '')
 
+    def test_add_node_placeholder(self):
+        node = Node(label=['1234', '2', 'b', '1', Node.INTERP_MARK, '1'],
+                    text='1. Some Content',
+                    node_type=Node.INTERP)
+        node = Node(label=['1234', '2', 'b', '1', Node.INTERP_MARK],
+                    title='Paragraph 2(b)(1)',
+                    node_type=Node.INTERP, children=[node])
+        #   This is the placeholder
+        node = Node(label=['1234', '2', 'b', Node.INTERP_MARK],
+                    node_type=Node.INTERP, children=[node])
+        node = Node(label=['1234', '2', Node.INTERP_MARK],
+                    node_type=Node.INTERP, children=[node])
+        root = Node(label=['1234'],
+                    node_type=Node.REGTEXT,
+                    children=[Node(label=['1234', Node.INTERP_MARK],
+                                   title='Supplement I',
+                                   children=[node])])
+        reg_tree = compiler.RegulationTree(root)
+
+        node = Node(label=['1234', '2', 'b', Node.INTERP_MARK],
+                    title='2(b) Some Header', node_type=Node.INTERP)
+        reg_tree.add_node(node)
+
+        i2 = find(reg_tree.tree, '1234-2-Interp')
+        self.assertEqual(1, len(i2.children))
+
+        i2b = i2.children[0]
+        self.assertEqual('2(b) Some Header', i2b.title)
+        self.assertEqual(1, len(i2b.children))
+
+        i2b1 = i2b.children[0]
+        self.assertEqual('Paragraph 2(b)(1)', i2b1.title)
+        self.assertEqual(1, len(i2b1.children))
+
+        i2b11 = i2b1.children[0]
+        self.assertEqual('1. Some Content', i2b11.text)
+        self.assertEqual(0, len(i2b11.children))
+
     def test_get_parent_label(self):
         node = Node(node_type=Node.REGTEXT)
         node.label = ['205', '3', 'a']
