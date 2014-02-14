@@ -273,6 +273,39 @@ class NoticeBuildTest(TestCase):
         self.assertTrue(changes['node']['text'].strip(),
                         u'(c) More stuff')
 
+    def test_process_amendments_restart_new_section(self):
+        xml = u"""
+        <ROOT>
+            <REGTEXT PART="104" TITLE="12">
+                <AMDPAR>
+                    1. In Supplement I to Part 104, comment 22(a) is added
+                </AMDPAR>
+                <P>Content</P>
+            </REGTEXT>
+            <REGTEXT PART="105" TITLE="12">
+                <AMDPAR>
+                3. In § 105.1, revise paragraph (b) to read as follows:
+                </AMDPAR>
+                <SECTION>
+                    <SECTNO>§ 105.1</SECTNO>
+                    <SUBJECT>Purpose.</SUBJECT>
+                    <STARS/>
+                    <P>(b) This part carries out.</P>
+                </SECTION>
+            </REGTEXT>
+        </ROOT>"""
+
+        notice_xml = etree.fromstring(xml)
+        notice = {'cfr_part': '105'}
+        build.process_amendments(notice, notice_xml)
+
+        self.assertEqual(2, len(notice['amendments']))
+        c22a, b = notice['amendments']
+        self.assertEqual(c22a.action, 'POST')
+        self.assertEqual(b.action, 'PUT')
+        self.assertEqual(c22a.label, ['104', '22', 'a', 'Interp'])
+        self.assertEqual(b.label, ['105', '1', 'b'])
+
     def new_subpart_xml(self):
         xml = u"""
             <RULE>

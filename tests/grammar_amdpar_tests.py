@@ -316,18 +316,21 @@ class GrammarAmdParTests(TestCase):
         self.assertEqual(p_object, paragraph)
 
     def test_example_22(self):
-        text = "comment 33(c)-5 is redesignated as comment 33(c)-6 and "
-        text += "republished, and comment 33(c)-(5) is added."
+        text = "%(mark)s 33(c)-5 is redesignated as %(mark)s 33(c)-6 and "
+        text += "republished, and %(mark)s 33(c)-(5) is added."
+        texts = [text % {"mark": marker}
+                 for marker in ("comment", "paragraph")]
 
-        result = parse_text(text)
-        self.assertEqual(7, len(result))
-        old, verb, new, and1, and2, new_new, verb2 = result
-        self.assertEqual(old.label,
-                         [None, 'Interpretations', '33', '(c)', '5'])
-        self.assertEqual(new.label,
-                         [None, 'Interpretations', '33', '(c)', '6'])
-        self.assertEqual(new_new.label,
-                         [None, 'Interpretations', '33', '(c)', '5'])
+        for text in texts:
+            result = parse_text(text)
+            self.assertEqual(7, len(result))
+            old, verb, new, and1, and2, new_new, verb2 = result
+            self.assertEqual(old.label,
+                             [None, 'Interpretations', '33', '(c)', '5'])
+            self.assertEqual(new.label,
+                             [None, 'Interpretations', '33', '(c)', '6'])
+            self.assertEqual(new_new.label,
+                             [None, 'Interpretations', '33', '(c)', '5'])
 
     def test_example_23(self):
         text = "comment 33(c)-5 is redesignated comment 33(c)-6 and revised"
@@ -337,3 +340,46 @@ class GrammarAmdParTests(TestCase):
         old, redes, new, revised = result
         self.assertEqual(revised, tokens.Verb(tokens.Verb.PUT, active=False,
                                               and_prefix=True))
+
+    def test_example_24(self):
+        text = "a. Revising the paragraph (c) subject heading and "
+        text += "paragraphs (c)(1)(ii) through (iv);"
+        result = parse_text(text)
+        self.assertEqual(4, len(result))
+        verb, subj, and_tok, toklist = result
+        self.assertTrue(verb.match(tokens.Verb))
+        self.assertTrue(subj.match(tokens.Paragraph,
+                                   field=tokens.Paragraph.TEXT_FIELD))
+        self.assertTrue(and_tok.match(tokens.AndToken))
+        self.assertTrue(toklist.match(tokens.TokenList))
+
+    def test_example_25(self):
+        texts = ["Revising the heading of 12(c)",
+                 "Revising the heading for 12(c)",
+                 "Revising heading 12(c)"]
+        for text in texts:
+            result = parse_text(text)
+            self.assertEqual(2, len(result))
+            verb, par = result
+            self.assertTrue(verb.match(tokens.Verb))
+            self.assertTrue(par.match(
+                tokens.Paragraph,
+                label=[None, 'Interpretations', '12', '(c)'],
+                field=tokens.Paragraph.HEADING_FIELD))
+
+    def test_example_26(self):
+        text = "Entries for 15(a), (b)(3) and (4) are added."
+        result = parse_text(text)
+        self.assertEqual(2, len(result))
+        toklist, verb = result
+        self.assertTrue(toklist.match(tokens.TokenList))
+        self.assertTrue(verb.match(tokens.Verb))
+
+        self.assertEqual(3, len(toklist.tokens))
+        a, b3, b4 = toklist.tokens
+        self.assertTrue(a.match(
+            tokens.Paragraph, label=[None, None, '15', 'a']))
+        self.assertTrue(b3.match(
+            tokens.Paragraph, label=[None, None, None, 'b', '3']))
+        self.assertTrue(b4.match(
+            tokens.Paragraph, label=[None, None, None, None, '4']))

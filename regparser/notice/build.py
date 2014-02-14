@@ -225,7 +225,6 @@ def preprocess_notice_xml(notice_xml):
 def process_amendments(notice, notice_xml):
     """ Process the changes to the regulation that are expressed in the notice.
     """
-    context = []
     amends = []
     notice_changes = changes.NoticeChanges()
 
@@ -240,6 +239,7 @@ def process_amendments(notice, notice_xml):
 
     for aXp in amdpars_by_parent:
         amended_labels = []
+        context = [notice['cfr_part']]
         for par in aXp.amdpars:
             als, context = parse_amdpar(par, context)
             amended_labels.extend(als)
