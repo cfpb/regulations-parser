@@ -239,7 +239,7 @@ def process_amendments(notice, notice_xml):
 
     for aXp in amdpars_by_parent:
         amended_labels = []
-        context = [notice['cfr_part']]
+        context = [aXp.parent.get('PART') or notice['cfr_part']]
         for par in aXp.amdpars:
             als, context = parse_amdpar(par, context)
             amended_labels.extend(als)
