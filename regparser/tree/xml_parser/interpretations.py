@@ -70,8 +70,25 @@ def interpretation_level(marker, previous_level=None):
                 return idx + 3
 
 
-_first_markers = [re.compile(ur'[\.|,|;|-|—]\s*(' + marker + ')\.')
+_first_markers = [re.compile(ur'[\.|,|;|\-|—]\s*(' + marker + ')\.')
                   for marker in ['i', 'A']]
+
+
+def collapsed_markers_matches(node_text):
+    """Find collapsed markers, i.e. tree node paragraphs that begin within a
+    single XML node, within this text. Remove citations and other false
+    positives"""
+    collapsed_markers = []
+    for marker in _first_markers:
+        possible = ((m, m.start(), m.end())
+                    for m in marker.finditer(node_text) if m.start() > 0)
+        possible = remove_citation_overlaps(node_text, possible)
+        # If certain characters follow, kill it
+        for following in ("e.", ")", u"”", '"', "'"):
+            possible = [(m, s, end) for m, s, end in possible
+                        if not node_text[end:].startswith(following)]
+        collapsed_markers.extend(m for m, _, _ in possible)
+    return collapsed_markers
 
 
 def interp_inner_child(child_node, stack):
@@ -82,18 +99,11 @@ def interp_inner_child(child_node, stack):
     first_marker = get_first_interp_marker(text_with_tags)
     paragraph_count = 0
 
-    collapsed_markers = []
-    for marker in _first_markers:
-        possible_markers = ((m, m.start(), m.end()) 
-                            for m in marker.finditer(node_text)
-                            if m.start() > 0)
-        collapsed_markers.extend(
-            m for m, _, _ in remove_citation_overlaps(node_text,
-                                                      possible_markers))
+    collapsed = collapsed_markers_matches(node_text)
 
     #   -2 throughout to account for matching the character + period
-    ends = [m.end() - 2 for m in collapsed_markers[1:]] + [len(node_text)]
-    starts = [m.end() - 2 for m in collapsed_markers] + [len(node_text)]
+    ends = [m.end() - 2 for m in collapsed[1:]] + [len(node_text)]
+    starts = [m.end() - 2 for m in collapsed] + [len(node_text)]
 
     #   Node for this paragraph
     n = Node(node_text[0:starts[0]], label=[first_marker],
@@ -113,7 +123,7 @@ def interp_inner_child(child_node, stack):
         stack.add(node_level, n)
 
     #   Collapsed-marker children
-    for match, end in zip(collapsed_markers, ends):
+    for match, end in zip(collapsed, ends):
         n = Node(node_text[match.end() - 2:end], label=[match.group(1)],
                  node_type=Node.INTERP)
         node_level = interpretation_level(match.group(1))

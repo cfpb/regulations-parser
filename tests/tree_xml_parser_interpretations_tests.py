@@ -375,3 +375,12 @@ class InterpretationsTest(TestCase):
         for non_title in non_titles:
             self.assertFalse(
                 interpretations.is_title(etree.fromstring(non_title)))
+
+    def test_collapsed_markers_matches(self):
+        self.assertEqual(['i'], map(
+            lambda m: m.group(1),
+            interpretations.collapsed_markers_matches("1. AAA - i. More")))
+        self.assertEqual([], interpretations.collapsed_markers_matches(
+            "1. Content - i.e. More content"))
+        self.assertEqual([], interpretations.collapsed_markers_matches(
+            u"1. Stuff in quotes like, “N.A.”"))
