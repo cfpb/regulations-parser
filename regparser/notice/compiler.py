@@ -149,7 +149,10 @@ class RegulationTree(object):
     def delete(self, label_id):
         """ Delete the node with label_id from the tree. """
         node = find(self.tree, label_id)
-        self.delete_from_parent(node)
+        if node is None:
+            logging.warning("Attempting to delete %s failed", label_id)
+        else:
+            self.delete_from_parent(node)
 
     def reserve(self, label_id, node):
         """ Reserve either an existing node (by replacing it) or
