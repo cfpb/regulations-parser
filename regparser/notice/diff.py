@@ -309,6 +309,15 @@ def and_token_resolution(tokenized):
     tokenized = [l for l, r in tokenized
                  if l != r or not l.match(tokens.AndToken)]
 
+    # we'll strip out all "and" tokens in just a moment, but as a first
+    # pass, remove all those preceded by a verb (which makes the following
+    # logic simpler).
+    tokenized = list(reversed(tokenized))
+    tokenized = zip(tokenized, tokenized[1:] + [None])
+    tokenized = list(reversed([l for l, r in tokenized
+                               if not l.match(tokens.AndToken) or not r
+                               or not r.match(tokens.Verb)]))
+
     # check for the pattern in question
     final_tokens = []
     idx = 0
@@ -497,6 +506,7 @@ def get_destination(tokenized, reg_part):
 def handle_subpart_amendment(tokenized):
     """ Handle the situation where a new subpart is designated. """
 
+    print tokenized
     verb = tokens.Verb.DESIGNATE
 
     token_lists = [t for t in tokenized if isinstance(t, tokens.TokenList)]
