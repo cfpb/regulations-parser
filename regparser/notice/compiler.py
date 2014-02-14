@@ -423,6 +423,9 @@ def compile_regulation(previous_tree, notice_changes):
     reg = RegulationTree(previous_tree)
     labels = sort_labels(notice_changes.keys())
 
+    reg_part = previous_tree.label[0]
+    labels = filter(lambda l: l.startswith(reg_part), labels)
+
     next_pass = [(label, change)
                  for label in labels
                  for change in notice_changes[label]]

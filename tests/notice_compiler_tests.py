@@ -456,6 +456,13 @@ class CompilerTests(TestCase):
         self.assertNotEqual(None, added_node)
         self.assertEqual(added_node.text, '2a1 text')
 
+    def test_compile_reg_move_wrong_reg(self):
+        root = self.tree_with_paragraphs()
+        notice_changes = {'202-2-a': [{'action': 'MOVE',
+                                       'destination': ['202', '2', 'b']}]}
+        reg = compiler.compile_regulation(root, notice_changes)
+        self.assertEqual(find(reg, '205-2-a').text, 'n2a')
+
     def test_compile_add_to_subpart(self):
         root = self.tree_with_subparts()
 
