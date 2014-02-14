@@ -369,6 +369,7 @@ class RegTextTest(TestCase):
             <ROOT>
                 <P>(i) Content</P>
                 <STARS />
+                <PRTPAGE />
                 <STARS />
                 <P>(xi) More</P>
             </ROOT>""")
