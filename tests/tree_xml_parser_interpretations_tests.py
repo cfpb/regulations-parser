@@ -250,11 +250,9 @@ class InterpretationsTest(TestCase):
         self.assertEqual(['737', 'G', 'Interp'], g.label)
 
         self.assertEqual(len(h1.children), 1)
-        self.assertEqual('1. Some content. (a) Badly named',
-                         h1.children[0].text.strip())
-        self.assertEqual(len(h1.children[0].children), 1)
-        self.assertEqual('(b) Badly named',
-                         h1.children[0].children[0].text.strip())
+        self.assertEqual('1. Some content. (a) Badly named\n\n'
+                         + '(b) Badly named', h1.children[0].text.strip())
+        self.assertEqual(len(h1.children[0].children), 0)
 
         self.assertEqual(1, len(s13.children))
         self.assertEqual('13(a) Some Stuff!', s13.children[0].title)
@@ -324,6 +322,25 @@ class InterpretationsTest(TestCase):
         while stack.size() > 1:
             stack.unwind()
         self.assertEqual(2, len(stack.m_stack[0]))
+
+    def test_process_inner_child_no_marker(self):
+        xml = """
+            <ROOT>
+                <HD>Title</HD>
+                <P>1. 111</P>
+                <P>i. iii</P>
+                <P>Howdy Howdy</P>
+            </ROOT>"""
+        node = etree.fromstring(xml).xpath('//HD')[0]
+        stack = tree_utils.NodeStack()
+        interpretations.process_inner_children(stack, node)
+        while stack.size() > 1:
+            stack.unwind()
+        i1 = stack.m_stack[0][0][1]
+        self.assertEqual(1, len(i1.children))
+        i1i = i1.children[0]
+        self.assertEqual(0, len(i1i.children))
+        self.assertEqual(i1i.text.strip(), "i. iii\n\nHowdy Howdy")
 
     def test_process_inner_child_has_citation(self):
         xml = """

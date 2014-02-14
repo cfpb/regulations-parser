@@ -93,11 +93,30 @@ def collapsed_markers_matches(node_text):
 
 def interp_inner_child(child_node, stack):
     """ Build an inner child node (basically a node that's after
-    -Interp- in the tree) """
+    -Interp- in the tree). If the paragraph doesn't have a marker, attach it
+    to the previous paragraph"""
     node_text = tree_utils.get_node_text(child_node, add_spaces=True)
     text_with_tags = tree_utils.get_node_text_tags_preserved(child_node)
     first_marker = get_first_interp_marker(text_with_tags)
-    paragraph_count = 0
+    if not first_marker and stack.lineage():
+        logging.warning("Couldn't determine interp marker. Appending to "
+                        "previous paragraph: %s", node_text)
+        previous = stack.lineage()[0]
+        previous.text += "\n\n" + node_text
+        if hasattr(previous, 'tagged_text'):
+            previous.tagged_text += "\n\n" + text_with_tags
+        else:
+            previous.tagged_text = text_with_tags
+    else:
+        child_with_marker(child_node, stack)
+
+
+def child_with_marker(child_node, stack):
+    """Machinery to build a node for an interp's inner child. Assumes the
+    paragraph begins with a paragraph marker."""
+    node_text = tree_utils.get_node_text(child_node, add_spaces=True)
+    text_with_tags = tree_utils.get_node_text_tags_preserved(child_node)
+    first_marker = get_first_interp_marker(text_with_tags)
 
     collapsed = collapsed_markers_matches(node_text)
 
@@ -116,7 +135,6 @@ def interp_inner_child(child_node, stack):
     else:
         node_level = interpretation_level(first_marker, last[0][0])
         if node_level is None:
-            paragraph_count += 1
             logging.warning("Couldn't determine node_level for this "
                             + "interpretation paragraph: " + n.text)
             node_level = last[0][0] + 1
