@@ -20,7 +20,8 @@ class LayerGraphicsTest(TestCase):
                     "some more ![222](XXX) followed by ![ex](ABCD) and XXX " +
                     "and ![](NOTEXT)")
         g = Graphics(None)
-        result = g.process(node)
+        with patch('regparser.layer.graphics.requests') as requests:
+            result = g.process(node)
         self.assertEqual(3, len(result))
         found = [False, False, False]
         for res in result:
@@ -45,7 +46,8 @@ class LayerGraphicsTest(TestCase):
     def test_process_format(self):
         node = Node("![A88 Something](ER22MY13.257-1)")
         g = Graphics(None)
-        self.assertEqual(1, len(g.process(node)))
+        with patch('regparser.layer.graphics.requests') as requests:
+            self.assertEqual(1, len(g.process(node)))
 
     @patch('regparser.layer.graphics.content')
     def test_process_custom_url(self, content):
