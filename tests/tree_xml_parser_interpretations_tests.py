@@ -31,6 +31,16 @@ class InterpretationsTest(TestCase):
         marker = interpretations.get_first_interp_marker(text)
         self.assertEqual(marker, None)
 
+    def test_interpretation_markers_stars_no_period(self):
+        for marker in ('4 ', 'iv  ', 'A\t'):
+            text = marker + '* * *'
+            found_marker = interpretations.get_first_interp_marker(text)
+            self.assertEqual(marker.strip(), found_marker)
+
+            text = "33 * * * Some more stuff"
+            found_marker = interpretations.get_first_interp_marker(text)
+            self.assertEqual(None, found_marker)
+
     def test_build_supplement_tree(self):
         """Integration test"""
         xml = """<APPENDIX>

@@ -4,8 +4,6 @@ import logging
 import re
 import string
 
-from pyparsing import Word, LineStart, Regex, Suppress
-
 from regparser.citations import Label, remove_citation_overlaps
 from regparser.tree.interpretation import merge_labels, text_to_labels
 from regparser.tree.struct import Node, treeify
@@ -23,18 +21,31 @@ i_levels = [
 ]
 
 
+_marker_regex = re.compile(
+    r'^\s*('                   # line start
+    + '([0-9]+)'               # digits
+    + '|([ivxlcdm]+)'          # roman
+    + '|([A-Z]+)'              # upper
+    + '|(<E[^>]*>[0-9]+)'      # emphasized digit
+    + r')\s*\..*', re.DOTALL)  # followed by a period and then anything
+
+
+_marker_stars_regex = re.compile(
+    r'^\s*('                   # line start
+    + '([0-9]+)'               # digits
+    + '|([ivxlcdm]+)'          # roman
+    + '|([A-Z]+)'              # upper
+    + '|(<E[^>]*>[0-9]+)'      # emphasized digit
+    + r')\s+\* \* \*\s*$', re.DOTALL)  # followed by stars
+
+
 def get_first_interp_marker(text):
-    roman_dec = Word("ivxlcdm")
-    upper_dec = Word(string.ascii_uppercase)
-    emph_dec = (Regex(r"<E[^>]*>") + Word(string.digits)).setParseAction(
-        lambda s, l, t: ''.join(t))
-
-    marker_parser = LineStart() + (
-        (Word(string.digits) | roman_dec | upper_dec | emph_dec)
-        + Suppress("."))
-
-    for citation, start, end in marker_parser.scanString(text):
-        return citation[0]
+    match = _marker_regex.match(text)
+    if match:
+        return text[:text.find('.')].strip()        # up to dot
+    match = _marker_stars_regex.match(text)
+    if match:
+        return text[:text.find('*')].strip()        # up to star
 
 
 def interpretation_level(marker, previous_level=None):
