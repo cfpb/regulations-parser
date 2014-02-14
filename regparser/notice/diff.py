@@ -184,8 +184,8 @@ def paragraph_in_context_moved(tokenized, initial_context):
 
 def move_then_modify(tokenized):
     """The subject of modification may be implicit in the preceding move
-    operation: A is redesignated B and changed. We assume the past-tense
-    switch has already occurred."""
+    operation: A is redesignated B and changed. Replace the operation with a
+    DELETE and a POST so it's easier to compile later."""
     if len(tokenized) == 4:
         move, p1, p2, edit = tokenized
         if (move.match(tokens.Verb, verb=tokens.Verb.MOVE, active=True)
@@ -193,7 +193,8 @@ def move_then_modify(tokenized):
                 and p2.match(tokens.Paragraph)
                 and edit.match(tokens.Verb, verb=tokens.Verb.PUT,
                                active=True, and_prefix=True)):
-            return [move, p1, p2, edit, p2]
+            return [tokens.Verb(tokens.Verb.DELETE, active=True), p1,
+                    tokens.Verb(tokens.Verb.POST, active=True), p2]
     return tokenized
 
 
