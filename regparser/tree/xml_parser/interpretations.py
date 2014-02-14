@@ -4,8 +4,6 @@ import logging
 import re
 import string
 
-from pyparsing import Word, LineStart, Regex, Suppress
-
 from regparser.citations import Label, remove_citation_overlaps
 from regparser.tree.interpretation import merge_labels, text_to_labels
 from regparser.tree.struct import Node, treeify
@@ -23,18 +21,31 @@ i_levels = [
 ]
 
 
+_marker_regex = re.compile(
+    r'^\s*('                   # line start
+    + '([0-9]+)'               # digits
+    + '|([ivxlcdm]+)'          # roman
+    + '|([A-Z]+)'              # upper
+    + '|(<E[^>]*>[0-9]+)'      # emphasized digit
+    + r')\s*\..*', re.DOTALL)  # followed by a period and then anything
+
+
+_marker_stars_regex = re.compile(
+    r'^\s*('                   # line start
+    + '([0-9]+)'               # digits
+    + '|([ivxlcdm]+)'          # roman
+    + '|([A-Z]+)'              # upper
+    + '|(<E[^>]*>[0-9]+)'      # emphasized digit
+    + r')\s+\* \* \*\s*$', re.DOTALL)  # followed by stars
+
+
 def get_first_interp_marker(text):
-    roman_dec = Word("ivxlcdm")
-    upper_dec = Word(string.ascii_uppercase)
-    emph_dec = (Regex(r"<E[^>]*>") + Word(string.digits)).setParseAction(
-        lambda s, l, t: ''.join(t))
-
-    marker_parser = LineStart() + (
-        (Word(string.digits) | roman_dec | upper_dec | emph_dec)
-        + Suppress("."))
-
-    for citation, start, end in marker_parser.scanString(text):
-        return citation[0]
+    match = _marker_regex.match(text)
+    if match:
+        return text[:text.find('.')].strip()        # up to dot
+    match = _marker_stars_regex.match(text)
+    if match:
+        return text[:text.find('*')].strip()        # up to star
 
 
 def interpretation_level(marker, previous_level=None):
@@ -59,30 +70,59 @@ def interpretation_level(marker, previous_level=None):
                 return idx + 3
 
 
-_first_markers = [re.compile(ur'[\.|,|;|-|—]\s*(' + marker + ')\.')
+_first_markers = [re.compile(ur'[\.|,|;|\-|—]\s*(' + marker + ')\.')
                   for marker in ['i', 'A']]
+
+
+def collapsed_markers_matches(node_text):
+    """Find collapsed markers, i.e. tree node paragraphs that begin within a
+    single XML node, within this text. Remove citations and other false
+    positives"""
+    collapsed_markers = []
+    for marker in _first_markers:
+        possible = ((m, m.start(), m.end())
+                    for m in marker.finditer(node_text) if m.start() > 0)
+        possible = remove_citation_overlaps(node_text, possible)
+        # If certain characters follow, kill it
+        for following in ("e.", ")", u"”", '"', "'"):
+            possible = [(m, s, end) for m, s, end in possible
+                        if not node_text[end:].startswith(following)]
+        collapsed_markers.extend(m for m, _, _ in possible)
+    return collapsed_markers
 
 
 def interp_inner_child(child_node, stack):
     """ Build an inner child node (basically a node that's after
-    -Interp- in the tree) """
+    -Interp- in the tree). If the paragraph doesn't have a marker, attach it
+    to the previous paragraph"""
     node_text = tree_utils.get_node_text(child_node, add_spaces=True)
     text_with_tags = tree_utils.get_node_text_tags_preserved(child_node)
     first_marker = get_first_interp_marker(text_with_tags)
-    paragraph_count = 0
+    if not first_marker and stack.lineage():
+        logging.warning("Couldn't determine interp marker. Appending to "
+                        "previous paragraph: %s", node_text)
+        previous = stack.lineage()[0]
+        previous.text += "\n\n" + node_text
+        if hasattr(previous, 'tagged_text'):
+            previous.tagged_text += "\n\n" + text_with_tags
+        else:
+            previous.tagged_text = text_with_tags
+    else:
+        child_with_marker(child_node, stack)
 
-    collapsed_markers = []
-    for marker in _first_markers:
-        possible_markers = ((m, m.start(), m.end()) 
-                            for m in marker.finditer(node_text)
-                            if m.start() > 0)
-        collapsed_markers.extend(
-            m for m, _, _ in remove_citation_overlaps(node_text,
-                                                      possible_markers))
+
+def child_with_marker(child_node, stack):
+    """Machinery to build a node for an interp's inner child. Assumes the
+    paragraph begins with a paragraph marker."""
+    node_text = tree_utils.get_node_text(child_node, add_spaces=True)
+    text_with_tags = tree_utils.get_node_text_tags_preserved(child_node)
+    first_marker = get_first_interp_marker(text_with_tags)
+
+    collapsed = collapsed_markers_matches(node_text)
 
     #   -2 throughout to account for matching the character + period
-    ends = [m.end() - 2 for m in collapsed_markers[1:]] + [len(node_text)]
-    starts = [m.end() - 2 for m in collapsed_markers] + [len(node_text)]
+    ends = [m.end() - 2 for m in collapsed[1:]] + [len(node_text)]
+    starts = [m.end() - 2 for m in collapsed] + [len(node_text)]
 
     #   Node for this paragraph
     n = Node(node_text[0:starts[0]], label=[first_marker],
@@ -95,14 +135,13 @@ def interp_inner_child(child_node, stack):
     else:
         node_level = interpretation_level(first_marker, last[0][0])
         if node_level is None:
-            paragraph_count += 1
             logging.warning("Couldn't determine node_level for this "
                             + "interpretation paragraph: " + n.text)
             node_level = last[0][0] + 1
         stack.add(node_level, n)
 
     #   Collapsed-marker children
-    for match, end in zip(collapsed_markers, ends):
+    for match, end in zip(collapsed, ends):
         n = Node(node_text[match.end() - 2:end], label=[match.group(1)],
                  node_type=Node.INTERP)
         node_level = interpretation_level(match.group(1))
@@ -126,7 +165,12 @@ def is_title(xml_node):
             and (xml_node.text is None or not xml_node.text.strip())
             and len(xml_node.getchildren()) == 1
             and (child.tail is None or not child.tail.strip(" \n\t."))
-            and text_to_labels(child.text, Label(), warn=False)))
+            and text_to_labels(child.text, Label(), warn=False))
+        or (xml_node.tag.upper() == 'P'
+            and len(xml_node.getchildren()) == 0
+            and xml_node.text and not get_first_interp_marker(xml_node.text)
+            and text_to_labels(xml_node.text, Label(), warn=False,
+                               force_start=True)))
 
 
 def process_inner_children(inner_stack, xml_node):
@@ -134,8 +178,6 @@ def process_inner_children(inner_stack, xml_node):
     children = itertools.takewhile(
         lambda x: not is_title(x), xml_node.itersiblings())
     for c in filter(lambda c: c.tag == 'P', children):
-        node_text = tree_utils.get_node_text(c, add_spaces=True)
-
         interp_inner_child(c, inner_stack)
 
 

@@ -32,7 +32,7 @@ def determine_level(c, current_level, next_marker=None):
                 if (    # E.g. i followed by A or i followed by 1
                         (next_idx == 0 and next_level == pot_level + 1)
                         or  # E.g. i followed by ii
-                        (next_level == pot_level and next_idx == pot_idx + 1)
+                        (next_level == pot_level and next_idx > pot_idx)
                         or  # E.g. i followed by 3
                         (next_level < pot_level and next_idx > 0)):
                     return pot_level + 1
@@ -179,7 +179,7 @@ def next_marker(xml_node, remaining_markers):
 
     #   Check the next xml node; skip over stars
     sib = xml_node.getnext()
-    while sib is not None and sib.tag == 'STARS':
+    while sib is not None and sib.tag in ('STARS', 'PRTPAGE'):
         sib = sib.getnext()
     if sib is not None:
         next_text = tree_utils.get_node_text(sib)

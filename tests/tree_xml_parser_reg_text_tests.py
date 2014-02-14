@@ -369,7 +369,16 @@ class RegTextTest(TestCase):
             <ROOT>
                 <P>(i) Content</P>
                 <STARS />
+                <PRTPAGE />
                 <STARS />
                 <P>(xi) More</P>
             </ROOT>""")
         self.assertEqual('xi', next_marker(xml.getchildren()[0], []))
+
+    def test_determine_level(self):
+        self.assertEqual(1, determine_level('f', 1))
+        self.assertEqual(4, determine_level('A', 3))
+        self.assertEqual(1, determine_level('i', 1, '1'))
+        self.assertEqual(3, determine_level('i', 2, 'A'))
+        self.assertEqual(3, determine_level('i', 2, 'ii'))
+        self.assertEqual(3, determine_level('i', 2, 'iv'))

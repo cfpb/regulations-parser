@@ -31,6 +31,16 @@ class InterpretationsTest(TestCase):
         marker = interpretations.get_first_interp_marker(text)
         self.assertEqual(marker, None)
 
+    def test_interpretation_markers_stars_no_period(self):
+        for marker in ('4 ', 'iv  ', 'A\t'):
+            text = marker + '* * *'
+            found_marker = interpretations.get_first_interp_marker(text)
+            self.assertEqual(marker.strip(), found_marker)
+
+            text = "33 * * * Some more stuff"
+            found_marker = interpretations.get_first_interp_marker(text)
+            self.assertEqual(None, found_marker)
+
     def test_build_supplement_tree(self):
         """Integration test"""
         xml = """<APPENDIX>
@@ -240,11 +250,9 @@ class InterpretationsTest(TestCase):
         self.assertEqual(['737', 'G', 'Interp'], g.label)
 
         self.assertEqual(len(h1.children), 1)
-        self.assertEqual('1. Some content. (a) Badly named',
-                         h1.children[0].text.strip())
-        self.assertEqual(len(h1.children[0].children), 1)
-        self.assertEqual('(b) Badly named',
-                         h1.children[0].children[0].text.strip())
+        self.assertEqual('1. Some content. (a) Badly named\n\n'
+                         + '(b) Badly named', h1.children[0].text.strip())
+        self.assertEqual(len(h1.children[0].children), 0)
 
         self.assertEqual(1, len(s13.children))
         self.assertEqual('13(a) Some Stuff!', s13.children[0].title)
@@ -315,6 +323,25 @@ class InterpretationsTest(TestCase):
             stack.unwind()
         self.assertEqual(2, len(stack.m_stack[0]))
 
+    def test_process_inner_child_no_marker(self):
+        xml = """
+            <ROOT>
+                <HD>Title</HD>
+                <P>1. 111</P>
+                <P>i. iii</P>
+                <P>Howdy Howdy</P>
+            </ROOT>"""
+        node = etree.fromstring(xml).xpath('//HD')[0]
+        stack = tree_utils.NodeStack()
+        interpretations.process_inner_children(stack, node)
+        while stack.size() > 1:
+            stack.unwind()
+        i1 = stack.m_stack[0][0][1]
+        self.assertEqual(1, len(i1.children))
+        i1i = i1.children[0]
+        self.assertEqual(0, len(i1i.children))
+        self.assertEqual(i1i.text.strip(), "i. iii\n\nHowdy Howdy")
+
     def test_process_inner_child_has_citation(self):
         xml = """
         <ROOT>
@@ -348,6 +375,9 @@ class InterpretationsTest(TestCase):
             "<HD SOURCE='HD2'>Some Title</HD>",
             "<P><E T='03'>Section 111.22</E></P>",
             "<P><E T='03'>21(b) Contents</E>.</P>",
+            "<P>31(r) Contents.</P>",
+            "<P>Section 111.31 Contents.</P>",
+            "<P>Paragraph 51(b)(1)(i).</P>",
         ]
         for title in titles:
             self.assertTrue(interpretations.is_title(etree.fromstring(title)))
@@ -355,10 +385,19 @@ class InterpretationsTest(TestCase):
         non_titles = [
             "<HD SOURCE='HED'>Some Header</HD>",
             "<IMG>Some Image</IMG>",
-            "<P>Section 22.111</P>",
+            "<P>Then Section 22.111</P>",
             "<P><E T='03'>Section 222.33</E> More text</P>",
             "<P><E T='03'>Keyterm.</E> More text</P>",
         ]
         for non_title in non_titles:
             self.assertFalse(
                 interpretations.is_title(etree.fromstring(non_title)))
+
+    def test_collapsed_markers_matches(self):
+        self.assertEqual(['i'], map(
+            lambda m: m.group(1),
+            interpretations.collapsed_markers_matches("1. AAA - i. More")))
+        self.assertEqual([], interpretations.collapsed_markers_matches(
+            "1. Content - i.e. More content"))
+        self.assertEqual([], interpretations.collapsed_markers_matches(
+            u"1. Stuff in quotes like, “N.A.”"))
