@@ -201,7 +201,13 @@ class RegulationTree(object):
         """ In rare cases, we need to flush out the tree by adding
         an empty node. """
         node_label = node_label.split('-')
-        node = Node('', [], node_label, None, Node.REGTEXT)
+        if Node.INTERP_MARK in node_label:
+            node_type = Node.INTERP
+        elif len(node_label) > 1 and not node_label[1].isdigit():
+            node_type = Node.APPENDIX
+        else:
+            node_type = Node.REGTEXT
+        node = Node(label=node_label, node_type=node_type)
         parent = self.get_parent(node)
         parent.children = self.add_child(parent.children, node)
         return parent

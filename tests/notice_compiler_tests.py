@@ -533,6 +533,25 @@ class CompilerTests(TestCase):
         node = find(reg_tree.tree, '205-4-a')
         self.assertNotEqual(None, node)
         self.assertEqual(node.label, ['205', '4', 'a'])
+        self.assertEqual(node.node_type, Node.REGTEXT)
+
+        node = Node(label=['205', 'M2'], title='Appendix M2',
+                    node_type=Node.APPENDIX)
+        reg_tree.add_node(node)
+        reg_tree.create_empty_node('205-M2-1')
+        node = find(reg_tree.tree, '205-M2-1')
+        self.assertNotEqual(None, node)
+        self.assertEqual(node.label, ['205', 'M2', '1'])
+        self.assertEqual(node.node_type, Node.APPENDIX)
+
+        node = Node(label=['205', Node.INTERP_MARK], title='Supplement I',
+                    node_type=Node.INTERP)
+        reg_tree.add_node(node)
+        reg_tree.create_empty_node('205-3-Interp')
+        node = find(reg_tree.tree, '205-3-Interp')
+        self.assertNotEqual(None, node)
+        self.assertEqual(node.label, ['205', '3', Node.INTERP_MARK])
+        self.assertEqual(node.node_type, Node.INTERP)
 
     def test_add_node_no_parent(self):
         root = self.tree_with_paragraphs()
