@@ -226,3 +226,23 @@ class ChangesTests(TestCase):
 
         node = Node('', label=['205', '35', 'c', '1', 'i'])
         self.assertFalse(changes.impossible_label(node, amended_labels))
+
+
+class NoticeChangesTests(TestCase):
+    def test_update_duplicates(self):
+        nc = changes.NoticeChanges()
+        nc.update({'123-12': {'action': 'DELETE'},
+                   '123-22': {'action': 'OTHER'}})
+        nc.update({'123-12': {'action': 'DELETE'}})
+        nc.update({'123-12': {'action': 'OTHER'}})
+        nc.update({'123-22': {'action': 'OTHER'},
+                   '123-32': {'action': 'LAST'}})
+
+        self.assertTrue('123-12' in nc.changes)
+        self.assertTrue('123-22' in nc.changes)
+        self.assertTrue('123-32' in nc.changes)
+
+        self.assertEqual(nc.changes['123-12'],
+                         [{'action': 'DELETE'}, {'action': 'OTHER'}])
+        self.assertEqual(nc.changes['123-22'], [{'action': 'OTHER'}])
+        self.assertEqual(nc.changes['123-32'], [{'action': 'LAST'}])
