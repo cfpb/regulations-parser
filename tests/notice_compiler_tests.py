@@ -580,6 +580,26 @@ class CompilerTests(TestCase):
         self.assertEqual('1. Some Content', i2b11.text)
         self.assertEqual(0, len(i2b11.children))
 
+    def test_add_node_again(self):
+        node = Node(label=['1234', '2', 'b', Node.INTERP_MARK],
+                    title='Paragraph 2(b)', node_type=Node.INTERP)
+        node = Node(label=['1234', '2', Node.INTERP_MARK],
+                    title='Section 1234.2', node_type=Node.INTERP,
+                    children=[node])
+        root = Node(label=['1234'],
+                    node_type=Node.REGTEXT,
+                    children=[Node(label=['1234', Node.INTERP_MARK],
+                                   title='Supplement I',
+                                   children=[node])])
+        reg_tree = compiler.RegulationTree(root)
+
+        node = Node(label=['1234', '2', 'b', Node.INTERP_MARK],
+                    title='Paragraph 2(b)', node_type=Node.INTERP)
+        reg_tree.add_node(node)
+
+        i2 = find(reg_tree.tree, '1234-2-Interp')
+        self.assertEqual(1, len(i2.children))
+
     def test_get_parent_label(self):
         node = Node(node_type=Node.REGTEXT)
         node.label = ['205', '3', 'a']

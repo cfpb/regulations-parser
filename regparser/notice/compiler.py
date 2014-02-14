@@ -228,6 +228,13 @@ class RegulationTree(object):
             existing.text = node.text
             if hasattr(node, 'tagged_text'):
                 existing.tagged_text = node.tagged_text
+        # Unfortunately, the same nodes (particularly headers) might be
+        # added by multiple notices...
+        elif (existing and existing.text == node.text 
+                and existing.title == node.title
+                and getattr(existing, 'tagged_text', '') == getattr(
+                    node, 'tagged_text', '')):
+            pass
         else:
             if existing:
                 logging.warning(
