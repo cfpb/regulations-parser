@@ -383,3 +383,14 @@ class GrammarAmdParTests(TestCase):
             tokens.Paragraph, label=[None, None, None, 'b', '3']))
         self.assertTrue(b4.match(
             tokens.Paragraph, label=[None, None, None, None, '4']))
+
+    def test_example_27(self):
+        text = "The heading for Section 1234.56-Toastfully Eggselent is "
+        text += "revised"
+        result = parse_text(text)
+        self.assertEqual(2, len(result))
+        par, verb = result
+        self.assertTrue(verb.match(tokens.Verb, verb=tokens.Verb.PUT))
+        self.assertTrue(par.match(tokens.Paragraph,
+                                  label=['1234', None, '56'],
+                                  field=tokens.Paragraph.HEADING_FIELD))
