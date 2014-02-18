@@ -681,6 +681,9 @@ class NoticeDiffTests(TestCase):
 
 class AmendmentTests(TestCase):
     def test_fix_label(self):
+        amd = Amendment('action', '1005-Interpretations')
+        self.assertEqual(amd.label, ['1005', 'Interp'])
+
         amd = Amendment('action', '1005-Interpretations-31-(b)(1)-3')
         self.assertEqual(amd.label, ['1005', '31', 'b', '1', 'Interp', '3'])
 
@@ -695,6 +698,9 @@ class AmendmentTests(TestCase):
 
         amd = Amendment('action', '1005-Interpretations-Appendix:A-2')
         self.assertEqual(amd.label, ['1005', 'A', '2', 'Interp'])
+
+        amd = Amendment('action', '1005-Appendix:A-2')
+        self.assertEqual(amd.label, ['1005', 'A', '2'])
 
     def test_amendment_heading(self):
         amendment = Amendment('PUT', '100-2-a[heading]')
