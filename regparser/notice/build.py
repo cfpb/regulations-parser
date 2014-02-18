@@ -6,6 +6,7 @@ from lxml import etree
 import requests
 
 from regparser.notice.address import fetch_addresses
+from regparser.notice.build_appendix import parse_appendix_changes
 from regparser.notice.build_interp import parse_interp_changes
 from regparser.notice.diff import parse_amdpar, find_section, find_subpart
 from regparser.notice.diff import new_subpart_added
@@ -15,6 +16,7 @@ from regparser.notice.sxs import find_section_by_section
 from regparser.notice.sxs import build_section_by_section
 from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
 from regparser.notice import changes
+from regparser.tree import struct
 from regparser.tree.xml_parser import reg_text
 import settings
 
@@ -149,6 +151,10 @@ def create_changes(amended_labels, section, notice_changes):
     """ Match the amendments to the section nodes that got parsed, and actually
     create the notice changes. """
 
+    def per_node(node):
+        node.child_labels = [c.label_id() for c in node.children]
+    struct.walk(section, per_node)
+
     amend_map = changes.match_labels_and_changes(amended_labels, section)
 
     for label, amendments in amend_map.iteritems():
@@ -257,6 +263,10 @@ def process_amendments(notice, notice_xml):
             for section in reg_text.build_from_section(
                     notice['cfr_part'], section_xml):
                 create_changes(amended_labels, section, notice_changes)
+
+        for appendix in parse_appendix_changes(amended_labels,
+                                               notice['cfr_part'], aXp.parent):
+            create_changes(amended_labels, appendix, notice_changes)
 
         interp = parse_interp_changes(amended_labels, notice['cfr_part'],
                                       aXp.parent)
