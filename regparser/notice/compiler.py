@@ -113,30 +113,38 @@ class RegulationTree(object):
         for c in self.tree.children:
             del c.sortable
 
-    def add_child(self, children, node):
+    def add_child(self, children, node, order=None):
         """ Add a child to the children, and sort appropriately. This is used
         for non-root nodes. """
 
         children.append(node)
 
-        for c in children:
-            if c.label[-1] == Node.INTERP_MARK:
-                c.sortable = make_label_sortable(
-                    c.label[-2], roman=(len(c.label) == 6))
-            elif Node.INTERP_MARK in c.label:
-                marker_idx = c.label.index(Node.INTERP_MARK)
-                comment_pars = c.label[marker_idx + 1:]
-                c.sortable = make_label_sortable(
-                    comment_pars[-1], roman=(len(comment_pars) == 2))
-            else:
-                c.sortable = make_label_sortable(
-                    c.label[-1], roman=(len(c.label) == 5))
+        if order and set(order) == set(c.label_id() for c in children):
+            lookup = {}
+            for c in children:
+                lookup[c.label_id()] = c
+            return [lookup[label_id] for label_id in order]
+        else:
+            for c in children:
+                if c.label[-1] == Node.INTERP_MARK:
+                    c.sortable = make_label_sortable(
+                        c.label[-2], roman=(len(c.label) == 6))
+                elif Node.INTERP_MARK in c.label:
+                    marker_idx = c.label.index(Node.INTERP_MARK)
+                    comment_pars = c.label[marker_idx + 1:]
+                    c.sortable = make_label_sortable(
+                        comment_pars[-1], roman=(len(comment_pars) == 2))
+                elif c.node_type == Node.APPENDIX:
+                    c.sortable = c.label[-1]
+                else:
+                    c.sortable = make_label_sortable(
+                        c.label[-1], roman=(len(c.label) == 5))
 
-        children.sort(key=lambda x: x.sortable)
+            children.sort(key=lambda x: x.sortable)
 
-        for c in children:
-            del c.sortable
-        return children
+            for c in children:
+                del c.sortable
+            return children
 
     def delete_from_parent(self, node):
         """ Delete node from it's parent, effectively removing it from the
@@ -195,7 +203,8 @@ class RegulationTree(object):
             parent = self.get_parent(node)
 
         other_children = [c for c in parent.children if c.label != node.label]
-        parent.children = self.add_child(other_children, node)
+        parent.children = self.add_child(other_children, node,
+                                         getattr(parent, 'child_labels', []))
 
     def create_empty_node(self, node_label):
         """ In rare cases, we need to flush out the tree by adding
@@ -209,7 +218,8 @@ class RegulationTree(object):
             node_type = Node.REGTEXT
         node = Node(label=node_label, node_type=node_type)
         parent = self.get_parent(node)
-        parent.children = self.add_child(parent.children, node)
+        parent.children = self.add_child(parent.children, node,
+                                         getattr(parent, 'child_labels', []))
         return parent
 
     def contains(self, label):
@@ -225,7 +235,8 @@ class RegulationTree(object):
     def add_node(self, node):
         """ Add an entirely new node to the regulation tree. """
 
-        if node.node_type == Node.SUBPART:
+        if ((node.node_type == Node.APPENDIX and len(node.label) == 2)
+                or node.node_type == Node.SUBPART):
             return self.add_to_root(node)
 
         existing = find(self.tree, node.label_id())
@@ -257,7 +268,9 @@ class RegulationTree(object):
                 # to a parent that should exist.
                 logging.warning('No existing parent for: %s' % node.label_id())
                 parent = self.create_empty_node(get_parent_label(node))
-            parent.children = self.add_child(parent.children, node)
+            parent.children = self.add_child(parent.children, node,
+                                             getattr(parent, 'child_labels',
+                                                     []))
 
     def add_section(self, node, subpart_label):
         """ Add a new section to a subpart. """
@@ -345,6 +358,8 @@ def dict_to_node(node_dict):
             node_dict.get('title', None), node_dict['node_type'])
         if 'tagged_text' in node_dict:
             node.tagged_text = node_dict['tagged_text']
+        if 'child_labels' in node_dict:
+            node.child_labels = node_dict['child_labels']
         return node
     else:
         return node_dict
