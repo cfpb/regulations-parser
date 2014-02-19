@@ -625,13 +625,11 @@ class NoticeDiffTests(TestCase):
         xml = etree.fromstring(u'<AMDPAR>%s</AMDPAR>' % text)
         amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
         self.assertEqual(2, len(amends))
-        move, put = amends
-        self.assertEqual('MOVE', move.action)
-        self.assertEqual(['1111', '51', 'b', 'Interp', '1'], move.label)
-        self.assertEqual(['1111', '51', 'b', '1', 'Interp', '2'],
-                         move.destination)
-        self.assertEqual('PUT', put.action)
-        self.assertEqual(['1111', '51', 'b', '1', 'Interp', '2'], put.label)
+        delete, add = amends
+        self.assertEqual('DELETE', delete.action)
+        self.assertEqual(['1111', '51', 'b', 'Interp', '1'], delete.label)
+        self.assertEqual('POST', add.action)
+        self.assertEqual(['1111', '51', 'b', '1', 'Interp', '2'], add.label)
 
     def test_parse_amdpar_interp_entries(self):
         text = "Entries for 12(c)(3)(ix)(A) and (B) are added."
@@ -658,6 +656,27 @@ class NoticeDiffTests(TestCase):
         self.assertEqual('POST', b.action)
         self.assertEqual(['1111', '12', 'a', 'Interp', '3'],
                          b.label)
+
+    def test_parse_amdpar_verbs_ands(self):
+        text = "Under 45(a)(1) Title, paragraphs 1 and 2 are removed, and "
+        text += "45(a)(1)(i) Deeper Title and paragraphs 1 and 2 are added"
+        xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
+        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        self.assertEqual(5, len(amends))
+        a11, a12, a1i, a1i1, a1i2 = amends
+        self.assertEqual('DELETE', a11.action)
+        self.assertEqual(['1111', '45', 'a', '1', 'Interp', '1'], a11.label)
+        self.assertEqual('DELETE', a12.action)
+        self.assertEqual(['1111', '45', 'a', '1', 'Interp', '2'], a12.label)
+
+        self.assertEqual('POST', a1i.action)
+        self.assertEqual(['1111', '45', 'a', '1', 'i', 'Interp'], a1i.label)
+        self.assertEqual('POST', a1i1.action)
+        self.assertEqual(['1111', '45', 'a', '1', 'i', 'Interp', '1'],
+                         a1i1.label)
+        self.assertEqual('POST', a1i2.action)
+        self.assertEqual(['1111', '45', 'a', '1', 'i', 'Interp', '2'],
+                         a1i2.label)
 
 
 class AmendmentTests(TestCase):

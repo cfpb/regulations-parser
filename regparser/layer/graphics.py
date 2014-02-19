@@ -1,10 +1,11 @@
 from collections import defaultdict
 import re
 
+import requests
+
 from regparser import content
 from regparser.layer.layer import Layer
 import settings
-import requests
 
 
 class Graphics(Layer):

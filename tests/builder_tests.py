@@ -3,6 +3,7 @@ from unittest import TestCase
 from mock import patch
 
 from regparser.builder import Builder
+from regparser.tree.struct import Node
 
 
 class BuilderTests(TestCase):
@@ -10,7 +11,6 @@ class BuilderTests(TestCase):
     @patch.object(Builder, '__init__')
     def test_revision_generator_notices(self, init, merge_changes):
         init.return_value = None
-        merge_changes = []
         b = Builder()   # Don't need parameters as init's been mocked out
         aaaa = {'document_number': 'aaaa', 'effective_on': '2012-12-12',
                 'publication_date': '2011-11-11', 'changes': []}
@@ -21,7 +21,7 @@ class BuilderTests(TestCase):
         b.notices = [aaaa, bbbb, cccc]
         b.eff_notices = {'2012-12-12': [aaaa, bbbb], '2013-01-01': [cccc]}
         b.doc_number = 'aaaa'
-        tree = {}
+        tree = Node(label=['1111'])
         version_list = []
         notice_lists = []
         for version, _, _, notices in b.revision_generator(tree):
