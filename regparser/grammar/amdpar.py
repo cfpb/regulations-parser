@@ -14,6 +14,7 @@ intro_text_marker = (
     | (Marker("subject") + Marker("heading")).setParseAction(lambda _: "text")
 )
 
+of_connective = (Marker("of") | Marker("for") | Marker("to"))
 
 passive_marker = (
     Marker("is") | Marker("are") | Marker("was") | Marker("were")
@@ -150,34 +151,36 @@ comment_p = (
             + Word(string.ascii_uppercase).setResultsName("level4"))))
 
 section_heading_of = (
-    Marker("heading") + (Marker("of") | Marker("for"))
+    Marker("heading") + of_connective
     + unified.marker_part_section
     ).setParseAction(
     lambda m: tokens.Paragraph([m.part, None, m.section],
                                field=tokens.Paragraph.HEADING_FIELD))
 
 paragraph_heading_of = (
-    Marker("heading") + Marker("of")
+    Marker("heading") + of_connective
     + unified.marker_paragraph.copy()
-    ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
-        m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6],
-        field=tokens.Paragraph.KEYTERM_FIELD))
+    ).setParseAction(
+    lambda m: tokens.Paragraph([None, None, None, m.p1, m.p2, m.p3, m.p4,
+                                m.plaintext_p5, m.plaintext_p6],
+                               field=tokens.Paragraph.KEYTERM_FIELD))
 
 comment_heading = (
     Marker("heading")
-    + Optional(Marker("of") | Marker("for"))
+    + Optional(of_connective)
     + atomic.section
     + unified.depth1_p).setParseAction(
     lambda m: tokens.Paragraph([None, "Interpretations", m.section,
                                 _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5])],
-                               field=tokens.Paragraph.HEADING_FIELD)) 
+                               field=tokens.Paragraph.HEADING_FIELD))
 
 intro_text_of = (
-    intro_text_marker + Marker("of")
+    intro_text_marker + of_connective
     + unified.marker_paragraph.copy()
-    ).setParseAction(lambda m: tokens.Paragraph([None, None, None,
-        m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6],
-        field=tokens.Paragraph.TEXT_FIELD))
+    ).setParseAction(
+    lambda m: tokens.Paragraph([None, None, None, m.p1, m.p2, m.p3, m.p4,
+                                m.plaintext_p5, m.plaintext_p6],
+                               field=tokens.Paragraph.TEXT_FIELD))
 single_par = (
     unified.marker_paragraph
     + Optional(intro_text_marker)

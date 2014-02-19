@@ -394,3 +394,20 @@ class GrammarAmdParTests(TestCase):
         self.assertTrue(par.match(tokens.Paragraph,
                                   label=['1234', None, '56'],
                                   field=tokens.Paragraph.HEADING_FIELD))
+
+    def test_example_28(self):
+        text = "Section 1111.22 is amended by adding introductory text to "
+        text += "paragraph (a) and revising paragraphs (b), (f) "
+        text += "introductory text, (g) introductory text, and (h) "
+        text += "introductory text to read as follows:"
+        result = parse_text(text)
+        self.assertEqual(6, len(result))
+        context, add, a, andToken, revise, lst = result
+        self.assertTrue(context.match(tokens.Context,
+                                      label=['1111', None, '22']))
+        self.assertTrue(add.match(tokens.Verb, verb=tokens.Verb.POST))
+        self.assertTrue(a.match(tokens.Paragraph,
+                                label=[None, None, None, 'a'],
+                                field=tokens.Paragraph.TEXT_FIELD))
+        self.assertTrue(andToken.match(tokens.AndToken))
+        self.assertTrue(lst.match(tokens.TokenList))
