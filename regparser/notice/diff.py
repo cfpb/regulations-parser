@@ -655,6 +655,12 @@ def make_amendments(tokenized, subpart=False):
                         amends.append(Amendment(verb, origin, destination))
                 elif verb:
                     amends.append(Amendment(verb, token.label_text()))
+    # Edits to intro text should always be PUTs
+    for amend in amends:
+        if (not isinstance(amend, DesignateAmendment) 
+                and amend.field == "[text]"
+                and amend.action == tokens.Verb.POST):
+            amend.action = tokens.Verb.PUT
     return amends
 
 
