@@ -95,3 +95,12 @@ class LayerFormattingTests(TestCase):
             [['11', '12', '13', '14'],
              ['21', '22', '23'],
              ['', '32', '33', '34']])
+
+    def test_process_fenced(self):
+        node = Node("Content content\n```abc def\nLine 1\nLine 2\n```")
+        result = formatting.Formatting(None).process(node)
+        self.assertEqual(1, len(result))
+        result = result[0]
+        self.assertEqual(result['text'], node.text[16:])
+        self.assertEqual(result['fence_data'],
+                         {'type': 'abc def', 'lines': ['Line 1', 'Line 2']})

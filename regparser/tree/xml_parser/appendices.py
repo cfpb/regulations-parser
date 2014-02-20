@@ -284,6 +284,20 @@ class AppendixProcessor(object):
         self._indent_if_needed()
         self.m_stack.add(self.depth, n)
 
+    def note(self, xml_node):
+        """Use github-like fencing to indicate this is a note"""
+        self.paragraph_counter += 1
+        texts = ["```note"]
+        for child in xml_node:
+            texts.append(tree_utils.get_node_text(child).strip())
+        texts.append("```")
+        n = Node("\n".join(texts), node_type=Node.APPENDIX,
+                 label=['p' + str(self.paragraph_counter)],
+                 source_xml=xml_node)
+
+        self._indent_if_needed()
+        self.m_stack.add(self.depth, n)
+
     def process(self, appendix, part):
         self.m_stack = tree_utils.NodeStack()
 
@@ -323,6 +337,8 @@ class AppendixProcessor(object):
                 self.graphic(child)
             elif child.tag == 'GPOTABLE':
                 self.table(child)
+            elif child.tag in ('NOTE', 'NOTES'):
+                self.note(child)
 
         while self.m_stack.size() > 1:
             self.m_stack.unwind()
