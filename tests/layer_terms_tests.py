@@ -194,6 +194,16 @@ class LayerTermTest(TestCase):
         self.assertEqual(1, len(included))
         self.assertEqual([], excluded)
 
+    def test_node_definitions_needs_term(self):
+        t = Terms(None)
+        stack = ParentStack()
+        stack.add(0, Node('Definitions', label=['9999']))
+        node = Node(u"However, for purposes of rescission under §§ 1111.15 "
+                    + u"and 1111.13, and for purposes of §§ 1111.12(a)(1), "
+                    + u"and 1111.46(d)(4), the term means all calendar "
+                    + u"days...")
+        self.assertEqual(([], []), t.node_definitions(node, stack))
+
     def test_node_definitions_exclusion(self):
         n1 = Node(u'“Bologna” is a type of deli meat', label=['111', '1'])
         n2 = Node(u'Let us not forget that the term “bologna” does not ' +

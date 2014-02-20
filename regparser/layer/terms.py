@@ -220,7 +220,7 @@ class Terms(Layer):
             # Check that both scope and term look valid
             if (self.scope_of_text(match.scope, Label.from_node(node),
                                    verify_prefix=False)
-                    and re.match("[a-z ]+", match.term.tokens[0])):
+                    and re.match("^[a-z ]+$", match.term.tokens[0])):
                 term = match.term.tokens[0].strip()
                 pos_start = node.text.index(term, match.term.pos[0])
                 add_match(node, term, (pos_start, pos_start + len(term)))
