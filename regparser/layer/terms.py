@@ -1,5 +1,6 @@
 # vim: set fileencoding=utf-8
 from collections import defaultdict
+from itertools import chain
 import re
 
 from inflection import pluralize
@@ -229,13 +230,14 @@ class Terms(Layer):
                     node.tagged_text):
                 """Position in match reflects XML tags, so its dropped in
                 preference of new values based on node.text."""
-                pos_start = node.text.find(match.term.tokens[0])
-                term = node.tagged_text[
-                    match.term.pos[0]:match.term.pos[1]].lower()
-                match_len = len(term)
-                add_match(node,
-                          term,
-                          (pos_start, pos_start + match_len))
+                for match in chain([match.head], match.tail):
+                    pos_start = node.text.find(match.term.tokens[0])
+                    term = node.tagged_text[
+                        match.term.pos[0]:match.term.pos[1]].lower()
+                    match_len = len(term)
+                    add_match(node,
+                              term,
+                              (pos_start, pos_start + match_len))
 
         return included_defs, excluded_defs
 
