@@ -8,6 +8,8 @@ from regparser.tree.xml_parser.appendices import process_appendix
 
 
 def _is_appendix_amend(al):
+    """Serves as a guard/filter to distinguish appendix amendments from
+    amendments to other parts of the reg"""
     return (not isinstance(al, DesignateAmendment)
             and not Node.INTERP_MARK in al.label
             and len(al.label) > 1
@@ -15,9 +17,12 @@ def _is_appendix_amend(al):
 
 
 def parse_appendix_changes(amended_labels, cfr_part, parent_xml):
+    """Entry point. Currently only processes whole appendices, though the
+    functionality will expand in the future"""
     relevant_amends = [al for al in amended_labels if _is_appendix_amend(al)]
     appendices = []
     for al in relevant_amends:
+        #   Whole appendix, e.g. "1234-C"
         if len(al.label) == 2 and al.field is None:
             appendix = whole_appendix(parent_xml, al.label[0], al.label[1])
             if appendix:
@@ -26,6 +31,9 @@ def parse_appendix_changes(amended_labels, cfr_part, parent_xml):
 
 
 def whole_appendix(xml, cfr_part, letter):
+    """Attempt to parse a whole appendix (i.e. the entire appendix has been
+    replaced/added). If the format isn't what we expect, display a
+    warning."""
     xml = deepcopy(xml)
     hds = xml.xpath('//HD[contains(., "Appendix %s to Part %s")]'
                     % (letter, cfr_part))
