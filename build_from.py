@@ -11,7 +11,7 @@ except ImportError:
     pass
 
 from regparser.diff import treediff
-from regparser.builder import Builder
+from regparser.builder import Builder, LayerCacheAggregator
 
 
 logger = logging.getLogger('build_from')
@@ -50,16 +50,22 @@ if __name__ == "__main__":
     #   Always do at least the first reg
     logger.info("Version %s", doc_number)
     builder.write_regulation(reg_tree)
-    builder.gen_and_write_layers(reg_tree, sys.argv[4:6])
+    layer_cache = LayerCacheAggregator()
+    builder.gen_and_write_layers(reg_tree, sys.argv[4:6], layer_cache)
+    layer_cache.replace_using(reg_tree)
     if len(sys.argv) < 7 or sys.argv[6].lower() == 'true':
         all_versions = {doc_number: reg_tree}
-        for version, old, new_tree, notices in builder.revision_generator(
+        for last_notice, old, new_tree, notices in builder.revision_generator(
                 reg_tree):
+            version = last_notice['document_number']
             logger.info("Version %s", version)
             all_versions[version] = new_tree
             builder.doc_number = version
             builder.write_regulation(new_tree)
-            builder.gen_and_write_layers(new_tree, sys.argv[4:6], notices)
+            layer_cache.invalidate_by_notice(last_notice)
+            builder.gen_and_write_layers(new_tree, sys.argv[4:6],
+                                         layer_cache, notices)
+            layer_cache.replace_using(new_tree)
 
         # now build diffs - include "empty" diffs comparing a version to itself
         for lhs_version, lhs_tree in all_versions.iteritems():
