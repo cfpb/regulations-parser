@@ -1,5 +1,6 @@
 # vim: set fileencoding=utf-8
 from collections import defaultdict
+from itertools import chain
 import re
 
 from inflection import pluralize
@@ -219,7 +220,7 @@ class Terms(Layer):
             # Check that both scope and term look valid
             if (self.scope_of_text(match.scope, Label.from_node(node),
                                    verify_prefix=False)
-                    and re.match("[a-z ]+", match.term.tokens[0])):
+                    and re.match("^[a-z ]+$", match.term.tokens[0])):
                 term = match.term.tokens[0].strip()
                 pos_start = node.text.index(term, match.term.pos[0])
                 add_match(node, term, (pos_start, pos_start + len(term)))
@@ -229,15 +230,30 @@ class Terms(Layer):
                     node.tagged_text):
                 """Position in match reflects XML tags, so its dropped in
                 preference of new values based on node.text."""
-                pos_start = node.text.find(match.term.tokens[0])
-                term = node.tagged_text[
-                    match.term.pos[0]:match.term.pos[1]].lower()
-                match_len = len(term)
-                add_match(node,
-                          term,
-                          (pos_start, pos_start + match_len))
+                for match in chain([match.head], match.tail):
+                    pos_start = self.pos_start_excluding(
+                        match.term.tokens[0], node.text,
+                        included_defs + excluded_defs)
+                    term = node.tagged_text[
+                        match.term.pos[0]:match.term.pos[1]].lower()
+                    match_len = len(term)
+                    add_match(node,
+                              term,
+                              (pos_start, pos_start + match_len))
 
         return included_defs, excluded_defs
+
+    def pos_start_excluding(self, needle, haystack, exclusions):
+        """Search for the first instance of `needle` in the `haystack`
+        excluding any overlaps from `exclusions`. Implicitly returns None if
+        it can't be found"""
+        start = 0
+        while start >= 0:
+            start = haystack.find(needle, start)
+            if not any(r.position[0] <= start and r.position[1] >= start
+                       for r in exclusions):
+                return start
+            start += 1
 
     def subpart_scope(self, label_parts):
         """Given a label, determine which sections fall under the same

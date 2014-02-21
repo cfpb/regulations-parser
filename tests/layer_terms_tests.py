@@ -194,6 +194,16 @@ class LayerTermTest(TestCase):
         self.assertEqual(1, len(included))
         self.assertEqual([], excluded)
 
+    def test_node_definitions_needs_term(self):
+        t = Terms(None)
+        stack = ParentStack()
+        stack.add(0, Node('Definitions', label=['9999']))
+        node = Node(u"However, for purposes of rescission under §§ 1111.15 "
+                    + u"and 1111.13, and for purposes of §§ 1111.12(a)(1), "
+                    + u"and 1111.46(d)(4), the term means all calendar "
+                    + u"days...")
+        self.assertEqual(([], []), t.node_definitions(node, stack))
+
     def test_node_definitions_exclusion(self):
         n1 = Node(u'“Bologna” is a type of deli meat', label=['111', '1'])
         n2 = Node(u'Let us not forget that the term “bologna” does not ' +
@@ -212,6 +222,44 @@ class LayerTermTest(TestCase):
         included, excluded = t.node_definitions(n2, stack)
         self.assertEqual([], included)
         self.assertEqual([Ref('bologna', '111-1-a', (33, 40))], excluded)
+
+    def test_node_definitions_multiple_xml(self):
+        t = Terms(None)
+        stack = ParentStack()
+        stack.add(0, Node(label=['9999']))
+
+        winter = Node("(4) Cold and dreary mean winter.", label=['9999', '4'])
+        tagged = '(4) <E T="03">Cold</E> and <E T="03">dreary</E> mean '
+        tagged += 'winter.'
+        winter.tagged_text = tagged
+        inc, _ = t.node_definitions(winter, stack)
+        self.assertEqual(len(inc), 2)
+        cold, dreary = inc
+        self.assertEqual(cold, Ref('cold', '9999-4', (4, 8)))
+        self.assertEqual(dreary, Ref('dreary', '9999-4', (13, 19)))
+
+        summer = Node("(i) Hot, humid, or dry means summer.",
+                      label=['9999', '4'])
+        tagged = '(i) <E T="03">Hot</E>, <E T="03">humid</E>, or '
+        tagged += '<E T="03">dry</E> means summer.'
+        summer.tagged_text = tagged
+        inc, _ = t.node_definitions(summer, stack)
+        self.assertEqual(len(inc), 3)
+        hot, humid, dry = inc
+        self.assertEqual(hot, Ref('hot', '9999-4', (4, 7)))
+        self.assertEqual(humid, Ref('humid', '9999-4', (9, 14)))
+        self.assertEqual(dry, Ref('dry', '9999-4', (19, 22)))
+
+        tamale = Node("(i) Hot tamale or tamale means nom nom",
+                      label=['9999', '4'])
+        tagged = '(i) <E T="03">Hot tamale</E> or <E T="03"> tamale</E> '
+        tagged += 'means nom nom '
+        tamale.tagged_text = tagged
+        inc, _ = t.node_definitions(tamale, stack)
+        self.assertEqual(len(inc), 2)
+        hot, tamale = inc
+        self.assertEqual(hot, Ref('hot tamale', '9999-4', (4, 14)))
+        self.assertEqual(tamale, Ref('tamale', '9999-4', (18, 24)))
 
     def test_subpart_scope(self):
         t = Terms(None)
