@@ -125,12 +125,16 @@ class LayerCacheAggregator(object):
                 if not any(known.startswith(l) for l in stripped))
 
     def invalidate_by_notice(self, notice):
+        """Using the notice structure, invalidate based on the 'changes'
+        field"""
         self.invalidate([key for key in notice.get('changes', {})])
 
     def is_known(self, label):
         return label in self._known_labels
 
     def replace_using(self, tree):
+        """Clear out the known labels; replace them using the provided node
+        tree."""
         self._known_labels = set()
 
         def per_node(node):
@@ -138,6 +142,9 @@ class LayerCacheAggregator(object):
         struct.walk(tree, per_node)
 
     def cache_for(self, layer_name):
+        """Get a LayerCache object for a given layer name. Not all layers
+        have caches, as caches are currently only used for layers that
+        depend on the node's text"""
         if layer_name in ('external-citations', 'internal-citations',
                           'interpretations', 'paragraph-markers', 'keyterms',
                           'formatting', 'graphics'):
