@@ -537,18 +537,28 @@ class Amendment(object):
     def fix_interp_format(self, components):
         """Convert between the interp format of amendments and the normal,
         node label format"""
-        if ['Interpretations'] == components[1:2] and len(components) > 2:
-            new_style = [components[0], components[2].replace('Appendix:', '')]
-            # Add paragraphs
-            if len(components) > 3:
-                paragraphs = [p.strip('()') for p in components[3].split(')(')]
-                paragraphs = filter(bool, paragraphs)
-                new_style.extend(paragraphs)
-            new_style.append(Node.INTERP_MARK)
-            # Add any paragraphs of the comment
-            new_style.extend(components[4:])
-            return new_style
+        if ['Interpretations'] == components[1:2]:
+            if len(components) > 2:
+                new_style = [components[0],
+                             components[2].replace('Appendix:', '')]
+                # Add paragraphs
+                if len(components) > 3:
+                    paragraphs = [p.strip('()')
+                                  for p in components[3].split(')(')]
+                    paragraphs = filter(bool, paragraphs)
+                    new_style.extend(paragraphs)
+                new_style.append(Node.INTERP_MARK)
+                # Add any paragraphs of the comment
+                new_style.extend(components[4:])
+                return new_style
+            else:
+                return components[:1] + [Node.INTERP_MARK]
         return components
+
+    def fix_appendix_format(self, components):
+        """Convert between the appendix format of amendments and the normal,
+        node label format"""
+        return [c.replace('Appendix:', '') for c in components]
 
     def fix_label(self, label):
         """ The labels that come back from parsing the list of amendments
@@ -561,6 +571,7 @@ class Amendment(object):
         components = label.split('-')
         components = [self.remove_intro(l) for l in components if wanted(l)]
         components = self.fix_interp_format(components)
+        components = self.fix_appendix_format(components)
         return components
 
     def __init__(self, action, label, destination=None):

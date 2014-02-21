@@ -111,6 +111,28 @@ class CompilerTests(TestCase):
         reg_tree.add_child(children, n9)
         self.assertEqual(children, [n1, n5, n9, n10])
 
+    def test_add_child_order(self):
+        reg_tree = compiler.RegulationTree(None)
+        n1 = Node('n1', label=['205', 'A', '1'])
+        n2 = Node('n2', label=['205', 'A', '2'])
+        n3 = Node('n3', label=['205', 'A', '3'])
+        n4 = Node('n4', label=['205', 'A', '4'])
+
+        children = []
+        order = ['205-A-3', '205-A-2', '205-A-1']
+        children = reg_tree.add_child(children, n2, order)
+        self.assertEqual(children, [n2])
+        children = reg_tree.add_child(children, n1, order)
+        self.assertEqual(children, [n1, n2])
+        children = reg_tree.add_child(children, n3, order)
+        self.assertEqual(children, [n3, n2, n1])
+        children = reg_tree.add_child(children, n4, order)
+        self.assertEqual(children, [n1, n2, n3, n4])
+
+        children = [n1, n2]
+        children = reg_tree.add_child(children, n4, order)
+        self.assertEqual(children, [n1, n2, n4])
+
     def tree_with_paragraphs(self):
         n1 = Node('n1', label=['205', '1'])
         n2 = Node('n2', label=['205', '2'])
@@ -204,6 +226,20 @@ class CompilerTests(TestCase):
         added_node = find(reg_tree.tree, '205-2-a-1')
         self.assertEqual(added_node.text, '(i) new content')
         self.assertEqual(len(parent.children), 1)
+
+    def test_add_node_appendix(self):
+        root = Node(label=['205'],
+                    children=[Node(node_type=Node.SUBPART,
+                                   label=['205', 'Subpart', 'A'])])
+        reg_tree = compiler.RegulationTree(root)
+
+        appendix = Node(node_type=Node.APPENDIX, label=['205', 'A'])
+        reg_tree.add_node(appendix)
+
+        self.assertEqual(2, len(reg_tree.tree.children))
+        self.assertEqual(['205', 'Subpart', 'A'],
+                         reg_tree.tree.children[0].label)
+        self.assertEqual(['205', 'A'], reg_tree.tree.children[1].label)
 
     def test_move(self):
         root = self.tree_with_paragraphs()

@@ -1,10 +1,10 @@
 #vim: set encoding=utf-8
+import logging
 from itertools import takewhile
 import re
-import string
 
 from lxml import etree
-from pyparsing import LineStart, Literal, Optional, Suppress, Word
+from pyparsing import LineStart, Optional, Suppress
 
 from regparser.citations import internal_citations
 from regparser.grammar import appendix as grammar
@@ -21,7 +21,7 @@ from regparser.tree.xml_parser.interpretations import get_app_title
 def remove_toc(appendix, letter):
     """The TOC at the top of certain appendices gives us trouble since it
     looks a *lot* like a sequence of headers. Remove it if present"""
-    headers = set()
+    fingerprints = set()
     potential_toc = set()
     for node in appendix.xpath("./HD[@SOURCE='HED']/following-sibling::*"):
         parsed = parsed_title(tree_utils.get_node_text(node), letter)
@@ -30,12 +30,12 @@ def remove_toc(appendix, letter):
             #  compare the parsed results.
             fingerprint = tuple(parsed)
             #  Hit the real content
-            if fingerprint in headers and node.tag == 'HD':
+            if fingerprint in fingerprints and node.tag == 'HD':
                 for el in potential_toc:
                     el.getparent().remove(el)
                 return
             else:
-                headers.add(fingerprint)
+                fingerprints.add(fingerprint)
                 potential_toc.add(node)
         elif node.tag != 'GPH':     # Not a title and not a img => no TOC
             return
@@ -48,6 +48,26 @@ def is_appendix_header(node):
 
 _first_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*\(' + lvl[0] + '\)')
                   for lvl in p_levels]
+
+
+def in_same_p_level(node, stack_level):
+    """Given a node and a stack level (i.e. a list of (depth, node) pairs),
+    check if the node should be in the same paragraph depth as the stack
+    level. Do this by checking what types of labels are present in the stack
+    level."""
+    stack_level = filter(lambda pr: hasattr(pr[1], 'p_level'), stack_level)
+    if not hasattr(node, 'p_level'):
+        return len(stack_level) == 0
+    else:
+        if stack_level:
+            prev_node = stack_level[-1][1]
+            prev_level = prev_node.p_level
+        else:
+            prev_node, prev_level = None, None
+        par_level = p_levels[node.p_level]
+        return (prev_level == node.p_level and
+                par_level.index(prev_node.label[-1]) <
+                par_level.index(node.label[-1]))
 
 
 class AppendixProcessor(object):
@@ -235,8 +255,7 @@ class AppendixProcessor(object):
         #   Check if we've seen this type of marker before
         found_in_prev = False
         for stack_level in previous_levels:
-            if any(getattr(stack_node, 'p_level', None) == n.p_level
-                   for _, stack_node in stack_level):
+            if stack_level and in_same_p_level(n, stack_level):
                 found_in_prev = True
                 self.depth = stack_level[-1][0]
         if not found_in_prev:   # New type of marker
@@ -276,14 +295,18 @@ class AppendixProcessor(object):
         self.set_letter(appendix)
         remove_toc(appendix, self.appendix_letter)
 
+        def is_subhead(tag, text):
+            initial = initial_marker(text)
+            return ((tag == 'HD' and (not initial or '.' in initial[1]))
+                    or (tag in ('P', 'FP')
+                        and title_label_pair(text, self.appendix_letter)))
+
         for child in appendix.getchildren():
             text = tree_utils.get_node_text(child).strip()
             if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
                     or child.tag == 'RESERVED'):
                 self.hed(part, text)
-            elif ((child.tag == 'HD' and not initial_marker(text))
-                  or (child.tag in ('P', 'FP')
-                      and title_label_pair(text, self.appendix_letter))):
+            elif is_subhead(child.tag, text):
                 self.subheader(child, text)
             elif initial_marker(text) and child.tag in ('P', 'FP', 'HD'):
                 if child.getnext() is None:
@@ -350,7 +373,8 @@ def title_label_pair(text, appendix_letter):
 
 def initial_marker(text):
     parser = (grammar.paren_upper | grammar.paren_lower | grammar.paren_digit
-              | grammar.period_upper | grammar.period_digit)
+              | grammar.period_upper | grammar.period_digit
+              | grammar.period_lower)
     for match, start, end in parser.scanString(text):
         if start != 0:
             continue

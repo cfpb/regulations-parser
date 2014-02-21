@@ -44,7 +44,7 @@ class NodeEncoder(JSONEncoder):
             fields = dict(obj.__dict__)
             if obj.title is None:
                 del fields['title']
-            for field in ('tagged_text', 'source_xml'):
+            for field in ('tagged_text', 'source_xml', 'child_labels'):
                 if field in fields:
                     del fields[field]
             return fields

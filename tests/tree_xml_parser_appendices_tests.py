@@ -114,6 +114,8 @@ class AppendicesTest(TestCase):
             <P>1. Content</P>
             <HD SOURCE="HD3">(B) Next Subkind</HD>
             <P>1. Moar Contents</P>
+            <HD SOURCE="HD3">I. Remains Header</HD>
+            <P>1. Content tent</P>
         </APPENDIX>"""
         appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
         self.assertEqual(1, len(appendix.children))
@@ -133,6 +135,14 @@ class AppendicesTest(TestCase):
         self.assertEqual(1, len(a1B.children))
         self.assertEqual('(B) Next Subkind', a1B.text.strip())
         self.assertEqual('1. Moar Contents', a1B.children[0].text.strip())
+
+        self.assertEqual(1, len(a1B.children))
+        a1B1 = a1B.children[0]
+        self.assertEqual(1, len(a1B1.children))
+        a1B1h = a1B1.children[0]
+        self.assertEqual(a1B1h.title.strip(), 'I. Remains Header')
+        self.assertEqual(1, len(a1B1h.children))
+        self.assertEqual(a1B1h.children[0].text.strip(), '1. Content tent')
 
     def test_header_ordering(self):
         xml = u"""
@@ -162,6 +172,69 @@ class AppendicesTest(TestCase):
 
         self.assertEqual(['1111', 'A', '1', 'h1', 'h2'], a1_1_1.label)
         self.assertEqual(1, len(a1_1_1.children))
+
+    def test_process_same_sub_level(self):
+        xml = u"""
+        <APPENDIX>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <P>1. 1 1 1</P>
+            <P>a. 1a 1a 1a</P>
+            <P>b. 1b 1b 1b</P>
+            <P>c. 1c 1c 1c</P>
+            <P>d. 1d 1d 1d</P>
+            <P>e. 1e 1e 1e</P>
+            <P>f. 1f 1f 1f</P>
+            <P>2. 2 2 2</P>
+            <P>a. 2a 2a 2a</P>
+            <P>i. 2ai 2ai 2ai</P>
+            <P>ii. 2aii 2aii 2aii</P>
+            <P>a. 2aiia 2aiia 2aiia</P>
+            <P>b. 2aiib 2aiib 2aiib</P>
+            <P>c. 2aiic 2aiic 2aiic</P>
+            <P>d. 2aiid 2aiid 2aiid</P>
+            <P>b. 2b 2b 2b</P>
+        </APPENDIX>"""
+        appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
+        self.assertEqual(['1111', 'A'], appendix.label)
+        self.assertEqual(2, len(appendix.children))
+        a1, a2 = appendix.children
+
+        self.assertEqual(['1111', 'A', '1'], a1.label)
+        self.assertEqual(6, len(a1.children))
+        for i in range(6):
+            self.assertEqual(['1111', 'A', '1', chr(i + ord('a'))],
+                             a1.children[i].label)
+
+        self.assertEqual(['1111', 'A', '2'], a2.label)
+        self.assertEqual(2, len(a2.children))
+        a2a, a2b = a2.children
+
+        self.assertEqual(['1111', 'A', '2', 'a'], a2a.label)
+        self.assertEqual(2, len(a2a.children))
+        a2ai, a2aii = a2a.children
+
+        self.assertEqual(['1111', 'A', '2', 'a', 'i'], a2ai.label)
+        self.assertEqual(0, len(a2ai.children))
+
+        self.assertEqual(['1111', 'A', '2', 'a', 'ii'], a2aii.label)
+        self.assertEqual(4, len(a2aii.children))
+        for i in range(4):
+            self.assertEqual(['1111', 'A', '2', 'a', 'ii', chr(i + ord('a'))],
+                             a2aii.children[i].label)
+
+        self.assertEqual(['1111', 'A', '2', 'b'], a2b.label)
+        self.assertEqual(0, len(a2b.children))
+
+    def test_initial_marker(self):
+        self.assertEqual(("i", "i."), appendices.initial_marker("i. Hi"))
+        self.assertEqual(("iv", "iv."), appendices.initial_marker("iv. Hi"))
+        self.assertEqual(("A", "A."), appendices.initial_marker("A. Hi"))
+        self.assertEqual(("3", "3."), appendices.initial_marker("3. Hi"))
+
+        self.assertEqual(("i", "(i)"), appendices.initial_marker("(i) Hi"))
+        self.assertEqual(("iv", "(iv)"), appendices.initial_marker("(iv) Hi"))
+        self.assertEqual(("A", "(A)"), appendices.initial_marker("(A) Hi"))
+        self.assertEqual(("3", "(3)"), appendices.initial_marker("(3) Hi"))
 
     def test_remove_toc(self):
         xml = u"""

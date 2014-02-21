@@ -150,10 +150,11 @@ comment_p = (
             + Word(string.ascii_uppercase).setResultsName("level4"))))
 
 section_heading_of = (
-    Marker("heading") + Marker("of")
+    Marker("heading") + (Marker("of") | Marker("for"))
     + unified.marker_part_section
-    ).setParseAction(lambda m: tokens.Paragraph([m.part, None, m.section],
-        field=tokens.Paragraph.TEXT_FIELD))
+    ).setParseAction(
+    lambda m: tokens.Paragraph([m.part, None, m.section],
+                               field=tokens.Paragraph.HEADING_FIELD))
 
 paragraph_heading_of = (
     Marker("heading") + Marker("of")

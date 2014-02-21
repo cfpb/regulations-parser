@@ -111,7 +111,8 @@ def get_opcodes(old_text, new_text):
 def node_to_dict(node):
     """ Convert a node to a dictionary representation. We skip the
     children, turning them instead into a list of labels instead. """
-    node.child_labels = [c.label_id() for c in node.children]
+    if not hasattr(node, 'child_labels'):
+        node.child_labels = [c.label_id() for c in node.children]
 
     node_dict = {}
     for k, v in node.__dict__.items():
