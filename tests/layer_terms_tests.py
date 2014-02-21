@@ -250,6 +250,17 @@ class LayerTermTest(TestCase):
         self.assertEqual(humid, Ref('humid', '9999-4', (9, 14)))
         self.assertEqual(dry, Ref('dry', '9999-4', (19, 22)))
 
+        tamale = Node("(i) Hot tamale or tamale means nom nom",
+                      label=['9999', '4'])
+        tagged = '(i) <E T="03">Hot tamale</E> or <E T="03"> tamale</E> '
+        tagged += 'means nom nom '
+        tamale.tagged_text = tagged
+        inc, _ = t.node_definitions(tamale, stack)
+        self.assertEqual(len(inc), 2)
+        hot, tamale = inc
+        self.assertEqual(hot, Ref('hot tamale', '9999-4', (4, 14)))
+        self.assertEqual(tamale, Ref('tamale', '9999-4', (18, 24)))
+
     def test_subpart_scope(self):
         t = Terms(None)
         t.subpart_map = {

@@ -231,7 +231,9 @@ class Terms(Layer):
                 """Position in match reflects XML tags, so its dropped in
                 preference of new values based on node.text."""
                 for match in chain([match.head], match.tail):
-                    pos_start = node.text.find(match.term.tokens[0])
+                    pos_start = self.pos_start_excluding(
+                        match.term.tokens[0], node.text,
+                        included_defs + excluded_defs)
                     term = node.tagged_text[
                         match.term.pos[0]:match.term.pos[1]].lower()
                     match_len = len(term)
@@ -240,6 +242,18 @@ class Terms(Layer):
                               (pos_start, pos_start + match_len))
 
         return included_defs, excluded_defs
+
+    def pos_start_excluding(self, needle, haystack, exclusions):
+        """Search for the first instance of `needle` in the `haystack`
+        excluding any overlaps from `exclusions`. Implicitly returns None if
+        it can't be found"""
+        start = 0
+        while start >= 0:
+            start = haystack.find(needle, start)
+            if not any(r.position[0] <= start and r.position[1] >= start
+                       for r in exclusions):
+                return start
+            start += 1
 
     def subpart_scope(self, label_parts):
         """Given a label, determine which sections fall under the same
