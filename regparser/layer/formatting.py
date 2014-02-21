@@ -1,3 +1,5 @@
+import re
+
 from regparser.layer.layer import Layer
 from regparser.tree import struct
 from regparser.tree.priority_stack import PriorityStack
@@ -97,6 +99,10 @@ def table_xml_to_data(xml_node):
 
 
 class Formatting(Layer):
+    fenced_re = re.compile(r"```(?P<type>[a-zA-Z0-9 ]+)\w*\n"
+                           + r"(?P<lines>([^\n]*\n)+)"
+                           + r"```")
+
     def process(self, node):
         layer_el = []
         if node.source_xml is not None:
@@ -109,5 +115,12 @@ class Formatting(Layer):
                 layer_el.append({'text': table_xml_to_plaintext(table),
                                  'locations': [0],
                                  'table_data': table_xml_to_data(table)})
+        for match in Formatting.fenced_re.finditer(node.text):
+            layer_el.append({
+                'text': node.text[match.start():match.end()],
+                'locations': [0],
+                'fence_data': {
+                    'type': match.group('type'),
+                    'lines': filter(bool, match.group('lines').split("\n"))}})
         if layer_el:
             return layer_el

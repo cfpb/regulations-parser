@@ -225,6 +225,23 @@ class AppendicesTest(TestCase):
         self.assertEqual(['1111', 'A', '2', 'b'], a2b.label)
         self.assertEqual(0, len(a2b.children))
 
+    def test_process_notes(self):
+        xml = u"""
+        <APPENDIX>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <NOTE>
+                <P>Par</P>
+                <E>Emem</E>
+                <P>Parparpar</P>
+            </NOTE>
+        </APPENDIX>"""
+        appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
+        self.assertEqual(['1111', 'A'], appendix.label)
+        self.assertEqual(1, len(appendix.children))
+        note = appendix.children[0]
+        text = '```note\nPar\nEmem\nParparpar\n```'
+        self.assertEqual(note.text, text)
+
     def test_initial_marker(self):
         self.assertEqual(("i", "i."), appendices.initial_marker("i. Hi"))
         self.assertEqual(("iv", "iv."), appendices.initial_marker("iv. Hi"))
