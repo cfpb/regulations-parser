@@ -23,15 +23,18 @@ class Layer():
 
         return NotImplemented
 
-    def builder(self, node):
-        layer_element = self.process(node)
+    def builder(self, node, cache=None):
+        if cache:
+            layer_element = cache.fetch_or_process(self, node)
+        else:
+            layer_element = self.process(node)
         if layer_element:
             self.layer[node.label_id()] = layer_element
 
         for c in node.children:
-            self.builder(c)
+            self.builder(c, cache)
 
-    def build(self):
+    def build(self, cache=None):
         self.pre_process()
-        self.builder(self.tree)
+        self.builder(self.tree, cache)
         return self.layer
