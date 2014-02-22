@@ -5,7 +5,6 @@ from regparser.tree.struct import Node
 
 
 class ParagraphMarkersTest(TestCase):
-
     def test_process_no_results(self):
         pm = ParagraphMarkers(None)
         self.assertEqual(None, pm.process(

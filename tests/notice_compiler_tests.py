@@ -477,6 +477,27 @@ class CompilerTests(TestCase):
         changed_node = find(reg, '205-2-a')
         self.assertEqual(changed_node.text, 'new text')
 
+    def test_compile_reg_put_children_only(self):
+        root = self.tree_with_paragraphs()
+        change2 = {'action': 'PUT',
+                   'field': '[children]',
+                   'node': {'text': '* * *', 'label': ['205', '2'],
+                            'node_type': 'regtext'}}
+        change2a = {'action': 'PUT',
+                    'node': {'text': '(a) A Test', 'label': ['205', '2', 'a'],
+                             'node_type': 'regtext'}}
+
+        notice_changes = {'205-2': [change2], '205-2-a': [change2a]}
+        reg = compiler.compile_regulation(root, notice_changes)
+
+        changed = find(reg, '205-2')
+        self.assertEqual(changed.text, 'n2')    # text didn't change
+        self.assertEqual(1, len(changed.children))
+        changed2a = changed.children[0]
+        self.assertEqual(['205', '2', 'a'], changed2a.label)
+        self.assertEqual('(a) A Test', changed2a.text)
+        self.assertEqual([], changed2a.children)
+
     def test_compile_reg_post_no_subpart(self):
         root = self.tree_with_paragraphs()
         change2a1 = {

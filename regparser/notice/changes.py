@@ -6,9 +6,10 @@ import logging
 import copy
 from collections import defaultdict
 
+from regparser.diff.treediff import node_to_dict
+from regparser.layer.paragraph_markers import marker_of
 from regparser.tree import struct
 from regparser.tree.paragraph import p_levels
-from regparser.diff.treediff import node_to_dict
 
 
 def bad_label(node):
@@ -167,6 +168,14 @@ def create_add_amendment(amendment):
     nodes_list = []
     flatten_tree(nodes_list, amendment['node'])
     nodes = [format_node(n, amendment) for n in nodes_list]
+
+    text = amendment['node'].text.strip()
+    marker = marker_of(amendment['node'])
+    text = text[len(marker):].strip()
+    if text == '* * *':
+        label = amendment['node'].label_id()
+        root_change = [d for d in nodes if label in d][0][label]
+        root_change['field'] = '[children]'
     return nodes
 
 

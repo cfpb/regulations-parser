@@ -399,6 +399,14 @@ def one_change(reg, label, change):
         reg.replace_node_and_subtree(node)
     elif change['action'] == 'PUT' and change['field'] in field_list:
         replace_node_field(reg, label, change)
+    elif change['action'] == 'PUT' and change['field'] == '[children]':
+        # A bit counter-intuitive; we're only modifying the children, so we
+        # first delete all existing children; new children will be re-added
+        existing = reg.find_node(label)
+        if existing:
+            existing.children = []
+        else:
+            logging.warning("Attempted to delete children of %s", label)
     elif change['action'] == 'POST':
         node = dict_to_node(change['node'])
         if 'subpart' in change and len(node.label) == 2:

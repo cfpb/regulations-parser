@@ -1,5 +1,5 @@
 from layer import Layer
-from regparser.layer.paragraph_markers import ParagraphMarkers
+from regparser.layer.paragraph_markers import marker_of
 from regparser.layer.terms import Terms
 import re
 
@@ -7,10 +7,8 @@ import re
 class KeyTerms(Layer):
     @staticmethod
     def process_node_text(node):
-        """ Take a paragraph, remove the marker, and extraneous whitespaces.
-        """
-
-        marker = ParagraphMarkers.marker(node)
+        """Take a paragraph, remove the marker, and extraneous whitespaces."""
+        marker = marker_of(node)
         text = node.tagged_text
 
         text = text.replace(marker, '', 1).strip()
