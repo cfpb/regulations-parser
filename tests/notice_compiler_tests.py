@@ -91,6 +91,14 @@ class CompilerTests(TestCase):
         compiler.RegulationTree(None).add_child(children, n3)
         self.assertEqual(children, [n1, n2, n3, n4])
 
+        n5 = Node('p20', label=['205', 'p20'], node_type=Node.APPENDIX)
+        n6 = Node('p3', label=['205', 'p3'], node_type=Node.APPENDIX)
+
+        compiler.RegulationTree(None).add_child(children, n5)
+        self.assertEqual(children, [n1, n2, n3, n4, n5])
+        compiler.RegulationTree(None).add_child(children, n6)
+        self.assertEqual(children, [n1, n2, n3, n4, n6, n5])
+
     def test_add_child_interp(self):
         reg_tree = compiler.RegulationTree(None)
         n1 = Node('n1', label=['205', '1', 'Interp'])
