@@ -28,9 +28,6 @@ def get_parent_label(node):
         return '-'.join(parent_label)
 
 
-_label_regex = re.compile(r"([0-9]+)([\(])([a-z]+)([\)])", re.I)
-
-
 def make_label_sortable(label, roman=False):
     """ Make labels sortable, but converting them as appropriate.
     Also, appendices have labels that look like 30(a), we make those
@@ -38,14 +35,38 @@ def make_label_sortable(label, roman=False):
 
     if label.isdigit():
         return (int(label),)
-    match = _label_regex.match(label)
-    if match:
-        return (int(match.groups()[0]), match.groups()[2])
     if roman:
         romans = list(itertools.islice(roman_nums(), 0, 50))
-        return 1 + romans.index(label)
-    else:
-        return (label,)
+        return (1 + romans.index(label),)
+
+    # segment the label piece into component parts
+    # e.g. 45Ai33b becomes (45, 'A', 'i', 33, 'b')
+    INT, UPPER, LOWER = 1, 2, 3
+    segments, segment, seg_type = [], "", None
+    for ch in label:
+        if ch.isdigit():
+            ch_type = INT
+        elif ch.isalpha() and ch == ch.upper():
+            ch_type = UPPER
+        elif ch.isalpha() and ch == ch.lower():
+            ch_type = LOWER
+        else:
+            # other character, e.g. parens, guarantee segmentation
+            ch_type = None
+
+        if ch_type != seg_type and segment:     # new type of character
+            segments.append(segment)
+            segment = ""
+
+        seg_type = ch_type
+        if ch_type:
+            segment += ch
+
+    if segment:    # ended with something other than a paren
+        segments.append(segment)
+
+    segments = [int(seg) if seg.isdigit() else seg for seg in segments]
+    return tuple(segments)
 
 
 def make_root_sortable(label, node_type):
@@ -135,7 +156,7 @@ class RegulationTree(object):
                     c.sortable = make_label_sortable(
                         comment_pars[-1], roman=(len(comment_pars) == 2))
                 elif c.node_type == Node.APPENDIX:
-                    c.sortable = c.label[-1]
+                    c.sortable = make_label_sortable(c.label[-1], False)
                 else:
                     c.sortable = make_label_sortable(
                         c.label[-1], roman=(len(c.label) == 5))
