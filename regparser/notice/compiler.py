@@ -202,9 +202,18 @@ class RegulationTree(object):
         else:
             parent = self.get_parent(node)
 
-        other_children = [c for c in parent.children if c.label != node.label]
-        parent.children = self.add_child(other_children, node,
-                                         getattr(parent, 'child_labels', []))
+        prev_idx = [idx for idx, c in enumerate(parent.children)
+                    if c.label == node.label]
+        if prev_idx:
+            # replace existing element in place
+            prev_idx = prev_idx[0]
+            parent.children = (parent.children[:prev_idx] + [node] +
+                               parent.children[prev_idx + 1:])
+        else:
+            # actually adding a new element
+            parent.children = self.add_child(parent.children, node,
+                                             getattr(parent, 'child_labels',
+                                                     []))
 
     def create_empty_node(self, node_label):
         """ In rare cases, we need to flush out the tree by adding

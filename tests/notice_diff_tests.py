@@ -678,6 +678,16 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(['1111', '45', 'a', '1', 'i', 'Interp', '2'],
                          a1i2.label)
 
+    def test_parse_amdpar_add_field(self):
+        text = "Adding introductory text to paragraph (c)"
+        xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
+        amends, _ = parse_amdpar(xml, ['1111', None, '12'])
+        self.assertEqual(1, len(amends))
+        amd = amends[0]
+        self.assertEqual(amd.action, tokens.Verb.PUT)
+        self.assertEqual(amd.label, ['1111', '12', 'c'])
+        self.assertEqual(amd.field, '[text]')
+
 
 class AmendmentTests(TestCase):
     def test_fix_label(self):

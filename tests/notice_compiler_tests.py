@@ -173,6 +173,21 @@ class CompilerTests(TestCase):
         self.assertEqual(new_tree, reg_tree.tree)
         self.assertEqual(None, find(reg_tree.tree, '205-2-a'))
 
+    def test_replace_node_and_substree_in_place(self):
+        n1 = Node('n1', label=['205', '1'])
+        n2 = Node('n2', label=['205', '2'])
+        n3 = Node('n3', label=['205', '3'])
+        root = Node(label=['205'], children=[n2, n1, n3])
+        reg_tree = compiler.RegulationTree(root)
+
+        n1_new = Node('n1n1', label=['205', '1'])
+        reg_tree.replace_node_and_subtree(n1_new)
+
+        self.assertEqual([['205', '2'], ['205', '1'], ['205', '3']],
+                         map(lambda n: n.label, reg_tree.tree.children))
+        self.assertEqual(['n2', 'n1n1', 'n3'],
+                         map(lambda n: n.text, reg_tree.tree.children))
+
     def test_reserve_add_new(self):
         root = self.tree_with_paragraphs()
         reg_tree = compiler.RegulationTree(root)
