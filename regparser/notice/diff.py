@@ -505,8 +505,6 @@ def get_destination(tokenized, reg_part):
 
 def handle_subpart_amendment(tokenized):
     """ Handle the situation where a new subpart is designated. """
-
-    print tokenized
     verb = tokens.Verb.DESIGNATE
 
     token_lists = [t for t in tokenized if isinstance(t, tokens.TokenList)]

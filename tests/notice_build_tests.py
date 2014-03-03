@@ -306,6 +306,25 @@ class NoticeBuildTest(TestCase):
         self.assertEqual(c22a.label, ['104', '22', 'a', 'Interp'])
         self.assertEqual(b.label, ['105', '1', 'b'])
 
+    def test_process_amendments_no_nodes(self):
+        xml = u"""
+        <ROOT>
+            <REGTEXT PART="104" TITLE="12">
+                <AMDPAR>
+                    1. In § 104.13, paragraph (b) is removed
+                </AMDPAR>
+            </REGTEXT>
+        </ROOT>"""
+
+        notice_xml = etree.fromstring(xml)
+        notice = {'cfr_part': '104'}
+        build.process_amendments(notice, notice_xml)
+
+        self.assertEqual(1, len(notice['amendments']))
+        delete = notice['amendments'][0]
+        self.assertEqual(delete.action, 'DELETE')
+        self.assertEqual(delete.label, ['104', '13', 'b'])
+
     def new_subpart_xml(self):
         xml = u"""
             <RULE>
@@ -448,7 +467,19 @@ class NoticeBuildTest(TestCase):
 
         self.assertEqual(2, len(notice['changes']['106-2']))
 
-    def test_create_changes_reserve(self):
+    def test_create_xmlless_changes(self):
+        labels_amended = [Amendment('DELETE', '200-2-a'),
+                          Amendment('MOVE', '200-2-b', '200-2-c')]
+        notice_changes = changes.NoticeChanges()
+        build.create_xmlless_changes(labels_amended, notice_changes)
+
+        delete = notice_changes.changes['200-2-a'][0]
+        move = notice_changes.changes['200-2-b'][0]
+        self.assertEqual({'action': 'DELETE'}, delete)
+        self.assertEqual({'action': 'MOVE', 'destination': ['200', '2', 'c']},
+                         move)
+
+    def test_create_xml_changes_reserve(self):
         labels_amended = [Amendment('RESERVE', '200-2-a')]
 
         n2a = Node('[Reserved]', label=['200', '2', 'a'])
@@ -456,13 +487,13 @@ class NoticeBuildTest(TestCase):
         root = Node('root', label=['200'], children=[n2])
 
         notice_changes = changes.NoticeChanges()
-        build.create_changes(labels_amended, root, notice_changes)
+        build.create_xml_changes(labels_amended, root, notice_changes)
 
         reserve = notice_changes.changes['200-2-a'][0]
         self.assertEqual(reserve['action'], 'RESERVE')
         self.assertEqual(reserve['node']['text'], u'[Reserved]')
 
-    def test_create_changes_stars(self):
+    def test_create_xml_changes_stars(self):
         labels_amended = [Amendment('PUT', '200-2-a')]
         n2a1 = Node('(1) Content', label=['200', '2', 'a', '1'])
         n2a2 = Node('(2) Content', label=['200', '2', 'a', '2'])
@@ -471,7 +502,7 @@ class NoticeBuildTest(TestCase):
         root = Node('root', label=['200'], children=[n2])
 
         notice_changes = changes.NoticeChanges()
-        build.create_changes(labels_amended, root, notice_changes)
+        build.create_xml_changes(labels_amended, root, notice_changes)
 
         for label in ('200-2-a', '200-2-a-1', '200-2-a-2'):
             self.assertTrue(label in notice_changes.changes)

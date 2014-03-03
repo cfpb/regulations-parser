@@ -115,7 +115,7 @@ def match_labels_and_changes(amendments, section_node):
             amend_map[amend.label_id()].append(change)
         elif amend.action == 'DELETE':
             amend_map[amend.label_id()].append(change)
-        else:
+        elif section_node is not None:
             node = struct.find(section_node, amend.label_id())
             if node is None:
                 candidate = find_misparsed_node(
