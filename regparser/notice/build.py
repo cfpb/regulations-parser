@@ -147,9 +147,26 @@ def process_new_subpart(notice, subpart_added, par):
     return subpart_changes
 
 
-def create_changes(amended_labels, section, notice_changes):
-    """ Match the amendments to the section nodes that got parsed, and actually
-    create the notice changes. """
+def create_xmlless_changes(amended_labels, notice_changes):
+    """Deletes, moves, and the like do not have an associated XML structure.
+    Add their changes"""
+    amend_map = changes.match_labels_and_changes(amended_labels, None)
+    for label, amendments in amend_map.iteritems():
+        for amendment in amendments:
+            if amendment['action'] == 'DELETE':
+                notice_changes.update({label: {'action': amendment['action']}})
+            elif amendment['action'] == 'MOVE':
+                change = {'action': amendment['action']}
+                destination = [d for d in amendment['destination'] if d != '?']
+                change['destination'] = destination
+                notice_changes.update({label: change})
+            elif amendment['action'] not in ('POST', 'PUT', 'RESERVE'):
+                print 'NOT HANDLED: %s' % amendment['action']
+
+
+def create_xml_changes(amended_labels, section, notice_changes):
+    """For PUT/POST, match the amendments to the section nodes that got
+    parsed, and actually create the notice changes. """
 
     def per_node(node):
         node.child_labels = [c.label_id() for c in node.children]
@@ -159,24 +176,17 @@ def create_changes(amended_labels, section, notice_changes):
 
     for label, amendments in amend_map.iteritems():
         for amendment in amendments:
-            if amendment['action'] in ['POST', 'PUT']:
+            if amendment['action'] in ('POST', 'PUT'):
                 if 'field' in amendment:
                     nodes = changes.create_field_amendment(label, amendment)
                 else:
                     nodes = changes.create_add_amendment(amendment)
                 for n in nodes:
                     notice_changes.update(n)
-            elif amendment['action'] == 'DELETE':
-                notice_changes.update({label: {'action': amendment['action']}})
-            elif amendment['action'] == 'MOVE':
-                change = {'action': amendment['action']}
-                destination = [d for d in amendment['destination'] if d != '?']
-                change['destination'] = destination
-                notice_changes.update({label: change})
             elif amendment['action'] == 'RESERVE':
                 change = changes.create_reserve_amendment(amendment)
                 notice_changes.update(change)
-            else:
+            elif amendment['action'] not in ('DELETE', 'MOVE'):
                 print 'NOT HANDLED: %s' % amendment['action']
 
 
@@ -245,6 +255,7 @@ def process_amendments(notice, notice_xml):
 
     for aXp in amdpars_by_parent:
         amended_labels = []
+        designate_labels, other_labels = [], []
         context = [aXp.parent.get('PART') or notice['cfr_part']]
         for par in aXp.amdpars:
             als, context = parse_amdpar(par, context)
@@ -255,25 +266,32 @@ def process_amendments(notice, notice_xml):
                 subpart_changes = process_designate_subpart(al)
                 if subpart_changes:
                     notice_changes.update(subpart_changes)
+                designate_labels.append(al)
             elif new_subpart_added(al, notice['cfr_part']):
                 notice_changes.update(process_new_subpart(notice, al, par))
+                designate_labels.append(al)
+            else:
+                other_labels.append(al)
 
         section_xml = find_section(par)
         if section_xml is not None:
             for section in reg_text.build_from_section(
                     notice['cfr_part'], section_xml):
-                create_changes(amended_labels, section, notice_changes)
+                create_xml_changes(other_labels, section, notice_changes)
 
-        for appendix in parse_appendix_changes(amended_labels,
+        for appendix in parse_appendix_changes(other_labels,
                                                notice['cfr_part'], aXp.parent):
-            create_changes(amended_labels, appendix, notice_changes)
+            create_xml_changes(other_labels, appendix, notice_changes)
 
-        interp = parse_interp_changes(amended_labels, notice['cfr_part'],
+        interp = parse_interp_changes(other_labels, notice['cfr_part'],
                                       aXp.parent)
         if interp:
-            create_changes(amended_labels, interp, notice_changes)
+            create_xml_changes(other_labels, interp, notice_changes)
 
-        amends.extend(amended_labels)
+        create_xmlless_changes(other_labels, notice_changes)
+
+        amends.extend(designate_labels)
+        amends.extend(other_labels)
     if amends:
         notice['amendments'] = amends
         notice['changes'] = notice_changes.changes
