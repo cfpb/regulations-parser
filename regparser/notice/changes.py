@@ -163,19 +163,30 @@ def create_add_amendment(amendment):
     """ An amendment comes in with a whole tree structure. We break apart the
     tree here (this is what flatten does), convert the Node objects to JSON
     representations. This ensures that each amendment only acts on one node.
+    In addition, this futzes with the change's field when stars are present.
     """
 
     nodes_list = []
     flatten_tree(nodes_list, amendment['node'])
     nodes = [format_node(n, amendment) for n in nodes_list]
+    label = amendment['node'].label_id()
+    root_change = [d for d in nodes if label in d][0][label]
 
     text = amendment['node'].text.strip()
     marker = marker_of(amendment['node'])
     text = text[len(marker):].strip()
+    # Text is stars, but this is marked as edited -- assume we are only
+    # modifying the child paragraphs
     if text == '* * *':
-        label = amendment['node'].label_id()
-        root_change = [d for d in nodes if label in d][0][label]
         root_change['field'] = '[children]'
+
+    # If text ends with a colon and is followed by stars, assume we are only
+    # modifying the intro text
+    if text[-1:] == ':' and amendment['node'].source_xml is not None:
+        following = amendment['node'].source_xml.getnext()
+        if following is not None and following.tag == 'STARS':
+            root_change['field'] = '[text]'
+
     return nodes
 
 

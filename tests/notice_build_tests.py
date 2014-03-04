@@ -513,6 +513,36 @@ class NoticeBuildTest(TestCase):
         change = notice_changes.changes['200-2-a'][0]
         self.assertEqual('[children]', change.get('field'))
 
+    def test_create_xml_changes_child_stars(self):
+        labels_amended = [Amendment('PUT', '200-2-a')]
+        xml = etree.fromstring("<ROOT><P>(a) Content</P><STARS /></ROOT>")
+        n2a = Node('(a) Content', label=['200', '2', 'a'],
+                   source_xml=xml.xpath('//P')[0])
+        n2b = Node('(b) Content', label=['200', '2', 'b'])
+        n2 = Node('n2', label=['200', '2'], children=[n2a, n2b])
+        root = Node('root', label=['200'], children=[n2])
+
+        notice_changes = changes.NoticeChanges()
+        build.create_xml_changes(labels_amended, root, notice_changes)
+
+        self.assertTrue('200-2-a' in notice_changes.changes)
+        self.assertTrue(1, len(notice_changes.changes['200-2-a']))
+        change = notice_changes.changes['200-2-a'][0]
+        self.assertEqual('PUT', change['action'])
+        self.assertFalse('field' in change)
+
+        n2a.text = n2a.text + ":"
+        n2a.source_xml.text = n2a.source_xml.text + ":"
+
+        notice_changes = changes.NoticeChanges()
+        build.create_xml_changes(labels_amended, root, notice_changes)
+
+        self.assertTrue('200-2-a' in notice_changes.changes)
+        self.assertTrue(1, len(notice_changes.changes['200-2-a']))
+        change = notice_changes.changes['200-2-a'][0]
+        self.assertEqual('PUT', change['action'])
+        self.assertEqual('[text]', change.get('field'))
+
     def test_local_version_list(self):
         url = 'http://example.com/some/url'
 
