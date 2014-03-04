@@ -3,7 +3,6 @@ module contains code to compile a regulation from a notice's changes. """
 
 import copy
 import itertools
-import re
 import logging
 from regparser.tree.struct import Node, find
 from regparser.tree.xml_parser import interpretations
@@ -98,7 +97,7 @@ def replace_first_sentence(text, replacement):
 
 
 def overwrite_marker(origin, new_label):
-    """ The node passed in has a label, but we're going to give it a 
+    """ The node passed in has a label, but we're going to give it a
     new one (new_label). This is necessary during node moves.  """
 
     if origin.node_type == Node.REGTEXT:
@@ -300,7 +299,7 @@ class RegulationTree(object):
                 existing.tagged_text = node.tagged_text
         # Unfortunately, the same nodes (particularly headers) might be
         # added by multiple notices...
-        elif (existing and existing.text == node.text 
+        elif (existing and existing.text == node.text
                 and existing.title == node.title
                 and getattr(existing, 'tagged_text', '') == getattr(
                     node, 'tagged_text', '')):
