@@ -3,9 +3,10 @@ module contains code to compile a regulation from a notice's changes. """
 
 import copy
 import itertools
-import re
 import logging
 from regparser.tree.struct import Node, find
+from regparser.tree.xml_parser import interpretations
+from regparser.tree.xml_parser import tree_utils
 from regparser.utils import roman_nums
 
 
@@ -93,6 +94,25 @@ def replace_first_sentence(text, replacement):
         return '.'.join(sentences)
     else:
         return replacement
+
+
+def overwrite_marker(origin, new_label):
+    """ The node passed in has a label, but we're going to give it a
+    new one (new_label). This is necessary during node moves.  """
+
+    if origin.node_type == Node.REGTEXT:
+        marker_list = tree_utils.get_paragraph_markers(origin.text)
+        if len(marker_list) > 0:
+            marker = '(%s)' % marker_list[0]
+            new_marker = '(%s)' % new_label
+            origin.text = origin.text.replace(marker, new_marker, 1)
+    elif origin.node_type == Node.INTERP:
+        marker = interpretations.get_first_interp_marker(origin.text)
+        marker = marker + '.'
+        new_marker = new_label + '.'
+        origin.text = origin.text.replace(marker, new_marker, 1)
+
+    return origin
 
 
 def is_reserved_node(node):
@@ -200,8 +220,7 @@ class RegulationTree(object):
         origin = find(self.tree, origin)
         self.delete_from_parent(origin)
 
-        #XXX  We'll need to fix the paragraph marker, but let's save that
-        #for later
+        origin = overwrite_marker(origin, destination[-1])
         origin.label = destination
         self.add_node(origin)
 
@@ -280,7 +299,7 @@ class RegulationTree(object):
                 existing.tagged_text = node.tagged_text
         # Unfortunately, the same nodes (particularly headers) might be
         # added by multiple notices...
-        elif (existing and existing.text == node.text 
+        elif (existing and existing.text == node.text
                 and existing.title == node.title
                 and getattr(existing, 'tagged_text', '') == getattr(
                     node, 'tagged_text', '')):
