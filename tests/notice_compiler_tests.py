@@ -323,7 +323,7 @@ class CompilerTests(TestCase):
 
         no_more = find(reg_tree.tree, '204-2-b')
         self.assertEqual(None, no_more)
-        
+
     def test_add_to_root(self):
         nsa = Node(
             'nsa',
@@ -834,4 +834,3 @@ class CompilerTests(TestCase):
         changed = compiler.overwrite_marker(n, '2')
         self.assertTrue('2.' in changed.text)
         self.assertFalse('3.' in changed.text)
-
