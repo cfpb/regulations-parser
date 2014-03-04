@@ -271,16 +271,59 @@ class CompilerTests(TestCase):
                          reg_tree.tree.children[0].label)
         self.assertEqual(['205', 'A'], reg_tree.tree.children[1].label)
 
-    def test_move(self):
-        root = self.tree_with_paragraphs()
+    def test_move_interps(self):
+        n1 = Node('n1', label=['205', '1', 'Interp'], node_type=Node.INTERP)
+        n2 = Node('n2', label=['205', '2', 'Interp'], node_type=Node.INTERP)
+        n4 = Node('n4', label=['205', '4', 'Interp'], node_type=Node.INTERP)
+
+        n4c = Node(
+            'n4c', label=['205', '4', 'c', 'Interp'],
+            node_type=Node.INTERP)
+
+        n4.children = [n4c]
+
+        n2a = Node(
+            'n2a', label=['205', '2', 'a', 'Interp'],
+            node_type=Node.INTERP)
+        n2b = Node(
+            'n2b', label=['205', '2', 'b', 'Interp'],
+            node_type=Node.INTERP)
+        n2a1 = Node(
+            '1. First', label=['205', '2', 'a', 'Interp', '1'],
+            node_type=Node.INTERP)
+
+        n2a.children = [n2a1]
+        n2.children = [n2a, n2b]
+
+        root = Node('', label=['205', 'Interp'], node_type=Node.INTERP)
+        root.children = [n1, n2, n4]
+
         reg_tree = compiler.RegulationTree(root)
-        reg_tree.move('205-2-a', ['205', '4', 'a'])
+        reg_tree.move('205-2-a-Interp-1', ['205', '4', 'c', 'Interp', '5'])
 
-        moved = find(reg_tree.tree, '205-4-a')
+    def test_move_regtext(self):
+        n1 = Node('n1', label=['205', '1'])
+        n2 = Node('n2', label=['205', '2'])
+        n4 = Node('n4', label=['205', '4'])
+
+        n2a = Node('(a) n2a', label=['205', '2', 'a'])
+        n2b = Node('(b) n2b', label=['205', '2', 'b'])
+        n2.children = [n2a, n2b]
+
+        root = Node('', label=['205'])
+        root.children = [n1, n2, n4]
+
+        reg_tree = compiler.RegulationTree(root)
+        reg_tree.move('205-2-b', ['205', '4', 'c'])
+
+        moved = find(reg_tree.tree, '205-4-c')
         self.assertNotEqual(None, moved)
-        self.assertEqual(moved.text, 'n2a')
-        self.assertEqual(None, find(reg_tree.tree, '205-2-a'))
+        self.assertTrue('(c)' in moved.text)
+        self.assertFalse('(b)' in moved.text)
 
+        no_more = find(reg_tree.tree, '204-2-b')
+        self.assertEqual(None, no_more)
+        
     def test_add_to_root(self):
         nsa = Node(
             'nsa',
@@ -781,3 +824,14 @@ class CompilerTests(TestCase):
 
         n = Node('', title='[Reserved]', label=['205', '7', 'a'])
         self.assertTrue(compiler.is_reserved_node(n))
+
+    def test_overwrite_marker(self):
+        n = Node(
+            '3. Interpretation paragraph text.',
+            label=['205', '2', 'a', 'Interp', '3'],
+            node_type=Node.INTERP)
+
+        changed = compiler.overwrite_marker(n, '2')
+        self.assertTrue('2.' in changed.text)
+        self.assertFalse('3.' in changed.text)
+
