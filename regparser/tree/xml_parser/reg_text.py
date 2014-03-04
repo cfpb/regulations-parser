@@ -207,7 +207,8 @@ def build_from_section(reg_part, section_xml):
             while markers_and_text:
                 m, node_text = markers_and_text.pop()
                 m_sans_markup = m.replace('<E T="03">', '').replace('</E>', '')
-                n = Node(node_text[0], [], [str(m_sans_markup)])
+                n = Node(node_text[0], [], [str(m_sans_markup)],
+                         source_xml=ch)
                 n.tagged_text = unicode(node_text[1])
 
                 new_p_level = determine_level(
