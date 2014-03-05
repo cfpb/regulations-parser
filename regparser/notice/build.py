@@ -213,9 +213,11 @@ def preprocess_notice_xml(notice_xml):
     for amdpar in notice_xml.xpath("//AMDPAR"):
         if amdpar.getnext() is None:
             parent = amdpar.getparent()
-            if parent.getnext() is not None:
+            next_parent = parent.getnext()
+            if (next_parent is not None
+                    and parent.get('PART') == next_parent.get('PART')):
                 parent.remove(amdpar)
-                parent.getnext().insert(0, amdpar)
+                next_parent.insert(0, amdpar)
 
     # Supplement I AMDPARs are often incorrect (labelled as Ps)
     xpath_contains_supp = "contains(., 'Supplement I')"
@@ -273,6 +275,8 @@ def process_amendments(notice, notice_xml):
             else:
                 other_labels.append(al)
 
+        create_xmlless_changes(other_labels, notice_changes)
+
         section_xml = find_section(par)
         if section_xml is not None:
             for section in reg_text.build_from_section(
@@ -287,8 +291,6 @@ def process_amendments(notice, notice_xml):
                                       aXp.parent)
         if interp:
             create_xml_changes(other_labels, interp, notice_changes)
-
-        create_xmlless_changes(other_labels, notice_changes)
 
         amends.extend(designate_labels)
         amends.extend(other_labels)
