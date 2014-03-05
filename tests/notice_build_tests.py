@@ -628,6 +628,31 @@ class NoticeBuildTest(TestCase):
         self.assertEqual(amd2a.getparent().xpath(".//P")[0].text.strip(),
                          "(a) Content")
 
+        notice_xml = etree.fromstring(u"""
+            <PART>
+                <REGTEXT PART="105">
+                    <AMDPAR>1. In § 105.1, revise paragraph (b):</AMDPAR>
+                    <SECTION>
+                        <STARS />
+                        <P>(b) Content</P>
+                    </SECTION>
+                    <AMDPAR>
+                        3. In § 105.2, revise paragraph (a) to read as follows:
+                    </AMDPAR>
+                </REGTEXT>
+                <REGTEXT PART="107">
+                    <SECTION>
+                        <P>(a) Content</P>
+                    </SECTION>
+                </REGTEXT>
+            </PART>""")
+        notice_xml = build.preprocess_notice_xml(notice_xml)
+        amd1b, amd2a = notice_xml.xpath("//AMDPAR")
+        self.assertEqual(amd1b.getparent().xpath(".//P")[0].text.strip(),
+                         "(b) Content")
+        self.assertEqual(amd2a.getparent().xpath(".//P")[0].text.strip(),
+                         "(b) Content")
+
     def test_preprocess_notice_xml_interp_amds_are_ps(self):
         notice_xml = etree.fromstring(u"""
             <PART>
