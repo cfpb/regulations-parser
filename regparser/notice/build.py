@@ -237,6 +237,28 @@ def preprocess_notice_xml(notice_xml):
                     else:
                         pred = pred.getprevious()
 
+    # Clean up emphasized paragraph tags
+    for par in notice_xml.xpath("//P/*[position()=1 and name()='E']/.."):
+        em = par.getchildren()[0]   # must be an E from the xpath
+
+        #   wrap in a thunk to delay execution
+        par_text = lambda: par.text or ""
+        em_text, em_tail = lambda: em.text or "", lambda: em.tail or ""
+
+        par_open = par_text()[-1:] == "("
+        em_open = em_text()[:1] == "("
+        em_txt_closed = em_text()[-1:] == ")"
+        em_tail_closed = em_tail()[:1] == ")"
+
+        if (par_open or em_open) and (em_txt_closed or em_tail_closed):
+            if not par_open and em_open:                # Move '(' out
+                par.text = par_text() + "("
+                em.text = em_text()[1:]
+
+            if not em_tail_closed and em_txt_closed:    # Move ')' out
+                em.text = em_text()[:-1]
+                em.tail = ")" + em_tail()
+
     return notice_xml
 
 
