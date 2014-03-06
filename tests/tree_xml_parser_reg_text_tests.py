@@ -188,6 +188,7 @@ class RegTextTest(TestCase):
                 <P>(i) iii</P>
                 <P>(A) AAA</P>
                 <P>(<E T="03">1</E>) i1i1i1</P>
+                <P>\n(<E T="03">2</E>) i2i2i2</P>
             </SECTION>
         """
         node = build_from_section('8675', etree.fromstring(xml))[0]
@@ -208,10 +209,11 @@ class RegTextTest(TestCase):
 
         node = node.children[0]
         self.assertEqual(node.label, ['8675', '309', 'a', '1', 'i', 'A'])
-        self.assertEqual(1, len(node.children))
+        self.assertEqual(2, len(node.children))
 
-        node = node.children[0]
-        self.assertEqual(node.label, ['8675', '309', 'a', '1', 'i', 'A', '1'])
+        n1, n2 = node.children
+        self.assertEqual(n1.label, ['8675', '309', 'a', '1', 'i', 'A', '1'])
+        self.assertEqual(n2.label, ['8675', '309', 'a', '1', 'i', 'A', '2'])
 
     def test_build_from_section_bad_spaces(self):
         xml = u"""

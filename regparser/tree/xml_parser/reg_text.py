@@ -195,7 +195,7 @@ def build_from_section(reg_part, section_xml):
     for ch in (ch for ch in section_xml.getchildren() if ch.tag == 'P'):
         text = tree_utils.get_node_text(ch, add_spaces=True)
         tagged_text = tree_utils.get_node_text_tags_preserved(ch)
-        markers_list = get_markers(tagged_text)
+        markers_list = get_markers(tagged_text.strip())
 
         if not markers_list:
             section_texts.append((text, tagged_text))
