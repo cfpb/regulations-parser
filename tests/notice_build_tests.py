@@ -695,3 +695,34 @@ class NoticeBuildTest(TestCase):
         amd1, amd1A, amd_other = notice_xml.xpath("//AMDPAR")
         self.assertEqual(amd1A.text.strip(), "A. Under Section 105.1, 1(b), "
                                              + "paragraph 2 is revised")
+
+    def test_preprocess_emph_tags(self):
+        notice_xml = etree.fromstring(u"""
+            <PART>
+                <P>(<E T="03">a</E>) Content</P>
+                <P>(<E T="03">a)</E> Content</P>
+                <P><E T="03">(a</E>) Content</P>
+                <P><E T="03">(a)</E> Content</P>
+            </PART>""")
+        notice_xml = build.preprocess_notice_xml(notice_xml)
+        pars = notice_xml.xpath("//P")
+        self.assertEqual(4, len(pars))
+        for par in pars:
+            self.assertEqual(par.text, "(")
+            self.assertEqual(1, len(par.getchildren()))
+            em = par.getchildren()[0]
+            self.assertEqual("E", em.tag)
+            self.assertEqual("a", em.text)
+            self.assertEqual(em.tail, ") Content")
+            self.assertEqual(0, len(em.getchildren()))
+
+        notice_xml = etree.fromstring(u"""
+            <PART>
+                <P><E T="03">Paragraph 22(a)(5)</E> Content</P>
+            </PART>""")
+        notice_xml = build.preprocess_notice_xml(notice_xml)
+        pars = notice_xml.xpath("//P")
+        self.assertEqual(1, len(pars))
+        em = pars[0].getchildren()[0]
+        self.assertEqual(em.text, "Paragraph 22(a)(5)")
+        self.assertEqual(em.tail, " Content")
