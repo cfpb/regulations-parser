@@ -1,9 +1,11 @@
 """ Notices indicate how a regulation has changed since the last version. This
 module contains code to compile a regulation from a notice's changes. """
 
+from collections import defaultdict
 import copy
 import itertools
 import logging
+
 from regparser.tree.struct import Node, find
 from regparser.tree.xml_parser import interpretations
 from regparser.tree.xml_parser import tree_utils
@@ -136,6 +138,17 @@ class RegulationTree(object):
 
     def __init__(self, previous_tree):
         self.tree = copy.deepcopy(previous_tree)
+        self._frozen_by_parent = defaultdict(list)
+
+    def freeze(self, labels):
+        """The 'KEEP' verb tells us that a node should not be removed
+        (generally because it would had we dropped the children of its
+        parent). Freezing those nodes makes sure they do not disappear when
+        editing their parent"""
+        for label in labels:
+            node = self.find_node(label)
+            parent_label = get_parent_label(node)
+            self._frozen_by_parent[parent_label].append(node)
 
     def get_parent(self, node):
         """ Get the parent of a node. Returns None if parent not found. """
@@ -254,6 +267,15 @@ class RegulationTree(object):
             parent.children = self.add_child(parent.children, node,
                                              getattr(parent, 'child_labels',
                                                      []))
+
+        # Finally, we see if this node is the parent of any frozen children.
+        # If so, add them back
+        label_id = node.label_id()
+        if label_id in self._frozen_by_parent:
+            for frozen in self._frozen_by_parent[label_id]:
+                node.children = self.add_child(node.children, frozen,
+                                               getattr(node, 'child_labels',
+                                                       []))
 
     def create_empty_node(self, node_label):
         """ In rare cases, we need to flush out the tree by adding
@@ -448,14 +470,6 @@ def one_change(reg, label, change):
         reg.replace_node_and_subtree(node)
     elif change['action'] == 'PUT' and change['field'] in field_list:
         replace_node_field(reg, label, change)
-    elif change['action'] == 'PUT' and change['field'] == '[children]':
-        # A bit counter-intuitive; we're only modifying the children, so we
-        # first delete all existing children; new children will be re-added
-        existing = reg.find_node(label)
-        if existing:
-            existing.children = []
-        else:
-            logging.warning("Attempted to delete children of %s", label)
     elif change['action'] == 'POST':
         node = dict_to_node(change['node'])
         if 'subpart' in change and len(node.label) == 2:
@@ -502,6 +516,9 @@ def compile_regulation(previous_tree, notice_changes):
                  for label in labels
                  for change in notice_changes[label]]
     pass_len = len(next_pass) + 1
+
+    reg.freeze(l for l, change in next_pass if change['action'] == 'KEEP')
+    next_pass = [pair for pair in next_pass if pair[1]['action'] != 'KEEP']
 
     #   Monotonically decreasing length - guarantees we'll end
     while pass_len > len(next_pass):
