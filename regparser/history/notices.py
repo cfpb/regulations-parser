@@ -32,6 +32,7 @@ def group_by_eff_date(notices):
         grouped[key].append(n)
 
     for eff_date in grouped:
-        grouped[eff_date] = sorted(grouped[eff_date],
-                                   key=lambda n: n['publication_date'])
+        grouped[eff_date] = sorted(
+            grouped[eff_date],
+            key=lambda n: (n['publication_date'], n['document_number']))
     return grouped
