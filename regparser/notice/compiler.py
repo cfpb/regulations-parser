@@ -305,11 +305,6 @@ class RegulationTree(object):
 
     def add_node(self, node):
         """ Add an entirely new node to the regulation tree. """
-
-        if ((node.node_type == Node.APPENDIX and len(node.label) == 2)
-                or node.node_type == Node.SUBPART):
-            return self.add_to_root(node)
-
         existing = find(self.tree, node.label_id())
         if existing and is_reserved_node(existing):
             logging.warning('Replacing reserved node: %s' % node.label_id())
@@ -333,15 +328,20 @@ class RegulationTree(object):
                 print '%s %s' % (existing.text, node.label)
                 print '----'
 
-            parent = self.get_parent(node)
-            if parent is None:
-                # This is a corner case, where we're trying to add a child
-                # to a parent that should exist.
-                logging.warning('No existing parent for: %s' % node.label_id())
-                parent = self.create_empty_node(get_parent_label(node))
-            parent.children = self.add_child(parent.children, node,
-                                             getattr(parent, 'child_labels',
-                                                     []))
+            if ((node.node_type == Node.APPENDIX and len(node.label) == 2)
+                    or node.node_type == Node.SUBPART):
+                return self.add_to_root(node)
+            else:
+                parent = self.get_parent(node)
+                if parent is None:
+                    # This is a corner case, where we're trying to add a child
+                    # to a parent that should exist.
+                    logging.warning('No existing parent for: %s' %
+                                    node.label_id())
+                    parent = self.create_empty_node(get_parent_label(node))
+                parent.children = self.add_child(
+                    parent.children, node, getattr(parent, 'child_labels',
+                                                   []))
 
     def add_section(self, node, subpart_label):
         """ Add a new section to a subpart. """
