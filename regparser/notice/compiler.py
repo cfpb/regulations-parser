@@ -138,17 +138,17 @@ class RegulationTree(object):
 
     def __init__(self, previous_tree):
         self.tree = copy.deepcopy(previous_tree)
-        self._frozen_by_parent = defaultdict(list)
+        self._kept__by_parent = defaultdict(list)
 
-    def freeze(self, labels):
+    def keep(self, labels):
         """The 'KEEP' verb tells us that a node should not be removed
         (generally because it would had we dropped the children of its
-        parent). Freezing those nodes makes sure they do not disappear when
+        parent). "Keeping" those nodes makes sure they do not disappear when
         editing their parent"""
         for label in labels:
             node = self.find_node(label)
             parent_label = get_parent_label(node)
-            self._frozen_by_parent[parent_label].append(node)
+            self._kept__by_parent[parent_label].append(node)
 
     def get_parent(self, node):
         """ Get the parent of a node. Returns None if parent not found. """
@@ -268,12 +268,12 @@ class RegulationTree(object):
                                              getattr(parent, 'child_labels',
                                                      []))
 
-        # Finally, we see if this node is the parent of any frozen children.
+        # Finally, we see if this node is the parent of any 'kept' children.
         # If so, add them back
         label_id = node.label_id()
-        if label_id in self._frozen_by_parent:
-            for frozen in self._frozen_by_parent[label_id]:
-                node.children = self.add_child(node.children, frozen,
+        if label_id in self._kept__by_parent:
+            for kept in self._kept__by_parent[label_id]:
+                node.children = self.add_child(node.children, kept,
                                                getattr(node, 'child_labels',
                                                        []))
 
@@ -517,7 +517,7 @@ def compile_regulation(previous_tree, notice_changes):
                  for change in notice_changes[label]]
     pass_len = len(next_pass) + 1
 
-    reg.freeze(l for l, change in next_pass if change['action'] == 'KEEP')
+    reg.keep(l for l, change in next_pass if change['action'] == 'KEEP')
     next_pass = [pair for pair in next_pass if pair[1]['action'] != 'KEEP']
 
     #   Monotonically decreasing length - guarantees we'll end
