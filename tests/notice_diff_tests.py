@@ -128,6 +128,14 @@ class NoticeDiffTests(TestCase):
             converted, [tokens.Context([None, 'Interpretations', '12',
                                         '(a)(2)(iii)'])])
 
+    def test_resolve_confused_context_appendix(self):
+        tokenized = [tokens.Context([None, 'Appendix:A', '12'])]
+        converted = resolve_confused_context(tokenized,
+                                             ['123', 'Interpretations'])
+        self.assertEqual(
+            converted, [tokens.Context([None, 'Interpretations', 'A',
+                                        '(12)'])])
+
     def test_compress(self):
         self.assertEqual([1, 2, 3], compress([1, 2, 3], []))
         self.assertEqual([1, 6, 3], compress([1, 2, 3, 4, 5], [None, 6, None]))
