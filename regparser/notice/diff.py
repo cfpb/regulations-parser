@@ -202,6 +202,9 @@ def parse_amdpar(par, initial_context):
     """ Parse the <AMDPAR> tags into a list of paragraphs that have changed.
     """
 
+    #   Replace and "and"s in titles; they will throw off and_token_resolution
+    for e in filter(lambda e: e.text, par.xpath('./E')):
+        e.text = e.text.replace(' and ', ' ')
     text = get_node_text(par, add_spaces=True)
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
 

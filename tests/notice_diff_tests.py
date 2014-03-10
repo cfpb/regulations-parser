@@ -665,6 +665,16 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(['1111', '12', 'a', 'Interp', '3'],
                          b.label)
 
+    def test_parse_amdpar_and_in_tags(self):
+        text = "Under <E>Appendix A - Some phrase and another</E>, paragraph "
+        text += "3 is added"
+        xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
+        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        self.assertEqual(1, len(amends))
+        amend = amends[0]
+        self.assertEqual('POST', amend.action)
+        self.assertEqual(['1111', 'A', 'Interp', '3'], amend.label)
+
     def test_parse_amdpar_verbs_ands(self):
         text = "Under 45(a)(1) Title, paragraphs 1 and 2 are removed, and "
         text += "45(a)(1)(i) Deeper Title and paragraphs 1 and 2 are added"
