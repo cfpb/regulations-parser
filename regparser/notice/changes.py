@@ -168,26 +168,28 @@ def create_add_amendment(amendment):
 
     nodes_list = []
     flatten_tree(nodes_list, amendment['node'])
-    nodes = [format_node(n, amendment) for n in nodes_list]
-    label = amendment['node'].label_id()
-    root_change = [d for d in nodes if label in d][0][label]
+    changes = [format_node(n, amendment) for n in nodes_list]
 
-    text = amendment['node'].text.strip()
-    marker = marker_of(amendment['node'])
-    text = text[len(marker):].strip()
-    # Text is stars, but this is marked as edited -- assume we are only
-    # modifying the child paragraphs
-    if text == '* * *':
-        root_change['field'] = '[children]'
+    for change in filter(lambda c: c.values()[0]['action'] == 'PUT', changes):
+        label = change.keys()[0]
+        node = struct.find(amendment['node'], label)
+        text = node.text.strip()
+        marker = marker_of(node)
+        text = text[len(marker):].strip()
+        # Text is stars, but this is not the root. Explicitly try to keep
+        # this node
+        if text == '* * *':
+            change[label]['action'] = 'KEEP'
 
-    # If text ends with a colon and is followed by stars, assume we are only
-    # modifying the intro text
-    if text[-1:] == ':' and amendment['node'].source_xml is not None:
-        following = amendment['node'].source_xml.getnext()
-        if following is not None and following.tag == 'STARS':
-            root_change['field'] = '[text]'
+        # If text ends with a colon and is followed by stars, assume we are
+        # only modifying the intro text
+        if (text[-1:] == ':' and node.label == amendment['node'].label
+                and node.source_xml is not None):
+            following = node.source_xml.getnext()
+            if following is not None and following.tag == 'STARS':
+                change[label]['field'] = '[text]'
 
-    return nodes
+    return changes
 
 
 def create_reserve_amendment(amendment):

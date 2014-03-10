@@ -504,14 +504,42 @@ class NoticeBuildTest(TestCase):
         notice_changes = changes.NoticeChanges()
         build.create_xml_changes(labels_amended, root, notice_changes)
 
-        for label in ('200-2-a', '200-2-a-1', '200-2-a-2'):
+        for label in ('200-2-a-1', '200-2-a-2'):
             self.assertTrue(label in notice_changes.changes)
             self.assertEqual(1, len(notice_changes.changes[label]))
             change = notice_changes.changes[label][0]
             self.assertEqual('PUT', change['action'])
+            self.assertFalse('field' in change)
 
+        self.assertTrue('200-2-a' in notice_changes.changes)
+        self.assertEqual(1, len(notice_changes.changes['200-2-a']))
         change = notice_changes.changes['200-2-a'][0]
-        self.assertEqual('[children]', change.get('field'))
+        self.assertEqual('KEEP', change['action'])
+        self.assertFalse('field' in change)
+
+    def test_create_xml_changes_stars_hole(self):
+        labels_amended = [Amendment('PUT', '200-2-a')]
+        n2a1 = Node('(1) * * *', label=['200', '2', 'a', '1'])
+        n2a2 = Node('(2) a2a2a2', label=['200', '2', 'a', '2'])
+        n2a = Node('(a) aaa', label=['200', '2', 'a'], children=[n2a1, n2a2])
+        n2 = Node('n2', label=['200', '2'], children=[n2a])
+        root = Node('root', label=['200'], children=[n2])
+
+        notice_changes = changes.NoticeChanges()
+        build.create_xml_changes(labels_amended, root, notice_changes)
+
+        for label in ('200-2-a', '200-2-a-2'):
+            self.assertTrue(label in notice_changes.changes)
+            self.assertEqual(1, len(notice_changes.changes[label]))
+            change = notice_changes.changes[label][0]
+            self.assertEqual('PUT', change['action'])
+            self.assertFalse('field' in change)
+
+        self.assertTrue('200-2-a-1' in notice_changes.changes)
+        self.assertEqual(1, len(notice_changes.changes['200-2-a-1']))
+        change = notice_changes.changes['200-2-a-1'][0]
+        self.assertEqual('KEEP', change['action'])
+        self.assertFalse('field' in change)
 
     def test_create_xml_changes_child_stars(self):
         labels_amended = [Amendment('PUT', '200-2-a')]
