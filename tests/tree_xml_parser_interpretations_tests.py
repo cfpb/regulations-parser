@@ -401,3 +401,5 @@ class InterpretationsTest(TestCase):
             "1. Content - i.e. More content"))
         self.assertEqual([], interpretations.collapsed_markers_matches(
             u"1. Stuff in quotes like, “N.A.”"))
+        self.assertEqual([], interpretations.collapsed_markers_matches(
+            u"i. References appendix D, part I.A.1. Stuff"))

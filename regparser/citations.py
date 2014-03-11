@@ -190,6 +190,18 @@ def internal_citations(text, initial_label=None, require_marker=False):
     if not require_marker:
         single_citations(grammar.section_paragraph.scanString(text), False)
 
+    # Some appendix citations are... complex
+    for match, start, end in grammar.appendix_with_part.scanString(text):
+        full_start = start
+        if match.marker is not '':
+            start = match.marker.pos[1]
+        label = filter(lambda l: l != '.', list(match)[3:])
+        label = dict(zip(['p1', 'p2', 'p3'], label))
+        citations.append(ParagraphCitation(
+            start, end, initial_label.copy(
+                appendix=match.appendix, appendix_section=match.a1,
+                **label), full_start=full_start))
+
     # Remove any sub-citations
     final_citations = []
     for cit in citations:
