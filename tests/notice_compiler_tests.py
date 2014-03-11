@@ -271,6 +271,24 @@ class CompilerTests(TestCase):
                          reg_tree.tree.children[0].label)
         self.assertEqual(['205', 'A'], reg_tree.tree.children[1].label)
 
+    def test_add_node_reserved_appendix(self):
+        reserved_node = Node('', label=['205', 'R'], node_type=Node.APPENDIX,
+                             title='Appendix R-[Reserved]')
+        root = Node('', label=['205'], children=[reserved_node])
+        reg_tree = compiler.RegulationTree(root)
+
+        new_node = Node('', label=['205', 'R'], node_type=Node.APPENDIX,
+                        title="Appendix R-Revision'd", children=[
+                            Node('R1', label=['205', 'R', '1'],
+                                 node_type=Node.APPENDIX),
+                            Node('R2', label=['205', 'R', '2'],
+                                 node_type=Node.APPENDIX)])
+        reg_tree.add_node(new_node)
+
+        added_node = find(reg_tree.tree, '205-R')
+        self.assertEqual(2, len(added_node.children))
+        self.assertEqual("Appendix R-Revision'd", added_node.title)
+
     def test_move_interps(self):
         n1 = Node('n1', label=['205', '1', 'Interp'], node_type=Node.INTERP)
         n2 = Node('n2', label=['205', '2', 'Interp'], node_type=Node.INTERP)
