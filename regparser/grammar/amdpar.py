@@ -157,6 +157,14 @@ section_heading_of = (
     lambda m: tokens.Paragraph([m.part, None, m.section],
                                field=tokens.Paragraph.HEADING_FIELD))
 
+section_paragraph_heading_of = (
+    Marker("heading") + of_connective
+    + unified.m_section_paragraph
+    ).setParseAction(
+    lambda m: tokens.Paragraph([None, 'Interpretations', m.section,
+                                _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5])],
+                               field=tokens.Paragraph.HEADING_FIELD))
+
 appendix_subheading = (
     Marker("subheading")
     + unified.marker_appendix
@@ -327,7 +335,7 @@ token_patterns = (
     | comment_context_under_with_section
 
     | paragraph_heading_of | section_heading_of | intro_text_of
-    | comment_heading | appendix_subheading
+    | comment_heading | appendix_subheading | section_paragraph_heading_of
     # Must come after other headings as it is a catch-all
     | section_heading
     | multiple_paragraph_sections | section_single_par
