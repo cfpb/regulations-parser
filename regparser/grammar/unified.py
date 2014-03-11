@@ -4,7 +4,7 @@ from pyparsing import Empty, FollowedBy, LineEnd, Literal, OneOrMore, Optional
 from pyparsing import Suppress, SkipTo
 
 from regparser.grammar import atomic
-from regparser.grammar.utils import keep_pos
+from regparser.grammar.utils import keep_pos, Marker
 
 
 part_section = atomic.part + Suppress(".") + atomic.section
@@ -26,6 +26,7 @@ any_depth_p = depth1_p | depth2_p | depth3_p | depth4_p | depth5_p | depth6_p
 depth3_c = atomic.upper_c + Optional(atomic.em_digit_c)
 depth2_c = atomic.roman_c + Optional(depth3_c)
 depth1_c = atomic.digit_c + Optional(depth2_c)
+any_a = atomic.upper_a | atomic.digit_a
 
 section_comment = atomic.section + depth1_c
 
@@ -48,6 +49,14 @@ appendix_with_section = (
     atomic.appendix
     + '-' + atomic.appendix_section
     + Optional(depth1_p))
+
+appendix_with_part = (
+    atomic.appendix_marker.copy().setParseAction(keep_pos).setResultsName(
+        "marker")
+    + atomic.appendix
+    + Suppress(",") + Marker('part')
+    + atomic.upper_roman_a
+    + Optional(any_a) + Optional(any_a) + Optional(any_a))
 
 marker_appendix = (
     atomic.appendix_marker.copy().setParseAction(keep_pos).setResultsName(

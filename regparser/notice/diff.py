@@ -202,6 +202,9 @@ def parse_amdpar(par, initial_context):
     """ Parse the <AMDPAR> tags into a list of paragraphs that have changed.
     """
 
+    #   Replace and "and"s in titles; they will throw off and_token_resolution
+    for e in filter(lambda e: e.text, par.xpath('./E')):
+        e.text = e.text.replace(' and ', ' ')
     text = get_node_text(par, add_spaces=True)
     tokenized = [t[0] for t, _, _ in amdpar.token_patterns.scanString(text)]
 
@@ -287,6 +290,14 @@ def resolve_confused_context(tokenized, initial_context):
                 final_tokens.append(token.copy(
                     label=[token.label[0], 'Interpretations', token.label[2],
                            '(' + ')('.join(l for l in token.label[3:] if l)
+                           + ')']))
+            elif (token.match(tokens.Context, tokens.Paragraph)
+                    and len(token.label) > 1 and
+                    token.label[1].startswith('Appendix:')):
+                final_tokens.append(token.copy(
+                    label=[token.label[0], 'Interpretations',
+                           token.label[1][len('Appendix:'):],
+                           '(' + ')('.join(l for l in token.label[2:] if l)
                            + ')']))
             elif token.match(tokens.TokenList):
                 sub_tokens = resolve_confused_context(token.tokens,

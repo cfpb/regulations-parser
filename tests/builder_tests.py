@@ -70,7 +70,7 @@ class BuilderTests(TestCase):
         self.assertEqual(['1234-1-a'], arg.keys())
 
         write.reset_mock()
-        notice = {}
+        notice = {'document_number': '111-222'}
         cache.invalidate_by_notice(notice)
         b.gen_and_write_layers(tree, [], cache, [])
         arg = write.call_args_list[3][0][0]

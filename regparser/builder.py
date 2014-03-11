@@ -128,6 +128,8 @@ class LayerCacheAggregator(object):
         """Using the notice structure, invalidate based on the 'changes'
         field"""
         self.invalidate([key for key in notice.get('changes', {})])
+        patches = content.RegPatches().get(notice['document_number'], {})
+        self.invalidate(patches.keys())
 
     def is_known(self, label):
         return label in self._known_labels

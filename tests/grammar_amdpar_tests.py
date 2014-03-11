@@ -411,3 +411,13 @@ class GrammarAmdParTests(TestCase):
                                 field=tokens.Paragraph.TEXT_FIELD))
         self.assertTrue(andToken.match(tokens.AndToken))
         self.assertTrue(lst.match(tokens.TokenList))
+
+    def test_example_29(self):
+        text = "The subheading Appendix R-Reeeeeeally? is revised."
+        result = parse_text(text)
+        self.assertEqual(2, len(result))
+        subheading, revised = result
+        self.assertTrue(subheading.match(
+            tokens.Paragraph, label=[None, 'Interpretations', 'R', '()'],
+            field=tokens.Paragraph.HEADING_FIELD))
+        self.assertTrue(revised.match(tokens.Verb, verb=tokens.Verb.PUT))

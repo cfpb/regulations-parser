@@ -51,6 +51,11 @@ upper_c = "." + Word(string.ascii_uppercase).setResultsName(
 roman_c = "." + Word("ivxlcdm").setResultsName('c2').leaveWhitespace()
 digit_c = "-" + Word(string.digits).setResultsName('c1').leaveWhitespace()
 
+upper_roman_a = Word("IVXLCDM").setResultsName('a1')
+upper_a = "." + Word(string.ascii_uppercase).setResultsName(
+    'a2').leaveWhitespace()
+digit_a = "." + Word(string.digits).setResultsName('a3').leaveWhitespace()
+
 part = Word(string.digits).setResultsName("part")
 
 section = Word(string.digits).setResultsName("section")

@@ -128,6 +128,14 @@ class NoticeDiffTests(TestCase):
             converted, [tokens.Context([None, 'Interpretations', '12',
                                         '(a)(2)(iii)'])])
 
+    def test_resolve_confused_context_appendix(self):
+        tokenized = [tokens.Context([None, 'Appendix:A', '12'])]
+        converted = resolve_confused_context(tokenized,
+                                             ['123', 'Interpretations'])
+        self.assertEqual(
+            converted, [tokens.Context([None, 'Interpretations', 'A',
+                                        '(12)'])])
+
     def test_compress(self):
         self.assertEqual([1, 2, 3], compress([1, 2, 3], []))
         self.assertEqual([1, 6, 3], compress([1, 2, 3, 4, 5], [None, 6, None]))
@@ -656,6 +664,16 @@ class NoticeDiffTests(TestCase):
         self.assertEqual('POST', b.action)
         self.assertEqual(['1111', '12', 'a', 'Interp', '3'],
                          b.label)
+
+    def test_parse_amdpar_and_in_tags(self):
+        text = "Under <E>Appendix A - Some phrase and another</E>, paragraph "
+        text += "3 is added"
+        xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
+        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        self.assertEqual(1, len(amends))
+        amend = amends[0]
+        self.assertEqual('POST', amend.action)
+        self.assertEqual(['1111', 'A', 'Interp', '3'], amend.label)
 
     def test_parse_amdpar_verbs_ands(self):
         text = "Under 45(a)(1) Title, paragraphs 1 and 2 are removed, and "
