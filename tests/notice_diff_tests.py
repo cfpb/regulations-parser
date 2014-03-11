@@ -706,6 +706,23 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(amd.label, ['1111', '12', 'c'])
         self.assertEqual(amd.field, '[text]')
 
+    def test_parse_amdpar_moved_then_modified(self):
+        text = "Under Paragraph 22(a), paragraph 1 is revised, paragraph "
+        text += "2 is redesignated as paragraph 3 and revised, and new "
+        text += "paragraph 2 is added."
+        xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
+        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        self.assertEqual(4, len(amends))
+        a1, a2del, a3, a2add = amends
+        self.assertEqual(a1.action, tokens.Verb.PUT)
+        self.assertEqual(a1.label, ['1111', '22', 'a', 'Interp', '1'])
+        self.assertEqual(a2del.action, tokens.Verb.DELETE)
+        self.assertEqual(a2del.label, ['1111', '22', 'a', 'Interp', '2'])
+        self.assertEqual(a3.action, tokens.Verb.POST)
+        self.assertEqual(a3.label, ['1111', '22', 'a', 'Interp', '3'])
+        self.assertEqual(a2add.action, tokens.Verb.POST)
+        self.assertEqual(a2add.label, ['1111', '22', 'a', 'Interp', '2'])
+
 
 class AmendmentTests(TestCase):
     def test_fix_label(self):

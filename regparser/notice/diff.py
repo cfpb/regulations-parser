@@ -186,16 +186,25 @@ def move_then_modify(tokenized):
     """The subject of modification may be implicit in the preceding move
     operation: A is redesignated B and changed. Replace the operation with a
     DELETE and a POST so it's easier to compile later."""
-    if len(tokenized) == 4:
-        move, p1, p2, edit = tokenized
+    final_tokens = []
+    idx = 0
+    while idx < len(tokenized) - 3:
+        move, p1, p2, edit = tokenized[idx:idx + 4]
         if (move.match(tokens.Verb, verb=tokens.Verb.MOVE, active=True)
                 and p1.match(tokens.Paragraph)
                 and p2.match(tokens.Paragraph)
                 and edit.match(tokens.Verb, verb=tokens.Verb.PUT,
                                active=True, and_prefix=True)):
-            return [tokens.Verb(tokens.Verb.DELETE, active=True), p1,
-                    tokens.Verb(tokens.Verb.POST, active=True), p2]
-    return tokenized
+            final_tokens.append(tokens.Verb(tokens.Verb.DELETE, active=True))
+            final_tokens.append(p1)
+            final_tokens.append(tokens.Verb(tokens.Verb.POST, active=True))
+            final_tokens.append(p2)
+            idx += 4
+        else:
+            final_tokens.append(tokenized[idx])
+            idx += 1
+    final_tokens.extend(tokenized[idx:])
+    return final_tokens
 
 
 def parse_amdpar(par, initial_context):
