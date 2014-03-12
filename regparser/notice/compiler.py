@@ -1,6 +1,7 @@
 """ Notices indicate how a regulation has changed since the last version. This
 module contains code to compile a regulation from a notice's changes. """
 
+from bisect import bisect
 from collections import defaultdict
 import copy
 import itertools
@@ -171,7 +172,7 @@ class RegulationTree(object):
         """ Add a child to the children, and sort appropriately. This is used
         for non-root nodes. """
 
-        children.append(node)
+        children = children + [node]    # non-destructive
 
         if order and set(order) == set(c.label_id() for c in children):
             lookup = {}
@@ -179,26 +180,28 @@ class RegulationTree(object):
                 lookup[c.label_id()] = c
             return [lookup[label_id] for label_id in order]
         else:
+            sort_order = []
             for c in children:
                 if c.label[-1] == Node.INTERP_MARK:
-                    c.sortable = make_label_sortable(
-                        c.label[-2], roman=(len(c.label) == 6))
+                    sort_order.append((2,) + make_label_sortable(
+                        c.label[-2], roman=(len(c.label) == 6)))
                 elif Node.INTERP_MARK in c.label:
                     marker_idx = c.label.index(Node.INTERP_MARK)
                     comment_pars = c.label[marker_idx + 1:]
-                    c.sortable = make_label_sortable(
-                        comment_pars[-1], roman=(len(comment_pars) == 2))
+                    sort_order.append((1,) + make_label_sortable(
+                        comment_pars[-1], roman=(len(comment_pars) == 2)))
                 elif c.node_type == Node.APPENDIX:
-                    c.sortable = make_label_sortable(c.label[-1], False)
+                    sort_order.append(make_label_sortable(c.label[-1], False))
                 else:
-                    c.sortable = make_label_sortable(
-                        c.label[-1], roman=(len(c.label) == 5))
+                    sort_order.append(make_label_sortable(
+                        c.label[-1], roman=(len(c.label) == 5)))
 
-            children.sort(key=lambda x: x.sortable)
-
-            for c in children:
-                del c.sortable
-            return children
+            new_el_sort = sort_order[-1]
+            sort_order = sort_order[:-1]
+            # Use bisect so the whole list isn't resorted (the original list
+            # may not be strictly sorted)
+            insert_idx = bisect(sort_order, new_el_sort)
+            return children[:insert_idx] + [node] + children[insert_idx:-1]
 
     def delete_from_parent(self, node):
         """ Delete node from it's parent, effectively removing it from the
