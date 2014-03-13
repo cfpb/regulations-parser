@@ -421,3 +421,13 @@ class GrammarAmdParTests(TestCase):
             tokens.Paragraph, label=[None, 'Interpretations', 'R', '()'],
             field=tokens.Paragraph.HEADING_FIELD))
         self.assertTrue(revised.match(tokens.Verb, verb=tokens.Verb.PUT))
+
+    def test_example_30(self):
+        text = "The heading for Paragraph 29(r)(6) is revised."
+        result = parse_text(text)
+        self.assertEqual(2, len(result))
+        heading, revised = result
+        self.assertTrue(heading.match(
+            tokens.Paragraph, label=[None, 'Interpretations', '29', '(r)(6)'],
+            field=tokens.Paragraph.HEADING_FIELD))
+        self.assertTrue(revised.match(tokens.Verb, verb=tokens.Verb.PUT))
