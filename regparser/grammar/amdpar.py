@@ -198,6 +198,15 @@ intro_text_of = (
     lambda m: tokens.Paragraph([None, None, None, m.p1, m.p2, m.p3, m.p4,
                                 m.plaintext_p5, m.plaintext_p6],
                                field=tokens.Paragraph.TEXT_FIELD))
+
+intro_text_of_interp = (
+    intro_text_marker + of_connective
+    + atomic.paragraph_marker
+    + comment_p
+    ).setParseAction(lambda m: tokens.Paragraph([None,
+        'Interpretations', None, None, m.level2, m.level3,
+        m.level4], field=tokens.Paragraph.TEXT_FIELD))
+
 single_par = (
     unified.marker_paragraph
     + Optional(intro_text_marker)
@@ -303,8 +312,8 @@ multiple_comments = (
     + make_multiple(atomic.section + unified.depth1_p)
     ).setParseAction(make_par_list(
         lambda m: [None, 'Interpretations', m.section,
-                   _paren_join([
-                    m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6])]))
+                   _paren_join([m.p1, m.p2, m.p3, m.p4,
+                                m.plaintext_p5, m.plaintext_p6])]))
 
 multiple_interp_entries = (
     Marker("entries") + Marker("for")
@@ -333,8 +342,8 @@ token_patterns = (
     | interp | marker_subpart | appendix
     | comment_context_with_section | comment_context_without_section
     | comment_context_under_with_section
-
     | paragraph_heading_of | section_heading_of | intro_text_of
+    | intro_text_of_interp
     | comment_heading | appendix_subheading | section_paragraph_heading_of
     # Must come after other headings as it is a catch-all
     | section_heading
