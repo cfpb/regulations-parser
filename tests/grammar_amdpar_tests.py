@@ -431,3 +431,13 @@ class GrammarAmdParTests(TestCase):
             tokens.Paragraph, label=[None, 'Interpretations', '29', '(r)(6)'],
             field=tokens.Paragraph.HEADING_FIELD))
         self.assertTrue(revised.match(tokens.Verb, verb=tokens.Verb.PUT))
+
+    def test_example_31(self):
+        text = "Introductory text to paragraph 1 is revised."
+        result = parse_text(text)
+        self.assertEqual(2, len(result))
+        paragraph, verb = result
+        self.assertTrue(paragraph.match(
+            tokens.Paragraph, label=[None, 'Interpretations', None, None, '1'], 
+            field=tokens.Paragraph.TEXT_FIELD))
+        self.assertTrue(verb.match(tokens.Verb, verb=tokens.Verb.PUT))
