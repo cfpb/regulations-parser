@@ -438,6 +438,6 @@ class GrammarAmdParTests(TestCase):
         self.assertEqual(2, len(result))
         paragraph, verb = result
         self.assertTrue(paragraph.match(
-            tokens.Paragraph, label=[None, 'Interpretations', None, None, '1'], 
+            tokens.Paragraph, label=[None, 'Interpretations', None, None, '1'],
             field=tokens.Paragraph.TEXT_FIELD))
         self.assertTrue(verb.match(tokens.Verb, verb=tokens.Verb.PUT))
