@@ -159,7 +159,9 @@ section_heading_of = (
 
 section_paragraph_heading_of = (
     Marker("heading") + of_connective
-    + unified.m_section_paragraph
+    + (atomic.paragraph_marker | Marker("comment"))
+    + atomic.section
+    + unified.depth1_p
     ).setParseAction(
     lambda m: tokens.Paragraph([None, 'Interpretations', m.section,
                                 _paren_join([m.p1, m.p2, m.p3, m.p4, m.p5])],
