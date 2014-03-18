@@ -29,6 +29,7 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="HD2">Sub Section</HD>
             <P>Content</P>
             <HD SOURCE="HD3">Sub sub section</HD>
+            <EXTRACT><P>This is in an extract</P></EXTRACT>
             <P>Sub Sub Content</P>"""
         full_xml = """
         <ROOT>
@@ -45,7 +46,8 @@ class NoticeSxsTests(TestCase):
 
         sxs = etree.fromstring("<ROOT>" + sxs_xml + "</ROOT>")
         #   Must use text field since the nodes are not directly comparable
-        sxs_texts = map(lambda el: el.text, list(sxs.xpath("/ROOT/*")))
+        sxs_texts = ['Sub Section', 'Content', 'Sub sub section',
+                     'This is in an extract', 'Sub Sub Content']
 
         computed = find_section_by_section(etree.fromstring(full_xml))
         self.assertEqual(sxs_texts, map(lambda el: el.text, computed))
