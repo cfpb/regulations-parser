@@ -346,7 +346,8 @@ class NoticeSxsTests(TestCase):
         self.assertEqual(["101-22-d-5-x"],
                          parse_into_labels("22(d)(5)(x) Content", "101"))
         self.assertEqual(["101-22-d-5-x"],
-                         parse_into_labels(u"§ 101.22(d)(5)(x) Content", "101"))
+                         parse_into_labels(u"§ 101.22(d)(5)(x) Content",
+                                           "101"))
         self.assertEqual(["101-22-d-5-x-Q"],
                          parse_into_labels("22(d)(5)(x)(Q) Content", "101"))
         self.assertEqual(["101-A"],
@@ -362,6 +363,9 @@ class NoticeSxsTests(TestCase):
 
         self.assertEqual([],
                          parse_into_labels("Application of this rule", "101"))
+        text = 'Section 1111.39Content content 1111.39(d) Exeptions'
+        self.assertEqual(['1111-39', '1111-39-d'],
+                         parse_into_labels(text, '101'))
 
     def test_is_child_of(self):
         parent = """<HD SOURCE="H2">Section 22.1</HD>"""
