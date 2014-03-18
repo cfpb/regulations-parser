@@ -33,6 +33,11 @@ section_comment = atomic.section + depth1_c
 section_paragraph = atomic.section + depth1_p
 
 mps_paragraph = marker_part_section + Optional(depth1_p)
+part_section_paragraph = (
+    atomic.part + Suppress(".") + atomic.section + depth1_p)
+
+
+part_section + Optional(depth1_p)
 
 m_section_paragraph = (
     atomic.paragraph_marker.copy().setParseAction(

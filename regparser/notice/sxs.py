@@ -83,7 +83,7 @@ def build_section_by_section(sxs, part, fr_start_page):
         if not labels:
             structures.append(next_structure)
         for label in labels:
-            cp_structure = dict(next_structure) # shallow copy
+            cp_structure = dict(next_structure)  # shallow copy
             cp_structure['label'] = label
             structures.append(cp_structure)
 
@@ -124,8 +124,8 @@ def split_into_ttsr(sxs):
 
 
 def parse_into_labels(txt, part):
-    """Find what part+section+(paragraph) (could be multiple) this text is 
+    """Find what part+section+(paragraph) (could be multiple) this text is
     related to."""
     citations = internal_citations(txt, Label(part=part))
-    labels =  ['-'.join(cit.label.to_list()) for cit in citations]
+    labels = ['-'.join(cit.label.to_list()) for cit in citations]
     return labels

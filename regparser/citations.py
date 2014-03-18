@@ -189,6 +189,8 @@ def internal_citations(text, initial_label=None, require_marker=False):
     single_citations(grammar.m_section_paragraph.scanString(text), False)
     if not require_marker:
         single_citations(grammar.section_paragraph.scanString(text), False)
+        single_citations(grammar.part_section_paragraph.scanString(text),
+                         False)
 
     # Some appendix citations are... complex
     for match, start, end in grammar.appendix_with_part.scanString(text):
