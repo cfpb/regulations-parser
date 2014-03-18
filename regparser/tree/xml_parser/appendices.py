@@ -316,7 +316,7 @@ class AppendixProcessor(object):
                         and title_label_pair(text, self.appendix_letter)))
 
         for child in appendix.getchildren():
-            text = tree_utils.get_node_text(child).strip()
+            text = tree_utils.get_node_text(child, add_spaces=True).strip()
             if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
                     or child.tag == 'RESERVED'):
                 self.hed(part, text)

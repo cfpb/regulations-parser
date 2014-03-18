@@ -144,6 +144,41 @@ class AppendicesTest(TestCase):
         self.assertEqual(1, len(a1B1h.children))
         self.assertEqual(a1B1h.children[0].text.strip(), '1. Content tent')
 
+    def test_process_spaces(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <P>1. For<PRTPAGE P="650" />example</P>
+            <P>2. And <E T="03">et seq.</E></P>
+            <P>3. And<E T="03">et seq.</E></P>
+            <P>More<PRTPAGE P="651" />content</P>
+            <P>And<E T="03">et seq.</E></P>
+        </APPENDIX>"""
+        appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
+        self.assertEqual(5, len(appendix.children))
+        a1, a2, a3, a4, a5 = appendix.children
+
+        self.assertEqual('1. For example', a1.text.strip())
+        self.assertEqual(['1111', 'A', '1'], a1.label)
+        self.assertEqual(0, len(a1.children))
+
+        self.assertEqual('2. And et seq.', a2.text.strip())
+        self.assertEqual(['1111', 'A', '2'], a2.label)
+        self.assertEqual(0, len(a2.children))
+
+        self.assertEqual('3. And et seq.', a3.text.strip())
+        self.assertEqual(['1111', 'A', '3'], a3.label)
+        self.assertEqual(0, len(a3.children))
+
+        self.assertEqual('More content', a4.text.strip())
+        self.assertEqual(['1111', 'A', 'p1'], a4.label)
+        self.assertEqual(0, len(a4.children))
+
+        self.assertEqual('And et seq.', a5.text.strip())
+        self.assertEqual(['1111', 'A', 'p2'], a5.label)
+        self.assertEqual(0, len(a5.children))
+
     def test_header_ordering(self):
         xml = u"""
         <APPENDIX>
