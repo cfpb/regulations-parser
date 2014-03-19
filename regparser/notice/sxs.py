@@ -54,12 +54,12 @@ def find_page(xml, index_line, page_number):
     return page_number
 
 
-def build_section_by_section(sxs, part, fr_start_page):
+def build_section_by_section(sxs, part, fr_start_page, previous_label=None):
     """Given a list of xml nodes in the section by section analysis, pull
-    out hierarchical data into a structure."""
+    out hierarchical data into a structure. Previous label is carried along to
+    merge analyses of the same section."""
     structures = []
-    #while sxs: is deprecated
-    while len(sxs):
+    while len(sxs):  # while sxs: is deprecated
         title, text_els, sub_sections, sxs = split_into_ttsr(sxs)
 
         page = find_page(title, title.sourceline, fr_start_page)
@@ -85,7 +85,14 @@ def build_section_by_section(sxs, part, fr_start_page):
                 su.getparent().remove(su)
 
         paragraphs = [body_to_string(el) for el in paragraph_xmls]
-        children = build_section_by_section(sub_sections, part, page)
+        label_for_children = previous_label
+        labels = parse_into_labels(title.text, part)
+        if labels:
+            label_for_children = labels[-1]
+
+        # recursively build children. Be sure to give them the proper label
+        children = build_section_by_section(sub_sections, part, page,
+                                            label_for_children)
 
         next_structure = {
             'page': page,
@@ -94,13 +101,17 @@ def build_section_by_section(sxs, part, fr_start_page):
             'children': children,
             'footnote_refs': footnotes
             }
-        labels = parse_into_labels(title.text, part)
         if not labels:
             structures.append(next_structure)
         for label in labels:
-            cp_structure = dict(next_structure)  # shallow copy
-            cp_structure['label'] = label
-            structures.append(cp_structure)
+            if label == previous_label:
+                #   Referring to the same paragraph... again
+                structures.append(next_structure)
+            else:
+                previous_label = label
+                cp_structure = dict(next_structure)  # shallow copy
+                cp_structure['label'] = label
+                structures.append(cp_structure)
 
     return structures
 
