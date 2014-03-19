@@ -38,7 +38,7 @@ def build_header(xml_nodes):
     stack.add(0, TableHeaderNode(None, 0))  # Root
     for xml_node in xml_nodes:
         level = int(xml_node.attrib['H'])
-        text = tree_utils.get_node_text(xml_node).strip()
+        text = tree_utils.get_node_text(xml_node, add_spaces=True).strip()
         stack.add(level, TableHeaderNode(text, level))
 
     while stack.size() > 1:
@@ -62,12 +62,12 @@ def table_xml_to_plaintext(xml_node):
     """Markdown representation of a table. Note that this doesn't account
     for all the options needed to display the table properly, but works fine
     for simple tables. This gets included in the reg plain text"""
-    header = [tree_utils.get_node_text(hd).strip()
+    header = [tree_utils.get_node_text(hd, add_spaces=True).strip()
               for hd in xml_node.xpath('./BOXHD/CHED')]
     divider = ['---']*len(header)
     rows = []
     for tr in xml_node.xpath('./ROW'):
-        rows.append([tree_utils.get_node_text(td).strip()
+        rows.append([tree_utils.get_node_text(td, add_spaces=True).strip()
                      for td in tr.xpath('./ENT')])
     table = []
     for row in [header] + [divider] + rows:
@@ -92,7 +92,7 @@ def table_xml_to_data(xml_node):
 
     rows = []
     for row in xml_node.xpath('./ROW'):
-        rows.append([tree_utils.get_node_text(td).strip()
+        rows.append([tree_utils.get_node_text(td, add_spaces=True).strip()
                      for td in row.xpath('./ENT')])
 
     return {'header': header, 'rows': rows}
