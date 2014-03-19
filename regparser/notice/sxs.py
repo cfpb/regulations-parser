@@ -8,9 +8,24 @@ from regparser.notice.util import body_to_string, spaces_then_remove
 from regparser.notice.util import swap_emphasis_tags
 
 
+def remove_extract(xml_tree):
+    """Occasionally, the paragraphs/etc. useful to us are inside an EXTRACT
+    tag. To normalize, move everything in an EXTRACT tag out"""
+    xml_tree = deepcopy(xml_tree)
+    for extract in xml_tree.xpath('//EXTRACT'):
+        parent = extract.getparent()
+        insert_idx = parent.index(extract)
+        for child in extract:
+            extract.remove(child)
+            parent.insert(insert_idx, child)
+            insert_idx += 1
+        parent.remove(extract)
+    return xml_tree
+
+
 def find_section_by_section(xml_tree):
     """Find the section-by-section analysis of this notice"""
-    xml_children = xml_tree.xpath('//SUPLINF/*')
+    xml_children = remove_extract(xml_tree).xpath('//SUPLINF/*')
     sxs = dropwhile(lambda el: (
         el.tag != 'HD'
         or el.get('SOURCE') != 'HD1'
