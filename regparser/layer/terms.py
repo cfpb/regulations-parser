@@ -277,6 +277,8 @@ class Terms(Layer):
             if ref.label != node.label_id()]
 
         exclusions = self.excluded_offsets(node.label_id(), node.text)
+        exclusions = self.per_regulation_ignores(
+            exclusions, node.label, node.text)
 
         matches = self.calculate_offsets(node.text, term_list, exclusions)
         for term, ref, offsets in matches:
@@ -286,6 +288,15 @@ class Terms(Layer):
                 })
         return layer_el
 
+    def per_regulation_ignores(self, exclusions, label, text):
+        cfr_part = label[0]
+        if settings.IGNORE_DEFINITIONS_IN.get(cfr_part):
+            for ignore_term in settings.IGNORE_DEFINITIONS_IN[cfr_part]:
+                exclusions.extend(
+                    (match.start(), match.end()) for match in
+                    re.finditer(r'\b' + re.escape(ignore_term) + r'\b', text))
+        return exclusions
+
     def excluded_offsets(self, label, text):
         """We explicitly exclude certain chunks of text (for example, words
         we are defining shouldn't have links appear within the defined
@@ -294,7 +305,7 @@ class Terms(Layer):
         for reflist in self.scoped_terms.values():
             exclusions.extend(
                 ref.position for ref in reflist if ref.label == label)
-        for ignore_term in settings.IGNORE_DEFINITIONS_IN:
+        for ignore_term in settings.IGNORE_DEFINITIONS_IN['ALL']:
             exclusions.extend(
                 (match.start(), match.end()) for match in
                 re.finditer(r'\b' + re.escape(ignore_term) + r'\b', text))

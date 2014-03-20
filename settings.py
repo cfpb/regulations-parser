@@ -65,7 +65,7 @@ DEFAULT_IMAGE_URL = (
 IMAGE_OVERRIDES = {}
 
 # list of strings: phrases which shouldn't be broken by definition links
-IGNORE_DEFINITIONS_IN = []
+IGNORE_DEFINITIONS_IN = {'ALL':[]}
 
 # list of modules implementing the __contains__ and __getitem__ methods
 OVERRIDES_SOURCES = [
