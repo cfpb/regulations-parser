@@ -128,13 +128,21 @@ def add_spaces_to_title(title):
     return title
 
 
-def is_child_of(child_xml, header_xml):
-    """Children are paragraphs, have lower 'source' or the header has
-    citations and the child does not"""
-    return (child_xml.tag != 'HD'
-            or child_xml.get('SOURCE') > header_xml.get('SOURCE')
-            or (internal_citations(header_xml.text, Label())
-                and not internal_citations(child_xml.text, Label())))
+def is_child_of(child_xml, header_xml, header_citations=None):
+    """Children are paragraphs, have lower 'source', the header has
+    citations and the child does not, or the citations for header and child
+    are the same"""
+    if child_xml.tag != 'HD':
+        return True
+    else:
+        if header_citations is None:
+            header_citations = [c.label for c in
+                                internal_citations(header_xml.text, Label())]
+        child_citations = [c.label for c in
+                           internal_citations(child_xml.text, Label())]
+        return (child_xml.get('SOURCE') > header_xml.get('SOURCE')
+                or (header_citations and not child_citations)
+                or (header_citations and header_citations == child_citations))
 
 
 def split_into_ttsr(sxs):
@@ -142,7 +150,10 @@ def split_into_ttsr(sxs):
     sequence of text nodes, a sequence of nodes associated with the sub
     sections of this header, and the remaining xml nodes"""
     title = sxs[0]
-    section = list(takewhile(lambda e: is_child_of(e, title), sxs[1:]))
+    title_citations = [c.label for c in
+                       internal_citations(title.text, Label())]
+    section = list(takewhile(lambda e: is_child_of(e, title, title_citations),
+                             sxs[1:]))
     text_elements = list(takewhile(lambda e: e.tag != 'HD', section))
     sub_sections = section[len(text_elements):]
     remaining = sxs[1+len(text_elements)+len(sub_sections):]
