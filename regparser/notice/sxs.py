@@ -104,8 +104,8 @@ def build_section_by_section(sxs, part, fr_start_page, previous_label=None):
         if not labels:
             structures.append(next_structure)
         for label in labels:
-            if label == previous_label:
-                #   Referring to the same paragraph... again
+            #   Concatenate if repeat label or backtrack (=ambiguous meaning)
+            if label == previous_label or is_backtrack(previous_label, label):
                 structures.append(next_structure)
             else:
                 previous_label = label
@@ -128,10 +128,21 @@ def add_spaces_to_title(title):
     return title
 
 
+def is_backtrack(previous_label, next_label):
+    """If we've already processes a header with 22(c) in it, we can assume
+    that any following headers with 1111.22 are *not* supposed to be an
+    analysis of 1111.22"""
+    previous_label = previous_label or []
+    next_label = next_label or []
+    trimmed = previous_label[:len(next_label)]
+    return (next_label and len(previous_label) > len(next_label)
+            and trimmed == next_label)
+
+
 def is_child_of(child_xml, header_xml, header_citations=None):
     """Children are paragraphs, have lower 'source', the header has
-    citations and the child does not, or the citations for header and child
-    are the same"""
+    citations and the child does not, the citations for header and child
+    are the same or the citation in a child is incorrect"""
     if child_xml.tag != 'HD':
         return True
     else:
@@ -140,9 +151,15 @@ def is_child_of(child_xml, header_xml, header_citations=None):
                                 internal_citations(header_xml.text, Label())]
         child_citations = [c.label for c in
                            internal_citations(child_xml.text, Label())]
-        return (child_xml.get('SOURCE') > header_xml.get('SOURCE')
+        if (child_xml.get('SOURCE') > header_xml.get('SOURCE')
                 or (header_citations and not child_citations)
-                or (header_citations and header_citations == child_citations))
+                or (header_citations and header_citations == child_citations)):
+            return True
+        elif header_citations and child_citations:
+            return is_backtrack(header_citations[-1].to_list(),
+                                child_citations[0].to_list())
+        else:
+            return False
 
 
 def split_into_ttsr(sxs):
