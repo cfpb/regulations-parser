@@ -189,6 +189,8 @@ def internal_citations(text, initial_label=None, require_marker=False):
                        False)
     multiple_citations(grammar.multiple_comments.scanString(text), True)
     multiple_citations(grammar.multiple_appendices.scanString(text), False)
+    multiple_citations(grammar.multiple_period_sections.scanString(text),
+                       False)
 
     single_citations(grammar.marker_appendix.scanString(text), False)
     single_citations(grammar.appendix_with_section.scanString(text), False)
@@ -199,6 +201,8 @@ def internal_citations(text, initial_label=None, require_marker=False):
         single_citations(grammar.section_paragraph.scanString(text), False)
         single_citations(grammar.part_section_paragraph.scanString(text),
                          False)
+        multiple_citations(
+            grammar.multiple_section_paragraphs.scanString(text), False)
 
     # Some appendix citations are... complex
     for match, start, end in grammar.appendix_with_part.scanString(text):

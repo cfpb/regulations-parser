@@ -6,8 +6,8 @@ from pyparsing import Suppress, SkipTo
 from regparser.grammar import atomic
 from regparser.grammar.utils import keep_pos, Marker
 
-
-part_section = atomic.part + Suppress(".") + atomic.section
+period_section = Suppress(".") + atomic.section
+part_section = atomic.part + period_section
 marker_part_section = (
     atomic.section_marker.copy().setParseAction(keep_pos).setResultsName(
         "marker")
@@ -97,16 +97,30 @@ _inner_non_comment = (
     | (atomic.section + depth1_p)
     | appendix_with_section | marker_appendix)
 
+_inner_non_comment_tail = OneOrMore(
+    Optional(Suppress('('))
+    + atomic.conj_phrases
+    + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName(
+        "tail", listAllMatches=True)
+    + Optional(Suppress(')')))
+
 multiple_non_comments = (
     (atomic.paragraphs_marker | atomic.paragraph_marker
         | atomic.sections_marker | atomic.section_marker)
     + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName("head")
+    + _inner_non_comment_tail)
+
+multiple_section_paragraphs = (
+    section_paragraph.copy().setParseAction(keep_pos).setResultsName("head")
+    + _inner_non_comment_tail)
+
+multiple_period_sections = (
+    atomic.sections_marker
+    + part_section.copy().setParseAction(keep_pos).setResultsName("head")
     + OneOrMore(
-        Optional(Suppress('('))
-        + atomic.conj_phrases
-        + _inner_non_comment.copy().setParseAction(keep_pos).setResultsName(
-            "tail", listAllMatches=True)
-        + Optional(Suppress(')'))))
+        atomic.conj_phrases
+        + period_section.copy().setParseAction(keep_pos).setResultsName(
+            "tail", listAllMatches=True)))
 
 multiple_appendix_section = (
     appendix_with_section.copy().setParseAction(keep_pos).setResultsName(
