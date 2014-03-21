@@ -63,7 +63,8 @@ def build_section_by_section(sxs, part, fr_start_page, previous_label=None):
         title, text_els, sub_sections, sxs = split_into_ttsr(sxs)
 
         page = find_page(title, title.sourceline, fr_start_page)
-        paragraph_xmls = [deepcopy(el) for el in text_els if el.tag == 'P']
+        paragraph_xmls = [deepcopy(el) for el in text_els
+                          if el.tag == 'P' or el.tag == 'FP']
         footnotes = []
         for p_idx, paragraph_xml in enumerate(paragraph_xmls):
             spaces_then_remove(paragraph_xml, 'PRTPAGE')

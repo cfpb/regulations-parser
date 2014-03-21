@@ -101,6 +101,7 @@ class NoticeSxsTests(TestCase):
             <P>Content 4</P>
             <HD SOURCE="HD3">4(b) Header</HD>
             <P>Content 5</P>
+            <FP>Content 6</FP>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
         structures = build_section_by_section(sxs, '100', 83)
@@ -131,7 +132,7 @@ class NoticeSxsTests(TestCase):
             })
         self.assertEqual(structures[1], {
             'title': '4(b) Header',
-            'paragraphs': ['Content 5'],
+            'paragraphs': ['Content 5', 'Content 6'],
             'label': '100-4-b',
             'page': 83,
             'footnote_refs': [],
