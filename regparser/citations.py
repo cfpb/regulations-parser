@@ -101,6 +101,14 @@ class Label(object):
     def __repr__(self):
         return repr(self.to_list())
 
+    def __eq__(self, other):
+        """Equality if types match and fields match"""
+        return (type(other) == type(self)
+                and self.using_default_schema == other.using_default_schema
+                and self.settings == other.settings
+                and self.schema == other.schema
+                and self.comment == other.comment)
+
 
 class ParagraphCitation(object):
     def __init__(self, start, end, label, full_start=None, full_end=None,
