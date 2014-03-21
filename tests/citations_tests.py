@@ -171,6 +171,16 @@ class CitationsTest(TestCase):
                          citation.label.to_list())
         self.assertEqual(to_text(citation, text), '(D)')
 
+        text = 'see 32(d)(6) and (7) Content content'
+        citations = internal_citations(text, Label(part='222'))
+        self.assertEqual(2, len(citations))
+        citation = citations[0]
+        self.assertEqual(['222', '32', 'd', '6'], citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '32(d)(6)')
+        citation = citations[1]
+        self.assertEqual(['222', '32', 'd', '7'], citation.label.to_list())
+        self.assertEqual(to_text(citation, text), '(7)')
+
     def test_single_match_multiple_paragraphs2(self):
         text = u'§ 1005.10(a) and (d)'
         citations = internal_citations(text, Label(part='222', section='5'))
@@ -222,6 +232,13 @@ class CitationsTest(TestCase):
         text += 'and 1005.20'
         citations = internal_citations(text, Label(part='222', section='5'))
         self.assertEqual(7, len(citations))
+
+        text = 'Sections 1005.3, .4, and .5'
+        citations = internal_citations(text, Label(part='222', section='5'))
+        self.assertEqual(3, len(citations))
+        self.assertEqual(['1005', '3'], citations[0].label.to_list())
+        self.assertEqual(['1005', '4'], citations[1].label.to_list())
+        self.assertEqual(['1005', '5'], citations[2].label.to_list())
 
     def test_single_match_multiple_paragraphs3(self):
         text = "Please see E-9(a)(1), (2) and (d)(3)(v) for more"
