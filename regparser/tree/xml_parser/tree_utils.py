@@ -1,10 +1,9 @@
 #vim: set encoding=utf-8
+from copy import deepcopy
 import HTMLParser
 from itertools import chain
-import re
 
-from lxml import etree
-from pyparsing import Literal, Optional, Regex, StringStart, Suppress
+from pyparsing import Literal, Optional, Regex, Suppress
 
 from regparser.citations import remove_citation_overlaps
 from regparser.grammar.unified import any_depth_p
@@ -113,6 +112,13 @@ def _should_add_space(prev_text, next_text):
 def get_node_text(node, add_spaces=False):
     """ Extract all the text from an XML node (including the
     text of it's children). """
+    node = deepcopy(node)
+    # subscripts
+    for e in node.xpath(".//E[@T='52']"):
+        parent = e.getparent()
+        parent.text += "_{" + e.text + "} " + (e.tail or "")
+        parent.remove(e)
+
     parts = [node.text] +\
         list(chain(*([c.text, c.tail] for c in node.getchildren()))) +\
         [node.tail]

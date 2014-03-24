@@ -102,6 +102,7 @@ class Formatting(Layer):
     fenced_re = re.compile(r"```(?P<type>[a-zA-Z0-9 ]+)\w*\n"
                            + r"(?P<lines>([^\n]*\n)+)"
                            + r"```")
+    subscript_re = re.compile(r"([a-zA-Z0-9]+)_\{(\w+)\}")
 
     def process(self, node):
         layer_el = []
@@ -122,5 +123,16 @@ class Formatting(Layer):
                 'fence_data': {
                     'type': match.group('type'),
                     'lines': filter(bool, match.group('lines').split("\n"))}})
+        subscripts = {}
+        for match in Formatting.subscript_re.finditer(node.text):
+            key = (match.group(1), match.group(2))
+            subscripts[key] = subscripts.get(key, 0) + 1
+        for key, count in subscripts.iteritems():
+            variable, subscript = key
+            layer_el.append({
+                'text': variable + '_{' + subscript + '}',
+                'locations': list(range(count)),
+                'subscript_data': {'variable': variable,
+                                   'subscript': subscript}})
         if layer_el:
             return layer_el
