@@ -5,7 +5,6 @@ import re
 
 from inflection import pluralize
 
-from regparser import utils
 from regparser.citations import internal_citations, Label
 from regparser.grammar import terms as grammar
 from regparser.grammar.external_citations import uscode_exp as uscode
