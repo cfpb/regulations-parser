@@ -102,7 +102,7 @@ class NoticeBuildTest(TestCase):
                 'children': [],
                 'footnote_refs': [],
                 'page': 100,
-                'label': '9292-8-q'
+                'labels': ['9292-8-q']
             }],
         })
 
@@ -129,7 +129,7 @@ class NoticeBuildTest(TestCase):
                 'children': [],
                 'footnote_refs': [],
                 'page': 210,
-                'label': '9292-8-q'
+                'labels': ['9292-8-q']
             }],
         })
 
