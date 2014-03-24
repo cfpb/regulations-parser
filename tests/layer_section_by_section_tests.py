@@ -14,13 +14,13 @@ class LayerSectionBySectionTest(TestCase):
             'publication_date': '2008-08-08',
             "section_by_section": [{
                 "title": "",
-                "label": "100-22-b-2",
+                "labels": ["100-22-b-2"],
                 "paragraphs": ["AAA"],
                 "page": 7677,
                 "children": []
             }, {
                 "title": "",
-                "label": "100-22-b",
+                "labels": ["100-22-b"],
                 "paragraphs": ["BBB"],
                 "page": 7676,
                 "children": []
@@ -36,7 +36,7 @@ class LayerSectionBySectionTest(TestCase):
                 "paragraphs": [],
                 "children": [{
                     "title": "",
-                    "label": "100-22-b-2",
+                    "labels": ["100-22-b-2"],
                     "paragraphs": ["CCC"],
                     "page": 5454,
                     "children": []
@@ -68,7 +68,7 @@ class LayerSectionBySectionTest(TestCase):
             'publication_date': '2008-08-08',
             "section_by_section": [{
                 "title": "",
-                "label": "100-22-a",
+                "labels": ["100-22-a"],
                 "paragraphs": [],
                 "page": 7676,
                 "children": []
@@ -115,7 +115,7 @@ class LayerSectionBySectionTest(TestCase):
             "publication_date": "2010-10-10",
             "section_by_section": [{
                 "title": "",
-                "label": "100-22-b-2",
+                "labels": ["100-22-b-2"],
                 "paragraphs": ["AAA"],
                 "page": 7676,
                 "children": []
@@ -128,7 +128,7 @@ class LayerSectionBySectionTest(TestCase):
             "publication_date": "2009-09-09",
             "section_by_section": [{
                 "title": "",
-                "label": "100-22-b-2",
+                "labels": ["100-22-b-2"],
                 "paragraphs": ["CCC"],
                 "page": 5454,
                 "children": []

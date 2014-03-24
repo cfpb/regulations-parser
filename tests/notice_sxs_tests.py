@@ -133,7 +133,7 @@ class NoticeSxsTests(TestCase):
         self.assertEqual(structures[1], {
             'title': '4(b) Header',
             'paragraphs': ['Content 5', 'Content 6'],
-            'label': '100-4-b',
+            'labels': ['100-4-b'],
             'page': 83,
             'footnote_refs': [],
             'children': []
@@ -176,13 +176,13 @@ class NoticeSxsTests(TestCase):
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section 99.3 Info',
-            'label': '99-3',
+            'labels': ['99-3'],
             'paragraphs': ['Content 1'],
             'page': 2323,
             'footnote_refs': [],
             'children': [{
                 'title': '3(q)(4) More Info',
-                'label': '99-3-q-4',
+                'labels': ['99-3-q-4'],
                 'paragraphs': ['Content 2'],
                 'page': 2323,
                 'footnote_refs': [],
@@ -204,7 +204,7 @@ class NoticeSxsTests(TestCase):
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section 99.3 Info',
-            'label': '99-3',
+            'labels': ['99-3'],
             'page': 939,
             'paragraphs': ['Content 1', 'Content  2',
                            'Content <em data-original="E-03">Emph</em>'],
@@ -229,13 +229,13 @@ class NoticeSxsTests(TestCase):
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section 99.3 Something Here',
-            'label': '99-3',
+            'labels': ['99-3'],
             'paragraphs': [],
             'page': 765,
             'footnote_refs': [],
             'children': [{
                 'title': '3(q)(4) More Info',
-                'label': '99-3-q-4',
+                'labels': ['99-3-q-4'],
                 'paragraphs': ['Content 1'],
                 'page': 765,
                 'footnote_refs': [],
@@ -293,10 +293,10 @@ class NoticeSxsTests(TestCase):
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
         structures = build_section_by_section(sxs, '876', 23)
-        self.assertEqual(len(structures), 3)
-        self.assertEqual(structures[0]['label'], '876-22-a-Interp-5')
-        self.assertEqual(structures[1]['label'], '876-22-a-Interp-6')
-        self.assertEqual(structures[2]['label'], '876-22-b-Interp')
+        self.assertEqual(len(structures), 1)
+        self.assertEqual(structures[0]['labels'],
+                         ['876-22-a-Interp-5', '876-22-a-Interp-6',
+                          '876-22-b-Interp'])
 
     def test_build_section_by_section_repeat_label(self):
         xml = """
@@ -310,12 +310,12 @@ class NoticeSxsTests(TestCase):
         structures = build_section_by_section(sxs, '876', 23)
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
-        self.assertEqual(struct1['label'], '876-23-c')
+        self.assertEqual(struct1['labels'], ['876-23-c'])
         self.assertEqual(['Content 1'], struct1['paragraphs'])
         self.assertEqual(len(struct1['children']), 1)
         struct2 = struct1['children'][0]
         self.assertEqual(['Content 2'], struct2['paragraphs'])
-        self.assertFalse('label' in struct2)
+        self.assertFalse('labels' in struct2)
 
         # Now the same, but on the same H level
         xml = """
@@ -329,12 +329,12 @@ class NoticeSxsTests(TestCase):
         structures = build_section_by_section(sxs, '876', 23)
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
-        self.assertEqual(struct1['label'], '876-23-c')
+        self.assertEqual(struct1['labels'], ['876-23-c'])
         self.assertEqual(['Content 1'], struct1['paragraphs'])
         self.assertEqual(len(struct1['children']), 1)
         struct2 = struct1['children'][0]
         self.assertEqual(['Content 2'], struct2['paragraphs'])
-        self.assertFalse('label' in struct2)
+        self.assertFalse('labels' in struct2)
 
     def test_build_section_by_section_backtrack(self):
         xml = """
@@ -348,12 +348,12 @@ class NoticeSxsTests(TestCase):
         structures = build_section_by_section(sxs, '876', 23)
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
-        self.assertEqual(struct1['label'], '876-23-c-3')
+        self.assertEqual(struct1['labels'], ['876-23-c-3'])
         self.assertEqual(['Content 1'], struct1['paragraphs'])
         self.assertEqual(len(struct1['children']), 1)
         struct2 = struct1['children'][0]
         self.assertEqual(['Content 2'], struct2['paragraphs'])
-        self.assertFalse('label' in struct2)
+        self.assertFalse('labels' in struct2)
 
         # Same, but deeper H level
         xml = """
@@ -367,12 +367,12 @@ class NoticeSxsTests(TestCase):
         structures = build_section_by_section(sxs, '876', 23)
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
-        self.assertEqual(struct1['label'], '876-23-c-3')
+        self.assertEqual(struct1['labels'], ['876-23-c-3'])
         self.assertEqual(['Content 1'], struct1['paragraphs'])
         self.assertEqual(len(struct1['children']), 1)
         struct2 = struct1['children'][0]
         self.assertEqual(['Content 2'], struct2['paragraphs'])
-        self.assertFalse('label' in struct2)
+        self.assertFalse('labels' in struct2)
 
     def test_build_section_by_section_different_part(self):
         xml = """
@@ -386,11 +386,11 @@ class NoticeSxsTests(TestCase):
         structures = build_section_by_section(sxs, '876', 23)
         self.assertEqual(len(structures), 2)
         struct1, struct2 = structures
-        self.assertEqual(struct1['label'], '1111-23-c-3')
+        self.assertEqual(struct1['labels'], ['1111-23-c-3'])
         self.assertEqual(['Content 1'], struct1['paragraphs'])
         self.assertEqual(len(struct1['children']), 0)
 
-        self.assertEqual(struct2['label'], '1111-24-c')
+        self.assertEqual(struct2['labels'], ['1111-24-c'])
         self.assertEqual(['Content 2'], struct2['paragraphs'])
         self.assertEqual(len(struct2['children']), 0)
 
@@ -406,12 +406,39 @@ class NoticeSxsTests(TestCase):
         structures = build_section_by_section(sxs, '876', 23)
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
-        self.assertEqual(struct1['label'], '876-23-c-3')
+        self.assertEqual(struct1['labels'], ['876-23-c-3'])
         self.assertEqual(['Content 1'], struct1['paragraphs'])
         self.assertEqual(len(struct1['children']), 1)
         struct2 = struct1['children'][0]
         self.assertEqual(['Content 2'], struct2['paragraphs'])
-        self.assertFalse('label' in struct2)
+        self.assertFalse('labels' in struct2)
+
+    def test_build_section_by_section_dup_child(self):
+        xml = """
+        <ROOT>
+            <HD SOURCE="H2">References 31(a) and (b)</HD>
+            <P>Content 1</P>
+            <HD SOURCE="H3">Subcontent</HD>
+            <P>Content 2</P>
+            <HD SOURCE="H3">References 31(b)(1)</HD>
+            <P>Content 3</P>
+        </ROOT>"""
+        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = build_section_by_section(sxs, '876', 23)
+        self.assertEqual(len(structures), 1)
+        struct1 = structures[0]
+        self.assertEqual(struct1['labels'], ['876-31-a', '876-31-b'])
+        self.assertEqual(['Content 1'], struct1['paragraphs'])
+        self.assertEqual(len(struct1['children']), 2)
+        struct1_h, struct2 = struct1['children']
+
+        self.assertEqual(struct1_h['title'], 'Subcontent')
+        self.assertEqual(['Content 2'], struct1_h['paragraphs'])
+        self.assertEqual(len(struct1_h['children']), 0)
+
+        self.assertEqual(struct2['labels'], ['876-31-b-1'])
+        self.assertEqual(['Content 3'], struct2['paragraphs'])
+        self.assertEqual(len(struct2['children']), 0)
 
     def test_split_into_ttsr(self):
         xml = """
