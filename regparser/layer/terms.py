@@ -48,6 +48,8 @@ class Terms(Layer):
     sect_re, par_re = re.compile(r"\bsection\b"), re.compile(r"\bparagraph\b")
     #   Regex to confirm scope indicator
     scope_re = re.compile(r".*purposes of( this)?\s*$", re.DOTALL)
+    scope_used_re = re.compile(
+        r".*as used in( this)?\s*$", re.DOTALL | re.IGNORECASE)
 
     def __init__(self, *args, **kwargs):
         Layer.__init__(self, *args, **kwargs)
@@ -101,6 +103,8 @@ class Terms(Layer):
         #   Finally, add the scope if we verify its prefix
         for start, label in indicators:
             if not verify_prefix or Terms.scope_re.match(text[:start]):
+                scopes.append(label)
+            if not verify_prefix or Terms.scope_used_re.match(text[:start]):
                 scopes.append(label)
 
         #   Add interpretation to scopes
