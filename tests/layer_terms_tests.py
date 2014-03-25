@@ -9,7 +9,7 @@ class LayerTermTest(TestCase):
 
     def setUp(self):
         self.original_ignores = settings.IGNORE_DEFINITIONS_IN
-        settings.IGNORE_DEFINITIONS_IN = {'ALL':{}}
+        settings.IGNORE_DEFINITIONS_IN = {'ALL': {}}
 
     def tearDown(self):
         settings.IGNORE_DEFINITIONS_IN = self.original_ignores
@@ -317,6 +317,13 @@ class LayerTermTest(TestCase):
         stack.add(3, Node(label=['1002', '3', 'd', '6']))
         self.assertEqual([('1000', '3'), ('1000', '3', Node.INTERP_MARK)],
                          t.determine_scope(stack))
+
+        stack.add(3, Node('Blah as used in this paragraph, blah blah',
+                          label=['1000', '3', 'd', '7']))
+        self.assertEqual([('1000', '3', 'd', '7'),
+                          ('1000', '3', 'd', '7', Node.INTERP_MARK)],
+                         t.determine_scope(stack))
+
         stack.add(4, Node(u'For the purposes of this § 1000.3(d)(6)(i), blah',
                           label=['1000', '3', 'd', '6', 'i']))
         self.assertEqual([('1000', '3', 'd', '6', 'i'),
@@ -328,6 +335,12 @@ class LayerTermTest(TestCase):
         self.assertEqual([('1000', '3'),
                           ('1000', '3', Node.INTERP_MARK)],
                          t.determine_scope(stack))
+
+        stack.add(4, Node('As used in this section, blah blah',
+                          label=['1000', '3', 'd', '6', 'iii']))
+        self.assertEqual(
+            [('1000', '3'), ('1000', '3', Node.INTERP_MARK)],
+            t.determine_scope(stack))
 
     def test_pre_process(self):
         noname_subpart = Node(
@@ -457,7 +470,7 @@ class LayerTermTest(TestCase):
         excluded = t.per_regulation_ignores(
             exclusions, ['12', '2'], 'There is a consumer price index')
         self.assertEqual([(0, 4), (11, 31)], excluded)
-        
+
     def test_excluded_offsets_blacklist_word_boundaries(self):
         t = Terms(None)
         t.scoped_terms['_'] = [Ref('act', '28-6-d', 'Def def def')]
