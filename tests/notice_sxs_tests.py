@@ -374,6 +374,24 @@ class NoticeSxsTests(TestCase):
         self.assertEqual(['Content 2'], struct2['paragraphs'])
         self.assertFalse('labels' in struct2)
 
+        # No part then part
+        xml = """
+        <ROOT>
+            <HD SOURCE="H3">This references 23(c)</HD>
+            <HD SOURCE="H3">Off handed comment about section 1111.23</HD>
+            <P>Content 2</P>
+        </ROOT>"""
+        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = build_section_by_section(sxs, '1111', 22)
+        self.assertEqual(len(structures), 1)
+        struct1 = structures[0]
+        self.assertEqual(struct1['labels'], ['1111-23-c'])
+        self.assertEqual([], struct1['paragraphs'])
+        self.assertEqual(len(struct1['children']), 1)
+        struct2 = struct1['children'][0]
+        self.assertEqual(['Content 2'], struct2['paragraphs'])
+        self.assertFalse('labels' in struct2)
+
     def test_build_section_by_section_different_part(self):
         xml = """
         <ROOT>
@@ -454,7 +472,7 @@ class NoticeSxsTests(TestCase):
             <P>Content 5</P>
         </ROOT>"""
         sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        title, text_els, sub_sects, remaining = split_into_ttsr(sxs)
+        title, text_els, sub_sects, remaining = split_into_ttsr(sxs, '1111')
         self.assertEqual("Section Header", title.text)
         self.assertEqual(2, len(text_els))
         self.assertEqual("Content 1", text_els[0].text)
@@ -517,13 +535,13 @@ class NoticeSxsTests(TestCase):
         parent = etree.fromstring(parent)
 
         child = """<P>Something</P>"""
-        self.assertTrue(is_child_of(etree.fromstring(child), parent))
+        self.assertTrue(is_child_of(etree.fromstring(child), parent, '1111'))
 
         child = """<HD SOURCE="H3">Something</HD>"""
-        self.assertTrue(is_child_of(etree.fromstring(child), parent))
+        self.assertTrue(is_child_of(etree.fromstring(child), parent, '1111'))
 
         child = """<HD SOURCE="H1">Section 22.2</HD>"""
-        self.assertFalse(is_child_of(etree.fromstring(child), parent))
+        self.assertFalse(is_child_of(etree.fromstring(child), parent, '1111'))
 
         child = """<HD SOURCE="H2">Header without Citation</HD>"""
-        self.assertTrue(is_child_of(etree.fromstring(child), parent))
+        self.assertTrue(is_child_of(etree.fromstring(child), parent, '1111'))

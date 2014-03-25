@@ -60,7 +60,7 @@ def build_section_by_section(sxs, part, fr_start_page, previous_label=None):
     merge analyses of the same section."""
     structures = []
     while len(sxs):  # while sxs: is deprecated
-        title, text_els, sub_sections, sxs = split_into_ttsr(sxs)
+        title, text_els, sub_sections, sxs = split_into_ttsr(sxs, part)
 
         page = find_page(title, title.sourceline, fr_start_page)
         paragraph_xmls = [deepcopy(el) for el in text_els
@@ -139,7 +139,7 @@ def is_backtrack(previous_label, next_label):
             and trimmed == next_label)
 
 
-def is_child_of(child_xml, header_xml, header_citations=None):
+def is_child_of(child_xml, header_xml, cfr_part, header_citations=None):
     """Children are paragraphs, have lower 'source', the header has
     citations and the child does not, the citations for header and child
     are the same or the citation in a child is incorrect"""
@@ -147,30 +147,33 @@ def is_child_of(child_xml, header_xml, header_citations=None):
         return True
     else:
         if header_citations is None:
-            header_citations = [c.label for c in
-                                internal_citations(header_xml.text, Label())]
-        child_citations = [c.label for c in
-                           internal_citations(child_xml.text, Label())]
+            header_citations = parse_into_labels(header_xml.text, cfr_part)
+        child_citations = parse_into_labels(child_xml.text, cfr_part)
         if (child_xml.get('SOURCE') > header_xml.get('SOURCE')
                 or (header_citations and not child_citations)
                 or (header_citations and header_citations == child_citations)):
             return True
         elif header_citations and child_citations:
-            return is_backtrack(header_citations[-1].to_list(),
-                                child_citations[0].to_list())
+            if 'Scope of Transactions Covered' in child_xml.text:
+                print header_xml.text
+                print child_xml.text
+                print header_citations
+                print child_citations
+
+            return is_backtrack(header_citations[-1].split('-'),
+                                child_citations[0].split('-'))
         else:
             return False
 
 
-def split_into_ttsr(sxs):
+def split_into_ttsr(sxs, cfr_part):
     """Split the provided list of xml nodes into a node with a title, a
     sequence of text nodes, a sequence of nodes associated with the sub
     sections of this header, and the remaining xml nodes"""
     title = sxs[0]
-    title_citations = [c.label for c in
-                       internal_citations(title.text, Label())]
-    section = list(takewhile(lambda e: is_child_of(e, title, title_citations),
-                             sxs[1:]))
+    title_citations = parse_into_labels(title.text, cfr_part)
+    section = list(takewhile(lambda e: is_child_of(e, title, cfr_part,
+                                                   title_citations), sxs[1:]))
     text_elements = list(takewhile(lambda e: e.tag != 'HD', section))
     sub_sections = section[len(text_elements):]
     remaining = sxs[1+len(text_elements)+len(sub_sections):]
