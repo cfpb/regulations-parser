@@ -103,7 +103,7 @@ class Terms(Layer):
         for start, label in indicators:
             if not verify_prefix or Terms.scope_re.match(text[:start]):
                 scopes.append(label)
-            if not verify_prefix or Terms.scope_used_re.match(text[:start]):
+            elif Terms.scope_used_re.match(text[:start]):
                 scopes.append(label)
 
         #   Add interpretation to scopes
