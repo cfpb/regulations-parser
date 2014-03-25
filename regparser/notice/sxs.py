@@ -102,18 +102,16 @@ def build_section_by_section(sxs, part, fr_start_page, previous_label=None):
             'children': children,
             'footnote_refs': footnotes
             }
-        if not labels:
-            structures.append(next_structure)
-        for label in labels:
-            #   Concatenate if repeat label or backtrack (=ambiguous meaning)
-            if label == previous_label or is_backtrack(previous_label, label):
-                structures.append(next_structure)
-            else:
-                previous_label = label
-                part = previous_label.split('-')[0]  # part might change
-                cp_structure = dict(next_structure)  # shallow copy
-                cp_structure['label'] = label
-                structures.append(cp_structure)
+
+        if (labels   # No label => subheader
+                # Concatenate if repeat label or backtrack
+                and not all(label == previous_label
+                            or is_backtrack(previous_label, label)
+                            for label in labels)):
+            previous_label = labels[-1]
+            part = previous_label.split('-')[0]  # part might change
+            next_structure['labels'] = labels
+        structures.append(next_structure)
 
     return structures
 

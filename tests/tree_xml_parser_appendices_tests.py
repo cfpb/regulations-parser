@@ -277,6 +277,28 @@ class AppendicesTest(TestCase):
         text = '```note\nPar\nEmem\nParparpar\n```'
         self.assertEqual(note.text, text)
 
+    def test_process_code(self):
+        xml = u"""
+        <APPENDIX>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <CODE LANGUAGE="scala">
+                <P>// Non-tail-recursive list reverse</P>
+                <FP SOURCE="FP-2">def rev[A](lst: List[A]):List[A] =</FP>
+                <FP SOURCE="FP-2">lst match {</FP>
+                <FP SOURCE="FP-2">  case Nil => Nil</FP>
+                <FP SOURCE="FP-2">  case head :: tail =></FP>
+                <FP SOURCE="FP-2">    rev(tail) ++ List(head)</FP>
+                <FP SOURCE="FP-2">}</FP>
+            </CODE>
+        </APPENDIX>"""
+        xml = etree.fromstring(xml)
+        appendix = appendices.process_appendix(xml, 1111)
+        self.assertEqual(['1111', 'A'], appendix.label)
+        self.assertEqual(1, len(appendix.children))
+        code = appendix.children[0]
+        text = "\n".join(p.text.strip() for p in xml.xpath("//P | //FP"))
+        self.assertEqual(code.text, "```scala\n" + text + "\n```")
+
     def test_initial_marker(self):
         self.assertEqual(("i", "i."), appendices.initial_marker("i. Hi"))
         self.assertEqual(("iv", "iv."), appendices.initial_marker("iv. Hi"))
