@@ -11,8 +11,8 @@ def eliminate_extras(keyterm):
 
     extras = [' See also', ' See']
     for extra in extras:
-        if extra in keyterm:
-            keyterm = keyterm.replace(extra, '')
+        if keyterm.endswith(extra):
+            keyterm = keyterm[:-len(extra)]
     return keyterm
 
 
