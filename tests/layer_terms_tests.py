@@ -109,6 +109,13 @@ class LayerTermTest(TestCase):
              u'(e) <E T="03">Well-meaning lawyers</E> means people who do '
              + 'weird things',
              Ref('well-meaning lawyers', 'fff', (4, 24))),
+            (u'(e) Words have the same meaning as in a dictionary',
+             u'(e) <E T="03">Words</E> have the same meaning as in a '
+             + 'dictionary',
+             Ref('words', 'ffg', (4, 9))),
+            (u'(e) Banana has the same meaning as bonono',
+             u'(e) <E T="03">Banana</E> has the same meaning as bonono',
+             Ref('banana', 'fgf', (4, 10))),
             (u'(f) Huge billowy clouds means I want to take a nap',
              u'(f) <E T="03">Huge billowy clouds</E> means I want to take a '
              + 'nap',

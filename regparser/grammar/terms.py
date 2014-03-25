@@ -29,7 +29,9 @@ xml_term_parser = (
     + ZeroOrMore(
         (atomic.conj_phrases + e_tag).setResultsName(
             "tail", listAllMatches=True))
-    + (Marker("mean") | Marker("means"))
+    + ((Marker("mean") | Marker("means"))
+       | ((Marker("has") | Marker("have")) + Marker("the") + Marker("same")
+          + Marker("meaning") + Marker("as")))
 )
 
 scope_term_type_parser = (
