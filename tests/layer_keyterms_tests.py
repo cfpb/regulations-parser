@@ -96,3 +96,27 @@ class LayerKeyTermTest(TestCase):
         self.assertNotEqual(results, None)
         self.assertEqual(results[0]['key_term'], 'Apples.')
         self.assertEqual(results[0]['locations'], [0])
+
+    def test_keyterm_see_also(self):
+        """ Keyterm tags sometimes enclose phrases such as 'See also' because 
+        those tags are also used for emphasis. """
+
+        node = Node('(a) Apples. See also Section 101.2',
+                    label=['101', '22', 'a'])
+        node.tagged_text = '(a) <E T="03">Apples. See also</E>'
+
+        kt = KeyTerms(None)
+        results = kt.process(node)
+        self.assertEqual('Apples.', results[0]['key_term'])
+
+    def test_keyterm_see(self):
+        """ Keyterm tags sometimes enclose phrases such as 'See also' because 
+        those tags are also used for emphasis. """
+
+        node = Node('(a) Apples. See Section 101.2',
+                    label=['101', '22', 'a'])
+        node.tagged_text = '(a) <E T="03">Apples. See also</E>'
+
+        kt = KeyTerms(None)
+        results = kt.process(node)
+        self.assertEqual('Apples.', results[0]['key_term'])

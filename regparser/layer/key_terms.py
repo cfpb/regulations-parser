@@ -4,6 +4,18 @@ from regparser.layer.terms import Terms
 import re
 
 
+def eliminate_extras(keyterm):
+    """ The XML <E> tags that indicate keyterms are also used 
+    for italics. So, phrases such as 'See' and 'See also' are included 
+    sometimes in the keyterm. We eliminate that here. """
+
+    extras = [' See also', ' See']
+    for extra in extras:
+        if extra in keyterm:
+            keyterm = keyterm.replace(extra, '')
+    return keyterm
+
+
 class KeyTerms(Layer):
     @staticmethod
     def process_node_text(node):
@@ -40,6 +52,7 @@ class KeyTerms(Layer):
         if hasattr(node, 'tagged_text'):
             keyterm = KeyTerms.get_keyterm(node)
             if keyterm:
+                keyterm = eliminate_extras(keyterm)
                 layer_el = [{
                     "key_term": keyterm,
                     #The first instance of the key term is right one.
