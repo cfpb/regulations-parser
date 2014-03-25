@@ -154,12 +154,6 @@ def is_child_of(child_xml, header_xml, cfr_part, header_citations=None):
                 or (header_citations and header_citations == child_citations)):
             return True
         elif header_citations and child_citations:
-            if 'Scope of Transactions Covered' in child_xml.text:
-                print header_xml.text
-                print child_xml.text
-                print header_citations
-                print child_citations
-
             return is_backtrack(header_citations[-1].split('-'),
                                 child_citations[0].split('-'))
         else:
