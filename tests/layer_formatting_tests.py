@@ -109,3 +109,13 @@ class LayerFormattingTests(TestCase):
         self.assertEqual(result['text'], node.text[16:])
         self.assertEqual(result['fence_data'],
                          {'type': 'abc def', 'lines': ['Line 1', 'Line 2']})
+
+    def test_process_subscript(self):
+        node = Node("This is a_{subscript}. And then a_{subscript} again")
+        result = formatting.Formatting(None).process(node)
+        self.assertEqual(1, len(result))
+        result = result[0]
+        self.assertEqual(result['text'], "a_{subscript}")
+        self.assertEqual(result['locations'], [0, 1])
+        self.assertEqual(result['subscript_data'],
+                         {'variable': 'a', 'subscript': 'subscript'})
