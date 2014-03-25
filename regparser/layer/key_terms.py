@@ -5,8 +5,8 @@ import re
 
 
 def eliminate_extras(keyterm):
-    """ The XML <E> tags that indicate keyterms are also used 
-    for italics. So, phrases such as 'See' and 'See also' are included 
+    """ The XML <E> tags that indicate keyterms are also used
+    for italics. So, phrases such as 'See' and 'See also' are included
     sometimes in the keyterm. We eliminate that here. """
 
     extras = [' See also', ' See']
