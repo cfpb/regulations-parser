@@ -116,7 +116,12 @@ def get_node_text(node, add_spaces=False):
     # subscripts
     for e in node.xpath(".//E[@T='52']"):
         parent = e.getparent()
-        parent.text += "_{" + e.text + "} " + (e.tail or "")
+        prev_sib = e.getprevious()
+        appending = "_{" + e.text + "} " + (e.tail or "")
+        if prev_sib is not None:
+            prev_sib.tail = (prev_sib.tail or '') + appending
+        else:
+            parent.text = (parent.text or '') + appending
         parent.remove(e)
 
     parts = [node.text] +\

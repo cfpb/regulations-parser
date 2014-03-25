@@ -72,6 +72,11 @@ class TreeUtilsTest(unittest.TestCase):
         result = tree_utils.get_node_text(doc, add_spaces=True)
         self.assertEquals('(a) ABC_{123} = 5', result)
 
+        text = '<P>(a) <E>Keyterm.</E> ABC<E T="52">123</E>= 5</P>'
+        doc = etree.fromstring(text)
+        result = tree_utils.get_node_text(doc, add_spaces=True)
+        self.assertEquals('(a) Keyterm. ABC_{123} = 5', result)
+
     def test_unwind_stack(self):
         level_one_n = Node(label=['272'])
         level_two_n = Node(label=['a'])
