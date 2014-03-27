@@ -336,6 +336,25 @@ class NoticeSxsTests(TestCase):
         self.assertEqual(['Content 2'], struct2['paragraphs'])
         self.assertFalse('labels' in struct2)
 
+        # Semi-repeated
+        xml = """
+        <ROOT>
+            <HD SOURCE="H2">Appendices A and B</HD>
+            <P>Content 1</P>
+            <HD SOURCE="H2">Appendix B</HD>
+            <P>Content 2</P>
+        </ROOT>"""
+        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = build_section_by_section(sxs, '876', 23)
+        self.assertEqual(len(structures), 1)
+        struct1 = structures[0]
+        self.assertEqual(struct1['labels'], ['876-A', '876-B'])
+        self.assertEqual(['Content 1'], struct1['paragraphs'])
+        self.assertEqual(len(struct1['children']), 1)
+        struct2 = struct1['children'][0]
+        self.assertEqual(['Content 2'], struct2['paragraphs'])
+        self.assertFalse('labels' in struct2)
+
     def test_build_section_by_section_backtrack(self):
         xml = """
         <ROOT>
@@ -529,6 +548,9 @@ class NoticeSxsTests(TestCase):
         text = 'Section 1111.39Content content 1111.39(d) Exeptions'
         self.assertEqual(['1111-39', '1111-39-d'],
                          parse_into_labels(text, '101'))
+
+        text = "Appendix H—Closed-End Model Forms and Clauses-7(i)"
+        self.assertEqual(['101-H'], parse_into_labels(text, '101'))
 
     def test_is_child_of(self):
         parent = """<HD SOURCE="H2">Section 22.1</HD>"""
