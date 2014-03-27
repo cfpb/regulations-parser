@@ -151,7 +151,8 @@ def is_child_of(child_xml, header_xml, cfr_part, header_citations=None):
         child_citations = parse_into_labels(child_xml.text, cfr_part)
         if (child_xml.get('SOURCE') > header_xml.get('SOURCE')
                 or (header_citations and not child_citations)
-                or (header_citations and header_citations == child_citations)):
+                or (header_citations
+                    and header_citations[-1] == child_citations[0])):
             return True
         elif header_citations and child_citations:
             return is_backtrack(header_citations[-1].split('-'),
@@ -178,5 +179,9 @@ def parse_into_labels(txt, part):
     """Find what part+section+(paragraph) (could be multiple) this text is
     related to."""
     citations = internal_citations(txt, Label(part=part))
-    labels = ['-'.join(cit.label.to_list()) for cit in citations]
+    # odd corner case: headers shouldn't include both an appendix and regtext
+    labels = [c.label for c in citations]
+    if any('appendix' in l.settings for l in labels):
+        labels = [l for l in labels if 'appendix' in l.settings]
+    labels = ['-'.join(l.to_list()) for l in labels]
     return labels
