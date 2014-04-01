@@ -153,7 +153,7 @@ class GitWriteContentTest(TestCase):
                      ('Interp', '3-Interp', 'a-Interp', '1')):
             path = dir_path + os.path.join(*path)
             self.assertTrue(path in dirs)
-            self.assertTrue(path + os.path.sep + 'node.md' in files)
+            self.assertTrue(path + os.path.sep + 'index.md' in files)
 
         p3c = p3b
         p3c.text = '(c) Moved!'
@@ -181,7 +181,7 @@ class GitWriteContentTest(TestCase):
                      ('Interp', '3-Interp', 'a-Interp', '1')):
             path = dir_path + os.path.join(*path)
             self.assertTrue(path in dirs)
-            self.assertTrue(path + os.path.sep + 'node.md' in files)
+            self.assertTrue(path + os.path.sep + 'index.md' in files)
         self.assertFalse(dir_path + os.path.join('Subpart-E', '3', 'b')
                          in dirs)
 

@@ -82,7 +82,7 @@ class GitWriteContent:
         node_text += ']\n'
 
         node_text += '---\n' + node.text
-        with open(root_path + os.sep + 'node.md', 'w') as f:
+        with open(root_path + os.sep + 'index.md', 'w') as f:
             f.write(node_text.encode('utf8'))
 
         for idx, child in enumerate(node.children):
