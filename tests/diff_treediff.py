@@ -63,6 +63,13 @@ class TreeDiffTest(TestCase):
         self.assertEquals(
             [('delete', 9, 19)], codes)
 
+    def test_ins_opcodes_trailing_space(self):
+        old = 'Howdy howdy. '
+        new = 'Howdy howdy. More content'
+        codes = treediff.get_opcodes(old, new)
+        self.assertEquals(
+            [('insert', 13, 'More content')], codes)
+
     def test_convert_insert(self):
         old = ['gg']
         new = ['ac', 'ef', 'bd']
@@ -127,6 +134,6 @@ class TreeDiffTest(TestCase):
 
         comparer = treediff.Compare(lhs, rhs)
         comparer.compare()
-        self.assertEqual(comparer.changes['1111'],
-            {'title': [[('delete', 0, 10), ('insert', 0, '')]],
-             'op': 'modified'})
+        self.assertEqual(
+            comparer.changes['1111'],
+            {'title': [('delete', 0, 10)], 'op': 'modified'})

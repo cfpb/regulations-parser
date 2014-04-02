@@ -36,7 +36,9 @@ def deconstruct_text(text):
         words.append(text[s[0]:s[1]])
         # Update position
         last_space = s[1]
-    words.append(text[last_space:])
+    # Add the last bit of text (unless we've already grabbed it)
+    if last_space != len(text):
+        words.append(text[last_space:])
 
     return words
 
