@@ -229,10 +229,10 @@ class GrammarAmdParTests(TestCase):
         result = parse_text(text)
         self.assertEqual(result, [
             tokens.TokenList([
-                tokens.Paragraph([None, "Appendix:A", "30", "a"]),
-                tokens.Paragraph([None, "Appendix:A", "30", "b"]),
-                tokens.Paragraph([None, "Appendix:A", "30", "c"]),
-                tokens.Paragraph([None, "Appendix:A", "30", "d"]),
+                tokens.Paragraph([None, "Appendix:A", "30(a)"]),
+                tokens.Paragraph([None, "Appendix:A", "30(b)"]),
+                tokens.Paragraph([None, "Appendix:A", "30(c)"]),
+                tokens.Paragraph([None, "Appendix:A", "30(d)"]),
             ]),
             tokens.Verb(tokens.Verb.POST, active=False),
         ])
