@@ -20,20 +20,21 @@ def parse_appendix_changes(amended_labels, cfr_part, parent_xml):
     """Entry point. Currently only processes whole appendices, though the
     functionality will expand in the future"""
     relevant_amends = [al for al in amended_labels if _is_appendix_amend(al)]
-    appendices = []
+    appendices = {}
     for al in relevant_amends:
-        #   Whole appendix, e.g. "1234-C"
-        if len(al.label) == 2 and al.field is None:
-            appendix = whole_appendix(parent_xml, al.label[0], al.label[1])
-            if appendix:
-                appendices.append(appendix)
-    return appendices
+        cfr_part, letter = al.label[:2]
+        #   Whole appendix, e.g. "1234-C" or appendix section, e.g. "1234-C-12"
+        if (len(al.label) <= 3 and al.field is None
+                and letter not in appendices):
+            appendix = whole_appendix(parent_xml, cfr_part, letter)
+            appendices[letter] = appendix
+    return [a for a in appendices.values() if a]
 
 
 def whole_appendix(xml, cfr_part, letter):
-    """Attempt to parse a whole appendix (i.e. the entire appendix has been
-    replaced/added). If the format isn't what we expect, display a
-    warning."""
+    """Attempt to parse an appendix. Used when the entire appendix has been
+    replaced/added or when we can use the section headers to determine our
+    place. If the format isn't what we expect, display a warning."""
     xml = deepcopy(xml)
     hds = xml.xpath('//HD[contains(., "Appendix %s to Part %s")]'
                     % (letter, cfr_part))

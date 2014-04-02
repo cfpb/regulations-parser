@@ -41,9 +41,11 @@ class NoticeBuildAppendixTest(TestCase):
     @patch('regparser.notice.build_appendix.whole_appendix')
     def test_parse_appendix_changes(self, whole):
         amends = [Amendment('POST', '111-Appendix:A'),
+                  Amendment('POST', '111-Appendix:A'),
                   Amendment('PUT', '111-Appendix:B-12'),
                   Amendment('PUT', '111-Appendix:C[title]'),
-                  Amendment('PUT', '111-Appendix:D')]
+                  Amendment('PUT', '111-Appendix:D'),
+                  Amendment('PUT', '111-Appendix:E-12-b')]
 
         build_appendix.parse_appendix_changes(amends, '1234', 'XML')
-        self.assertEqual(2, whole.call_count)
+        self.assertEqual(3, whole.call_count)

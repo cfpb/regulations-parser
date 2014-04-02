@@ -399,7 +399,8 @@ def initial_marker(text):
         marker = (match.paren_upper or match.paren_lower or match.paren_digit
                   or match.period_upper or match.period_lower
                   or match.period_digit)
-        return marker, text[:end]
+        if len(marker) < 3 or all(c in 'ivxlcdm' for c in marker):
+            return marker, text[:end]
 
 
 def build_non_reg_text(reg_xml, reg_part):
