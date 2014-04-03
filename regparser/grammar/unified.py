@@ -1,7 +1,7 @@
 #vim: set encoding=utf-8
 """Some common combinations"""
 from pyparsing import Empty, FollowedBy, LineEnd, Literal, OneOrMore, Optional
-from pyparsing import Suppress, SkipTo
+from pyparsing import Suppress, SkipTo, ZeroOrMore
 
 from regparser.grammar import atomic
 from regparser.grammar.utils import keep_pos, Marker
@@ -50,10 +50,26 @@ marker_paragraph = (
         keep_pos).setResultsName("marker")
     + depth1_p)
 
+
+def appendix_section(match):
+    """Appendices may have parenthetical paragraphs in its section number."""
+    if match.appendix_digit:
+        lst = list(match)
+        pars = lst[lst.index(match.appendix_digit) + 1:]
+        section = match.appendix_digit
+        if pars:
+            section += '(' + ')('.join(el for el in pars) + ')'
+        return section
+    else:
+        return None
+
 appendix_with_section = (
     atomic.appendix
-    + '-' + atomic.appendix_section
-    + Optional(depth1_p))
+    + '-'
+    + (atomic.appendix_digit
+       + ZeroOrMore(atomic.lower_p | atomic.roman_p | atomic.digit_p
+                    | atomic.upper_p)
+       ).setParseAction(appendix_section).setResultsName("appendix_section"))
 
 appendix_with_part = (
     atomic.appendix_marker.copy().setParseAction(keep_pos).setResultsName(

@@ -61,7 +61,7 @@ part = Word(string.digits).setResultsName("part")
 section = Word(string.digits).setResultsName("section")
 
 appendix = Regex(r"[A-Z]+[0-9]*\b").setResultsName("appendix")
-appendix_section = Word(string.digits).setResultsName("appendix_section")
+appendix_digit = Word(string.digits).setResultsName("appendix_digit")
 
 subpart = Word(string.ascii_uppercase).setResultsName("subpart")
 
