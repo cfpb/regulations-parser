@@ -443,3 +443,28 @@ class GrammarAmdParTests(TestCase):
             tokens.Paragraph, label=[None, 'Interpretations', None, None, '1'],
             field=tokens.Paragraph.TEXT_FIELD))
         self.assertTrue(verb.match(tokens.Verb, verb=tokens.Verb.PUT))
+
+    def test_example_32(self):
+        text = "Title A-30 is removed"
+        result = parse_text(text)
+        self.assertEqual(2, len(result))
+        paragraph, verb = result
+        self.assertTrue(paragraph.match(
+            tokens.Paragraph, label=[None, 'Appendix:A', '30']))
+        self.assertTrue(verb.match(tokens.Verb, verb=tokens.Verb.DELETE))
+
+    def test_example_33(self):
+        text = "Referencing A-30(a)(5) through A-30(a)(8)"
+        result = parse_text(text)
+        self.assertEqual(1, len(result))
+        self.assertTrue(result[0].match(tokens.TokenList))
+        self.assertEqual(4, len(result[0].tokens))
+        a5, a6, a7, a8 = result[0].tokens
+        self.assertTrue(a5.match(
+            tokens.Paragraph, label=[None, 'Appendix:A', '30(a)(5)']))
+        self.assertTrue(a6.match(
+            tokens.Paragraph, label=[None, 'Appendix:A', '30(a)(6)']))
+        self.assertTrue(a7.match(
+            tokens.Paragraph, label=[None, 'Appendix:A', '30(a)(7)']))
+        self.assertTrue(a8.match(
+            tokens.Paragraph, label=[None, 'Appendix:A', '30(a)(8)']))

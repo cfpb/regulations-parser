@@ -1,4 +1,5 @@
 #vim: set encoding=utf-8
+import logging
 import string
 
 from pyparsing import CaselessLiteral, FollowedBy, OneOrMore, Optional
@@ -254,6 +255,42 @@ def make_multiple(to_repeat):
     )
 
 
+def _through_paren(prev_lab, next_lab):
+    """Expand "through" for labels with embedded paragraphs (e.g. 12(c))"""
+    lhs, rhs = prev_lab[-1], next_lab[-1]
+    lhs_idx, rhs_idx = lhs.rindex('('), rhs.rindex('(')
+    if lhs[:lhs_idx] != rhs[:rhs_idx] or prev_lab[:-1] != next_lab[:-1]:
+        logging.warning("Bad use of 'through': %s %s", prev_lab, next_lab)
+        return []
+    else:
+        prefix = lhs[:lhs_idx + 1]
+        lhs, rhs = lhs[lhs_idx + 1:-1], rhs[rhs_idx + 1:-1]
+        for level in p_levels:
+            if lhs in level and rhs in level:
+                lidx, ridx = level.index(lhs), level.index(rhs)
+                if lidx < ridx:
+                    return [tokens.Paragraph(prev_lab[:-1]
+                                             + [prefix + level[i] + ')'])
+                            for i in range(lidx + 1, ridx)]
+        logging.warning("Error with 'through': %s %s", prev_lab, next_lab)
+        return []
+
+
+def _through_sect(prev_lab, next_lab):
+    """Expand "through" for labels ending in a section number."""
+    return [tokens.Paragraph(prev_lab[:2] + [str(i)])
+            for i in range(int(prev_lab[-1]) + 1, int(next_lab[-1]))]
+
+
+def _through_paragraph(prev_lab, next_lab):
+    """Expand "through" for labels ending in a paragraph."""
+    depth = len(prev_lab)
+    start = p_levels[depth-4].index(prev_lab[-1]) + 1
+    end = p_levels[depth-4].index(next_lab[-1])
+    return [tokens.Paragraph(prev_lab[:depth-1] + [p_levels[depth-4][i]])
+            for i in range(start, end)]
+
+
 def make_par_list(listify):
     """Shorthand for turning a pyparsing match into a tokens.Paragraph"""
     def curried(match=None):
@@ -262,25 +299,18 @@ def make_par_list(listify):
         for match in matches:
             match_as_list = listify(match)
             next_par = tokens.Paragraph(match_as_list)
+            next_lab = next_par.label
             if match[-1] == 'text':
                 next_par.field = tokens.Paragraph.TEXT_FIELD
             if match.through:
                 #   Iterate through, creating paragraph tokens
-                prev = pars[-1]
-                if len(prev.label) == 3:
-                    # Section numbers
-                    for i in range(int(prev.label[-1]) + 1,
-                            int(next_par.label[-1])):
-                        pars.append(tokens.Paragraph(prev.label[:2]
-                            + [str(i)]))
-                if len(prev.label) > 3:
-                    # Paragraphs
-                    depth = len(prev.label)
-                    start = p_levels[depth-4].index(prev.label[-1]) + 1
-                    end = p_levels[depth-4].index(next_par.label[-1])
-                    for i in range(start, end):
-                        pars.append(tokens.Paragraph(prev.label[:depth-1]
-                            + [p_levels[depth-4][i]]))
+                prev_lab = pars[-1].label
+                if '(' in prev_lab[-1] and '(' in next_lab[-1]:
+                    pars.extend(_through_paren(prev_lab, next_lab))
+                elif len(prev_lab) == 3:
+                    pars.extend(_through_sect(prev_lab, next_lab))
+                elif len(prev_lab) > 3:
+                    pars.extend(_through_paragraph(prev_lab, next_lab))
             pars.append(next_par)
         return tokens.TokenList(pars)
     return curried
@@ -298,7 +328,7 @@ multiple_paragraph_sections = (
         m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6]))
 
 
-def appendix_section(match):
+def appendix_section_paren(match):
     """Appendices may have parenthetical paragraphs in its section number."""
     if match.appendix_section:
         lst = list(match)
@@ -310,10 +340,16 @@ def appendix_section(match):
     else:
         return None
 
+appendix_section = (
+    unified.appendix_with_section
+    ).copy().setParseAction(
+    lambda m: tokens.Paragraph(
+        [None, 'Appendix:' + m.appendix, appendix_section_paren(m)]))
+
 multiple_appendices = make_multiple(
     unified.appendix_with_section
     ).setParseAction(make_par_list(
-    lambda m: [None, 'Appendix:' + m.appendix, appendix_section(m)]))
+    lambda m: [None, 'Appendix:' + m.appendix, appendix_section_paren(m)]))
 
 multiple_comment_pars = (
     atomic.paragraphs_marker
@@ -367,6 +403,8 @@ token_patterns = (
 
     | multiple_sections | multiple_paragraphs | multiple_appendices
     | multiple_comment_pars | multiple_comments
+    #   Must come after multiple_appendices
+    | appendix_section
     #   Must come after multiple_pars
     | single_par
     #   Must come after multiple_comment_pars
