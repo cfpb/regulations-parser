@@ -328,28 +328,24 @@ multiple_paragraph_sections = (
         m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6]))
 
 
-def appendix_section_paren(match):
-    """Appendices may have parenthetical paragraphs in its section number."""
-    if match.appendix_section:
-        lst = list(match)
-        pars = lst[lst.index(match.appendix_section) + 1:]
-        if pars:
-            return match.appendix_section + _paren_join(pars)
-        else:
-            return match.appendix_section
-    else:
-        return None
-
 appendix_section = (
     unified.appendix_with_section
     ).copy().setParseAction(
     lambda m: tokens.Paragraph(
-        [None, 'Appendix:' + m.appendix, appendix_section_paren(m)]))
+        [None, 'Appendix:' + m.appendix, m.appendix_section]))
+
+appendix_section_heading_of = (
+    Marker("heading") + of_connective
+    + unified.appendix_with_section
+    ).copy().setParseAction(
+    lambda m: tokens.Paragraph(
+        [None, 'Appendix:' + m.appendix, m.appendix_section],
+        field=tokens.Paragraph.HEADING_FIELD))
 
 multiple_appendices = make_multiple(
     unified.appendix_with_section
     ).setParseAction(make_par_list(
-    lambda m: [None, 'Appendix:' + m.appendix, appendix_section_paren(m)]))
+    lambda m: [None, 'Appendix:' + m.appendix, m.appendix_section]))
 
 multiple_comment_pars = (
     atomic.paragraphs_marker
@@ -394,6 +390,7 @@ token_patterns = (
     | comment_context_with_section | comment_context_without_section
     | comment_context_under_with_section
     | paragraph_heading_of | section_heading_of | intro_text_of
+    | appendix_section_heading_of
     | intro_text_of_interp
     | comment_heading | appendix_subheading | section_paragraph_heading_of
     # Must come after other headings as it is a catch-all

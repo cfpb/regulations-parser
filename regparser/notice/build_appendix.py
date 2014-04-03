@@ -24,8 +24,7 @@ def parse_appendix_changes(amended_labels, cfr_part, parent_xml):
     for al in relevant_amends:
         cfr_part, letter = al.label[:2]
         #   Whole appendix, e.g. "1234-C" or appendix section, e.g. "1234-C-12"
-        if (len(al.label) <= 3 and al.field is None
-                and letter not in appendices):
+        if len(al.label) <= 3 and letter not in appendices:
             appendix = whole_appendix(parent_xml, cfr_part, letter)
             appendices[letter] = appendix
     return [a for a in appendices.values() if a]

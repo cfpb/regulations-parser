@@ -43,7 +43,6 @@ class NoticeBuildAppendixTest(TestCase):
         amends = [Amendment('POST', '111-Appendix:A'),
                   Amendment('POST', '111-Appendix:A'),
                   Amendment('PUT', '111-Appendix:B-12'),
-                  Amendment('PUT', '111-Appendix:C[title]'),
                   Amendment('PUT', '111-Appendix:D'),
                   Amendment('PUT', '111-Appendix:E-12-b')]
 

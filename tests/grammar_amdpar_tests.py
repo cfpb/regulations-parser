@@ -468,3 +468,16 @@ class GrammarAmdParTests(TestCase):
             tokens.Paragraph, label=[None, 'Appendix:A', '30(a)(7)']))
         self.assertTrue(a8.match(
             tokens.Paragraph, label=[None, 'Appendix:A', '30(a)(8)']))
+
+    def test_example_34(self):
+        text = "Appendix H to Part 1234 is amended by revising the heading "
+        text += "of H-30(C) to read as follows:"
+        result = parse_text(text)
+        self.assertEqual(3, len(result))
+        context, verb, heading = result
+        self.assertTrue(context.match(
+            tokens.Context, label=['1234', 'Appendix:H']))
+        self.assertTrue(verb.match(tokens.Verb, verb=tokens.Verb.PUT))
+        self.assertTrue(heading.match(
+            tokens.Paragraph, label=[None, 'Appendix:H', '30(C)'],
+            field=tokens.Paragraph.HEADING_FIELD))
