@@ -259,6 +259,9 @@ def _through_paren(prev_lab, next_lab):
     """Expand "through" for labels with embedded paragraphs (e.g. 12(c))"""
     lhs, rhs = prev_lab[-1], next_lab[-1]
     lhs_idx, rhs_idx = lhs.rindex('('), rhs.rindex('(')
+    # Check if the previous and next labels are "through"-able. For example,
+    # we can't compute A-14(a)(2) through B-14(a)(4) nor can we compute
+    # A-14(a)(1) through A-14(b)(3)
     if lhs[:lhs_idx] != rhs[:rhs_idx] or prev_lab[:-1] != next_lab[:-1]:
         logging.warning("Bad use of 'through': %s %s", prev_lab, next_lab)
         return []

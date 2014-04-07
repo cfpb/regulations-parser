@@ -399,7 +399,7 @@ def initial_marker(text):
         marker = (match.paren_upper or match.paren_lower or match.paren_digit
                   or match.period_upper or match.period_lower
                   or match.period_digit)
-        if len(marker) < 3 or all(c in 'ivxlcdm' for c in marker):
+        if len(marker) < 3 or all(char in 'ivxlcdm' for char in marker):
             return marker, text[:end]
 
 
