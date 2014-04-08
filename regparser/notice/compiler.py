@@ -282,7 +282,7 @@ class RegulationTree(object):
 
     def create_empty_node(self, node_label):
         """ In rare cases, we need to flush out the tree by adding
-        an empty node. """
+        an empty node. Returns the created node"""
         node_label = node_label.split('-')
         if Node.INTERP_MARK in node_label:
             node_type = Node.INTERP
@@ -292,9 +292,11 @@ class RegulationTree(object):
             node_type = Node.REGTEXT
         node = Node(label=node_label, node_type=node_type)
         parent = self.get_parent(node)
+        if not parent:
+            parent = self.create_empty_node(get_parent_label(node))
         parent.children = self.add_child(parent.children, node,
                                          getattr(parent, 'child_labels', []))
-        return parent
+        return node
 
     def contains(self, label):
         """Is this label already in the tree? label can be a list or a

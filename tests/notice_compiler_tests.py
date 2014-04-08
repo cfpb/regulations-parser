@@ -742,6 +742,22 @@ class CompilerTests(TestCase):
         self.assertEqual(node.label, ['205', '3', Node.INTERP_MARK])
         self.assertEqual(node.node_type, Node.INTERP)
 
+    def test_create_empty_recursive(self):
+        root = self.tree_with_paragraphs()
+        reg_tree = compiler.RegulationTree(root)
+        reg_tree.create_empty_node('205-4-a-2')
+
+        node = find(reg_tree.tree, '205-4')
+        self.assertEqual(1, len(node.children))
+        node = node.children[0]
+
+        self.assertEqual(['205', '4', 'a'], node.label)
+        self.assertEqual(1, len(node.children))
+        node = node.children[0]
+
+        self.assertEqual(['205', '4', 'a', '2'], node.label)
+        self.assertEqual(0, len(node.children))
+
     def test_add_node_no_parent(self):
         root = self.tree_with_paragraphs()
         reg_tree = compiler.RegulationTree(root)
