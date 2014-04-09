@@ -420,6 +420,9 @@ class RegulationTree(object):
             subpart_with_node.children = other_children
             destination.children = self.add_child(destination.children, node)
 
+            if not subpart_with_node.children:
+                self.delete('-'.join(subpart_with_node.label))
+
 
 def dict_to_node(node_dict):
     """ Convert a dictionary representation of a node into a Node object if
