@@ -21,6 +21,7 @@ class AppendicesTest(TestCase):
             <HD SOURCE="HD2">Subheader</HD>
             <P>Subheader content</P>
             <HD SOURCE="HD1">Header <E T="03">2</E></HD>
+            <P>www.example.com</P>
             <P>Final <E T="03">Content</E></P>
             <GPH>
                 <PRTPAGE P="650" />
@@ -68,11 +69,13 @@ class AppendicesTest(TestCase):
         self.assertEqual('Subheader', sub.title)
         self.assertEqual('Subheader content', sub.children[0].text.strip())
 
-        self.assertEqual(3, len(h2.children))
+        self.assertEqual(4, len(h2.children))
         self.assertEqual('Header 2', h2.title)
-        self.assertEqual('Final Content', h2.children[0].text.strip())
-        self.assertEqual('![](MYGID)', h2.children[1].text.strip())
-        table_lines = h2.children[2].text.strip().split('\n')
+        self.assertEqual('www.example.com', h2.children[0].text.strip())
+        self.assertNotEqual(h2.children[0].label, '')
+        self.assertEqual('Final Content', h2.children[1].text.strip())
+        self.assertEqual('![](MYGID)', h2.children[2].text.strip())
+        table_lines = h2.children[3].text.strip().split('\n')
         self.assertEqual('|For some reason lis|column two|a third column|',
                          table_lines[0])
         self.assertEqual('|---|---|---|', table_lines[1])

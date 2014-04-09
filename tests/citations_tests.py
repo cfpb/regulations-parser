@@ -52,6 +52,7 @@ class CitationsTest(TestCase):
             ("refer to comment 36(a)(2)-3 of thing", 'comment 36(a)(2)-3',
              ['102', '36', 'a', '2', 'Interp', '3']),
             ("See Appendix A-5", "Appendix A-5", ['102', 'A', '5']),
+            ("See Appendix A-5(R)", "Appendix A-5(R)", ['102', 'A', '5(R)']),
             ("See comment 3(v)-1.v. Another", "comment 3(v)-1.v",
              ['102', '3', 'v', 'Interp', '1', 'v']),
             ("See the commentary to 3(b)(1)", 'commentary to 3(b)(1)',
@@ -92,11 +93,11 @@ class CitationsTest(TestCase):
         self.assertEqual(citation.label.to_list(), ['102', 'A', '5'])
         self.assertEqual(to_text(citation, text), 'A-5')
         citation = citations[1]
-        self.assertEqual(citation.label.to_list(), ['102', 'Q', '2', 'r'])
+        self.assertEqual(citation.label.to_list(), ['102', 'Q', '2(r)'])
         self.assertEqual(to_text(citation, text), 'Q-2(r)')
         citation = citations[2]
         self.assertEqual(citation.label.to_list(),
-                         ['102', 'Z', '12', 'g', '2', 'ii'])
+                         ['102', 'Z', '12(g)(2)(ii)'])
         self.assertEqual(to_text(citation, text), 'Z-12(g)(2)(ii)')
 
         text = u"Appendices G and H—Yadda yadda"
@@ -239,23 +240,6 @@ class CitationsTest(TestCase):
         self.assertEqual(['1005', '3'], citations[0].label.to_list())
         self.assertEqual(['1005', '4'], citations[1].label.to_list())
         self.assertEqual(['1005', '5'], citations[2].label.to_list())
-
-    def test_single_match_multiple_paragraphs3(self):
-        text = "Please see E-9(a)(1), (2) and (d)(3)(v) for more"
-        citations = internal_citations(text, Label(part='222', section='5'))
-        self.assertEqual(3, len(citations))
-        citation = citations[0]
-        self.assertEqual(['222', 'E', '9', 'a', '1'],
-                         citation.label.to_list())
-        self.assertEqual(to_text(citation, text), 'E-9(a)(1)')
-        citation = citations[1]
-        self.assertEqual(['222', 'E', '9', 'a', '2'],
-                         citation.label.to_list())
-        self.assertEqual(to_text(citation, text), '(2)')
-        citation = citations[2]
-        self.assertEqual(['222', 'E', '9', 'd', '3', 'v'],
-                         citation.label.to_list())
-        self.assertEqual(to_text(citation, text), '(d)(3)(v)')
 
     def test_single_match_multiple_paragraphs4(self):
         text = "Listing sections 11.55(d) and 321.11 (h)(4)"
