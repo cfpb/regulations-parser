@@ -689,8 +689,7 @@ class CompilerTests(TestCase):
 
         new_reg = compiler.compile_regulation(reg, notice_changes)
 
-        subpart_b = find(new_reg, '205-Subpart-B')
-        self.assertEqual(len(subpart_b.children), 0)
+        self.assertEqual(None, find(new_reg, '205-Subpart-B'))
 
         subpart_a = find(new_reg, '205-Subpart-A')
         self.assertEqual(len(subpart_a.children), 1)
@@ -886,3 +885,18 @@ class CompilerTests(TestCase):
         changed = compiler.overwrite_marker(n, '2')
         self.assertTrue('2.' in changed.text)
         self.assertFalse('3.' in changed.text)
+
+    def test_move_to_subpart(self):
+        sect5, sect7 = Node(label=['111', '5']), Node(label=['111', '7'])
+        sub_a = Node(label=['111', 'Subpart', 'A'], node_type=Node.SUBPART,
+                     children=[sect5])
+        sub_b = Node(label=['111', 'Subpart', 'B'], node_type=Node.SUBPART,
+                     children=[sect7])
+
+        root = Node(children=[sub_a, sub_b], label=['111'])
+        tree = compiler.RegulationTree(root)
+        tree.move_to_subpart('111-5', sub_b.label)
+        sub_b = find(tree.tree, '111-Subpart-B')
+        sect5, sect7 = find(tree.tree, '111-5'), find(tree.tree, '111-7')
+        self.assertEqual([sub_b], tree.tree.children)
+        self.assertEqual([sect5, sect7], sub_b.children)
