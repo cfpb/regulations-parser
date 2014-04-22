@@ -30,10 +30,7 @@ def same_type(typ, idx, depth, *all_prev):
     # ... or the previous marker's type doesn't match (see diff_type)
     elif typ != prev_typ:
         return True
-    # Continuing previous type
-    #elif depth == prev_depth and idx == prev_idx + 1:
-    #    return True
-    # Stars can't be on the same level in sequence
+    # Stars can't be on the same level in sequence, can't start a new level
     elif typ == markers.stars:
         return depth < prev_depth
     # If this marker matches *any* previous marker, we may be continuing
@@ -47,23 +44,26 @@ def same_type(typ, idx, depth, *all_prev):
 
 
 def diff_type(typ, idx, depth, *all_prev):
+    """Constraints on sequential markers with differing types"""
     all_prev = [tuple(all_prev[i:i+3]) for i in range(0, len(all_prev), 3)]
 
-    if not all_prev or typ == all_prev[-1][0]:
-        return True     # This rule isn't relevant
-    elif idx == 0 and depth == all_prev[-1][2] + 1:  
-        return True     # Starting a new type
-    elif typ == markers.stars:
-        return (all_prev[-1][2] - depth)**2 < 2
+    # Rule isn't relevant because it's the first marker ...
+    if not all_prev:
         return True
-    #    if len(all_prev) == 4 and depth == 0:
-    #        print [e[0][e[1]]*e[2] for e in all_prev]
-    #        print depth == all_prev[-1][2]
-    #        print depth == all_prev[-1][2] + 1
-    #        print "---"
-    #    return depth == all_prev[-1][2] or depth == all_prev[-1][2] + 1
+    # ... or the previous marker's type matches (see same_type)
+    elif typ == all_prev[-1][0]:
+        return True
+    # Starting a new type
+    elif idx == 0 and depth == all_prev[-1][2] + 1:
+        return True
+    # Stars can't skip levels forward (e.g. _ *, _ _ _ *)
+    elif typ == markers.stars:
+        return all_prev[-1][2] - depth >= -1
+    # If following stars and on the same level, we're good
     elif all_prev[-1][0] == markers.stars and depth == all_prev[-1][2]:
         return True     # Stars 
+    # If this marker matches *any* previous marker, we may be continuing
+    # it's sequence
     else:
         for prev_type, prev_idx, prev_depth in _ancestors(all_prev):
             if (prev_type == typ and prev_depth == depth
@@ -73,13 +73,16 @@ def diff_type(typ, idx, depth, *all_prev):
 
 
 def same_depth_same_type(*all_vars):
+    """All markers in the same level (with the same parent) should have the
+    same marker type"""
     elements = [tuple(all_vars[i:i+3]) for i in range(0, len(all_vars), 3)]
 
     def per_level(elements, last_type=None):
         level, grouped_children = _level_and_children(elements)
 
         if not level:
-            return True
+            return True     # Base Case
+
         types = set(el[0] for el in level)
         types = list(sorted(types, key=lambda t: t == markers.stars))
         if len(types) > 2:
@@ -88,7 +91,7 @@ def same_depth_same_type(*all_vars):
             return False
         if last_type in types and last_type != markers.stars:
             return False
-        for children in grouped_children:
+        for children in grouped_children:           # Recurse
             if not per_level(children, types[0]):
                 return False
         return True
@@ -97,13 +100,16 @@ def same_depth_same_type(*all_vars):
 
 
 def stars_occupy_space(*all_vars):
+    """Star markers can't be ignored in sequence, so 1, *, 2 doesn't make
+    sense for a single level"""
     elements = [tuple(all_vars[i:i+3]) for i in range(0, len(all_vars), 3)]
 
     def per_level(elements):
         level, grouped_children = _level_and_children(elements)
 
         if not level:
-            return True
+            return True     # Base Case
+
         last_idx = -1
         for typ, idx, _ in level:
             if typ == markers.stars:
@@ -113,7 +119,7 @@ def stars_occupy_space(*all_vars):
             else:
                 last_idx = idx
 
-        for children in grouped_children:
+        for children in grouped_children:           # Recurse
             if not per_level(children):
                 return False
         return True
@@ -122,6 +128,8 @@ def stars_occupy_space(*all_vars):
 
 
 def _ancestors(all_prev):
+    """Given an assignment of values, construct a list of the relevant
+    parents, e.g. 1, i, a, ii, A gives us 1, ii, A"""
     result = [None]*10
     for prev_type, prev_idx, prev_depth in all_prev:
         result[prev_depth] = (prev_type, prev_idx, prev_depth)
@@ -131,7 +139,10 @@ def _ancestors(all_prev):
 
 
 def _level_and_children(elements):
-    if not elements:
+    """Split a list of elements into elements on the current level (i.e.
+    that share the same depth as the first element) and segmented children
+    (children of each of those elements)"""
+    if not elements:        # Base Case
         return [], []
     depth = elements[0][2]
     level = []

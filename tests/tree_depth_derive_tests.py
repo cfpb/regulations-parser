@@ -86,17 +86,20 @@ class DeriveTests(TestCase):
         self.assertTrue([0, 1, 2, 3, 2, 0] in results)
         self.assertTrue([0, 1, 2, 3, 1, 0] in results)
 
-    def test_start_star(self):
+    def test_alpha_roman_ambiguous(self):
         results = derive_depths(['i', 'ii', '*', 'v', '*', 'vii'])
         self.assertEqual(3, len(results))
         results = [[r[1] for r in result] for result in results]
         self.assertTrue([0, 0, 1, 1, 2, 2] in results)
         self.assertTrue([0, 0, 1, 1, 0, 0] in results)
         self.assertTrue([0, 0, 0, 0, 0, 0] in results)
+
+    def test_start_star(self):
         results = derive_depths(['*', 'c', '1', '*', 'ii', 'iii', '2', 'i',
                                  'ii', '*', 'v', '*', 'vii', 'A'])
-        self.assertEqual(3, len(results))
+        self.assertEqual(4, len(results))
         results = [[r[1] for r in result] for result in results]
         self.assertTrue([0, 0, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 3] in results)
         self.assertTrue([0, 0, 1, 2, 2, 2, 1, 2, 2, 3, 3, 2, 2, 3] in results)
         self.assertTrue([0, 0, 1, 2, 2, 2, 1, 2, 2, 3, 3, 4, 4, 5] in results)
+        self.assertTrue([0, 0, 1, 2, 2, 2, 1, 2, 2, 0, 0, 1, 1, 2] in results)
