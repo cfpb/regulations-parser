@@ -3,3 +3,4 @@ pyparsing==1.5.7
 inflection==0.1.2
 requests==1.2.3
 GitPython==0.3.2.RC1
+python-constraint==1.2
