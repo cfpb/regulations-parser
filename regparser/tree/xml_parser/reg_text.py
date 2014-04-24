@@ -1,6 +1,5 @@
 #vim: set encoding=utf-8
 import re
-import logging
 
 from lxml import etree
 
@@ -8,42 +7,10 @@ from regparser import content
 from regparser.tree.depth import heuristics, rules, markers as mtypes
 from regparser.tree.depth.derive import derive_depths
 from regparser.tree.struct import Node
-from regparser.tree.paragraph import p_level_of, p_levels
+from regparser.tree.paragraph import p_level_of
 from regparser.tree.xml_parser.appendices import build_non_reg_text
 from regparser.tree import reg_text
 from regparser.tree.xml_parser import tree_utils
-
-
-def determine_level(c, current_level, next_marker=None):
-    """ Regulation paragraphs are hierarchical. This determines which level
-    the paragraph is at. Convert between p_level indexing and depth here by
-    adding one"""
-    potential = p_level_of(c)
-
-    if len(potential) > 1 and next_marker:     # resolve ambiguity
-        following = p_level_of(next_marker)
-
-        #   Add character index
-        potential = [(level, p_levels[level].index(c)) for level in potential]
-        following = [(level, p_levels[level].index(next_marker))
-                     for level in following]
-
-        #   Check if we can be certain using the following marker
-        for pot_level, pot_idx in potential:
-            for next_level, next_idx in following:
-                if (    # E.g. i followed by A or i followed by 1
-                        (next_idx == 0 and next_level == pot_level + 1)
-                        or  # E.g. i followed by ii
-                        (next_level == pot_level and next_idx > pot_idx)
-                        or  # E.g. i followed by 3
-                        (next_level < pot_level and next_idx > 0)):
-                    return pot_level + 1
-        logging.warning("Ambiguous marker (%s) not followed by something "
-                        + "disambiguating (%s)", c, next_marker)
-        return potential[0][0] + 1
-
-    else:
-        return potential[0] + 1
 
 
 def get_reg_part(reg_doc):
