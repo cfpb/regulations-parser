@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from regparser.tree.depth.derive import derive_depths
+from regparser.tree.depth.markers import STARS_TAG, INLINE_STARS
 
 
 class DeriveTests(TestCase):
@@ -61,16 +62,16 @@ class DeriveTests(TestCase):
                          [r.depth for r in results[0]])
 
     def test_simple_stars(self):
-        results = derive_depths(['A', '1', 'STARS', 'd'])
+        results = derive_depths(['A', '1', STARS_TAG, 'd'])
         self.assertEqual(1, len(results))
         self.assertEqual([0, 1, 2, 2], [r.depth for r in results[0]])
 
-        results = derive_depths(['A', '1', 'a', 'STARS', 'd'])
+        results = derive_depths(['A', '1', 'a', STARS_TAG, 'd'])
         self.assertEqual(1, len(results))
         self.assertEqual([0, 1, 2, 2, 2], [r.depth for r in results[0]])
 
     def test_ambiguous_stars(self):
-        results = derive_depths(['A', '1', 'a', 'STARS', 'B'])
+        results = derive_depths(['A', '1', 'a', STARS_TAG, 'B'])
         self.assertEqual(4, len(results))
         results = [[r.depth for r in result] for result in results]
         self.assertTrue([0, 1, 2, 3, 3] in results)
@@ -79,7 +80,7 @@ class DeriveTests(TestCase):
         self.assertTrue([0, 1, 2, 1, 0] in results)
 
     def test_double_stars(self):
-        results = derive_depths(['A', '1', 'a', 'STARS', 'STARS', 'B'])
+        results = derive_depths(['A', '1', 'a', STARS_TAG, STARS_TAG, 'B'])
         self.assertEqual(3, len(results))
         results = [[r.depth for r in result] for result in results]
         self.assertTrue([0, 1, 2, 2, 1, 0] in results)
@@ -87,7 +88,7 @@ class DeriveTests(TestCase):
         self.assertTrue([0, 1, 2, 3, 1, 0] in results)
 
     def test_alpha_roman_ambiguous(self):
-        results = derive_depths(['i', 'ii', 'STARS', 'v', 'STARS', 'vii'])
+        results = derive_depths(['i', 'ii', STARS_TAG, 'v', STARS_TAG, 'vii'])
         self.assertEqual(3, len(results))
         results = [[r.depth for r in result] for result in results]
         self.assertTrue([0, 0, 1, 1, 2, 2] in results)
@@ -95,11 +96,23 @@ class DeriveTests(TestCase):
         self.assertTrue([0, 0, 0, 0, 0, 0] in results)
 
     def test_start_star(self):
-        results = derive_depths(['STARS', 'c', '1', 'STARS', 'ii', 'iii', '2',
-                                 'i', 'ii', 'STARS', 'v', 'STARS', 'vii', 'A'])
+        results = derive_depths([STARS_TAG, 'c', '1', STARS_TAG, 'ii', 'iii',
+                                 '2', 'i', 'ii', STARS_TAG, 'v', STARS_TAG,
+                                 'vii', 'A'])
         self.assertEqual(4, len(results))
         results = [[r.depth for r in result] for result in results]
         self.assertTrue([0, 0, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 3] in results)
         self.assertTrue([0, 0, 1, 2, 2, 2, 1, 2, 2, 3, 3, 2, 2, 3] in results)
         self.assertTrue([0, 0, 1, 2, 2, 2, 1, 2, 2, 3, 3, 4, 4, 5] in results)
         self.assertTrue([0, 0, 1, 2, 2, 2, 1, 2, 2, 0, 0, 1, 1, 2] in results)
+
+    def test_inline_star(self):
+        results = derive_depths(['1', STARS_TAG, '2'])
+        self.assertEqual(1, len(results))
+        self.assertEqual([0, 1, 0], [r.depth for r in results[0]])
+
+        results = derive_depths(['1', INLINE_STARS, '2'])
+        self.assertEqual(2, len(results))
+        results = [[r.depth for r in result] for result in results]
+        self.assertTrue([0, 0, 0] in results)
+        self.assertTrue([0, 1, 0] in results)

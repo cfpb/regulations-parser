@@ -190,86 +190,11 @@ def next_marker(xml_node, remaining_markers):
             return next_markers[0]
 
 
-def build_from_section2(reg_part, section_xml):
-    p_level = 1
-    m_stack = tree_utils.NodeStack()
-    section_texts = []
-    for ch in (ch for ch in section_xml.getchildren() if ch.tag == 'P'):
-        text = tree_utils.get_node_text(ch, add_spaces=True)
-        tagged_text = tree_utils.get_node_text_tags_preserved(ch)
-        markers_list = get_markers(tagged_text.strip())
-
-        if not markers_list:
-            section_texts.append((text, tagged_text))
-        else:
-            markers_and_text = get_markers_and_text(ch, markers_list)
-
-            #   Easier to reason if we view the list as a stack
-            markers_and_text = list(reversed(markers_and_text))
-            while markers_and_text:
-                m, node_text = markers_and_text.pop()
-                m_sans_markup = m.replace('<E T="03">', '').replace('</E>', '')
-                n = Node(node_text[0], [], [str(m_sans_markup)],
-                         source_xml=ch)
-                n.tagged_text = unicode(node_text[1])
-
-                new_p_level = determine_level(
-                    m, p_level, next_marker(ch, markers_and_text))
-
-                last = m_stack.peek()
-                if len(last) == 0:
-                    m_stack.push_last((new_p_level, n))
-                else:
-                    m_stack.add(new_p_level, n)
-                p_level = new_p_level
-
-    section_no = section_xml.xpath('SECTNO')[0].text
-    subject_xml = section_xml.xpath('SUBJECT')
-    if not subject_xml:
-        subject_xml = section_xml.xpath('RESERVED')
-    subject_text = subject_xml[0].text
-
-    nodes = []
-    section_nums = []
-    for match in re.finditer(r'%s\.(\d+)' % reg_part, section_no):
-        section_nums.append(int(match.group(1)))
-
-    #  Span of section numbers
-    if u'§§' == section_no[:2] and '-' in section_no:
-        first, last = section_nums
-        section_nums = []
-        for i in range(first, last + 1):
-            section_nums.append(i)
-
-    for section_number in section_nums:
-        section_number = str(section_number)
-        plain_sect_texts = [s[0] for s in section_texts]
-        tagged_sect_texts = [s[1] for s in section_texts]
-
-        section_text = ' '.join([section_xml.text] + plain_sect_texts)
-        tagged_section_text = ' '.join([section_xml.text] + tagged_sect_texts)
-        section_title = u"§ " + reg_part + "." + section_number
-        if subject_text:
-            section_title += " " + subject_text
-
-        sect_node = Node(
-            section_text, label=[reg_part, section_number],
-            title=section_title)
-        sect_node.tagged_text = tagged_section_text
-
-        m_stack.add_to_bottom((1, sect_node))
-
-        while m_stack.size() > 1:
-            m_stack.unwind()
-
-        nodes.append(m_stack.pop()[0][1])
-
-    return nodes
-
-
 def build_from_section(reg_part, section_xml):
     section_texts = []
     nodes = []
+    # Collect paragraph markers and section text (intro text for the
+    # section)
     for ch in filter(lambda ch: ch.tag in ('P', 'STARS'),
                      section_xml.getchildren()):
         text = tree_utils.get_node_text(ch, add_spaces=True)
@@ -277,7 +202,7 @@ def build_from_section(reg_part, section_xml):
         markers_list = get_markers(tagged_text.strip())
 
         if ch.tag == 'STARS':
-            nodes.append(Node(label=['STARS']))
+            nodes.append(Node(label=[mtypes.STARS_TAG]))
         elif not markers_list:
             section_texts.append((text, tagged_text))
         else:
@@ -286,19 +211,21 @@ def build_from_section(reg_part, section_xml):
                 n.tagged_text = unicode(node_text[1])
                 nodes.append(n)
             if node_text[0].endswith('* * *'):
-                nodes.append(Node(label=['* * *']))
+                nodes.append(Node(label=[mtypes.INLINE_STARS]))
 
-    # Trailing stars don't matter
-    while nodes and nodes[-1].label[0] in ('STARS', '* * *'):
+    # Trailing stars don't matter; slightly more efficient to ignore them
+    while nodes and nodes[-1].label[0] in mtypes.stars:
         nodes = nodes[:-1]
-    print [n.label[0] for n in nodes]
-    m_stack = tree_utils.NodeStack()
+
+    # Use constraint programming to figure out possible depth assignments
     depths = derive_depths(
         [n.label[0] for n in nodes],
         [rules.depth_type_order([mtypes.lower, mtypes.ints, mtypes.roman,
                                  mtypes.upper, mtypes.em_ints,
                                  mtypes.em_roman])])
+    m_stack = tree_utils.NodeStack()
     if depths:
+        # Find the assignment which violates the least of our heuristics
         depths = heuristics.prefer_multiple_children(depths, 0.5)
         depths = sorted(depths, key=lambda d: d.weight, reverse=True)
         depths = depths[0]

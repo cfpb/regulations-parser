@@ -3,18 +3,8 @@ from constraint import Problem
 from regparser.tree.depth import markers, rules
 
 
-def solPrint(solutions):
-    print "Num solutions:", len(solutions)
-    for solution in solutions:
-        for idx in range(len(solution)/3):
-            index = solution["idx" + str(idx)]
-            marker = solution["type" + str(idx)][index]
-            depth = solution["depth" + str(idx)]
-            print " "*4*depth + marker
-        print "------------"
-
-
 class ParAssignment(object):
+    """A paragraph's type, index, depth assignment"""
     def __init__(self, typ, idx, depth):
         self.typ = typ
         self.idx = idx
@@ -22,16 +12,22 @@ class ParAssignment(object):
 
 
 class Solution(object):
+    """A collection of assignments + a weight for how likely this solution is
+    (after applying heuristics)"""
     def __init__(self, assignment, weight=1.0):
         self.weight = weight
         self.assignment = []
-        for i in range(len(assignment) / 3):
-            self.assignment.append(
-                ParAssignment(assignment['type' + str(i)],
-                              assignment['idx' + str(i)],
-                              assignment['depth' + str(i)]))
+        if isinstance(assignment, list):
+            self.assignment = assignment
+        else:   # assignment is a dict (as returned by constraint solver)
+            for i in range(len(assignment) / 3):
+                self.assignment.append(
+                    ParAssignment(assignment['type' + str(i)],
+                                  assignment['idx' + str(i)],
+                                  assignment['depth' + str(i)]))
 
     def cp_with_penalty(self, penalty):
+        """Immutable copy while modifying weight"""
         sol = Solution([], self.weight * (1 - penalty))
         sol.assignment = self.assignment
         return sol
@@ -39,8 +35,15 @@ class Solution(object):
     def __iter__(self):
         return iter(self.assignment)
 
+    def pretty_print(self):
+        for par in self.assignment:
+            print " "*4*par.depth + par.typ[par.idx]
+
 
 def derive_depths(marker_chars, additional_constraints=[]):
+    """Use constraint programming to derive the paragraph depths associated
+    with a list of paragraph markers. Additional constraints (e.g. expected
+    marker types, etc.) can also be added."""
     if not marker_chars:
         return []
     problem = Problem()
@@ -74,11 +77,12 @@ def derive_depths(marker_chars, additional_constraints=[]):
         constrain(rules.same_type, prior_params)
         constrain(rules.diff_type, prior_params)
 
+    # @todo: There's probably efficiency gains to making these rules over
+    # prefixes (see above) rather than over the whole collection at once
     constrain(rules.same_depth_same_type, all_vars)
     constrain(rules.stars_occupy_space, all_vars)
 
     for constraint in additional_constraints:
         constraint(constrain, all_vars)
 
-    solPrint(problem.getSolutions())
     return [Solution(solution) for solution in problem.getSolutions()]
