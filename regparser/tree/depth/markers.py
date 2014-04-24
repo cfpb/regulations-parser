@@ -12,6 +12,6 @@ ints = tuple(str(i) for i in range(1, 51))
 roman = tuple(itertools.islice(roman_nums(), 0, 50))
 em_ints = tuple('<E T="03">' + i + '</E>' for i in ints)
 em_roman = tuple('<E T="03">' + i + '</E>' for i in roman)
-stars = '*'
+stars = ('STARS', '* * *')      # Latter might be inline
 
 types = [lower, upper, ints, roman, em_ints, em_roman, stars]

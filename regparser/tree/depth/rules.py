@@ -113,7 +113,8 @@ def stars_occupy_space(*all_vars):
         last_idx = -1
         for typ, idx, _ in level:
             if typ == markers.stars:
-                last_idx += 1
+                if idx == 0:    # STARS, not * * *
+                    last_idx += 1
             elif last_idx >= idx:
                 return False
             else:
@@ -125,6 +126,18 @@ def stars_occupy_space(*all_vars):
         return True
 
     return per_level(elements)
+
+
+def depth_type_order(order):
+    order = list(order)     # defensive copy
+
+    def inner(constrain, all_variables):
+        for i in range(0, len(all_variables) / 3):
+            constrain(lambda t, d: d < len(order) and t in (markers.stars, 
+                                                            order[d]),
+                      ('type' + str(i), 'depth' + str(i)))
+
+    return inner
 
 
 def _ancestors(all_prev):

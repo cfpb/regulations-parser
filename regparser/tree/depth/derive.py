@@ -14,7 +14,35 @@ def solPrint(solutions):
         print "------------"
 
 
-def derive_depths(marker_chars):
+class ParAssignment(object):
+    def __init__(self, typ, idx, depth):
+        self.typ = typ
+        self.idx = idx
+        self.depth = depth
+
+
+class Solution(object):
+    def __init__(self, assignment, weight=1.0):
+        self.weight = weight
+        self.assignment = []
+        for i in range(len(assignment) / 3):
+            self.assignment.append(
+                ParAssignment(assignment['type' + str(i)],
+                              assignment['idx' + str(i)],
+                              assignment['depth' + str(i)]))
+
+    def cp_with_penalty(self, penalty):
+        sol = Solution([], self.weight * (1 - penalty))
+        sol.assignment = self.assignment
+        return sol
+
+    def __iter__(self):
+        return iter(self.assignment)
+
+
+def derive_depths(marker_chars, additional_constraints=[]):
+    if not marker_chars:
+        return []
     problem = Problem()
     constrain = problem.addConstraint       # shorthand
 
@@ -49,16 +77,8 @@ def derive_depths(marker_chars):
     constrain(rules.same_depth_same_type, all_vars)
     constrain(rules.stars_occupy_space, all_vars)
 
+    for constraint in additional_constraints:
+        constraint(constrain, all_vars)
+
     solPrint(problem.getSolutions())
-    solutions = []
-    for solution in problem.getSolutions():
-        solutions.append(
-            [(solution['type' + str(i)], solution['depth' + str(i)])
-             for i in range(len(marker_chars))])
-    return solutions
-
-
-
-#organize(['A', '1', 'a', '*', '*', 'B'])
-#organize(['*', 'c', '1', '*', 'ii', 'iii', '2', 'i', 'ii', '*', 'v', '*',
-#          'vii', 'A'])
+    return [Solution(solution) for solution in problem.getSolutions()]
