@@ -20,11 +20,11 @@ class InterpretationsTest(TestCase):
     def test_interpretation_markers_emph(self):
         text = '<E T="03">1.</E> Kiwis and Mangos'
         marker = interpretations.get_first_interp_marker(text)
-        self.assertEqual(marker, '<E T="03">1')
+        self.assertEqual(marker, '<E T="03">1</E>')
 
         text = '<E T="03">1. Kiwis and Mangos.</E> More content.'
         marker = interpretations.get_first_interp_marker(text)
-        self.assertEqual(marker, '<E T="03">1')
+        self.assertEqual(marker, '<E T="03">1</E>')
 
     def test_interpretation_markers_none(self):
         text = '(iv) Kiwis and Mangos'
@@ -285,7 +285,7 @@ class InterpretationsTest(TestCase):
         self.assertEqual(1, len(n1iA.children))
 
         n1iA1 = n1iA.children[0]
-        self.assertEqual(['1', 'i', 'A', '<E T="03">1'], n1iA1.label)
+        self.assertEqual(['1', 'i', 'A', '1'], n1iA1.label)
         self.assertEqual(0, len(n1iA1.children))
 
     def test_process_inner_child_space(self):
@@ -321,6 +321,7 @@ class InterpretationsTest(TestCase):
         interpretations.process_inner_children(stack, node)
         while stack.size() > 1:
             stack.unwind()
+        print stack.m_stack
         self.assertEqual(2, len(stack.m_stack[0]))
 
     def test_process_inner_child_no_marker(self):
@@ -355,6 +356,47 @@ class InterpretationsTest(TestCase):
             stack.unwind()
         tree = stack.m_stack[0][0][1]
         self.assertEqual(0, len(tree.children))
+
+    def test_process_inner_child_stars_and_inline(self):
+        xml = """
+        <ROOT>
+            <HD>Title</HD>
+            <STARS />
+            <P>2. Content. * * *</P>
+            <STARS />
+            <P>xi. Content</P>
+            <STARS />
+        </ROOT>"""
+        node = etree.fromstring(xml).xpath('//HD')[0]
+        stack = tree_utils.NodeStack()
+        interpretations.process_inner_children(stack, node)
+        while stack.size() > 1:
+            stack.unwind()
+        tree = stack.m_stack[0][0][1]
+        self.assertEqual(['2'], tree.label)
+        self.assertEqual(1, len(tree.children))
+        self.assertEqual(['2', 'xi'], tree.children[0].label)
+        self.assertEqual(0, len(tree.children[0].children))
+
+    def test_process_inner_child_collapsed_i(self):
+        xml = """
+        <ROOT>
+            <HD>Title</HD>
+            <P>1. <E T="03">Keyterm text</E> i. Content content</P>
+            <P>ii. Other stuff</P>
+        </ROOT>"""
+        node = etree.fromstring(xml).xpath('//HD')[0]
+        stack = tree_utils.NodeStack()
+        interpretations.process_inner_children(stack, node)
+        while stack.size() > 1:
+            stack.unwind()
+        tree = stack.m_stack[0][0][1]
+        self.assertEqual(['1'], tree.label)
+        self.assertEqual(2, len(tree.children))
+        self.assertEqual(['1', 'i'], tree.children[0].label)
+        self.assertEqual(0, len(tree.children[0].children))
+        self.assertEqual(['1', 'ii'], tree.children[1].label)
+        self.assertEqual(0, len(tree.children[1].children))
 
     def test_interpretation_level(self):
         self.assertEqual(3, interpretations.interpretation_level('1'))

@@ -5,6 +5,9 @@ import re
 import string
 
 from regparser.citations import Label, remove_citation_overlaps
+from regparser.layer.key_terms import KeyTerms
+from regparser.tree.depth import heuristics, rules, markers as mtypes
+from regparser.tree.depth.derive import derive_depths
 from regparser.tree.interpretation import merge_labels, text_to_labels
 from regparser.tree.struct import Node, treeify
 from regparser.tree.xml_parser import tree_utils
@@ -42,7 +45,10 @@ _marker_stars_regex = re.compile(
 def get_first_interp_marker(text):
     match = _marker_regex.match(text)
     if match:
-        return text[:text.find('.')].strip()        # up to dot
+        marker = text[:text.find('.')].strip()      # up to dot
+        if '<' in marker:
+            marker += '</E>'
+        return marker
     match = _marker_stars_regex.match(text)
     if match:
         return text[:text.find('*')].strip()        # up to star
@@ -74,10 +80,19 @@ _first_markers = [re.compile(ur'[\.|,|;|\-|—]\s*(' + marker + ')\.')
                   for marker in ['i', 'A']]
 
 
-def collapsed_markers_matches(node_text):
+def collapsed_markers_matches(node_text, tagged_text):
     """Find collapsed markers, i.e. tree node paragraphs that begin within a
     single XML node, within this text. Remove citations and other false
     positives"""
+    # In addition to the regex above, keyterms are an acceptable prefix. We
+    # therefore convert keyterms to satisfy the above regex
+    node_for_keyterms = Node(node_text, node_type=Node.INTERP,
+                             label=[get_first_interp_marker(node_text)])
+    node_for_keyterms.tagged_text = tagged_text
+    keyterm = KeyTerms.get_keyterm(node_for_keyterms)
+    if keyterm:
+        node_text = node_text.replace(keyterm, '.'*len(keyterm))
+
     collapsed_markers = []
     for marker in _first_markers:
         possible = ((m, m.start(), m.end())
@@ -118,7 +133,7 @@ def child_with_marker(child_node, stack):
     text_with_tags = tree_utils.get_node_text_tags_preserved(child_node)
     first_marker = get_first_interp_marker(text_with_tags)
 
-    collapsed = collapsed_markers_matches(node_text)
+    collapsed = collapsed_markers_matches(text_with_tags)
 
     #   -2 throughout to account for matching the character + period
     ends = [m.end() - 2 for m in collapsed[1:]] + [len(node_text)]
@@ -173,12 +188,82 @@ def is_title(xml_node):
                                force_start=True)))
 
 
-def process_inner_children(inner_stack, xml_node):
+def process_inner_children2(inner_stack, xml_node):
     """Process the following nodes as children of this interpretation"""
     children = itertools.takewhile(
         lambda x: not is_title(x), xml_node.itersiblings())
     for c in filter(lambda c: c.tag == 'P', children):
         interp_inner_child(c, inner_stack)
+
+
+def process_inner_children(inner_stack, xml_node):
+    """Process the following nodes as children of this interpretation"""
+    children = itertools.takewhile(
+        lambda x: not is_title(x), xml_node.itersiblings())
+    nodes = []
+    for xml_node in filter(lambda c: c.tag in ('P', 'STARS'), children):
+        node_text = tree_utils.get_node_text(xml_node, add_spaces=True)
+        text_with_tags = tree_utils.get_node_text_tags_preserved(xml_node)
+        first_marker = get_first_interp_marker(text_with_tags)
+        if xml_node.tag == 'STARS':
+            nodes.append(Node(label=[mtypes.STARS_TAG]))
+        elif not first_marker and nodes:
+            logging.warning("Couldn't determine interp marker. Appending to "
+                            "previous paragraph: %s", node_text)
+            previous = nodes[-1]
+            previous.text += "\n\n" + node_text
+            if hasattr(previous, 'tagged_text'):
+                previous.tagged_text += "\n\n" + text_with_tags
+            else:
+                previous.tagged_text = text_with_tags
+        else:
+            collapsed = collapsed_markers_matches(node_text, text_with_tags)
+
+            #   -2 throughout to account for matching the character + period
+            ends = [m.end() - 2 for m in collapsed[1:]] + [len(node_text)]
+            starts = [m.end() - 2 for m in collapsed] + [len(node_text)]
+
+            #   Node for this paragraph
+            n = Node(node_text[0:starts[0]], label=[first_marker],
+                     node_type=Node.INTERP)
+            n.tagged_text = text_with_tags
+            nodes.append(n)
+            if n.text.endswith('* * *'):
+                nodes.append(Node(label=[mtypes.INLINE_STARS]))
+
+            #   Collapsed-marker children
+            for match, end in zip(collapsed, ends):
+                n = Node(node_text[match.end() - 2:end], label=[match.group(1)],
+                         node_type=Node.INTERP)
+                nodes.append(n)
+                if n.text.endswith('* * *'):
+                    nodes.append(Node(label=[mtypes.INLINE_STARS]))
+
+    # Trailing stars don't matter; slightly more efficient to ignore them
+    while nodes and nodes[-1].label[0] in mtypes.stars:
+        nodes = nodes[:-1]
+
+    # Use constraint programming to figure out possible depth assignments
+    depths = derive_depths(
+        [n.label[0] for n in nodes], [])
+#        [rules.depth_type_order([mtypes.ints, mtypes.roman, mtypes.upper,
+#                                 mtypes.em_ints])])
+    print [n.label[0] for n in nodes]
+    if depths:
+        # Find the assignment which violates the least of our heuristics
+        depths = heuristics.prefer_multiple_children(depths, 0.5)
+        depths = sorted(depths, key=lambda d: d.weight, reverse=True)
+        depths = depths[0]
+        depths.pretty_print()
+        for node, par in zip(nodes, depths):
+            if par.typ != mtypes.stars:
+                last = inner_stack.peek()
+                node.label = [l.replace('<E T="03">', '').replace('</E>', '')
+                              for l in node.label]
+                if len(last) == 0:
+                    inner_stack.push_last((3 + par.depth, node))
+                else:
+                    inner_stack.add(3 + par.depth, node)
 
 
 def missing_levels(last_label, label):
@@ -230,6 +315,7 @@ def parse_from_xml(root, xml_nodes):
 
             node = Node(node_type=Node.INTERP, label=label,
                         title=text.strip())
+            print text.strip()
             inner_stack.add(2, node)
 
             process_inner_children(inner_stack, ch)

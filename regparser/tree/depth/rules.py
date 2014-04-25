@@ -30,9 +30,11 @@ def same_type(typ, idx, depth, *all_prev):
     # ... or the previous marker's type doesn't match (see diff_type)
     elif typ != prev_typ:
         return True
-    # Stars can't be on the same level in sequence, can't start a new level
+    # Stars can't be on the same level in sequence. Can only start a new
+    # level if the preceding wasn't inline
     elif typ == markers.stars:
-        return depth < prev_depth
+        return depth < prev_depth or (prev_idx == 1
+                                      and depth == prev_depth + 1)
     # If this marker matches *any* previous marker, we may be continuing
     # it's sequence
     else:
