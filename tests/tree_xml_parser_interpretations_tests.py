@@ -257,6 +257,21 @@ class InterpretationsTest(TestCase):
         self.assertEqual(1, len(s13.children))
         self.assertEqual('13(a) Some Stuff!', s13.children[0].title)
 
+    def test_build_supplement_tree_emph_strangeness(self):
+        xml = """<APPENDIX>
+            <HD SOURCE="HED">
+                Supplement I to Part 737-Official Interpretations</HD>
+            <HD SOURCE="HD2">Section 737.5 NASCAR</HD>
+            <P><E T="03">5</E>(<E T="03">b</E>) <E T="03">Keyterm</E></P>
+            <P>1. Paragraph 1</P>
+        </APPENDIX>"""
+        tree = interpretations.build_supplement_tree('737',
+                                                     etree.fromstring(xml))
+        self.assertEqual(['737', 'Interp'], tree.label)
+        self.assertEqual(1, len(tree.children))
+        print tree
+        self.assertTrue(False)
+
     def test_process_inner_child(self):
         xml = """
         <ROOT>
@@ -439,6 +454,9 @@ class InterpretationsTest(TestCase):
         self.assertEqual(['i'], map(
             lambda m: m.group(1),
             interpretations.collapsed_markers_matches("1. AAA - i. More")))
+        self.assertEqual(['1'], map(
+            lambda m: m.group(1),
+            interpretations.collapsed_markers_matches("A. AAA - 1. More")))
         self.assertEqual([], interpretations.collapsed_markers_matches(
             "1. Content - i.e. More content"))
         self.assertEqual([], interpretations.collapsed_markers_matches(

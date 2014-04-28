@@ -123,3 +123,38 @@ class NoticeBuildInterpTest(TestCase):
         self.assertEqual('6. six six six', b6.text.strip())
         self.assertEqual(b6.label, ['111', '34', 'b', 'Interp', '6'])
         self.assertEqual([], b6.children)
+
+    def test_process_without_headers_complicated_em(self):
+        xml = """
+            <REGTEXT>
+                <AMDPAR>Adding comment 3(c)-1.iv</AMDPAR>
+                <STARS />
+                <P><E T="03">3</E>(<E T="03">c</E>)<E T="03">Keyterm.</E></P>
+                <P>1. <E T="03">Keyes.</E> * * *</P>
+                <P>iv. Content Content</P>
+                <STARS />
+            </REGTEXT>"""
+        amended_labels = [Amendment('POST', '111-Interpretations-3-(c)-1-iv')]
+        interp = build_interp.process_without_headers(
+            '111', etree.fromstring(xml), amended_labels)
+        print interp
+        self.assertEqual(2, len(interp.children))
+        c, b = interp.children
+        self.assertEqual(c.label, ['111', '33', 'c', 'Interp'])
+        self.assertEqual(1, len(c.children))
+        c5 = c.children[0]
+        self.assertEqual('5. five five five', c5.text.strip())
+        self.assertEqual(c5.label, ['111', '33', 'c', 'Interp', '5'])
+        self.assertEqual(1, len(c5.children))
+        c5i = c5.children[0]
+        self.assertEqual('i. eye eye eye', c5i.text.strip())
+        self.assertEqual(c5i.label, ['111', '33', 'c', 'Interp', '5', 'i'])
+        self.assertEqual([], c5i.children)
+
+        b5, b6 = b.children
+        self.assertEqual('5. five five five2', b5.text.strip())
+        self.assertEqual(b5.label, ['111', '34', 'b', 'Interp', '5'])
+        self.assertEqual([], b5.children)
+        self.assertEqual('6. six six six', b6.text.strip())
+        self.assertEqual(b6.label, ['111', '34', 'b', 'Interp', '6'])
+        self.assertEqual([], b6.children)

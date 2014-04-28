@@ -14,16 +14,6 @@ from regparser.tree.xml_parser import tree_utils
 from regparser.utils import roman_nums
 
 
-i_levels = [
-    [str(i) for i in range(1, 51)],
-    list(itertools.islice(roman_nums(), 0, 50)),
-    list(string.ascii_uppercase),
-    # We don't include the closing tag - it won't be closed if followed by a
-    # key term
-    ['<E T="03">' + str(i) for i in range(1, 51)],
-]
-
-
 _marker_regex = re.compile(
     r'^\s*('                   # line start
     + '([0-9]+)'               # digits
@@ -54,30 +44,8 @@ def get_first_interp_marker(text):
         return text[:text.find('*')].strip()        # up to star
 
 
-def interpretation_level(marker, previous_level=None):
-    """
-        Based on the marker, determine the interpretation paragraph level.
-        Levels 1,2 don't need this, since they are marked differently.
-        Frustratingly, the XML is not always marked up correctly - some
-        markers are sometimes italicized when they shouldn't be.
-    """
-    #   First, non-italics
-    for idx, lst in enumerate(i_levels[:3]):
-        if marker in lst:
-            return idx + 3
-    #   Italics don't always mean what we'd like (le sigh)
-    for idx, lst in enumerate(i_levels[3:]):
-        idx = idx + 3   # Shift
-        if marker in lst:
-            #   Probably meant non-italic...
-            if previous_level is not None and idx + 3 > previous_level + 1:
-                return idx
-            else:
-                return idx + 3
-
-
-_first_markers = [re.compile(ur'[\.|,|;|\-|—]\s*(' + marker + ')\.')
-                  for marker in ['i', 'A']]
+_first_markers = [re.compile(ur'[\.|,|;|:|\-|—]\s*(' + marker + ')\.')
+                  for marker in ['i', 'A', '1']]
 
 
 def collapsed_markers_matches(node_text, tagged_text):
@@ -102,69 +70,11 @@ def collapsed_markers_matches(node_text, tagged_text):
         for following in ("e.", ")", u"”", '"', "'"):
             possible = [(m, s, end) for m, s, end in possible
                         if not node_text[end:].startswith(following)]
-        collapsed_markers.extend(m for m, _, _ in possible)
+        possible = [m for m, _, _ in possible]
+        if '<E T="03">1' not in tagged_text:
+            possible = filter(lambda m: m.group(1) != '1', possible)
+        collapsed_markers.extend(possible)
     return collapsed_markers
-
-
-def interp_inner_child(child_node, stack):
-    """ Build an inner child node (basically a node that's after
-    -Interp- in the tree). If the paragraph doesn't have a marker, attach it
-    to the previous paragraph"""
-    node_text = tree_utils.get_node_text(child_node, add_spaces=True)
-    text_with_tags = tree_utils.get_node_text_tags_preserved(child_node)
-    first_marker = get_first_interp_marker(text_with_tags)
-    if not first_marker and stack.lineage():
-        logging.warning("Couldn't determine interp marker. Appending to "
-                        "previous paragraph: %s", node_text)
-        previous = stack.lineage()[0]
-        previous.text += "\n\n" + node_text
-        if hasattr(previous, 'tagged_text'):
-            previous.tagged_text += "\n\n" + text_with_tags
-        else:
-            previous.tagged_text = text_with_tags
-    else:
-        child_with_marker(child_node, stack)
-
-
-def child_with_marker(child_node, stack):
-    """Machinery to build a node for an interp's inner child. Assumes the
-    paragraph begins with a paragraph marker."""
-    node_text = tree_utils.get_node_text(child_node, add_spaces=True)
-    text_with_tags = tree_utils.get_node_text_tags_preserved(child_node)
-    first_marker = get_first_interp_marker(text_with_tags)
-
-    collapsed = collapsed_markers_matches(text_with_tags)
-
-    #   -2 throughout to account for matching the character + period
-    ends = [m.end() - 2 for m in collapsed[1:]] + [len(node_text)]
-    starts = [m.end() - 2 for m in collapsed] + [len(node_text)]
-
-    #   Node for this paragraph
-    n = Node(node_text[0:starts[0]], label=[first_marker],
-             node_type=Node.INTERP)
-    n.tagged_text = text_with_tags
-    last = stack.peek()
-
-    if len(last) == 0:
-        stack.push_last((interpretation_level(first_marker), n))
-    else:
-        node_level = interpretation_level(first_marker, last[0][0])
-        if node_level is None:
-            logging.warning("Couldn't determine node_level for this "
-                            + "interpretation paragraph: " + n.text)
-            node_level = last[0][0] + 1
-        stack.add(node_level, n)
-
-    #   Collapsed-marker children
-    for match, end in zip(collapsed, ends):
-        n = Node(node_text[match.end() - 2:end], label=[match.group(1)],
-                 node_type=Node.INTERP)
-        node_level = interpretation_level(match.group(1))
-        last = stack.peek()
-        if len(last) == 0:
-            stack.push_last((node_level, n))
-        else:
-            stack.add(node_level, n)
 
 
 def is_title(xml_node):
@@ -188,21 +98,15 @@ def is_title(xml_node):
                                force_start=True)))
 
 
-def process_inner_children2(inner_stack, xml_node):
-    """Process the following nodes as children of this interpretation"""
-    children = itertools.takewhile(
-        lambda x: not is_title(x), xml_node.itersiblings())
-    for c in filter(lambda c: c.tag == 'P', children):
-        interp_inner_child(c, inner_stack)
-
-
 def process_inner_children(inner_stack, xml_node):
     """Process the following nodes as children of this interpretation"""
+
     children = itertools.takewhile(
         lambda x: not is_title(x), xml_node.itersiblings())
     nodes = []
     for xml_node in filter(lambda c: c.tag in ('P', 'STARS'), children):
         node_text = tree_utils.get_node_text(xml_node, add_spaces=True)
+        print xml_node.tag
         text_with_tags = tree_utils.get_node_text_tags_preserved(xml_node)
         first_marker = get_first_interp_marker(text_with_tags)
         if xml_node.tag == 'STARS':
@@ -233,7 +137,10 @@ def process_inner_children(inner_stack, xml_node):
 
             #   Collapsed-marker children
             for match, end in zip(collapsed, ends):
-                n = Node(node_text[match.end() - 2:end], label=[match.group(1)],
+                marker = match.group(1)
+                if marker == '1':
+                    marker = '<E T="03">1</E>'
+                n = Node(node_text[match.end() - 2:end], label=[marker],
                          node_type=Node.INTERP)
                 nodes.append(n)
                 if n.text.endswith('* * *'):
@@ -245,9 +152,11 @@ def process_inner_children(inner_stack, xml_node):
 
     # Use constraint programming to figure out possible depth assignments
     depths = derive_depths(
-        [n.label[0] for n in nodes], [])
-#        [rules.depth_type_order([mtypes.ints, mtypes.roman, mtypes.upper,
-#                                 mtypes.em_ints])])
+        [n.label[0] for n in nodes],
+        [rules.depth_type_order([(mtypes.ints, mtypes.em_ints),
+                                 (mtypes.roman, mtypes.upper),
+                                 mtypes.upper, mtypes.em_ints,
+                                 mtypes.em_roman])])
     print [n.label[0] for n in nodes]
     if depths:
         # Find the assignment which violates the least of our heuristics
@@ -315,7 +224,7 @@ def parse_from_xml(root, xml_nodes):
 
             node = Node(node_type=Node.INTERP, label=label,
                         title=text.strip())
-            print text.strip()
+            print label
             inner_stack.add(2, node)
 
             process_inner_children(inner_stack, ch)
