@@ -106,7 +106,6 @@ def process_inner_children(inner_stack, xml_node):
     nodes = []
     for xml_node in filter(lambda c: c.tag in ('P', 'STARS'), children):
         node_text = tree_utils.get_node_text(xml_node, add_spaces=True)
-        print xml_node.tag
         text_with_tags = tree_utils.get_node_text_tags_preserved(xml_node)
         first_marker = get_first_interp_marker(text_with_tags)
         if xml_node.tag == 'STARS':
@@ -157,13 +156,11 @@ def process_inner_children(inner_stack, xml_node):
                                  (mtypes.roman, mtypes.upper),
                                  mtypes.upper, mtypes.em_ints,
                                  mtypes.em_roman])])
-    print [n.label[0] for n in nodes]
     if depths:
         # Find the assignment which violates the least of our heuristics
         depths = heuristics.prefer_multiple_children(depths, 0.5)
         depths = sorted(depths, key=lambda d: d.weight, reverse=True)
         depths = depths[0]
-        depths.pretty_print()
         for node, par in zip(nodes, depths):
             if par.typ != mtypes.stars:
                 last = inner_stack.peek()
@@ -224,7 +221,6 @@ def parse_from_xml(root, xml_nodes):
 
             node = Node(node_type=Node.INTERP, label=label,
                         title=text.strip())
-            print label
             inner_stack.add(2, node)
 
             process_inner_children(inner_stack, ch)

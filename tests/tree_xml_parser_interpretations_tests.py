@@ -257,21 +257,6 @@ class InterpretationsTest(TestCase):
         self.assertEqual(1, len(s13.children))
         self.assertEqual('13(a) Some Stuff!', s13.children[0].title)
 
-    def test_build_supplement_tree_emph_strangeness(self):
-        xml = """<APPENDIX>
-            <HD SOURCE="HED">
-                Supplement I to Part 737-Official Interpretations</HD>
-            <HD SOURCE="HD2">Section 737.5 NASCAR</HD>
-            <P><E T="03">5</E>(<E T="03">b</E>) <E T="03">Keyterm</E></P>
-            <P>1. Paragraph 1</P>
-        </APPENDIX>"""
-        tree = interpretations.build_supplement_tree('737',
-                                                     etree.fromstring(xml))
-        self.assertEqual(['737', 'Interp'], tree.label)
-        self.assertEqual(1, len(tree.children))
-        print tree
-        self.assertTrue(False)
-
     def test_process_inner_child(self):
         xml = """
         <ROOT>
@@ -327,16 +312,15 @@ class InterpretationsTest(TestCase):
         xml = """
         <ROOT>
             <HD>Title</HD>
-            <P>1. 111</P>
+            <P><E T="03">1.</E> 111</P>
             <P>i. iii</P>
-            <P><E T="03">2. 222</E> Incorrect Content</P>
+            <P><E T="03">2.</E> 222 Incorrect Content</P>
         </ROOT>"""
         node = etree.fromstring(xml).xpath('//HD')[0]
         stack = tree_utils.NodeStack()
         interpretations.process_inner_children(stack, node)
         while stack.size() > 1:
             stack.unwind()
-        print stack.m_stack
         self.assertEqual(2, len(stack.m_stack[0]))
 
     def test_process_inner_child_no_marker(self):
@@ -413,19 +397,6 @@ class InterpretationsTest(TestCase):
         self.assertEqual(['1', 'ii'], tree.children[1].label)
         self.assertEqual(0, len(tree.children[1].children))
 
-    def test_interpretation_level(self):
-        self.assertEqual(3, interpretations.interpretation_level('1'))
-        self.assertEqual(4, interpretations.interpretation_level('ii'))
-        self.assertEqual(5, interpretations.interpretation_level('C'))
-        self.assertEqual(
-            6, interpretations.interpretation_level('<E T="03">1'))
-        self.assertEqual(3, interpretations.interpretation_level('1', 2))
-        self.assertEqual(4, interpretations.interpretation_level('ii', 3))
-        self.assertEqual(5, interpretations.interpretation_level('C', 4))
-        #   Unlikely that the level jumped from 3 to 5
-        self.assertEqual(
-            3, interpretations.interpretation_level('<E T="03">2', 3))
-
     def test_is_title(self):
         titles = [
             "<HD SOURCE='HD1'>Some Title</HD>",
@@ -453,13 +424,15 @@ class InterpretationsTest(TestCase):
     def test_collapsed_markers_matches(self):
         self.assertEqual(['i'], map(
             lambda m: m.group(1),
-            interpretations.collapsed_markers_matches("1. AAA - i. More")))
+            interpretations.collapsed_markers_matches(
+                '1. AAA - i. More', '1. AAA - i. More')))
         self.assertEqual(['1'], map(
             lambda m: m.group(1),
-            interpretations.collapsed_markers_matches("A. AAA - 1. More")))
-        self.assertEqual([], interpretations.collapsed_markers_matches(
-            "1. Content - i.e. More content"))
-        self.assertEqual([], interpretations.collapsed_markers_matches(
-            u"1. Stuff in quotes like, “N.A.”"))
-        self.assertEqual([], interpretations.collapsed_markers_matches(
-            u"i. References appendix D, part I.A.1. Stuff"))
+            interpretations.collapsed_markers_matches(
+                'A. AAA: 1. More', 'A. AAA: <E T="03">1</E>. More')))
+        for txt in ("1. Content - i.e. More content",
+                    u"1. Stuff in quotes like, “N.A.”",
+                    u"i. References appendix D, part I.A.1. Stuff"
+                    "A. AAA - 1. More, without tags"):
+            self.assertEqual([], interpretations.collapsed_markers_matches(
+                txt, txt))
