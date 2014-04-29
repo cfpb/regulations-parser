@@ -51,7 +51,8 @@ _first_markers = [re.compile(ur'[\.|,|;|:|\-|—]\s*(' + marker + ')\.')
 def collapsed_markers_matches(node_text, tagged_text):
     """Find collapsed markers, i.e. tree node paragraphs that begin within a
     single XML node, within this text. Remove citations and other false
-    positives"""
+    positives. This is pretty hacky right now -- it focuses on the plain
+    text but takes cues from the tagged text. @todo: streamline logic"""
     # In addition to the regex above, keyterms are an acceptable prefix. We
     # therefore convert keyterms to satisfy the above regex
     node_for_keyterms = Node(node_text, node_type=Node.INTERP,
@@ -71,6 +72,8 @@ def collapsed_markers_matches(node_text, tagged_text):
             possible = [(m, s, end) for m, s, end in possible
                         if not node_text[end:].startswith(following)]
         possible = [m for m, _, _ in possible]
+        # As all "1." collapsed markers must be emphasized, run a quick
+        # check to weed out some false positives
         if '<E T="03">1' not in tagged_text:
             possible = filter(lambda m: m.group(1) != '1', possible)
         collapsed_markers.extend(possible)
@@ -99,8 +102,8 @@ def is_title(xml_node):
 
 
 def process_inner_children(inner_stack, xml_node):
-    """Process the following nodes as children of this interpretation"""
-
+    """Process the following nodes as children of this interpretation. This
+    is very similar to reg_text.py:build_from_section()"""
     children = itertools.takewhile(
         lambda x: not is_title(x), xml_node.itersiblings())
     nodes = []
