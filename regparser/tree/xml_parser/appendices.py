@@ -138,16 +138,34 @@ class AppendixProcessor(object):
 
         self.m_stack.add(self.depth, n)
 
+    def paragraph_with_marker(self, text, tagged_text):
+        """The paragraph has a marker, like (a) or a. etc."""
+        # To aid in determining collapsed paragraphs, replace any
+        # keyterms present
+        node_for_keyterms = Node(text, node_type=Node.APPENDIX)
+        node_for_keyterms.tagged_text = tagged_text
+        node_for_keyterms.label = [initial_marker(text)[0]]
+        keyterm = KeyTerms.get_keyterm(node_for_keyterms)
+        if keyterm:
+            mtext = text.replace(keyterm, '.'*len(keyterm))
+        else:
+            mtext = text
+
+        for mtext in split_paragraph_text(mtext):
+            if keyterm:     # still need the original text
+                mtext = mtext.replace('.'*len(keyterm), keyterm)
+            node = Node(mtext, node_type=Node.APPENDIX,
+                        label=[initial_marker(mtext)[0]])
+            self.nodes.append(node)
+
     def paragraph_no_marker(self, text):
-        """The paragraph has no (a) or a. etc. Indents one level if
-        preceded by a header"""
+        """The paragraph has no (a) or a. etc."""
         self.paragraph_counter += 1
         n = Node(text, node_type=Node.APPENDIX,
                  label=['p' + str(self.paragraph_counter)])
         self.nodes.append(n)
 
     def graphic(self, xml_node):
-        """An image. Indents one level if preceded by a header"""
         self.paragraph_counter += 1
         gid = xml_node.xpath('./GID')[0].text
         text = '![](' + gid + ')'
@@ -156,7 +174,6 @@ class AppendixProcessor(object):
         self.nodes.append(n)
 
     def table(self, xml_node):
-        """A table. Indents one level if preceded by a header"""
         self.paragraph_counter += 1
         n = Node(table_xml_to_plaintext(xml_node),
                  node_type=Node.APPENDIX,
@@ -251,24 +268,8 @@ class AppendixProcessor(object):
                 self.end_group()
                 self.subheader(child, text)
             elif initial_marker(text) and child.tag in ('P', 'FP', 'HD'):
-                # To aid in determining collapsed paragraphs, replace any
-                # keyterms present
-                node_for_keyterms = Node(text, node_type=Node.APPENDIX)
-                node_for_keyterms.tagged_text =\
-                    tree_utils.get_node_text_tags_preserved(child)
-                node_for_keyterms.label = [initial_marker(text)[0]]
-                keyterm = KeyTerms.get_keyterm(node_for_keyterms)
-                if keyterm:
-                    mtext = text.replace(keyterm, '.'*len(keyterm))
-                else:
-                    mtext = text
-
-                for mtext in split_paragraph_text(mtext):
-                    if keyterm:     # still need the original text
-                        mtext = mtext.replace('.'*len(keyterm), keyterm)
-                    node = Node(mtext, node_type=Node.APPENDIX,
-                                label=[initial_marker(mtext)[0]])
-                    self.nodes.append(node)
+                self.paragraph_with_marker(
+                    text, tree_utils.get_node_text_tags_preserved(child))
             elif child.tag in ('P', 'FP'):
                 self.paragraph_no_marker(text)
             elif child.tag == 'GPH':

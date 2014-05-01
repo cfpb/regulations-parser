@@ -391,158 +391,126 @@ class AppendixProcessorTest(TestCase):
         self.ap.paragraph_counter = 0
         self.ap.depth = 0
         self.ap.m_stack = tree_utils.NodeStack()
+        self.ap.nodes = []
 
     def result(self):
         return self.ap.m_stack.peek_last()
 
     def test_paragraph_no_marker(self):
         self.ap.paragraph_no_marker("Paragraph Text")
-        lvl, node = self.result()
-        self.assertEqual(node.text, 'Paragraph Text')
-        self.assertEqual(0, lvl)
-        self.assertEqual(node.label, ['p1'])
-
-        #   If a header was before the paragraph, increment the level 1
-        self.ap.m_stack.add(0, Node(label=['h1'], title='Some section'))
-        self.ap.paragraph_no_marker("Paragraph Text")
+        self.ap.end_group()
         lvl, node = self.result()
         self.assertEqual(node.text, 'Paragraph Text')
         self.assertEqual(1, lvl)
+        self.assertEqual(node.label, ['p1'])
+
+        #   If a header was before the paragraph, increment the level 1
+        self.ap.m_stack.add(1, Node(label=['h1'], title='Some section'))
+        self.ap.paragraph_no_marker("Paragraph Text")
+        self.ap.end_group()
+        lvl, node = self.result()
+        self.assertEqual(node.text, 'Paragraph Text')
+        self.assertEqual(2, lvl)
         self.assertEqual(node.label, ['p2'])
 
     def test_paragraph_with_marker(self):
-        self.ap.paragraph_with_marker("(a) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(a) A paragraph')
-        self.assertEqual(lvl, 1)
-        self.assertEqual(node.label, ['a'])
+        for text in ('(a) A paragraph', '(b) A paragraph', '(1) A paragraph',
+                     '(2) A paragraph', '(c) A paragraph'):
+            self.ap.paragraph_with_marker(text, text)
+        self.ap.paragraph_no_marker('some text')
+        self.ap.paragraph_with_marker('(d) A paragraph', '(d) A paragraph')
+        self.ap.end_group()
 
-        self.ap.paragraph_with_marker("(b) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(b) A paragraph')
-        self.assertEqual(lvl, 1)
-        self.assertEqual(node.label, ['b'])
+        stack = self.ap.m_stack.m_stack
+        self.assertEqual(1, len(stack))
+        level2 = [el[1] for el in stack[0]]
+        self.assertEqual(5, len(level2))
+        a, b, c, other, d = level2
+        self.assertEqual(['a'], a.label)
+        self.assertEqual(0, len(a.children))
+        self.assertEqual(['b'], b.label)
+        self.assertEqual(2, len(b.children))
+        self.assertEqual(['c'], c.label)
+        self.assertEqual(0, len(c.children))
+        self.assertEqual(['p1'], other.label)
+        self.assertEqual(0, len(other.children))
+        self.assertEqual(['d'], d.label)
+        self.assertEqual(0, len(d.children))
 
-        self.ap.paragraph_with_marker("(1) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(1) A paragraph')
-        self.assertEqual(lvl, 2)
-        self.assertEqual(node.label, ['1'])
-
-        self.ap.paragraph_with_marker("(2) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(2) A paragraph')
-        self.assertEqual(lvl, 2)
-        self.assertEqual(node.label, ['2'])
-
-        self.ap.paragraph_with_marker("(c) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(c) A paragraph')
-        self.assertEqual(lvl, 1)
-        self.assertEqual(node.label, ['c'])
-
-        self.ap.paragraph_no_marker("Some text")
-        lvl, node = self.result()
-        self.assertEqual(node.text, 'Some text')
-        self.assertEqual(lvl, 1)    # Stay on the same level
-        self.assertEqual(node.label, ['p1'])
-
-        self.ap.paragraph_with_marker("(d) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(d) A paragraph')
-        self.assertEqual(lvl, 1)
-        self.assertEqual(node.label, ['d'])
+        b1, b2 = b.children
+        self.assertEqual(['b', '1'], b1.label)
+        self.assertEqual(0, len(b1.children))
+        self.assertEqual(['b', '2'], b2.label)
+        self.assertEqual(0, len(b2.children))
 
     def test_paragraph_period(self):
-        self.ap.paragraph_with_marker("1. A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '1. A paragraph')
-        self.assertEqual(lvl, 1)
-        self.assertEqual(node.label, ['1'])
-
-        self.ap.paragraph_with_marker("(b) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(b) A paragraph')
-        self.assertEqual(lvl, 2)
-        self.assertEqual(node.label, ['b'])
-
-        self.ap.paragraph_with_marker("A. A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, 'A. A paragraph')
-        self.assertEqual(lvl, 3)
-        self.assertEqual(node.label, ['A'])
-
+        for text in ("1. A paragraph", "(a) A paragraph", "A. A paragraph"):
+            self.ap.paragraph_with_marker(text, text)
         self.ap.paragraph_no_marker("code . is here")
-        lvl, node = self.result()
-        self.assertEqual(node.text, 'code . is here')
-        self.assertEqual(lvl, 3)    # Stay on the same level
-        self.assertEqual(node.label, ['p1'])
+        self.ap.end_group()
+
+        stack = self.ap.m_stack.m_stack
+        self.assertEqual(3, len(stack))
+        level2, level3, level4 = [[el[1] for el in lvl] for lvl in stack]
+
+        self.assertEqual(1, len(level2))
+        self.assertEqual(['1'], level2[0].label)
+        self.assertEqual(1, len(level3))
+        self.assertEqual(['a'], level3[0].label)
+        self.assertEqual(2, len(level4))
+        self.assertEqual(['A'], level4[0].label)
+        self.assertEqual(['p1'], level4[1].label)
 
     def test_paragraph_roman(self):
-        self.ap.paragraph_with_marker("(1) A paragraph", "(b) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(1) A paragraph')
-        self.assertEqual(lvl, 1)
-        self.assertEqual(node.label, ['1'])
+        for text in ("(1) A paragraph", "(a) A paragraph", "(i) A paragraph",
+                     "(ii) A paragraph", "(iii) A paragraph",
+                     "(iv) A paragraph", "(v) A paragraph"):
+            self.ap.paragraph_with_marker(text, text)
+        self.ap.end_group()
 
-        self.ap.paragraph_with_marker("(b) A paragraph", "(i) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(b) A paragraph')
-        self.assertEqual(lvl, 2)
-        self.assertEqual(node.label, ['b'])
+        stack = self.ap.m_stack.m_stack
+        self.assertEqual(3, len(stack))
+        level2, level3, level4 = [[el[1] for el in lvl] for lvl in stack]
 
-        self.ap.paragraph_with_marker("(i) A paragraph", "(ii) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(i) A paragraph')
-        self.assertEqual(lvl, 3)
-        self.assertEqual(node.label, ['i'])
-
-        self.ap.paragraph_with_marker("(ii) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(ii) A paragraph')
-        self.assertEqual(lvl, 3)
-        self.assertEqual(node.label, ['ii'])
-
-        self.ap.paragraph_with_marker("(v) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(v) A paragraph')
-        self.assertEqual(lvl, 3)
-        self.assertEqual(node.label, ['v'])
+        self.assertEqual(1, len(level2))
+        self.assertEqual(['1'], level2[0].label)
+        self.assertEqual(1, len(level3))
+        self.assertEqual(['a'], level3[0].label)
+        self.assertEqual(5, len(level4))
+        self.assertEqual(['i', 'ii', 'iii', 'iv', 'v'],
+                         [el.label[0] for el in level4])
 
     def test_split_paragraph_text(self):
-        res = self.ap.split_paragraph_text("(a) Paragraph. (1) Next paragraph")
-        self.assertEqual(['(a) Paragraph. ', '(1) Next paragraph', ''], res)
+        res = appendices.split_paragraph_text(
+            "(a) Paragraph. (1) Next paragraph")
+        self.assertEqual(['(a) Paragraph. ', '(1) Next paragraph'], res)
 
-        res = self.ap.split_paragraph_text("(a) (Keyterm) (1) Next paragraph")
-        self.assertEqual(['(a) (Keyterm) ', '(1) Next paragraph', ''], res)
+        res = appendices.split_paragraph_text(
+            "(a) (Keyterm) (1) Next paragraph")
+        self.assertEqual(['(a) (Keyterm) ', '(1) Next paragraph'], res)
 
-        res = self.ap.split_paragraph_text("(a) Mentions one (1) comment")
-        self.assertEqual(['(a) Mentions one (1) comment', ''], res)
+        res = appendices.split_paragraph_text("(a) Mentions one (1) comment")
+        self.assertEqual(['(a) Mentions one (1) comment'], res)
 
     def test_paragraph_double_depth(self):
-        self.ap.paragraph_with_marker("(a) A paragraph", "(1) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(a) A paragraph')
-        self.assertEqual(lvl, 1)
-        self.assertEqual(node.label, ['a'])
+        for text in ("(a) A paragraph", "(1) A paragraph", "(i) A paragraph",
+                "(A) A paragraph", "(a) A paragraph"):
+            self.ap.paragraph_with_marker(text, text)
+        self.ap.end_group()
 
-        self.ap.paragraph_with_marker("(1) A paragraph", "(i) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(1) A paragraph')
-        self.assertEqual(lvl, 2)
-        self.assertEqual(node.label, ['1'])
+        stack = self.ap.m_stack.m_stack
+        self.assertEqual(5, len(stack))
+        levels = [[el[1] for el in lvl] for lvl in stack]
+        self.assertEqual(5, len(levels))
+        for lvl in levels:
+            self.assertEqual(1, len(lvl))
+        level2, level3, level4, level5, level6 = levels
 
-        self.ap.paragraph_with_marker("(i) A paragraph", "(A) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(i) A paragraph')
-        self.assertEqual(lvl, 3)
-        self.assertEqual(node.label, ['i'])
-
-        self.ap.paragraph_with_marker("(A) A paragraph")
-        lvl, node = self.result()
-        self.assertEqual(node.text, '(A) A paragraph')
-        self.assertEqual(lvl, 4)
-        self.assertEqual(node.label, ['A'])
+        self.assertEqual(['a'], level2[0].label)
+        self.assertEqual(['1'], level3[0].label)
+        self.assertEqual(['i'], level4[0].label)
+        self.assertEqual(['A'], level5[0].label)
+        self.assertEqual(['a'], level6[0].label)
 
     def test_process_part_cap(self):
         xml = u"""
@@ -596,30 +564,6 @@ class AppendixProcessorTest(TestCase):
 
         self.assertEqual(2, len(a1.children))
         self.assertEqual(1, len(a2.children))
-
-    def test_process_roman(self):
-        xml = u"""
-        <APPENDIX>
-            <EAR>Pt. 1111, App. A</EAR>
-            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
-            <HD SOURCE="HD1">Part I - Something</HD>
-            <P>(a) Something</P>
-            <GPH><GID>Contains (b)(i) - (iv)</GID></GPH>
-            <P>(v) Something else</P>
-            <P>(vi) Something more</P>
-        </APPENDIX>
-        """
-        appendix = self.ap.process(etree.fromstring(xml), 1111)
-        self.assertEqual(1, len(appendix.children))
-        aI = appendix.children[0]
-        self.assertEqual(2, len(aI.children))
-        aIa, aIb = aI.children
-        self.assertEqual(2, len(aIb.children))
-        aIv, aIvi = aIb.children
-        self.assertEqual(['1111', 'A', 'I', 'a'], aIa.label)
-        self.assertEqual(['1111', 'A', 'I', 'p1'], aIb.label)
-        self.assertEqual(['1111', 'A', 'I', 'p1', 'v'], aIv.label)
-        self.assertEqual(['1111', 'A', 'I', 'p1', 'vi'], aIvi.label)
 
     def test_process_collapsed(self):
         xml = u"""
