@@ -49,7 +49,7 @@ def is_appendix_header(node):
             or (node.tag == 'HD' and node.attrib['SOURCE'] == 'HED'))
 
 
-_first_markers = [re.compile(ur'[\)\.|,|;|-|—|>]\s*\(' + lvl[0] + '\)')
+_first_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*\(' + lvl[0] + '\)')
                   for lvl in p_levels]
 
 

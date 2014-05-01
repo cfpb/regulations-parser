@@ -586,3 +586,48 @@ class AppendixProcessorTest(TestCase):
         self.assertEqual('(1) Content', aIa1.text)
         self.assertEqual(['1111', 'A', 'I', 'a', '2'], aIa2.label)
         self.assertEqual('(2) Something else', aIa2.text)
+
+    def test_process_collapsed_keyterm(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <P>(a) <E T="03">Keyterm</E> (1) Content</P>
+        </APPENDIX>
+        """
+        appendix = self.ap.process(etree.fromstring(xml), 1111)
+        self.assertEqual(1, len(appendix.children))
+        a = appendix.children[0]
+        self.assertEqual(['1111', 'A', 'a'], a.label)
+        self.assertEqual(1, len(a.children))
+        a1 = a.children[0]
+        self.assertEqual(['1111', 'A', 'a', '1'], a1.label)
+        self.assertEqual(0, len(a1.children))
+
+    def test_process_separated_by_header(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <P>(a) aaaaaa</P>
+            <P>(1) 111111</P>
+            <HD SOURCE="HD1">Random Header</HD>
+            <P>(2) 222222</P>
+            <P>Markerless</P>
+        </APPENDIX>
+        """
+        appendix = self.ap.process(etree.fromstring(xml), 1111)
+        self.assertEqual(1, len(appendix.children))
+        a = appendix.children[0]
+        self.assertEqual(['1111', 'A', 'a'], a.label)
+        self.assertEqual(3, len(a.children))
+        a1, a2, amarkerless = a.children
+        self.assertEqual(['1111', 'A', 'a', '1'], a1.label)
+        self.assertEqual(1, len(a1.children))
+        aheader = a1.children[0]
+        self.assertEqual(['1111', 'A', 'a', '1', 'h1'], aheader.label)
+        self.assertEqual(0, len(aheader.children))
+        self.assertEqual(['1111', 'A', 'a', '2'], a2.label)
+        self.assertEqual(0, len(a2.children))
+        self.assertEqual(['1111', 'A', 'a', 'p1'], amarkerless.label)
+        self.assertEqual(0, len(amarkerless.children))
