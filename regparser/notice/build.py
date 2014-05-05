@@ -336,8 +336,8 @@ def process_sxs(notice, notice_xml):
     sxs = find_section_by_section(notice_xml)
     # note we will continue to use cfr_parts[0] as the default SxS label until
     # we find a counter example
-    sxs = build_section_by_section(sxs, notice['cfr_parts'][0],
-                                   notice['meta']['start_page'])
+    sxs = build_section_by_section(sxs, notice['meta']['start_page'],
+                                   notice['cfr_parts'][0])
     notice['section_by_section'] = sxs
 
 
