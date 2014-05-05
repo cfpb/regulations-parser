@@ -371,16 +371,17 @@ class NoticeBuildTest(TestCase):
 
         amended_label = ('POST', '105-Subpart:B')
         notice = {'cfr_parts': ['105']}
-        changes = build.process_new_subpart(notice, amended_label, par)
+        subpart_changes = build.process_new_subpart(notice, '105',
+                                                    amended_label, par)
 
         new_nodes_added = ['105-Subpart-B', '105-30', '105-30-a']
-        self.assertEqual(new_nodes_added, changes.keys())
+        self.assertEqual(new_nodes_added, subpart_changes.keys())
 
-        for l, n in changes.items():
+        for l, n in subpart_changes.items():
             self.assertEqual(n['action'], 'POST')
 
         self.assertEqual(
-            changes['105-Subpart-B']['node']['node_type'], 'subpart')
+            subpart_changes['105-Subpart-B']['node']['node_type'], 'subpart')
 
     def test_process_amendments_subpart(self):
         xml = self.new_subpart_xml()
@@ -414,6 +415,32 @@ class NoticeBuildTest(TestCase):
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual({}, notice['changes'])
+
+    def test_process_amendments_context(self):
+        """Context should carry over between REGTEXTs"""
+        xml = u"""
+            <ROOT>
+            <REGTEXT TITLE="12">
+                <AMDPAR>
+                3. In § 106.1, revise paragraph (a) to read as follows:
+                </AMDPAR>
+            </REGTEXT>
+            <REGTEXT TITLE="12">
+                <AMDPAR>
+                3. Add appendix C
+                </AMDPAR>
+            </REGTEXT>
+            </ROOT>
+        """
+
+        notice_xml = etree.fromstring(xml)
+        notice = {'cfr_parts': ['105', '106']}
+        build.process_amendments(notice, notice_xml)
+
+        self.assertEqual(2, len(notice['amendments']))
+        amd1, amd2 = notice['amendments']
+        self.assertEqual(['106', '1', 'a'], amd1.label)
+        self.assertEqual(['106', 'C'], amd2.label)
 
     def test_introductory_text(self):
         """ Sometimes notices change just the introductory text of a paragraph

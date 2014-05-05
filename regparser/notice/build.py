@@ -136,11 +136,11 @@ def process_designate_subpart(amendment):
         return subpart_changes
 
 
-def process_new_subpart(notice, subpart_added, par):
+def process_new_subpart(notice, cfr_part, subpart_added, par):
     """ A new subpart has been added, create the notice changes. """
     subpart_changes = {}
     subpart_xml = find_subpart(par)
-    subpart = reg_text.build_subpart(notice['cfr_parts'][0], subpart_xml)
+    subpart = reg_text.build_subpart(cfr_part, subpart_xml)
 
     for change in changes.create_subpart_amendment(subpart):
         subpart_changes.update(change)
@@ -277,10 +277,11 @@ def process_amendments(notice, notice_xml):
         else:
             amdpars_by_parent.append(AmdparByParent(parent, par))
 
+    default_cfr_part = notice['cfr_parts'][0]
     for aXp in amdpars_by_parent:
         amended_labels = []
         designate_labels, other_labels = [], []
-        context = [aXp.parent.get('PART') or notice['cfr_parts'][0]]
+        context = [aXp.parent.get('PART') or default_cfr_part]
         for par in aXp.amdpars:
             als, context = parse_amdpar(par, context)
             amended_labels.extend(als)
@@ -292,7 +293,8 @@ def process_amendments(notice, notice_xml):
                     notice_changes.update(subpart_changes)
                 designate_labels.append(al)
             elif new_subpart_added(al, notice['cfr_parts'][0]):
-                notice_changes.update(process_new_subpart(notice, al, par))
+                notice_changes.update(process_new_subpart(
+                    notice, notice['cfr_parts'][0], al, par))
                 designate_labels.append(al)
             else:
                 other_labels.append(al)
@@ -317,6 +319,10 @@ def process_amendments(notice, notice_xml):
 
         amends.extend(designate_labels)
         amends.extend(other_labels)
+
+        if other_labels:    # Carry cfr_part through amendments
+            default_cfr_part = other_labels[-1].label[0]
+
     if amends:
         notice['amendments'] = amends
         notice['changes'] = notice_changes.changes
