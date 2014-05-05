@@ -24,7 +24,9 @@ import settings
 
 def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     """Given JSON from the federal register, create our notice structure"""
-    notice = {'cfr_title': cfr_title, 'cfr_parts': [cfr_part]}
+    cfr_parts = set(str(ref['part']) for ref in fr_notice['cfr_references'])
+    cfr_parts.add(cfr_part)
+    notice = {'cfr_title': cfr_title, 'cfr_parts': list(cfr_parts)}
     #   Copy over most fields
     for field in ['abstract', 'action', 'agency_names', 'comments_close_on',
                   'document_number', 'publication_date',
@@ -332,6 +334,8 @@ def process_amendments(notice, notice_xml):
 def process_sxs(notice, notice_xml):
     """ Find and build SXS from the notice_xml. """
     sxs = find_section_by_section(notice_xml)
+    # note we will continue to use cfr_parts[0] as the default SxS label until
+    # we find a counter example
     sxs = build_section_by_section(sxs, notice['cfr_parts'][0],
                                    notice['meta']['start_page'])
     notice['section_by_section'] = sxs
