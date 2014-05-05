@@ -23,7 +23,7 @@ import settings
 
 def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     """Given JSON from the federal register, create our notice structure"""
-    notice = {'cfr_title': cfr_title, 'cfr_part': cfr_part}
+    notice = {'cfr_title': cfr_title, 'cfr_parts': [cfr_part]}
     #   Copy over most fields
     for field in ['abstract', 'action', 'agency_names', 'comments_close_on',
                   'document_number', 'publication_date',
@@ -140,7 +140,7 @@ def process_new_subpart(notice, subpart_added, par):
     """ A new subpart has been added, create the notice changes. """
     subpart_changes = {}
     subpart_xml = find_subpart(par)
-    subpart = reg_text.build_subpart(notice['cfr_part'], subpart_xml)
+    subpart = reg_text.build_subpart(notice['cfr_parts'][0], subpart_xml)
 
     for change in changes.create_subpart_amendment(subpart):
         subpart_changes.update(change)
@@ -280,7 +280,7 @@ def process_amendments(notice, notice_xml):
     for aXp in amdpars_by_parent:
         amended_labels = []
         designate_labels, other_labels = [], []
-        context = [aXp.parent.get('PART') or notice['cfr_part']]
+        context = [aXp.parent.get('PART') or notice['cfr_parts'][0]]
         for par in aXp.amdpars:
             als, context = parse_amdpar(par, context)
             amended_labels.extend(als)
@@ -291,7 +291,7 @@ def process_amendments(notice, notice_xml):
                 if subpart_changes:
                     notice_changes.update(subpart_changes)
                 designate_labels.append(al)
-            elif new_subpart_added(al, notice['cfr_part']):
+            elif new_subpart_added(al, notice['cfr_parts'][0]):
                 notice_changes.update(process_new_subpart(notice, al, par))
                 designate_labels.append(al)
             else:
@@ -302,14 +302,15 @@ def process_amendments(notice, notice_xml):
         section_xml = find_section(par)
         if section_xml is not None:
             for section in reg_text.build_from_section(
-                    notice['cfr_part'], section_xml):
+                    notice['cfr_parts'][0], section_xml):
                 create_xml_changes(other_labels, section, notice_changes)
 
         for appendix in parse_appendix_changes(other_labels,
-                                               notice['cfr_part'], aXp.parent):
+                                               notice['cfr_parts'][0],
+                                               aXp.parent):
             create_xml_changes(other_labels, appendix, notice_changes)
 
-        interp = parse_interp_changes(other_labels, notice['cfr_part'],
+        interp = parse_interp_changes(other_labels, notice['cfr_parts'][0],
                                       aXp.parent)
         if interp:
             create_xml_changes(other_labels, interp, notice_changes)
@@ -324,7 +325,7 @@ def process_amendments(notice, notice_xml):
 def process_sxs(notice, notice_xml):
     """ Find and build SXS from the notice_xml. """
     sxs = find_section_by_section(notice_xml)
-    sxs = build_section_by_section(sxs, notice['cfr_part'],
+    sxs = build_section_by_section(sxs, notice['cfr_parts'][0],
                                    notice['meta']['start_page'])
     notice['section_by_section'] = sxs
 

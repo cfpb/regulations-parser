@@ -47,7 +47,7 @@ class NoticeBuildTest(TestCase):
             'abstract': 'sum sum sum',
             'action': 'actact',
             'agency_names': ['Agency 1', 'Agency 2'],
-            'cfr_part': '9292',
+            'cfr_parts': ['9292'],
             'cfr_title': '5',
             'document_number': '7878-111',
             'effective_on': '1956-09-09',
@@ -86,9 +86,9 @@ class NoticeBuildTest(TestCase):
                 <P>Following Content</P>
             </SUPLINF>
         </ROOT>"""
-        notice = {'cfr_part': '9292', 'meta': {'start_page': 100}}
+        notice = {'cfr_parts': ['9292'], 'meta': {'start_page': 100}}
         self.assertEqual(build.process_xml(notice, etree.fromstring(xml)), {
-            'cfr_part': '9292',
+            'cfr_parts': ['9292'],
             'footnotes': {},
             'meta': {'start_page': 100},
             'addresses': {
@@ -118,9 +118,9 @@ class NoticeBuildTest(TestCase):
                 <P>Following Content</P>
             </SUPLINF>
         </ROOT>"""
-        notice = {'cfr_part': '9292', 'meta': {'start_page': 210}}
+        notice = {'cfr_parts': ['9292'], 'meta': {'start_page': 210}}
         self.assertEqual(build.process_xml(notice, etree.fromstring(xml)), {
-            'cfr_part': '9292',
+            'cfr_parts': ['9292'],
             'footnotes': {},
             'meta': {'start_page': 210},
             'section_by_section': [{
@@ -142,17 +142,17 @@ class NoticeBuildTest(TestCase):
         </ROOT>"""
         xml = etree.fromstring(xml)
 
-        notice = {'cfr_part': '902', 'meta': {'start_page': 10},
+        notice = {'cfr_parts': ['902'], 'meta': {'start_page': 10},
                   'effective_on': '2002-02-02'}
         notice = build.process_xml(notice, xml)
         self.assertEqual('2002-02-02', notice['effective_on'])
 
-        notice = {'cfr_part': '902', 'meta': {'start_page': 10}}
+        notice = {'cfr_parts': ['902'], 'meta': {'start_page': 10}}
         notice = build.process_xml(notice, xml)
         # Uses the date found in the XML
         self.assertEqual('2002-01-01', notice['effective_on'])
 
-        notice = {'cfr_part': '902', 'meta': {'start_page': 10},
+        notice = {'cfr_parts': ['902'], 'meta': {'start_page': 10},
                   'effective_on': None}
         notice = build.process_xml(notice, xml)
         # Uses the date found in the XML
@@ -205,7 +205,7 @@ class NoticeBuildTest(TestCase):
         </REGTEXT>"""
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part': '105'}
+        notice = {'cfr_parts': ['105']}
         build.process_amendments(notice, notice_xml)
 
         section_list = ['105-2', '105-3', '105-1']
@@ -232,7 +232,7 @@ class NoticeBuildTest(TestCase):
         """
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part': '105'}
+        notice = {'cfr_parts': ['105']}
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual(notice['changes'].keys(), ['105-1-b'])
@@ -259,7 +259,7 @@ class NoticeBuildTest(TestCase):
             </REGTEXT>"""
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part': '105'}
+        notice = {'cfr_parts': ['105']}
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual(notice['changes'].keys(), ['105-1-b', '105-1-c'])
@@ -296,7 +296,7 @@ class NoticeBuildTest(TestCase):
         </ROOT>"""
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part': '105'}
+        notice = {'cfr_parts': ['105']}
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual(2, len(notice['amendments']))
@@ -317,7 +317,7 @@ class NoticeBuildTest(TestCase):
         </ROOT>"""
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part': '104'}
+        notice = {'cfr_parts': ['104']}
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual(1, len(notice['amendments']))
@@ -370,7 +370,7 @@ class NoticeBuildTest(TestCase):
         par = notice_xml.xpath('//AMDPAR')[1]
 
         amended_label = ('POST', '105-Subpart:B')
-        notice = {'cfr_part': '105'}
+        notice = {'cfr_parts': ['105']}
         changes = build.process_new_subpart(notice, amended_label, par)
 
         new_nodes_added = ['105-Subpart-B', '105-30', '105-30-a']
@@ -386,7 +386,7 @@ class NoticeBuildTest(TestCase):
         xml = self.new_subpart_xml()
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part': '105'}
+        notice = {'cfr_parts': ['105']}
         build.process_amendments(notice, notice_xml)
 
         self.assertTrue('105-Subpart-B' in notice['changes'].keys())
@@ -410,7 +410,7 @@ class NoticeBuildTest(TestCase):
         """
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part': '105'}
+        notice = {'cfr_parts': ['105']}
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual({}, notice['changes'])
@@ -433,7 +433,7 @@ class NoticeBuildTest(TestCase):
         """
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part': '106'}
+        notice = {'cfr_parts': ['106']}
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual('[text]', notice['changes']['106-2'][0]['field'])
@@ -462,7 +462,7 @@ class NoticeBuildTest(TestCase):
         """
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_part': '106'}
+        notice = {'cfr_parts': ['106']}
         build.process_amendments(notice, notice_xml)
 
         self.assertEqual(2, len(notice['changes']['106-2']))
