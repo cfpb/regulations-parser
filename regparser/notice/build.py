@@ -1,4 +1,5 @@
 from copy import deepcopy
+from collections import defaultdict
 import os
 from urlparse import urlparse
 
@@ -136,11 +137,11 @@ def process_designate_subpart(amendment):
         return subpart_changes
 
 
-def process_new_subpart(notice, cfr_part, subpart_added, par):
+def process_new_subpart(notice, amd_label, par):
     """ A new subpart has been added, create the notice changes. """
     subpart_changes = {}
     subpart_xml = find_subpart(par)
-    subpart = reg_text.build_subpart(cfr_part, subpart_xml)
+    subpart = reg_text.build_subpart(amd_label.label[0], subpart_xml)
 
     for change in changes.create_subpart_amendment(subpart):
         subpart_changes.update(change)
@@ -286,36 +287,36 @@ def process_amendments(notice, notice_xml):
             als, context = parse_amdpar(par, context)
             amended_labels.extend(als)
 
+        labels_by_part = defaultdict(list)
         for al in amended_labels:
             if isinstance(al, DesignateAmendment):
                 subpart_changes = process_designate_subpart(al)
                 if subpart_changes:
                     notice_changes.update(subpart_changes)
                 designate_labels.append(al)
-            elif new_subpart_added(al, notice['cfr_parts'][0]):
-                notice_changes.update(process_new_subpart(
-                    notice, notice['cfr_parts'][0], al, par))
+            elif new_subpart_added(al):
+                notice_changes.update(process_new_subpart(notice, al, par))
                 designate_labels.append(al)
             else:
                 other_labels.append(al)
+                labels_by_part[al.label[0]].append(al)
 
         create_xmlless_changes(other_labels, notice_changes)
 
-        section_xml = find_section(par)
-        if section_xml is not None:
-            for section in reg_text.build_from_section(
-                    notice['cfr_parts'][0], section_xml):
-                create_xml_changes(other_labels, section, notice_changes)
+        for cfr_part, rel_labels in labels_by_part.iteritems():
+            section_xml = find_section(par)
+            if section_xml is not None:
+                for section in reg_text.build_from_section(cfr_part,
+                                                           section_xml):
+                    create_xml_changes(rel_labels, section, notice_changes)
 
-        for appendix in parse_appendix_changes(other_labels,
-                                               notice['cfr_parts'][0],
-                                               aXp.parent):
-            create_xml_changes(other_labels, appendix, notice_changes)
+            for appendix in parse_appendix_changes(rel_labels, cfr_part,
+                                                   aXp.parent):
+                create_xml_changes(rel_labels, appendix, notice_changes)
 
-        interp = parse_interp_changes(other_labels, notice['cfr_parts'][0],
-                                      aXp.parent)
-        if interp:
-            create_xml_changes(other_labels, interp, notice_changes)
+            interp = parse_interp_changes(rel_labels, cfr_part, aXp.parent)
+            if interp:
+                create_xml_changes(rel_labels, interp, notice_changes)
 
         amends.extend(designate_labels)
         amends.extend(other_labels)

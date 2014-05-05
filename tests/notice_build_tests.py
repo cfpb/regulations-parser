@@ -369,10 +369,9 @@ class NoticeBuildTest(TestCase):
         notice_xml = etree.fromstring(xml)
         par = notice_xml.xpath('//AMDPAR')[1]
 
-        amended_label = ('POST', '105-Subpart:B')
+        amended_label = Amendment('POST', '105-Subpart:B')
         notice = {'cfr_parts': ['105']}
-        subpart_changes = build.process_new_subpart(notice, '105',
-                                                    amended_label, par)
+        subpart_changes = build.process_new_subpart(notice, amended_label, par)
 
         new_nodes_added = ['105-Subpart-B', '105-30', '105-30-a']
         self.assertEqual(new_nodes_added, subpart_changes.keys())
@@ -394,27 +393,41 @@ class NoticeBuildTest(TestCase):
         self.assertTrue('105-30-a' in notice['changes'].keys())
         self.assertTrue('105-30' in notice['changes'].keys())
 
-    def test_process_amendments_other_reg(self):
+    def test_process_amendments_mix_regs(self):
         """Some notices apply to multiple regs. For now, just ignore the
         sections not associated with the reg we're focused on"""
         xml = u"""
-            <REGTEXT PART="106" TITLE="12">
-            <AMDPAR>
-            3. In § 106.1, revise paragraph (a) to read as follows:
-            </AMDPAR>
-            <SECTION>
-                <SECTNO>§ 106.1</SECTNO>
-                <SUBJECT>Purpose.</SUBJECT>
-                <P>(a) Content</P>
-            </SECTION>
+            <ROOT>
+            <REGTEXT PART="105" TITLE="12">
+                <AMDPAR>
+                3. In § 105.1, revise paragraph (a) to read as follows:
+                </AMDPAR>
+                <SECTION>
+                    <SECTNO>§ 105.1</SECTNO>
+                    <SUBJECT>105Purpose.</SUBJECT>
+                    <P>(a) 105Content</P>
+                </SECTION>
             </REGTEXT>
+            <REGTEXT PART="106" TITLE="12">
+                <AMDPAR>
+                3. In § 106.3, revise paragraph (b) to read as follows:
+                </AMDPAR>
+                <SECTION>
+                    <SECTNO>§ 106.3</SECTNO>
+                    <SUBJECT>106Purpose.</SUBJECT>
+                    <P>(b) Content</P>
+                </SECTION>
+            </REGTEXT>
+            </ROOT>
         """
 
         notice_xml = etree.fromstring(xml)
-        notice = {'cfr_parts': ['105']}
+        notice = {'cfr_parts': ['105', '106']}
         build.process_amendments(notice, notice_xml)
 
-        self.assertEqual({}, notice['changes'])
+        self.assertEqual(2, len(notice['changes']))
+        self.assertTrue('105-1-a' in notice['changes'])
+        self.assertTrue('106-3-b' in notice['changes'])
 
     def test_process_amendments_context(self):
         """Context should carry over between REGTEXTs"""

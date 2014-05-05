@@ -682,11 +682,9 @@ def make_amendments(tokenized, subpart=False):
     return amends
 
 
-def new_subpart_added(amendment, reg_part):
-    """ Return True if label indicates that a new subpart was added (for the
-    right regulation). """
-
+def new_subpart_added(amendment):
+    """ Return True if label indicates that a new subpart was added """
     new_subpart = amendment.action == 'POST'
     label = amendment.original_label
     m = [t for t, _, _ in amdpar.subpart_label.scanString(label)]
-    return (len(m) > 0 and m[0].part == reg_part and new_subpart)
+    return (len(m) > 0 and new_subpart)
