@@ -15,7 +15,7 @@ def fetch_notice_json(cfr_title, cfr_part, only_final=False):
         "per_page": 1000,
         "order": "oldest",
         "fields[]": [
-            "abstract", "action", "agency_names", "citation",
+            "abstract", "action", "agency_names", "cfr_references", "citation",
             "comments_close_on", "dates", "document_number", "effective_on",
             "end_page", "full_text_xml_url", "html_url", "publication_date",
             "regulation_id_numbers", "start_page", "type", "volume"]}
