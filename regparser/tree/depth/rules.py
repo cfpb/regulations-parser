@@ -4,10 +4,10 @@ from regparser.tree.depth import markers
 
 
 def must_be(value):
-    """A constraint that the given variable must match the value. Use a
-    workaround for lambdas, see
-    http://stackoverflow.com/questions/2295290/what-do-lambda-function-closures-capture-in-python#answer-2295372"""
-    return lambda x, value=value: x == value
+    """A constraint that the given variable must matches the value."""
+    def inner(var):
+        return var == value
+    return inner
 
 
 def type_match(marker):
