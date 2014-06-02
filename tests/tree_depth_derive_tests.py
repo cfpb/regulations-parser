@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+from regparser.tree.depth import markers, rules
 from regparser.tree.depth.derive import derive_depths
 from regparser.tree.depth.markers import STARS_TAG, INLINE_STARS
 
@@ -116,3 +117,27 @@ class DeriveTests(TestCase):
         results = [[r.depth for r in result] for result in results]
         self.assertTrue([0, 0, 0] in results)
         self.assertTrue([0, 1, 0] in results)
+
+    def test_star_star(self):
+        results = derive_depths(['A', STARS_TAG, STARS_TAG, 'D'])
+        self.assertEqual(1, len(results))
+        self.assertTrue([0, 1, 0, 0], [r.depth for r in results[0]])
+
+        results = derive_depths(['A', INLINE_STARS, STARS_TAG, 'D'])
+        self.assertEqual(2, len(results))
+        self.assertTrue([0, 1, 2, 2], [r.depth for r in results[0]])
+        self.assertTrue([0, 1, 0, 0], [r.depth for r in results[0]])
+
+    def test_depth_type_order(self):
+        extra = rules.depth_type_order([markers.ints, markers.lower])
+        results = derive_depths(['1', 'a'], [extra])
+        self.assertEqual(1, len(results))
+        results = derive_depths(['i', 'a'], [extra])
+        self.assertEqual(0, len(results))
+
+        extra = rules.depth_type_order([(markers.ints, markers.roman),
+                                        markers.lower])
+        results = derive_depths(['1', 'a'], [extra])
+        self.assertEqual(1, len(results))
+        results = derive_depths(['i', 'a'], [extra])
+        self.assertEqual(1, len(results))
