@@ -1,47 +1,16 @@
 #vim: set encoding=utf-8
 import re
-import logging
 
 from lxml import etree
 
 from regparser import content
+from regparser.tree.depth import heuristics, rules, markers as mtypes
+from regparser.tree.depth.derive import derive_depths
 from regparser.tree.struct import Node
-from regparser.tree.paragraph import p_level_of, p_levels
+from regparser.tree.paragraph import p_level_of
 from regparser.tree.xml_parser.appendices import build_non_reg_text
 from regparser.tree import reg_text
 from regparser.tree.xml_parser import tree_utils
-
-
-def determine_level(c, current_level, next_marker=None):
-    """ Regulation paragraphs are hierarchical. This determines which level
-    the paragraph is at. Convert between p_level indexing and depth here by
-    adding one"""
-    potential = p_level_of(c)
-
-    if len(potential) > 1 and next_marker:     # resolve ambiguity
-        following = p_level_of(next_marker)
-
-        #   Add character index
-        potential = [(level, p_levels[level].index(c)) for level in potential]
-        following = [(level, p_levels[level].index(next_marker))
-                     for level in following]
-
-        #   Check if we can be certain using the following marker
-        for pot_level, pot_idx in potential:
-            for next_level, next_idx in following:
-                if (    # E.g. i followed by A or i followed by 1
-                        (next_idx == 0 and next_level == pot_level + 1)
-                        or  # E.g. i followed by ii
-                        (next_level == pot_level and next_idx > pot_idx)
-                        or  # E.g. i followed by 3
-                        (next_level < pot_level and next_idx > 0)):
-                    return pot_level + 1
-        logging.warning("Ambiguous marker (%s) not followed by something "
-                        + "disambiguating (%s)", c, next_marker)
-        return potential[0][0] + 1
-
-    else:
-        return potential[0] + 1
 
 
 def get_reg_part(reg_doc):
@@ -189,37 +158,53 @@ def next_marker(xml_node, remaining_markers):
 
 
 def build_from_section(reg_part, section_xml):
-    p_level = 1
-    m_stack = tree_utils.NodeStack()
     section_texts = []
-    for ch in (ch for ch in section_xml.getchildren() if ch.tag == 'P'):
+    nodes = []
+    # Collect paragraph markers and section text (intro text for the
+    # section)
+    for ch in filter(lambda ch: ch.tag in ('P', 'STARS'),
+                     section_xml.getchildren()):
         text = tree_utils.get_node_text(ch, add_spaces=True)
         tagged_text = tree_utils.get_node_text_tags_preserved(ch)
         markers_list = get_markers(tagged_text.strip())
 
-        if not markers_list:
+        if ch.tag == 'STARS':
+            nodes.append(Node(label=[mtypes.STARS_TAG]))
+        elif not markers_list:
             section_texts.append((text, tagged_text))
         else:
-            markers_and_text = get_markers_and_text(ch, markers_list)
-
-            #   Easier to reason if we view the list as a stack
-            markers_and_text = list(reversed(markers_and_text))
-            while markers_and_text:
-                m, node_text = markers_and_text.pop()
-                m_sans_markup = m.replace('<E T="03">', '').replace('</E>', '')
-                n = Node(node_text[0], [], [str(m_sans_markup)],
-                         source_xml=ch)
+            for m, node_text in get_markers_and_text(ch, markers_list):
+                n = Node(node_text[0], [], [m], source_xml=ch)
                 n.tagged_text = unicode(node_text[1])
+                nodes.append(n)
+            if node_text[0].endswith('* * *'):
+                nodes.append(Node(label=[mtypes.INLINE_STARS]))
 
-                new_p_level = determine_level(
-                    m, p_level, next_marker(ch, markers_and_text))
+    # Trailing stars don't matter; slightly more efficient to ignore them
+    while nodes and nodes[-1].label[0] in mtypes.stars:
+        nodes = nodes[:-1]
 
+    # Use constraint programming to figure out possible depth assignments
+    depths = derive_depths(
+        [n.label[0] for n in nodes],
+        [rules.depth_type_order([mtypes.lower, mtypes.ints, mtypes.roman,
+                                 mtypes.upper, mtypes.em_ints,
+                                 mtypes.em_roman])])
+    m_stack = tree_utils.NodeStack()
+    if depths:
+        # Find the assignment which violates the least of our heuristics
+        depths = heuristics.prefer_multiple_children(depths, 0.5)
+        depths = sorted(depths, key=lambda d: d.weight, reverse=True)
+        depths = depths[0]
+        for node, par in zip(nodes, depths):
+            if par.typ != mtypes.stars:
                 last = m_stack.peek()
+                node.label = [l.replace('<E T="03">', '').replace('</E>', '')
+                              for l in node.label]
                 if len(last) == 0:
-                    m_stack.push_last((new_p_level, n))
+                    m_stack.push_last((1 + par.depth, node))
                 else:
-                    m_stack.add(new_p_level, n)
-                p_level = new_p_level
+                    m_stack.add(1 + par.depth, node)
 
     section_no = section_xml.xpath('SECTNO')[0].text
     subject_xml = section_xml.xpath('SUBJECT')
