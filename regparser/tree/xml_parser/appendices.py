@@ -11,8 +11,11 @@ from regparser.grammar import appendix as grammar
 from regparser.grammar.interpretation_headers import parser as headers
 from regparser.grammar.utils import Marker
 from regparser.layer.formatting import table_xml_to_plaintext
+from regparser.layer.key_terms import KeyTerms
+from regparser.tree.depth import markers
+from regparser.tree.depth.derive import derive_depths
 from regparser.tree.paragraph import p_levels
-from regparser.tree.struct import Node, walk
+from regparser.tree.struct import Node
 from regparser.tree.xml_parser import tree_utils
 from regparser.tree.xml_parser.interpretations import build_supplement_tree
 from regparser.tree.xml_parser.interpretations import get_app_title
@@ -48,26 +51,6 @@ def is_appendix_header(node):
 
 _first_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*\(' + lvl[0] + '\)')
                   for lvl in p_levels]
-
-
-def in_same_p_level(node, stack_level):
-    """Given a node and a stack level (i.e. a list of (depth, node) pairs),
-    check if the node should be in the same paragraph depth as the stack
-    level. Do this by checking what types of labels are present in the stack
-    level."""
-    stack_level = filter(lambda pr: hasattr(pr[1], 'p_level'), stack_level)
-    if not hasattr(node, 'p_level'):
-        return len(stack_level) == 0
-    else:
-        if stack_level:
-            prev_node = stack_level[-1][1]
-            prev_level = prev_node.p_level
-        else:
-            prev_node, prev_level = None, None
-        par_level = p_levels[node.p_level]
-        return (prev_level == node.p_level and
-                par_level.index(prev_node.label[-1]) <
-                par_level.index(node.label[-1]))
 
 
 class AppendixProcessor(object):
@@ -155,134 +138,48 @@ class AppendixProcessor(object):
 
         self.m_stack.add(self.depth, n)
 
-    def _indent_if_needed(self):
-        """Indents one level if preceded by a header"""
-        last = self.m_stack.peek()
-        if last and last[-1][1].title:
-            self.depth += 1
+    def paragraph_with_marker(self, text, tagged_text):
+        """The paragraph has a marker, like (a) or a. etc."""
+        # To aid in determining collapsed paragraphs, replace any
+        # keyterms present
+        node_for_keyterms = Node(text, node_type=Node.APPENDIX)
+        node_for_keyterms.tagged_text = tagged_text
+        node_for_keyterms.label = [initial_marker(text)[0]]
+        keyterm = KeyTerms.get_keyterm(node_for_keyterms)
+        if keyterm:
+            mtext = text.replace(keyterm, '.'*len(keyterm))
+        else:
+            mtext = text
+
+        for mtext in split_paragraph_text(mtext):
+            if keyterm:     # still need the original text
+                mtext = mtext.replace('.'*len(keyterm), keyterm)
+            node = Node(mtext, node_type=Node.APPENDIX,
+                        label=[initial_marker(mtext)[0]])
+            self.nodes.append(node)
 
     def paragraph_no_marker(self, text):
-        """The paragraph has no (a) or a. etc. Indents one level if
-        preceded by a header"""
+        """The paragraph has no (a) or a. etc."""
         self.paragraph_counter += 1
         n = Node(text, node_type=Node.APPENDIX,
                  label=['p' + str(self.paragraph_counter)])
-
-        self._indent_if_needed()
-        self.m_stack.add(self.depth, n)
-
-    def find_next_text_with_marker(self, node):
-        """Scan xml nodes and their neighbors looking for text that begins
-        with a marker. When found, return it"""
-        if node.tag == 'HD':   # Next section; give up
-            return None
-        if node.tag in ('P', 'FP'):     # Potential text
-            text = tree_utils.get_node_text(node)
-            pair = initial_marker(text)
-            if pair:
-                return text
-        if node.getnext() is None:  # end of the line
-            return None
-        return self.find_next_text_with_marker(node.getnext())
-
-    def split_paragraph_text(self, text, next_text=''):
-        marker_positions = []
-        for marker in _first_markers:
-            #   text.index('(') to skip over the periods, spaces, etc.
-            marker_positions.extend(text.index('(', m.start())
-                                    for m in marker.finditer(text))
-        #   Remove any citations
-        citations = internal_citations(text, require_marker=True)
-        marker_positions = [pos for pos in marker_positions
-                            if not any(cit.start <= pos and cit.end >= pos
-                                       for cit in citations)]
-        texts = []
-        #   Drop Zeros, add the end
-        break_points = [p for p in marker_positions if p] + [len(text)]
-        last_pos = 0
-        for pos in break_points:
-            texts.append(text[last_pos:pos])
-            last_pos = pos
-        texts.append(next_text)
-        return texts
-
-    def paragraph_with_marker(self, text, next_text=''):
-        """The paragraph has an (a) or a. etc."""
-        marker, _ = initial_marker(text)
-        n = Node(text, node_type=Node.APPENDIX, label=[marker])
-
-        if initial_marker(next_text):
-            next_marker, _ = initial_marker(next_text)
-        else:
-            next_marker = None
-
-        this_p_levels = set(idx for idx, lvl in enumerate(p_levels)
-                            if marker in lvl)
-        next_p_levels = set(idx for idx, lvl in enumerate(p_levels)
-                            if next_marker in lvl)
-        previous_levels = [l for l in self.m_stack.m_stack if l]
-        previous_p_levels = set()
-        for stack_level in previous_levels:
-            previous_p_levels.update(sn.p_level for _, sn in stack_level
-                                     if hasattr(sn, 'p_level'))
-
-        #   Ambiguity, e.g. 'i', 'v'. Disambiguate by looking forward
-        if len(this_p_levels) > 1 and len(next_p_levels) == 1:
-            next_p_level = next_p_levels.pop()
-            #   e.g. an 'i' followed by a 'ii'
-            if next_p_level in this_p_levels:
-                this_p_idx = p_levels[next_p_level].index(marker)
-                next_p_idx = p_levels[next_p_level].index(next_marker)
-                if this_p_idx < next_p_idx:     # Heuristic
-                    n.p_level = next_p_level
-            #   e.g. (a)(1)(i) followed by an 'A'
-            new_level = this_p_levels - previous_p_levels
-            if next_p_level not in previous_p_levels and new_level:
-                n.p_level = new_level.pop()
-
-        #   Ambiguity. Disambiguate by looking backwards
-        if len(this_p_levels) > 1 and not hasattr(n, 'p_level'):
-            for stack_level in previous_levels:
-                for lvl, stack_node in stack_level:
-                    if getattr(stack_node, 'p_level', None) in this_p_levels:
-                        #   Later levels replace earlier ones
-                        n.p_level = stack_node.p_level
-
-        #   Simple case (no ambiguity) and cases not seen above
-        if not getattr(n, 'p_level', None):
-            n.p_level = min(this_p_levels)  # rule of thumb: favor lower case
-
-        #   Check if we've seen this type of marker before
-        found_in_prev = False
-        for stack_level in previous_levels:
-            if stack_level and in_same_p_level(n, stack_level):
-                found_in_prev = True
-                self.depth = stack_level[-1][0]
-        if not found_in_prev:   # New type of marker
-            self.depth += 1
-        self.m_stack.add(self.depth, n)
+        self.nodes.append(n)
 
     def graphic(self, xml_node):
-        """An image. Indents one level if preceded by a header"""
         self.paragraph_counter += 1
         gid = xml_node.xpath('./GID')[0].text
         text = '![](' + gid + ')'
         n = Node(text, node_type=Node.APPENDIX,
                  label=['p' + str(self.paragraph_counter)])
-
-        self._indent_if_needed()
-        self.m_stack.add(self.depth, n)
+        self.nodes.append(n)
 
     def table(self, xml_node):
-        """A table. Indents one level if preceded by a header"""
         self.paragraph_counter += 1
         n = Node(table_xml_to_plaintext(xml_node),
                  node_type=Node.APPENDIX,
                  label=['p' + str(self.paragraph_counter)],
                  source_xml=xml_node)
-
-        self._indent_if_needed()
-        self.m_stack.add(self.depth, n)
+        self.nodes.append(n)
 
     def fence(self, xml_node, fence_type):
         """Use github-like fencing to indicate this is a note or code"""
@@ -294,9 +191,53 @@ class AppendixProcessor(object):
         n = Node("\n".join(texts), node_type=Node.APPENDIX,
                  label=['p' + str(self.paragraph_counter)],
                  source_xml=xml_node)
+        self.nodes.append(n)
 
-        self._indent_if_needed()
-        self.m_stack.add(self.depth, n)
+    def depth_zero_finder(self, node):
+        """Look back through all known nodes to see if this is a
+        continuation of a previous set of paragraph markers"""
+        for depth, prev_node in self.m_stack.lineage_with_level():
+            for typ in (markers.lower, markers.upper, markers.ints,
+                        markers.roman):
+                if prev_node.label[-1] in typ and node.label[-1] in typ:
+                    typ = list(typ)
+                    prev_idx = typ.index(prev_node.label[-1])
+                    current_idx = typ.index(node.label[-1])
+                    if current_idx == prev_idx + 1:
+                        return depth
+        return self.depth + 1
+
+    def end_group(self):
+        """We've hit a header (or the end of the appendix), so take the
+        collected paragraphs and determine their depths and insert into the
+        heap accordingly"""
+        if self.nodes:
+            nodes = list(reversed(self.nodes))
+            markers = [n.label[-1] for n in self.nodes if not
+                       AppendixProcessor.filler_regex.match(n.label[-1])]
+            if markers:
+                results = derive_depths(markers)
+                # currently no heuristics applied
+                depths = list(reversed(
+                    [a.depth for a in results[0].assignment]))
+            else:
+                depths = []
+            depth_zero = None   # relative for beginning of marker depth
+            self.depth += 1
+            while nodes:
+                node = nodes.pop()
+                if AppendixProcessor.filler_regex.match(node.label[-1]):
+                    # Not a marker paragraph
+                    self.m_stack.add(self.depth, node)
+                else:
+                    depth = depths.pop()
+                    # Match old behavior, placing marker paragraphs as
+                    # children within non-marker paragraphs above
+                    if depth_zero is None:
+                        depth_zero = self.depth_zero_finder(node)
+                    self.depth = depth_zero + depth
+                    self.m_stack.add(self.depth, node)
+            self.nodes = []
 
     def process(self, appendix, part):
         self.m_stack = tree_utils.NodeStack()
@@ -305,6 +246,8 @@ class AppendixProcessor(object):
         self.header_count = 0
         self.depth = None
         self.appendix_letter = None
+        # holds collections of nodes until their depth is determined
+        self.nodes = []
 
         self.set_letter(appendix)
         remove_toc(appendix, self.appendix_letter)
@@ -319,18 +262,14 @@ class AppendixProcessor(object):
             text = tree_utils.get_node_text(child, add_spaces=True).strip()
             if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
                     or child.tag == 'RESERVED'):
+                self.end_group()
                 self.hed(part, text)
             elif is_subhead(child.tag, text):
+                self.end_group()
                 self.subheader(child, text)
             elif initial_marker(text) and child.tag in ('P', 'FP', 'HD'):
-                if child.getnext() is None:
-                    next_text = ''
-                else:
-                    next_text = self.find_next_text_with_marker(
-                        child.getnext()) or ''
-                texts = self.split_paragraph_text(text, next_text)
-                for text, next_text in zip(texts, texts[1:]):
-                    self.paragraph_with_marker(text, next_text)
+                self.paragraph_with_marker(
+                    text, tree_utils.get_node_text_tags_preserved(child))
             elif child.tag in ('P', 'FP'):
                 self.paragraph_no_marker(text)
             elif child.tag == 'GPH':
@@ -342,18 +281,35 @@ class AppendixProcessor(object):
             elif child.tag == 'CODE':
                 self.fence(child, child.get('LANGUAGE', 'code'))
 
+        self.end_group()
         while self.m_stack.size() > 1:
             self.m_stack.unwind()
 
         if self.m_stack.m_stack[0]:
-            root = self.m_stack.m_stack[0][0][1]
+            return self.m_stack.m_stack[0][0][1]
 
-            def per_node(n):
-                if hasattr(n, 'p_level'):
-                    del n.p_level
 
-            walk(root, per_node)
-            return root
+def split_paragraph_text(text):
+    """Split text into a root node and its children (if the text contains
+    collapsed markers"""
+    marker_positions = []
+    for marker in _first_markers:
+        #   text.index('(') to skip over the periods, spaces, etc.
+        marker_positions.extend(text.index('(', m.start())
+                                for m in marker.finditer(text))
+    #   Remove any citations
+    citations = internal_citations(text, require_marker=True)
+    marker_positions = [pos for pos in marker_positions
+                        if not any(cit.start <= pos and cit.end >= pos
+                                   for cit in citations)]
+    texts = []
+    #   Drop Zeros, add the end
+    break_points = [p for p in marker_positions if p] + [len(text)]
+    last_pos = 0
+    for pos in break_points:
+        texts.append(text[last_pos:pos])
+        last_pos = pos
+    return texts
 
 
 def process_appendix(appendix, part):

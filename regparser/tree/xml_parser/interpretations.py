@@ -2,7 +2,6 @@
 import itertools
 import logging
 import re
-import string
 
 from regparser.citations import Label, remove_citation_overlaps
 from regparser.layer.key_terms import KeyTerms
@@ -11,7 +10,6 @@ from regparser.tree.depth.derive import derive_depths
 from regparser.tree.interpretation import merge_labels, text_to_labels
 from regparser.tree.struct import Node, treeify
 from regparser.tree.xml_parser import tree_utils
-from regparser.utils import roman_nums
 
 
 _marker_regex = re.compile(

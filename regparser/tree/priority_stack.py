@@ -34,10 +34,16 @@ class PriorityStack(object):
         stack is used to keep track of a tree, this list includes a list of
         'parents', as the last element of each level is the parent being
         processed."""
-        return list(reversed([els[-1][-1] for els in self.m_stack]))
+        if self.m_stack[0]:
+            return list(reversed([els[-1][-1] for els in self.m_stack]))
+        else:
+            return []
 
     def lineage_with_level(self):
-        return list(reversed([els[-1] for els in self.m_stack]))
+        if self.m_stack[0]:
+            return list(reversed([els[-1] for els in self.m_stack]))
+        else:
+            return []
 
     def add_to_bottom(self, m):
         self.m_stack = [[m]] + self.m_stack
