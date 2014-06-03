@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
 
     regparser.tree.appendix
+    regparser.tree.depth
     regparser.tree.xml_parser
 
 Submodules
@@ -28,18 +29,18 @@ regparser.tree.interpretation module
     :undoc-members:
     :show-inheritance:
 
-regparser.tree.node_stack module
---------------------------------
-
-.. automodule:: regparser.tree.node_stack
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 regparser.tree.paragraph module
 -------------------------------
 
 .. automodule:: regparser.tree.paragraph
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+regparser.tree.priority_stack module
+------------------------------------
+
+.. automodule:: regparser.tree.priority_stack
     :members:
     :undoc-members:
     :show-inheritance:

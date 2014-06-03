@@ -32,10 +32,26 @@ regparser.api_writer module
     :undoc-members:
     :show-inheritance:
 
+regparser.builder module
+------------------------
+
+.. automodule:: regparser.builder
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 regparser.citations module
 --------------------------
 
 .. automodule:: regparser.citations
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+regparser.content module
+------------------------
+
+.. automodule:: regparser.content
     :members:
     :undoc-members:
     :show-inheritance:

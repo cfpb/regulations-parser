@@ -12,6 +12,14 @@ regparser.layer.external_citations module
     :undoc-members:
     :show-inheritance:
 
+regparser.layer.formatting module
+---------------------------------
+
+.. automodule:: regparser.layer.formatting
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 regparser.layer.graphics module
 -------------------------------
 
