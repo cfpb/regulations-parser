@@ -1,3 +1,31 @@
+## 2.0.0
+
+* Definitions
+    * More accurate scoping rules
+    * "refers to" as a definition indicator
+    * When finding a defining term, highlight the *first* time that term appears in its defining paragraph (rather than the last)
+    * Defining multiple definitions at once (e.g. "X and B mean")
+    * Per-reg ignore lists
+* Appendices
+    * Better depth parsing for headers
+    * Better depth parsing for paragraphs
+    * Account for "notes"
+    * Allow for "code" tags
+* Interpretations
+    * Interpretations referring to multiple sections
+    * Allow for multiple interpretations for a single paragraph/section
+* Citations
+    * Only for existing paragraphs
+* SxS
+    * If the same section is referred multiple times by adjacent SxS headers, combine them
+    * Instead of duplicating SxS content when multiple citations are in a header, make a one-to-many relation
+* Versions
+    * Compile regulations from notices
+    * Low-level patching system for notice changes
+    * Allow notices to be manually modified (i.e. a bit higher-level patching)
+    * Allow notices to be split by date effective
+    * Spaces are added consistently to notice XML
+
 ## 12/31/2013
 
 * Better appendices
