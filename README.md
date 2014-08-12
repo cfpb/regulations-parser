@@ -194,48 +194,6 @@ All of the settings listed in ```settings.py``` can be overridden in a
   file will be used instead of retrieving the file, allowing for local
   edits, etc. to help the parser.
 
-### Keyterms Layer
-
-Unlike our other layers (at the moment), the Keyterms layer (which indicates
-pseudo titles used as headers in regulation paragraphs) is built using XML
-from the Federal Register rather than plain text. Right now, this is a
-particularly manual process which involves manually retrieving each notice's
-XML, generating a layer, and merging the results with the existing layer.
-This is not a problem if the regulation is completely re-issued.
-
-In any event, to generate the layer based on a particular XML, first
-download that XML (found by on [federalregister.gov](https://www.federalregister.gov) 
-by selecting 'DEV', then 'XML' on a notice). Then, modify the
-```build_tree.py``` file to point to the correct XML. Running this script
-will convert the XML into a JSON tree, maintaining some tags that the plain
-text version does not.
-
-Save this JSON to ```/tmp/xtree.json```, then run ```generate_layers.py```.
-The output *should* be a complete layer; so combine information from
-multiple rules, simply copy-paste the fields of the newly generated layer.
-
-An alternative (or additional option) is to use the
-```plaintext_keyterms.py``` script, which adds best-guesses for the
-keyterms. If you do not have the ```/tmp/xtree.json``` from before, create a
-file with ```{}``` in its place. Modify ```plaintext_keyterms.py``` so that
-the ```api_stub.get_regulation_as_json``` line uses the regulation output of
-```build_from.py``` as described above. Running ```plaintext_keyterms.py```
-will generate a keyterm layer.
-
-### Graphics Layer
-
-For obvious reasons, plain text does not include images, but we would still
-like to represent model forms and the like. We use Markdown style image
-inclusion in the plaintext:
-
-```
-![Appendix A9](ER27DE11.000)
-```
-
-This will be converted to an img tag by the graphics layer, pointing to the
-image as included in the Federal Register. Note that you can override each
-image via the ```IMAGE_OVERRIDES``` setting (see above).
-
 ## Building the documentation
 
 For most tweaks, you will simply need to run the Sphinx documentation
@@ -257,11 +215,11 @@ $ pip install Sphinx
 $ sphinx-apidoc -F -o docs regparser/
 ```
 
-
 ##  Running Tests
 
-To run the unit tests, make sure you have added all of the testing
-requirements:
+As the parser is a complex beast, it has several hundred unit tests to help
+catch regressions. To run those tests, make sure you have first added all of
+the testing requirements:
 
 ```bash
 $ pip install -r requirements_test.txt
@@ -279,10 +237,70 @@ If you'd like a report of test coverage, use the [nose-cov](https://pypi.python.
 $ nosetests --with-cov --cov-report term-missing --cov regparser tests/*.py
 ```
 
+Note also that this library is continuously tested via Travis. Pull requests
+should rarely be merged unless Travis gives the green light.
+
 ## Additional Details
 
-### build_from flow
+Here, we dive a bit deeper into some of the topics around the parser, so
+that you may use it in a production setting.
 
-### output types
+### Parsing Workflow
+
+The parser first reads the file passed to it as a parameter and attempts to
+parse that into a structured tree of subparts, sections, paragraphs, etc.
+Following this, it will make a call to the Federal Register's API,
+retrieving a list of final rules (i.e. changes) that apply this is
+regulation. It then writes/saves parsed versions of those notices.
+
+If this all worked well, we save the the parsed regulation and then generate
+an save all of the layers associated with it's version. We then generate
+additional, whole regulation trees and their associated layers for each
+final rule (i.e. each alteration to the regulation).
+
+At the very end, we take all versions of the regulation we've build and
+compare each pair (both going forwards and backwards). These diffs are
+generated and then written to the API/filesystem/Git.
+
+### Output
+
+The parser has three options for what it does with the parsed documents it
+creates. With no configuration, all of the objects it creates will be
+pretty-printed as json files and stored in subfolders of the current
+directory. Where the output is written can be configured via the
+`OUTPUT_DIR` setting. Spitting out JSON files this way is a good way to
+track how tweaks to the parser might have unexpected affects on the output
+-- just diff two such directories.
+
+If the `API_BASE` setting is configured, the output will be written to an API
+(running `regulations-core`) rather than the file system. The same JSON
+files are sent to the API as in the above method. This would be the method
+used once you are comfortable with the results (by testing the filesystem
+output).
+
+A final method, a bit divergent from the other two, is to write the results
+as a git repository. Using the `GIT_OUTPUT_DIR` setting, you can tell the
+parser to write the versions of the regulation (*only*; layers, notices,
+etc. are not written) as a git history. Each node in the parse tree will be
+written as a markdown file, with hierarchical information encoded in
+directories. This is an experimental feature, but has a great deal of
+potential.
 
 ### patches, etc.
+
+### Markdown/plaintextifying
+
+For obvious reasons, plain text does not include images, but we would still
+like to represent model forms and the like. We use Markdown style image
+inclusion in the plaintext:
+
+```
+![Appendix A9](ER27DE11.000)
+```
+
+This will be converted to an img tag by the graphics layer, pointing to the
+image as included in the Federal Register. Note that you can override each
+image via the ```IMAGE_OVERRIDES``` setting (see above).
+
+
+### Runtime
