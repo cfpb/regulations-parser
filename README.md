@@ -4,15 +4,29 @@ Regulations Parser
 [![Build Status](https://travis-ci.org/cfpb/regulations-parser.png)](https://travis-ci.org/cfpb/regulations-parser)
 [![Coverage Status](https://coveralls.io/repos/cfpb/regulations-parser/badge.png)](https://coveralls.io/r/cfpb/regulations-parser)
 
-Parse a regulation (plain text) into a well-formated JSON tree (along with
-associated layers, such as links and definitions) with this tool. It also
-pulls in notice content from the Federal Register and creates JSON
-representations for them. The parser works hand-in-hand with
-regulations-site, a front-end for the data structures generated, and
-regulations-core, an API for hosting the data.
+This library/tool parses federal regulations (either plain text or XML) and
+much of their associated content. It can write the results to JSON files, an
+API, or even a git repository. The parser works hand-in-hand with
+regulations-core, and API for hosting the parsed regulations and
+regulation-site, a front-end for the data structures generated.
 
 This repository is part of a larger project. To read about it, please see 
-[http://eregs.github.io/eregulations/](http://eregs.github.io/eregulations/).
+[http://cfpb.github.io/eRegulations/](http://cfpb.github.io/eRegulations/).
+
+## Quick Start
+
+Here's an example, using CFPB's regulation H.
+
+1. `git clone https://github.com/cfpb/regulations-parser.git`
+1. `cd regulations-parser`
+1. `pip install -r requirements.txt`
+1. `wget
+   http://www.gpo.gov/fdsys/pkg/CFR-2012-title12-vol8/xml/CFR-2012-title12-vol8-part1004.xml`
+1. `python build_from.py CFR-2012-title12-vol8-part1004.xml 12 2011-18676 15
+   1693`
+
+At the end, you will have new directories for `regulation`, `layer`,
+`diff`, and `notice` which would mirror the JSON files sent to the API.
 
 ## Features
 
@@ -33,8 +47,11 @@ This repository is part of a larger project. To read about it, please see
   notices) with the text they are analyzing
 * Layer for table of contents -- a listing of headers
 * Layer for terms -- defined terms, including their scope
-* Create diffs between versions of the regulations (if those versions are
-  available from an API)
+* Layer for additional formatting, including tables, "notes", code blocks,
+  and subscripts
+* Build whole versions of the regulation from the changes found in final
+  rules
+* Create diffs between these versions of the regulations
 
 ## Requirements
 
@@ -44,6 +61,8 @@ This repository is part of a larger project. To read about it, please see
 * requests (1.2.3) - Client library for writing output to an API
 * requests_cache (0.4.4) - *Optional* - Library for caching request results
   (speeds up rebuilding regulations)
+* GitPython (0.3.2.RC1) - Allows the regulation to be written as a git repo
+* python-constraint (1.2) - Used to determine paragraph depth
 
 If running tests:
 
