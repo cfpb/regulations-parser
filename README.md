@@ -286,21 +286,103 @@ written as a markdown file, with hierarchical information encoded in
 directories. This is an experimental feature, but has a great deal of
 potential.
 
-### patches, etc.
+### Modifying Data
 
-### Markdown/plaintextifying
+Our sources of data, through human and technical error, often contain
+problems for our parser. Over the parser's development, we've created
+several not-always-exclusive solutions. We have found that, in most cases,
+the easiest fix is to download and edit a *local* version of the problematic XML. Only if there's some complication in that method should you progress to the more complex strategies.
 
-For obvious reasons, plain text does not include images, but we would still
-like to represent model forms and the like. We use Markdown style image
-inclusion in the plaintext:
+All of the paths listed in `LOCAL_XML_PATHS` are checked when fetching
+regulation notices. The file/directory names in these folders should mirror
+those found on federalregister.gov, (e.g. articles/xml/201/131/725.xml). Any
+changes you make to these documents (such as correcting XML tags, rewording
+amendment paragraphs, etc.) will be used as if they came from the Federal
+Register.
+
+In addition, certain notices have *multiple* effective dates, meaning that
+different parts of the notice go into effect at different times. This
+complication is not handled automatically by the parser. Instead, you must
+manually copy the notice into two (or more) versions, such that 503.xml
+becomes 503-1.xml, 503-2.xml, etc. Each file must then be *manually*
+modified to change the effective date and remove sections that are not
+relevant to this date. We sometimes refer to this as "splitting" the notice.
+
+While editing the notice is generally an effective strategy, there are
+certain corner cases in which the parser simply does not support the logic
+needed to determine what's going on. In these situations, you have the
+option of using custom "patches" for notices, via the `REGPATCHES_SOURCES`
+setting. The setting refers to a Python object that has keys and values
+(e.g. a `dict`). The keys are notice document numbers (e.g. 2013-22752 or
+2013-22752_20140110 for a split notice). When the changes associated with a
+particular notice are consulted (to build the next regulation version), the
+entries in the value are added to the list of notice `changes`. This
+strategy is useful for certain appendix alterations.
+
+### Appendix Parsing
+
+The most complicated segments of a regulation are their appendices, at least
+from a structural parsing perspective. This is because appendices are
+free-form, often with unique variations on sub-sections, headings, paragraph
+marker hierarchy, etc. Given all this, the parser does it's best job to
+determine *an* ordering and *a* hierarchy for the subsections/paragraphs
+contained within an appendix.
+
+In general, if the parser can find a unique identifier or paragraph marker,
+it will note the paragraph/section accordingly. So "Part I: Blah Blah"
+becomes 1111-A-I, and "a. Some text" and "(a) Some text)" might become
+1111-A-I-a. When the citable value of a paragraph cannot be determined (i.e.
+it has no paragraph marker), the paragraph will be assigned a number and
+prefaced with "p" (e.g. p1, p2). Similarly, headers become h1, h2, ...
+
+This works out, but had numerous downsides. Most notably, as the citation
+for such paragraphs is arbitrary, determining changes to appendices is quite
+difficult (often requiring patches). Further, without guidance from
+paragraph markers/headers, the parser must make assumptions about the
+hierarchy of paragraphs. It currently uses some heuristics, such as headers
+indicating a new depth level, but is not always accurate.
+
+### Markdown/Plaintext-ifying
+
+With some exceptions, we treat a plain-text version of the regulation as
+cannon. By this, we mean that the *words* of the regulation could for much
+more than their presentation in the source documents. This allows us to
+build better tables of content, export data in more formats, and the other
+niceties associated with separating data from presentation.
+
+At points, however, we need to encode non-plain text concepts into the
+plain-text regulation. These include displaying images, tables, offsetting
+blocks of text, and subscripting. To encode these concepts, we use a
+variation of Markdown. 
+
+Images become 
 
 ```
 ![Appendix A9](ER27DE11.000)
 ```
 
-This will be converted to an img tag by the graphics layer, pointing to the
-image as included in the Federal Register. Note that you can override each
-image via the ```IMAGE_OVERRIDES``` setting (see above).
+Tables become
 
+```
+| Header 1 | Header 2|
+---
+| Cell 1, 1 | Cell 1, 2 |
+```
+
+Subscripts become
+
+```
+P_{0}
+```
+
+etc.
 
 ### Runtime
+
+A quick note of warning: the parser was not optimized for speed. It performs
+many actions over and over, which can be *very* slow on very large
+regulations (such as CFPB's regulation Z). Further, regulations that have
+been amended a great deal cause further slow down, particularly when
+generating diffs (currently an n**2 operation). Generally, parsing will take
+less than ten minutes, but in the extreme example of reg Z, it currently
+requires several hours.
