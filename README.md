@@ -105,53 +105,51 @@ $ pip install -r requirements.txt
 
 ### Pull down the regulation text
 
-At the moment, we parse from a plain-text version of the regulation. This
-requires such a plain text version exist. One of the easiest ways to do that
-is to find your full regulation from
-[e-CFR](http://www.ecfr.gov/cgi-bin/ECFR?page=browse). For example, CFPB's
-[regulation
-E](http://www.ecfr.gov/cgi-bin/text-idx?c=ecfr&rgn=div5&view=text&node=12:8.0.2.9.4&idno=12).
+The parser can generally read either plain-text or XML versions of a
+regulation, though the XML version gives much better hints. If you have a
+regulation as plain text, make sure to remove any table-of-contents and
+superflous lines (e.g. "Link to an amendment" and "Back to Top", which might
+appear if copy-pasting from
+[e-CFR](http://www.ecfr.gov/cgi-bin/ECFR?page=browse).
 
-Once you have your regulation, copy-paste from "Part" to the "Back to Top"
-link at the bottom of the regulation. Next, we need to get rid of some of
-the non-helpful info e-CFR puts in. Delete lines of the form
+A better strategy would be to parse using an XML file. This XML can come
+from [annual editions](http://www.gpo.gov/fdsys/browse/collectionCfr.action)
+of the regulations, or Federal Register notices, if the notice contains a
+reissuance of the whole regulation (e.g. CFPB
+[re-issued](https://www.federalregister.gov/articles/xml/201/131/725.xml)
+regulation E).
 
-* ^Link to an amendment .*$
-* Back to Top
-
-We've also found that tables of contents can cause random issues with the
-parser, so we recommend removing them. The parser will most likely generate
-the same content in a layer.
-
-Save that file as a text file (e.g. reg.txt).
 
 ### Run the parser
 
 The syntax is 
 
 ```bash
-$ python build_from.py regulation.txt title notice_doc_# act_title act_section
+$ python build_from.py regulation.ext title notice_doc_# act_title act_section
 ```
 
-So, for the regulation we copy-pasted above, we could run
+For example, to match the reissuance above:
 ```bash
-$ python build_from.py reg.txt 12 2013-06861 15 1693
+$ python build_from.py 725.xml 12 2013-1725 15 1693
 ```
 
 Here ```12``` is the CFR title number (in our case, for "Banks and
-Banking"), ```2013-06861``` is the last notice used to create this version
+Banking"), ```2013-1725``` is the last notice used to create this version
 (i.e. the last "final rule" which is currently in effect), ```15``` is the
 title of "the Act" and ```1693``` is the relevant section. Wherever the
 phrase "the Act" is used in the regulation, the external link parser will
 treat it as "15 U.S.C. 1693".  The final rule number is used to pull in
 section-by-section analyses and deduce which notices were used to create
-this version of the regulation. To find this, use the 
-[Federal Register](https://www.federalregister.gov/), finding the last,
-effective final rule for your version of the regulation and copying the
-document number from the meta data (currently in a table on the right side).
+this version of the regulation. It also helps determine which notices to use
+when building additional versions of the regulation. To find the document
+number, use the [Federal Register](https://www.federalregister.gov/),
+finding the last, effective final rule for your version of the regulation
+and copying the document number from the meta data (currently in a table on
+the right side).
 
-This will generate four folders, ```regulation```, ```notice```, ``layer``
-and possibly ``diff`` in the ```OUTPUT_DIR``` (current directory by default).
+Running the command will generate four folders, ```regulation```,
+```notice```, ``layer`` and possibly ``diff`` in the ```OUTPUT_DIR```
+(current directory by default).
 
 If you'd like to write the data to an api instead (most likely, one running
 regulations-core), you can set the ```API_BASE``` setting (described below).
@@ -165,14 +163,36 @@ All of the settings listed in ```settings.py``` can be overridden in a
   written. Only useful if the JSON files are to be written to disk.
 * ```API_BASE``` - a string defining the url root of an API (if the output
   files are to be written to an API instead)
+* ```GIT_OUTPUT_DIR``` - a string path which will be used to initialize a
+  git repository when writing history
 * ```META``` - a dictionary of extra info which will be included in the
-  "meta" layer. This is free-form.
-* ```CFR_TITLE``` - array of CFR Title names (used in the meta layer); not
+  "meta" layer. This is free-form, but could be used for copyright
+  information, attributions, etc.
+* ```CFR_TITLES``` - array of CFR Title names (used in the meta layer); not
   required as those provided are current
 * ```DEFAULT_IMAGE_URL``` - string format used in the graphics layer; not
   required as the default should be adequate 
-* ```IMAGE_OVERRIDES``` - a dictionary between specific image ids and unique
-  urls for them -- useful if the Federal Register versions aren't pretty
+* ```IGNORE_DEFINITIONS_IN``` - a dictionary mapping CFR part numbers to a
+  list of terms that should *not* contain definitions. For example, if
+  'state' is a defined term, it may be useful to exclude the phrase 'shall
+  state'. Terms associated with the constant, `ALL`, will be ignored in all
+  CFR parts parsed.
+* ```OVERRIDES_SOURCES``` - a list of python modules (represented via
+  string) which should be consulted when determining image urls. Useful if
+  the Federal Register versions aren't pretty. Defaults to a `regcontent`
+  module.
+* ```MACRO_SOURCES``` - a list of python modules (represented via strings)
+  which should be consulted if replacing chunks of XML in notices. This is
+  more or less deprecated by `LOCAL_XML_PATHS`. Defaults to a `regcontent`
+  module.
+* ```REGPATCHES_SOURCES``` - a list of python modules (represented via
+  strings) which should be consulted when determining changes to regulations
+  made in final rules.  Defaults to a `regcontent` module
+* ```LOCAL_XML_PATHS``` - a list of paths to search for notices from the
+  Federal Register. This directory should match the folder structure of the
+  Federal Register. If a notice is present in one of the local paths, that
+  file will be used instead of retrieving the file, allowing for local
+  edits, etc. to help the parser.
 
 ### Keyterms Layer
 
@@ -216,7 +236,7 @@ This will be converted to an img tag by the graphics layer, pointing to the
 image as included in the Federal Register. Note that you can override each
 image via the ```IMAGE_OVERRIDES``` setting (see above).
 
-### Building the documentation
+## Building the documentation
 
 For most tweaks, you will simply need to run the Sphinx documentation
 builder again.
@@ -258,3 +278,11 @@ If you'd like a report of test coverage, use the [nose-cov](https://pypi.python.
 ```bash
 $ nosetests --with-cov --cov-report term-missing --cov regparser tests/*.py
 ```
+
+## Additional Details
+
+### build_from flow
+
+### output types
+
+### patches, etc.

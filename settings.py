@@ -61,9 +61,6 @@ DEFAULT_IMAGE_URL = (
     'https://s3.amazonaws.com/images.federalregister.gov/' +
     '%s/original.gif')
 
-# ImageId -> New URL (without placeholder)
-IMAGE_OVERRIDES = {}
-
 # list of strings: phrases which shouldn't be broken by definition links
 IGNORE_DEFINITIONS_IN = {'ALL':[]}
 
