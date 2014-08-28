@@ -432,3 +432,14 @@ an entry in the `changes` field, and the content of that entry should match
 the content from the federal register. Note that a single `amendment` may
 include multiple `changes` if the amendment is about a paragraph with
 children (sub-paragraphs).
+
+Here we hit a problem, and have a few tip-offs. One of the entries in
+`amendmends` was not present in the `changes` field. Further, one of the
+`changes` entries was something like  "i. * * *". In addition, the
+"child_labels" of one of the entries doesn't make sense -- it contains
+children which should not be contained. The parser must have skipped over
+some relevant information; we could try to deduce further but let's treat
+the parser as a black box and see if we can't spot a problem in the
+web-hosted rule, first. You see, federalregister.gov uses XSLTs to take the
+raw XML (which we parse) to convert it into XHTML. If *we* have a problem,
+they might as well.
