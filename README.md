@@ -463,4 +463,14 @@ structure found on the federal register. I recommend using a git repository
 and committing this "clean" version of the notice.
 
 Now, edit the saved XML and jump to our problematic section. Does the XML
-structure here match sections we know work?
+structure here match sections we know work? It does not. Our "italic" tip
+off above was accurate. The problematic paragraphs are wrapped in `E` tags,
+which should not be present. Delete them and re-run the parser. You will see
+that this fixes our notice.
+
+Generally, this will be the workflow. Something doesn't parse correctly and
+you must investigate. Most often, the problems will reside in unexpected XML
+structure. AMDPARs, which contain the list of changes may also need to be
+simplified. If the same type of change needs to be made for multiple
+documents, consider adding a corresponding rule to the parser -- just test
+existing docs first.
