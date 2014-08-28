@@ -443,3 +443,24 @@ the parser as a black box and see if we can't spot a problem in the
 web-hosted rule, first. You see, federalregister.gov uses XSLTs to take the
 raw XML (which we parse) to convert it into XHTML. If *we* have a problem,
 they might as well.
+
+We'll zero in on where we know our problem begins (based on the information
+investigating `changes`). We might notice that the text of the problem
+section is in italics, while those arround it (other sections which *do*
+parse correctly) are not. We might not. In any event, we need to look at the
+XML. On the federal register's site, there is a 'DEV' icon in the right
+sidebar and an 'XML' link in the modal. We're going to download this XML and
+put it where our parser knows to look (see the `LOCAL_XML_PATHS` setting).
+For example, if this setting is
+
+```python
+LOCAL_XML_PATHS = ['fr-notices/']
+```
+
+we would need to save the XML file to
+`fr-notices/articles/xml/201/418/838.xml`, duplicating the directory
+structure found on the federal register. I recommend using a git repository
+and committing this "clean" version of the notice.
+
+Now, edit the saved XML and jump to our problematic section. Does the XML
+structure here match sections we know work?
