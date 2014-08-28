@@ -423,3 +423,12 @@ AMDPARs. You will need to alter the XML for this notice to read how the
 parser can understand it. If the logic behind the change is too complicated,
 e.g. "remove the third semicolon and replace the fourth sentence", you will
 need to add a "patch" (see above).
+
+In this case, the amendment parsing was correct, so we can continue to the
+second relevant field. The `changes` field includes the *content* of changes
+made (when adding or editing a paragraph). If all went well you should be
+able to relate all of the PUT/POST entries in the `amendments` section with
+an entry in the `changes` field, and the content of that entry should match
+the content from the federal register. Note that a single `amendment` may
+include multiple `changes` if the amendment is about a paragraph with
+children (sub-paragraphs).
