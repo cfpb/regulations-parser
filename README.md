@@ -386,3 +386,40 @@ been amended a great deal cause further slow down, particularly when
 generating diffs (currently an n**2 operation). Generally, parsing will take
 less than ten minutes, but in the extreme example of reg Z, it currently
 requires several hours.
+
+### Parsing Error Example
+
+Let's say you are already in a good steady state, that you can parse the
+known versions of a regulation without problem. A new final rule is
+published in the federal regiseter affecting your regulation. To make this
+concrete, we will use CFPB's regulation Z (12 CFR 1026), final rule
+2014-18838.
+
+The first step is to run the parser as we have before. We should configure
+it to send output to a local directory (see above). Once it runs, it will
+hit the federal register's API and should find the new notice. As described
+above, the parser first parses the file you give it, then it heads over to
+the federal register API, parses notices and rules found there, and then
+proceeds to compile additional versions of the regulation from them. So, as
+the parser is running (Z takes a long time), we can check its partial
+output. Notably, we can check the `notice/2014-18838` json file for
+accuracy.
+
+In a browser, open https://www.federalregister.gov and search for the notice
+in question (you can do this by using the 2014-18838 identifier). Scroll
+through the
+[page](https://www.federalregister.gov/articles/2014/08/15/2014-18838/truth-in-lending-regulation-z-annual-threshold-adjustments-card-act-hoepa-and-atrqm)
+to find the list of changes -- they will generally begin with "PART ..." and
+be offset from the rest of the text. In a text editor, look at the json file
+mentioned before.
+
+The json file, which describes our parsed notice has two relevant fields.
+The `amendments` field lists what *types* of changes are being made; it
+corresponds to AMDPAR tags (for reference). Looking at the web page, you
+should be able to map sentences like "Paragraph (b)(1)(ii)(A) and (B) are
+revised" to an appropriate PUT/POST/DELETE/etc. entry in the `amendments`
+field. If these do not match up, you know that there's an error parsing the
+AMDPARs. You will need to alter the XML for this notice to read how the
+parser can understand it. If the logic behind the change is too complicated,
+e.g. "remove the third semicolon and replace the fourth sentence", you will
+need to add a "patch" (see above).
