@@ -386,3 +386,91 @@ been amended a great deal cause further slow down, particularly when
 generating diffs (currently an n**2 operation). Generally, parsing will take
 less than ten minutes, but in the extreme example of reg Z, it currently
 requires several hours.
+
+### Parsing Error Example
+
+Let's say you are already in a good steady state, that you can parse the
+known versions of a regulation without problem. A new final rule is
+published in the federal regiseter affecting your regulation. To make this
+concrete, we will use CFPB's regulation Z (12 CFR 1026), final rule
+2014-18838.
+
+The first step is to run the parser as we have before. We should configure
+it to send output to a local directory (see above). Once it runs, it will
+hit the federal register's API and should find the new notice. As described
+above, the parser first parses the file you give it, then it heads over to
+the federal register API, parses notices and rules found there, and then
+proceeds to compile additional versions of the regulation from them. So, as
+the parser is running (Z takes a long time), we can check its partial
+output. Notably, we can check the `notice/2014-18838` json file for
+accuracy.
+
+In a browser, open https://www.federalregister.gov and search for the notice
+in question (you can do this by using the 2014-18838 identifier). Scroll
+through the
+[page](https://www.federalregister.gov/articles/2014/08/15/2014-18838/truth-in-lending-regulation-z-annual-threshold-adjustments-card-act-hoepa-and-atrqm)
+to find the list of changes -- they will generally begin with "PART ..." and
+be offset from the rest of the text. In a text editor, look at the json file
+mentioned before.
+
+The json file, which describes our parsed notice has two relevant fields.
+The `amendments` field lists what *types* of changes are being made; it
+corresponds to AMDPAR tags (for reference). Looking at the web page, you
+should be able to map sentences like "Paragraph (b)(1)(ii)(A) and (B) are
+revised" to an appropriate PUT/POST/DELETE/etc. entry in the `amendments`
+field. If these do not match up, you know that there's an error parsing the
+AMDPARs. You will need to alter the XML for this notice to read how the
+parser can understand it. If the logic behind the change is too complicated,
+e.g. "remove the third semicolon and replace the fourth sentence", you will
+need to add a "patch" (see above).
+
+In this case, the amendment parsing was correct, so we can continue to the
+second relevant field. The `changes` field includes the *content* of changes
+made (when adding or editing a paragraph). If all went well you should be
+able to relate all of the PUT/POST entries in the `amendments` section with
+an entry in the `changes` field, and the content of that entry should match
+the content from the federal register. Note that a single `amendment` may
+include multiple `changes` if the amendment is about a paragraph with
+children (sub-paragraphs).
+
+Here we hit a problem, and have a few tip-offs. One of the entries in
+`amendmends` was not present in the `changes` field. Further, one of the
+`changes` entries was something like  "i. * * *". In addition, the
+"child_labels" of one of the entries doesn't make sense -- it contains
+children which should not be contained. The parser must have skipped over
+some relevant information; we could try to deduce further but let's treat
+the parser as a black box and see if we can't spot a problem in the
+web-hosted rule, first. You see, federalregister.gov uses XSLTs to take the
+raw XML (which we parse) to convert it into XHTML. If *we* have a problem,
+they might as well.
+
+We'll zero in on where we know our problem begins (based on the information
+investigating `changes`). We might notice that the text of the problem
+section is in italics, while those arround it (other sections which *do*
+parse correctly) are not. We might not. In any event, we need to look at the
+XML. On the federal register's site, there is a 'DEV' icon in the right
+sidebar and an 'XML' link in the modal. We're going to download this XML and
+put it where our parser knows to look (see the `LOCAL_XML_PATHS` setting).
+For example, if this setting is
+
+```python
+LOCAL_XML_PATHS = ['fr-notices/']
+```
+
+we would need to save the XML file to
+`fr-notices/articles/xml/201/418/838.xml`, duplicating the directory
+structure found on the federal register. I recommend using a git repository
+and committing this "clean" version of the notice.
+
+Now, edit the saved XML and jump to our problematic section. Does the XML
+structure here match sections we know work? It does not. Our "italic" tip
+off above was accurate. The problematic paragraphs are wrapped in `E` tags,
+which should not be present. Delete them and re-run the parser. You will see
+that this fixes our notice.
+
+Generally, this will be the workflow. Something doesn't parse correctly and
+you must investigate. Most often, the problems will reside in unexpected XML
+structure. AMDPARs, which contain the list of changes may also need to be
+simplified. If the same type of change needs to be made for multiple
+documents, consider adding a corresponding rule to the parser -- just test
+existing docs first.
