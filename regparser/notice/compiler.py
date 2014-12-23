@@ -344,6 +344,9 @@ class RegulationTree(object):
                     logging.warning('No existing parent for: %s' %
                                     node.label_id())
                     parent = self.create_empty_node(get_parent_label(node))
+                if parent.children:
+                    if parent.children[0].node_type == Node.EMPTYPART:
+                        parent = parent.children[0]
                 parent.children = self.add_child(
                     parent.children, node, getattr(parent, 'child_labels',
                                                    []))
