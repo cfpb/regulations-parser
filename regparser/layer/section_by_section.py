@@ -19,9 +19,7 @@ class SectionBySection(Layer):
                 for child in sxs['children']:
                     per_sxs(child)
 
-            if 'section_by_section' not in notice:
-                return None
-            for sxs in notice['section_by_section']:
+            for sxs in notice.get('section_by_section', []):
                 per_sxs(sxs)
 
             for found in search_results:
