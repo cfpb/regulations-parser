@@ -23,7 +23,9 @@ class InternalCitationParser(Layer):
         walk(self.tree, per_node)
 
     def process(self, node):
-        citations_list = self.parse(node.text, label=Label.from_node(node))
+        citations_list = self.parse(node.text,
+                                    label=Label.from_node(node),
+                                    title=self.cfr_title)
         if citations_list:
             return citations_list
 
@@ -39,13 +41,14 @@ class InternalCitationParser(Layer):
                                 % (text[c.start:c.end], c.label))
         return final
 
-    def parse(self, text, label):
+    def parse(self, text, label, title=None):
         """ Parse the provided text, pulling out all the internal
         (self-referential) citations. """
 
         to_layer = lambda pc: {'offsets': [(pc.start, pc.end)],
                                'citation': pc.label.to_list()}
-        citations = internal_citations(text, label, require_marker=True)
+        citations = internal_citations(text, label,
+                                       require_marker=True, title=title)
         if self.verify_citations:
             citations = self.remove_missing_citations(citations, text)
         all_citations = list(map(to_layer, citations))

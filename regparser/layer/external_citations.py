@@ -33,13 +33,17 @@ class ExternalCitationParser(Layer):
         return [c for c in citation if c not in [
             'U.S.C.', 'CFR', 'part', '.', 'Public', 'Law', '-']]
 
-    def parse(self, text, parts=None):
+    def parse(self, text, parts=None, title=None):
         """ Parse the provided text, pulling out all the citations. """
         parser = grammar.regtext_external_citation
 
         cm = defaultdict(list)
         citation_strings = {}
         for citation, start, end in parser.scanString(text):
+            # Discard citations of form XX CFR YY if XX and YY are the title
+            # and part being parsed
+            if citation[1] == 'CFR' and citation[0] == self.cfr_title:
+                continue
             index = "-".join(citation)
             cm[index].append([start, end])
             citation_strings[index] = citation.asList()
@@ -55,6 +59,8 @@ class ExternalCitationParser(Layer):
         return [build_layer_element(k, offsets) for k, offsets in cm.items()]
 
     def process(self, node):
-        citations_list = self.parse(node.text, parts=node.label)
+        citations_list = self.parse(node.text,
+                                    parts=node.label,
+                                    title=self.cfr_title)
         if citations_list:
             return citations_list

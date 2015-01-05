@@ -170,3 +170,11 @@ multiple_comments = (
             | depth1_c).setParseAction(keep_pos).setResultsName(
             "tail", listAllMatches=True)
         + Optional(Suppress(')'))))
+
+internal_cfr_p = (
+    atomic.title
+    + Suppress("CFR")
+    + atomic.part
+    + Suppress('.')
+    + atomic.section
+    + Optional(depth1_p))

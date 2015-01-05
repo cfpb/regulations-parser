@@ -55,3 +55,14 @@ class ParseTest(TestCase):
         self.assertEqual(2, len(citations))
         self.assertEqual("CFR", citations[0]['citation_type'])
         self.assertEqual("CFR", citations[1]['citation_type'])
+
+    def test_drop_self_referential_cfr(self):
+        """
+            Ensure that CFR references that refer to the reg being parsed are
+            not marked as external citations.
+        """
+        node = Node("11 CFR 110.14")
+        parser = external_citations.ExternalCitationParser(None)
+        parser.cfr_title = '11'
+        citations = parser.process(node)
+        self.assertEqual(None, citations)
