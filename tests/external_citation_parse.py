@@ -61,7 +61,7 @@ class ParseTest(TestCase):
             Ensure that CFR references that refer to the reg being parsed are
             not marked as external citations.
         """
-        node = Node("11 CFR 110.14")
+        node = Node("11 CFR 110.14", label=['110', '1'])
         parser = external_citations.ExternalCitationParser(None)
         parser.cfr_title = '11'
         citations = parser.process(node)

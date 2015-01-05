@@ -42,7 +42,9 @@ class ExternalCitationParser(Layer):
         for citation, start, end in parser.scanString(text):
             # Discard citations of form XX CFR YY if XX and YY are the title
             # and part being parsed
-            if citation[1] == 'CFR' and citation[0] == self.cfr_title:
+            if (citation[0] == self.cfr_title and
+                citation[1] == 'CFR' and
+                citation[2] == parts[0]):
                 continue
             index = "-".join(citation)
             cm[index].append([start, end])
@@ -61,6 +63,6 @@ class ExternalCitationParser(Layer):
     def process(self, node):
         citations_list = self.parse(node.text,
                                     parts=node.label,
-                                    title=self.cfr_title)
+                                    title=str(self.cfr_title))
         if citations_list:
             return citations_list

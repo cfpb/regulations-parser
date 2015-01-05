@@ -25,7 +25,7 @@ class InternalCitationParser(Layer):
     def process(self, node):
         citations_list = self.parse(node.text,
                                     label=Label.from_node(node),
-                                    title=self.cfr_title)
+                                    title=str(self.cfr_title))
         if citations_list:
             return citations_list
 
