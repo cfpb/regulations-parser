@@ -230,6 +230,24 @@ def internal_citations(text, initial_label=None,
                 full_start=full_start))
         else:
             continue
+
+    # And sometimes there are several of them
+    for match, start, end in grammar.multiple_cfr_p.scanString(text):
+        label = initial_label
+        if match.head.cfr_title == title :
+            for submatch in chain([match.head], match.tail):
+                if submatch.part == initial_label.to_list()[0]:
+                    cit = ParagraphCitation(
+                        submatch.pos[0], submatch.pos[1],
+                        match_to_label(submatch.tokens, label),
+                        full_start=start,
+                        full_end=end,
+                        in_clause=True)
+                    label = cit.label   # update the label to keep context
+                    citations.append(cit)
+        else:
+            continue
+
     # Remove any sub-citations
     final_citations = []
     for cit in citations:

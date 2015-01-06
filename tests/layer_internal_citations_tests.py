@@ -359,3 +359,19 @@ class ParseTest(TestCase):
         self.assertEqual(['110', '14'], result[0]['citation'])
         offsets = result[0]['offsets'][0]
         self.assertEqual('11 CFR 110.14', text[offsets[0]:offsets[1]])
+
+    def test_multiple_internal_cfr(self):
+        text = 'prohibited from making contributions under 11 CFR 110.19, '
+        text += '110.20, and 110.21'
+        self.parser.cfr_title = '11'
+        result = self.parser.process(Node(text, label=['110', '1']))
+        self.assertEqual(3, len(result))
+        self.assertEqual(['110', '19'], result[0]['citation'])
+        offsets = result[0]['offsets'][0]
+        self.assertEqual('11 CFR 110.19', text[offsets[0]:offsets[1]])
+        self.assertEqual(['110', '20'], result[1]['citation'])
+        offsets = result[1]['offsets'][0]
+        self.assertEqual('110.20', text[offsets[0]:offsets[1]])
+        self.assertEqual(['110', '21'], result[2]['citation'])
+        offsets = result[2]['offsets'][0]
+        self.assertEqual('110.21', text[offsets[0]:offsets[1]])
