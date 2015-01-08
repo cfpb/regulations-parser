@@ -153,7 +153,10 @@ def match_to_label(match, initial_label, comment=False):
 def internal_citations(text, initial_label=None,
                        require_marker=False, title=None):
     """List of all internal citations in the text. require_marker helps by
-    requiring text be prepended by 'comment'/'paragraphs'/etc."""
+    requiring text be prepended by 'comment'/'paragraphs'/etc. title
+    represents the CFR title (e.g. 11 for FEC, 12 for CFPB regs) and is used
+    to correctly parse citations of the the form 11 CFR 110.1 when
+    11 CFR 110 is the regulation being parsed."""
     if not initial_label:
         initial_label = Label()
     citations = []
@@ -234,7 +237,7 @@ def internal_citations(text, initial_label=None,
     # And sometimes there are several of them
     for match, start, end in grammar.multiple_cfr_p.scanString(text):
         label = initial_label
-        if match.head.cfr_title == title :
+        if match.head.cfr_title == title:
             for submatch in chain([match.head], match.tail):
                 if submatch.part == initial_label.to_list()[0]:
                     cit = ParagraphCitation(

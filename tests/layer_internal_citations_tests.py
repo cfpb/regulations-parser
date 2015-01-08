@@ -352,13 +352,17 @@ class ParseTest(TestCase):
         self.assertEqual('111.34', text[start:end].strip())
 
     def test_internal_cfr_format(self):
-        text =  'under 11 CFR 110.14 are not subject'
+        text = 'under 11 CFR 110.14 are not subject'
         self.parser.cfr_title = '11'
         result = self.parser.process(Node(text, label=['110', '1']))
         self.assertEqual(1, len(result))
         self.assertEqual(['110', '14'], result[0]['citation'])
         offsets = result[0]['offsets'][0]
         self.assertEqual('11 CFR 110.14', text[offsets[0]:offsets[1]])
+        # Verify that CFR citations from other titles do not get marked.
+        self.parser.cfr_title = '12'
+        result = self.parser.process(Node(text, label=['110', '1']))
+        self.assertEqual(None, result)
 
     def test_multiple_internal_cfr(self):
         text = 'prohibited from making contributions under 11 CFR 110.19, '
