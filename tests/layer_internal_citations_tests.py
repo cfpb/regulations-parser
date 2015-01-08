@@ -359,9 +359,13 @@ class ParseTest(TestCase):
         self.assertEqual(['110', '14'], result[0]['citation'])
         offsets = result[0]['offsets'][0]
         self.assertEqual('11 CFR 110.14', text[offsets[0]:offsets[1]])
-        # Verify that CFR citations from other titles do not get marked.
+        # Verify that CFR citations from other titles do not get caught.
         self.parser.cfr_title = '12'
         result = self.parser.process(Node(text, label=['110', '1']))
+        self.assertEqual(None, result)
+        # Verify that CFR citations from other parts do not get caught.
+        self.parser.cfr_title = '11'
+        result = self.parser.process(Node(text, label=['111', '1']))
         self.assertEqual(None, result)
 
     def test_multiple_internal_cfr(self):
