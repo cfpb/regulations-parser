@@ -40,6 +40,12 @@ class ExternalCitationParser(Layer):
         cm = defaultdict(list)
         citation_strings = {}
         for citation, start, end in parser.scanString(text):
+            # Discard citations of form XX CFR YY if XX and YY are the title
+            # and part being parsed
+            if (citation[0] == self.cfr_title and
+                citation[1] == 'CFR' and
+                citation[2] == parts[0]):
+                continue
             index = "-".join(citation)
             cm[index].append([start, end])
             citation_strings[index] = citation.asList()
