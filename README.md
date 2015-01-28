@@ -4,11 +4,11 @@ Regulations Parser
 [![Build Status](https://travis-ci.org/cfpb/regulations-parser.png)](https://travis-ci.org/cfpb/regulations-parser)
 [![Coverage Status](https://coveralls.io/repos/cfpb/regulations-parser/badge.png)](https://coveralls.io/r/cfpb/regulations-parser)
 
-This library/tool parses federal regulations (either plain text or XML) and
+This library/tool parses Federal regulations (either plain text or XML) and
 much of their associated content. It can write the results to JSON files, an
 API, or even a git repository. The parser works hand-in-hand with
-regulations-core, and API for hosting the parsed regulations and
-regulation-site, a front-end for the data structures generated.
+[regulations-core](https://github.com/cfpb/regulations-core), an API for hosting the parsed regulations, and
+[regulation-site](https://github.com/cfpb/regulations-site), a front-end for the data structures generated.
 
 This repository is part of a larger project. To read about it, please see 
 [http://cfpb.github.io/eRegulations/](http://cfpb.github.io/eRegulations/).
@@ -28,49 +28,57 @@ Here's an example, using CFPB's regulation H.
 At the end, you will have new directories for `regulation`, `layer`,
 `diff`, and `notice` which would mirror the JSON files sent to the API.
 
+## Troubleshooting
+
+If you get the message `wget: command not found`, install `wget` using the following (we use [homebrew](http://brew.sh/)):
+
+```shell
+brew install wget
+```
+
 ## Features
 
-* Split regulation into paragraph-level chunks
-* Create a tree which defines the hierarchical relationship between these
-  chunks
-* Layer for external citations -- links to Acts, Public Law, etc.
-* Layer for graphics -- converting image references into federal register
-  urls
-* Layer for internal citations -- links between parts of this regulation
-* Layer for interpretations -- connecting regulation text to the
-  interpretations associated with it
-* Layer for key terms -- pseudo headers for certain paragraphs
-* Layer for meta info -- custom data (some pulled from federal notices)
-* Layer for paragraph markers -- specifying where the initial paragraph
-  marker begins and ends for each paragraph
-* Layer for section-by-section analysis -- associated analyses (from FR
-  notices) with the text they are analyzing
-* Layer for table of contents -- a listing of headers
-* Layer for terms -- defined terms, including their scope
-* Layer for additional formatting, including tables, "notes", code blocks,
-  and subscripts
-* Build whole versions of the regulation from the changes found in final
-  rules
-* Create diffs between these versions of the regulations
+* **Split regulation** into paragraph-level chunks.
+* **Create a hierarchical tree** which defines the relationship between these
+  chunks.
+* **External Citations Layer** -- links to Acts, Public Law, etc.
+* **Graphics Layer** -- converting image references into federal register
+  URLs.
+* **Internal Citations Layer** -- links between parts of this regulation.
+* **Interpretations Layer** -- connecting regulation text to the
+  interpretations associated with it.
+* **Key Terms Layer** -- pseudo headers for certain paragraphs.
+* **Meta Info Layer** -- custom data (some pulled from federal notices).
+* **Paragraph Markers Layer** -- specifying where the initial paragraph
+  marker begins and ends for each paragraph.
+* **Section-by-Section Analysis Layer** -- associated analyses (from FR
+  notices) with the text they are analyzing.
+* **Table of Contents Layer** -- a listing of headers.
+* **Terms Layer** -- defined terms, including their scope.
+* **Additional Formatting Layer** -- including tables, "notes", code blocks,
+  and subscripts.
+* **Build whole versions** of the regulation from the changes found in final
+  rules.
+* **Create diffs** between these versions of the regulations.
 
 ## Requirements
 
-* lxml (3.2.0) - Used to parse out information XML from the federal register
-* pyparsing (1.5.7) - Used to do generic parsing on the plain text
-* inflection (0.1.2) - Helps determine pluralization (for terms layer)
-* requests (1.2.3) - Client library for writing output to an API
+* lxml (3.2.0) - Used to parse out information XML from the federal register.
+* pyparsing (1.5.7) - Used to do generic parsing on the plain text.
+* inflection (0.1.2) - Helps determine pluralization (for terms layer).
+* requests (1.2.3) - Client library for writing output to an API.
 * requests_cache (0.4.4) - *Optional* - Library for caching request results
-  (speeds up rebuilding regulations)
-* GitPython (0.3.2.RC1) - Allows the regulation to be written as a git repo
-* python-constraint (1.2) - Used to determine paragraph depth
+  (speeds up rebuilding regulations).
+* GitPython (0.3.2.RC1) - Allows the regulation to be written as a git repo.
+* python-constraint (1.2) - Used to determine paragraph depth.
 
 If running tests:
 
-* nose (1.2.1) - A pluggable test runner
-* mock (1.0.1) - Makes constructing mock objects/functions easy
-* coverage (3.6) - Reports on test coverage
-* cov-core (1.7) - Needed by coverage
-* nose-cov (1.6) - Connects nose to coverage
+* nose (1.2.1) - A pluggable test runner.
+* mock (1.0.1) - Makes constructing mock objects/functions easy.
+* coverage (3.6) - Reports on test coverage.
+* cov-core (1.7) - Needed by coverage.
+* nose-cov (1.6) - Connects nose to coverage.
 
 ## API Docs
 
@@ -80,16 +88,18 @@ If running tests:
 
 ### Getting the Code and Development Libs
 
-Download the source code from GitHub (e.g. ```git clone [URL]```)
+Download the source code from GitHub (e.g. `git clone [URL]`)
 
-Make sure the ```libxml``` libraries are present. On Ubuntu/Debian, install
-it via
+Make sure the `libxml` libraries are present. To install the libraries using [homebrew](http://brew.sh/), run `brew install libxml2`. 
+On Ubuntu/Debian, install
+it via:
 
 ```bash
 $ sudo apt-get install libxml2-dev libxslt-dev
 ```
 
 ### Create a virtual environment (optional)
+If you want to encapsulate the dependencies in a virtual environment, run the following (note, you may not need to run the first line if your administrator already installed `virtualenvwrapper` on your machine):
 
 ```bash
 $ sudo pip install virtualenvwrapper
