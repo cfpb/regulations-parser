@@ -4,6 +4,7 @@ import codecs
 import logging
 import sys
 import argparse
+import pyparsing
 
 try:
     import requests_cache
@@ -16,31 +17,21 @@ except ImportError:
 from regparser.diff import treediff
 from regparser.builder import Builder, LayerCacheAggregator
 
+pyparsing.ParserElement.enablePackrat()
 
 logger = logging.getLogger('build_from')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
+# @profile
+def parse_regulation(args):
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description='Regulation parser')
-    parser.add_argument('filename',
-                        help='XML file containing the regulation')
-    parser.add_argument('title', type=int, help='Title number')
-    parser.add_argument('notice', type=str, help='Notice document number')
-    parser.add_argument('act_title', type=int, help='Act title', action='store')
-    parser.add_argument('act_section', type=int, help='Act section')
-    parser.add_argument('--generate-diffs', type=bool, help='Generate diffs?', required=False, default=True)
-
-    args = parser.parse_args()
-    
     with codecs.open(args.filename, 'r', 'utf-8') as f:
         reg = f.read()
 
     doc_number = args.notice
     act_title_and_section = [args.act_title, args.act_section]
-    
+
     #   First, the regulation tree
     reg_tree = Builder.reg_tree(reg)
 
@@ -49,7 +40,7 @@ if __name__ == "__main__":
                       doc_number=doc_number)
 
     builder.write_notices()
-    
+
     #   Always do at least the first reg
     logger.info("Version %s", doc_number)
     builder.write_regulation(reg_tree)
@@ -57,7 +48,7 @@ if __name__ == "__main__":
     builder.gen_and_write_layers(reg_tree, act_title_and_section, layer_cache)
     layer_cache.replace_using(reg_tree)
 
-    
+
     # this used to assume implicitly that if gen-diffs was not specified it was
     # True; changed it to explicit check
     if args.generate_diffs:
@@ -83,3 +74,18 @@ if __name__ == "__main__":
                 builder.writer.diff(
                     reg_tree.label_id(), lhs_version, rhs_version
                 ).write(comparer.changes)
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='Regulation parser')
+    parser.add_argument('filename',
+                        help='XML file containing the regulation')
+    parser.add_argument('title', type=int, help='Title number')
+    parser.add_argument('notice', type=str, help='Notice document number')
+    parser.add_argument('act_title', type=int, help='Act title', action='store')
+    parser.add_argument('act_section', type=int, help='Act section')
+    parser.add_argument('--generate-diffs', type=bool, help='Generate diffs?', required=False, default=True)
+
+    args = parser.parse_args()
+    
+    parse_regulation(args)

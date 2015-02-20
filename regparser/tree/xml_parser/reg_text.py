@@ -100,6 +100,7 @@ def build_subpart(reg_part, subpart_xml):
     return subpart
 
 
+# @profile
 def get_markers(text):
     """ Extract all the paragraph markers from text. Do some checks on the
     collapsed markers."""
