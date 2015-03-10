@@ -44,6 +44,7 @@ class APIWriteContent:
 
     def write(self, python_obj):
         """Write the object (as json) to the API"""
+
         requests.post(
             settings.API_BASE + self.path,
             data=AmendmentNodeEncoder().encode(python_obj),
@@ -128,6 +129,7 @@ class Client:
 
     def __init__(self):
         if settings.API_BASE:
+            print 'writing to {0}'.format(settings.API_BASE)
             self.writer_class = APIWriteContent
         elif getattr(settings, 'GIT_OUTPUT_DIR', ''):
             self.writer_class = GitWriteContent

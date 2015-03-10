@@ -258,27 +258,29 @@ class RegulationTree(object):
         else:
             parent = self.get_parent(node)
 
-        prev_idx = [idx for idx, c in enumerate(parent.children)
-                    if c.label == node.label]
-        if prev_idx:
-            # replace existing element in place
-            prev_idx = prev_idx[0]
-            parent.children = (parent.children[:prev_idx] + [node] +
-                               parent.children[prev_idx + 1:])
-        else:
-            # actually adding a new element
-            parent.children = self.add_child(parent.children, node,
-                                             getattr(parent, 'child_labels',
-                                                     []))
+        # not sure what to do if parent is null....
+        if parent:
+            prev_idx = [idx for idx, c in enumerate(parent.children)
+                        if c.label == node.label]
+            if prev_idx:
+                # replace existing element in place
+                prev_idx = prev_idx[0]
+                parent.children = (parent.children[:prev_idx] + [node] +
+                                   parent.children[prev_idx + 1:])
+            else:
+                # actually adding a new element
+                parent.children = self.add_child(parent.children, node,
+                                                 getattr(parent, 'child_labels',
+                                                         []))
 
-        # Finally, we see if this node is the parent of any 'kept' children.
-        # If so, add them back
-        label_id = node.label_id()
-        if label_id in self._kept__by_parent:
-            for kept in self._kept__by_parent[label_id]:
-                node.children = self.add_child(node.children, kept,
-                                               getattr(node, 'child_labels',
-                                                       []))
+            # Finally, we see if this node is the parent of any 'kept' children.
+            # If so, add them back
+            label_id = node.label_id()
+            if label_id in self._kept__by_parent:
+                for kept in self._kept__by_parent[label_id]:
+                    node.children = self.add_child(node.children, kept,
+                                                   getattr(node, 'child_labels',
+                                                           []))
 
     def create_empty_node(self, node_label):
         """ In rare cases, we need to flush out the tree by adding
