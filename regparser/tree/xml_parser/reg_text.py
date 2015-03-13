@@ -178,8 +178,20 @@ def build_from_section(reg_part, section_xml):
                 n = Node(node_text[0], [], [m], source_xml=ch)
                 n.tagged_text = unicode(node_text[1])
                 nodes.append(n)
+
             if node_text[0].endswith('* * *'):
                 nodes.append(Node(label=[mtypes.INLINE_STARS]))
+
+    # special handling for reg J, whose definitions are inexplicably
+    # unnumbered and yet required to belong to node that precedes them
+    if reg_part == '1010' and nodes != [] and nodes[-1].text.find('As used in this part:') > -1:
+        for i, [plain_text, tagged_text] in enumerate(section_texts):
+            subnode = Node(plain_text, label=['b', str(i)], title="")
+            subnode.tagged_text = tagged_text
+            nodes[-1].children.append(subnode)
+
+
+
 
     # Trailing stars don't matter; slightly more efficient to ignore them
     while nodes and nodes[-1].label[0] in mtypes.stars:
@@ -230,16 +242,20 @@ def build_from_section(reg_part, section_xml):
         plain_sect_texts = [s[0] for s in section_texts]
         tagged_sect_texts = [s[1] for s in section_texts]
 
-        section_text = ' '.join([section_xml.text] + plain_sect_texts)
-        tagged_section_text = ' '.join([section_xml.text] + tagged_sect_texts)
         section_title = u"§ " + reg_part + "." + section_number
         if subject_text:
             section_title += " " + subject_text
 
-        sect_node = Node(
-            section_text, label=[reg_part, section_number],
-            title=section_title)
-        sect_node.tagged_text = tagged_section_text
+        # another workaround for Reg J
+        if reg_part == '1010':
+            sect_node = Node('', label=[reg_part, section_number], title=section_title)
+            sect_node.tagged_text = ''
+        else:
+            section_text = ' '.join([section_xml.text] + plain_sect_texts)
+            tagged_section_text = ' '.join([section_xml.text] + tagged_sect_texts)
+
+            sect_node = Node(section_text, label=[reg_part, section_number], title=section_title)
+            sect_node.tagged_text = tagged_section_text
 
         m_stack.add_to_bottom((1, sect_node))
 

@@ -44,6 +44,7 @@ class APIWriteContent:
 
     def write(self, python_obj):
         """Write the object (as json) to the API"""
+        print 'writing from {0}'.format(self.path)
 
         requests.post(
             settings.API_BASE + self.path,
