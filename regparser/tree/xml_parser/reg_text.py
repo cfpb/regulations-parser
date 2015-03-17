@@ -12,9 +12,6 @@ from regparser.tree.xml_parser.appendices import build_non_reg_text
 from regparser.tree import reg_text
 from regparser.tree.xml_parser import tree_utils
 
-from regparser.grammar.atomic import definition_marker
-from regparser.grammar.terms import scope_term_type_parser
-
 
 def get_reg_part(reg_doc):
     """
