@@ -17,8 +17,6 @@ except ImportError:
 from regparser.diff import treediff
 from regparser.builder import Builder, LayerCacheAggregator
 
-pyparsing.ParserElement.enablePackrat()
-
 logger = logging.getLogger('build_from')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
