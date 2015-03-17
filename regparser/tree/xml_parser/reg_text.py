@@ -12,6 +12,9 @@ from regparser.tree.xml_parser.appendices import build_non_reg_text
 from regparser.tree import reg_text
 from regparser.tree.xml_parser import tree_utils
 
+from regparser.grammar.atomic import definition_marker
+from regparser.grammar.terms import scope_term_type_parser
+
 
 def get_reg_part(reg_doc):
     """
@@ -161,8 +164,16 @@ def next_marker(xml_node, remaining_markers):
 def build_from_section(reg_part, section_xml):
     section_texts = []
     nodes = []
+
+    section_no = section_xml.xpath('SECTNO')[0].text
+    subject_xml = section_xml.xpath('SUBJECT')
+    if not subject_xml:
+        subject_xml = section_xml.xpath('RESERVED')
+    subject_text = subject_xml[0].text
+
     # Collect paragraph markers and section text (intro text for the
     # section)
+    i = 0
     for ch in filter(lambda ch: ch.tag in ('P', 'STARS'),
                      section_xml.getchildren()):
         text = tree_utils.get_node_text(ch, add_spaces=True)
@@ -172,7 +183,19 @@ def build_from_section(reg_part, section_xml):
         if ch.tag == 'STARS':
             nodes.append(Node(label=[mtypes.STARS_TAG]))
         elif not markers_list:
-            section_texts.append((text, tagged_text))
+            # is this a bunch of definitions that don't have numbers next to them?
+            if subject_text.find('Definitions.') > -1:
+                if text.find('means') > -1:
+                    def_marker = text.split('means')[0].strip().split()
+                    def_marker = ''.join([word[0].upper() + word[1:] for word in def_marker])
+                else:
+                    def_marker = 'def{0}'.format(i)
+                n = Node(text, label=[def_marker], source_xml=ch)
+                n.tagged_text = tagged_text
+                n.defn_no_number = True
+                nodes[-1].children.append(n)
+            else:
+                section_texts.append((text, tagged_text))
         else:
             for m, node_text in get_markers_and_text(ch, markers_list):
                 n = Node(node_text[0], [], [m], source_xml=ch)
@@ -181,16 +204,6 @@ def build_from_section(reg_part, section_xml):
 
             if node_text[0].endswith('* * *'):
                 nodes.append(Node(label=[mtypes.INLINE_STARS]))
-
-    # special handling for reg J, whose definitions are inexplicably
-    # unnumbered and yet required to belong to node that precedes them
-    if reg_part == '1010' and nodes != [] and nodes[-1].text.find('As used in this part:') > -1:
-        for i, [plain_text, tagged_text] in enumerate(section_texts):
-            subnode = Node(plain_text, label=['b', str(i)], title="")
-            subnode.tagged_text = tagged_text
-            nodes[-1].children.append(subnode)
-
-
 
 
     # Trailing stars don't matter; slightly more efficient to ignore them
@@ -219,11 +232,7 @@ def build_from_section(reg_part, section_xml):
                 else:
                     m_stack.add(1 + par.depth, node)
 
-    section_no = section_xml.xpath('SECTNO')[0].text
-    subject_xml = section_xml.xpath('SUBJECT')
-    if not subject_xml:
-        subject_xml = section_xml.xpath('RESERVED')
-    subject_text = subject_xml[0].text
+
 
     nodes = []
     section_nums = []
@@ -246,16 +255,11 @@ def build_from_section(reg_part, section_xml):
         if subject_text:
             section_title += " " + subject_text
 
-        # another workaround for Reg J
-        if reg_part == '1010':
-            sect_node = Node('', label=[reg_part, section_number], title=section_title)
-            sect_node.tagged_text = ''
-        else:
-            section_text = ' '.join([section_xml.text] + plain_sect_texts)
-            tagged_section_text = ' '.join([section_xml.text] + tagged_sect_texts)
+        section_text = ' '.join([section_xml.text] + plain_sect_texts)
+        tagged_section_text = ' '.join([section_xml.text] + tagged_sect_texts)
 
-            sect_node = Node(section_text, label=[reg_part, section_number], title=section_title)
-            sect_node.tagged_text = tagged_section_text
+        sect_node = Node(section_text, label=[reg_part, section_number], title=section_title)
+        sect_node.tagged_text = tagged_section_text
 
         m_stack.add_to_bottom((1, sect_node))
 
