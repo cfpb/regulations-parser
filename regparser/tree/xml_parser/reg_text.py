@@ -170,7 +170,6 @@ def build_from_section(reg_part, section_xml):
 
     # Collect paragraph markers and section text (intro text for the
     # section)
-    i = 0
     for ch in filter(lambda ch: ch.tag in ('P', 'STARS'),
                      section_xml.getchildren()):
         text = tree_utils.get_node_text(ch, add_spaces=True)

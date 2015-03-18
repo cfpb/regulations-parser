@@ -128,7 +128,6 @@ class Client:
 
     def __init__(self):
         if settings.API_BASE:
-            print 'writing to {0}'.format(settings.API_BASE)
             self.writer_class = APIWriteContent
         elif getattr(settings, 'GIT_OUTPUT_DIR', ''):
             self.writer_class = GitWriteContent
