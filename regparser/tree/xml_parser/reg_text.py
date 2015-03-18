@@ -181,7 +181,7 @@ def build_from_section(reg_part, section_xml):
             nodes.append(Node(label=[mtypes.STARS_TAG]))
         elif not markers_list:
             # is this a bunch of definitions that don't have numbers next to them?
-            if subject_text.find('Definitions.') > -1:
+            if subject_text.find('Definitions.') > -1 and len(nodes) > 0:
                 if text.find('means') > -1:
                     def_marker = text.split('means')[0].strip().split()
                     def_marker = ''.join([word[0].upper() + word[1:] for word in def_marker])
@@ -201,7 +201,6 @@ def build_from_section(reg_part, section_xml):
 
             if node_text[0].endswith('* * *'):
                 nodes.append(Node(label=[mtypes.INLINE_STARS]))
-
 
     # Trailing stars don't matter; slightly more efficient to ignore them
     while nodes and nodes[-1].label[0] in mtypes.stars:
