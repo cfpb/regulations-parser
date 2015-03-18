@@ -2,9 +2,7 @@
 
 import codecs
 import logging
-import sys
 import argparse
-import pyparsing
 
 try:
     import requests_cache

@@ -1,5 +1,5 @@
-OUTPUT_DIR = '/home/jerry/work/cfpb/stub-server/'
-API_BASE = 'http://localhost:8181/'
+OUTPUT_DIR = ''
+API_BASE = ''
 META = {}
 
 #   All current, US CFR titles
