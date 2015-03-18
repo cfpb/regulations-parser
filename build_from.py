@@ -21,7 +21,9 @@ logger.addHandler(logging.StreamHandler())
 
 # @profile
 def parse_regulation(args):
-
+    """ Run the parser on the specified command-line arguments. Broken out into
+        separate function to assist in profiling.
+    """
     with codecs.open(args.filename, 'r', 'utf-8') as f:
         reg = f.read()
 
@@ -48,6 +50,10 @@ def parse_regulation(args):
         generate_diffs(doc_number, reg_tree, act_title_and_section, builder, layer_cache)
 
 def generate_diffs(doc_number, reg_tree, act_title_and_section, builder, layer_cache):
+    """ Generate all the diffs for the given regulation. Broken out into separate function
+        to assist with profiling so it's easier to determine which parts of the parser take
+        the most time
+    """
 
     all_versions = {doc_number: reg_tree}
 
