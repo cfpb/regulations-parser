@@ -170,6 +170,7 @@ def build_from_section(reg_part, section_xml):
 
     # Collect paragraph markers and section text (intro text for the
     # section)
+    i = 0
     for ch in filter(lambda ch: ch.tag in ('P', 'STARS'),
                      section_xml.getchildren()):
         text = tree_utils.get_node_text(ch, add_spaces=True)
@@ -186,9 +187,9 @@ def build_from_section(reg_part, section_xml):
                     def_marker = ''.join([word[0].upper() + word[1:] for word in def_marker])
                 else:
                     def_marker = 'def{0}'.format(i)
+                    i += 1
                 n = Node(text, label=[def_marker], source_xml=ch)
                 n.tagged_text = tagged_text
-                n.defn_no_number = True
                 nodes[-1].children.append(n)
             else:
                 section_texts.append((text, tagged_text))
