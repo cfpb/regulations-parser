@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from unittest import TestCase
 
 from regparser.notice import compiler
@@ -769,15 +769,17 @@ class CompilerTests(TestCase):
         self.assertEqual(parent.text, '')
 
     def test_add_node_dummy_subpart(self):
+        """If the tree consists only of the empty subpart, adding a new
+        section should insert into the empty subpart"""
         root = Node(label=['1'])
-        empty = Node(label = ['1', 'Subpart'], node_type = 'emptypart')
-        n1 = Node ('n1', label=['1','1'])
-        n2 = Node ('n2', label=['1','2'])
+        empty = Node(label=['1', 'Subpart'], node_type='emptypart')
+        n1 = Node('n1', label=['1', '1'])
+        n2 = Node('n2', label=['1', '2'])
         empty.children = [n1, n2]
         root.children = [empty]
         reg_tree = compiler.RegulationTree(root)
 
-        node = Node('n3', label = ['1', '3'], node_type=Node.REGTEXT)
+        node = Node('n3', label=['1', '3'], node_type=Node.REGTEXT)
         reg_tree.add_node(node)
 
         self.assertEqual(len(reg_tree.tree.children), 1)
