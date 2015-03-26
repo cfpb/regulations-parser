@@ -28,6 +28,22 @@ Here's an example, using CFPB's regulation H.
 At the end, you will have new directories for `regulation`, `layer`,
 `diff`, and `notice` which would mirror the JSON files sent to the API.
 
+## Quick Start with Modified Documents
+
+Here's an example using FEC's regulation 110, showing how documents can be
+tweaked to pass the parser.
+
+1. `git clone https://github.com/cfpb/regulations-parser.git`
+1. `cd regulations-parser`
+1. `git clone https://github.com/micahsaul/fec_docs`
+1. `pip install -r requirements.txt`
+1. `echo "LOCAL_XML_PATHS = ['fec_docs']" >> local_settings.py`
+1. `python build_from.py fec_docs/1997CFR/CFR-1997-title11-vol1-part110.xml 11
+   96-20102 5 552`
+
+If you review the history of the `fec_docs` repo, you'll see some of the types
+of changes that need to be made.
+
 ## Features
 
 * Split regulation into paragraph-level chunks
@@ -474,3 +490,41 @@ structure. AMDPARs, which contain the list of changes may also need to be
 simplified. If the same type of change needs to be made for multiple
 documents, consider adding a corresponding rule to the parser -- just test
 existing docs first.
+
+### Integration with regulations-core and regulations-site
+
+With the above examples, you should have been able to run the parser and
+generate some output. "But where's the website?" you ask. The parser was
+written to be as generic as possible, but integrating with `regulations-core`
+and `regulations-site` is likely where you'll want to end up. Here, we'll show
+one way to connect these applications up; see the individual repos for more
+configuration detail.
+
+Let's set up `regulations-core` first. This is an API which will be used to
+both store and query the regulation data.
+
+ 1. `git clone https://github.com/cfpb/regulations-core.git`
+ 1. `cd regulations-core`
+ 1. `pip install zc.buildout`
+ 1. `buildout   # pulls in python dependencies`
+ 1. `./bin/django syncdb --migrate`
+ 1. `./bin/django runserver 127.0.0.0:8888 &   # Starts the API`
+
+Then, we can configure the parser to write to this API and run it, here using
+the FEC example above
+
+ 1. `cd /path/to/regulations-parser`
+ 1. `echo "API_BASE = 'http://localhost:8000/'" >> local_settings.py`
+ 1. `python build_from.py fec_docs/1997CFR/CFR-1997-title11-vol1-part110.xml 11
+    96-20102 5 552`
+
+Next up, we set up `regulations-site` to provide a webapp.
+
+ 1. `git clone https://github.com/18f/regulations-site.git`
+ 1. `cd regulations-site`
+ 1. `buildout`
+ 1. `echo "API_BASE = 'http://127.0.0.1:8888/'" >>
+    regulations/settings/local_settings.py`
+ 1. `./run_server.sh`
+
+Then, navigate to `http://localhost:8000/` in your browser to see the FEC reg.
