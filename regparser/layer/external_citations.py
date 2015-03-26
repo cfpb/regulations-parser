@@ -1,14 +1,12 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from collections import defaultdict
 from regparser.grammar import external_citations as grammar
-import string
-import urllib
 
 from layer import Layer
 
 
 class ExternalCitationParser(Layer):
-    #The different types of citations
+    # The different types of citations
     CODE_OF_FEDERAL_REGULATIONS = 'CFR'
     UNITED_STATES_CODE = 'USC'
     PUBLIC_LAW = 'PUBLIC_LAW'
@@ -40,9 +38,13 @@ class ExternalCitationParser(Layer):
         cm = defaultdict(list)
         citation_strings = {}
         for citation, start, end in parser.scanString(text):
-            index = "-".join(citation)
-            cm[index].append([start, end])
-            citation_strings[index] = citation.asList()
+            # Citations of the form XX CFR YY should be ignored if they are of
+            # the title/part being parsed (as they aren't external citations)
+            if (citation[0] != self.cfr_title or citation[1] != 'CFR'
+                    or citation[2] != parts[0]):
+                index = "-".join(citation)
+                cm[index].append([start, end])
+                citation_strings[index] = citation.asList()
 
         def build_layer_element(k, offsets):
             layer_element = {

@@ -144,3 +144,15 @@ class LayerSectionBySectionTest(TestCase):
              "publication_date": "2010-10-10",
              "fr_volume": 22,
              "fr_page": 7676}])
+
+    def test_no_section_by_section(self):
+        """Not all notices have a section-by-section analysis section. Verify
+        that the parser doesn't explode in these cases"""
+        notice = {
+            "document_number": "111-22",
+            "fr_volume": 22,
+            "cfr_part": "100",
+            "publication_date": "2010-10-10"
+        }
+        s = SectionBySection(None, notices=[notice])
+        self.assertEqual(None, s.process(Node(label=['100', '22'])))
