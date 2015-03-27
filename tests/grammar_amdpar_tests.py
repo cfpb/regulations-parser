@@ -481,3 +481,12 @@ class GrammarAmdParTests(TestCase):
         self.assertTrue(heading.match(
             tokens.Paragraph, label=[None, 'Appendix:H', '30(C)'],
             field=tokens.Paragraph.HEADING_FIELD))
+
+    def test_example_35(self):
+        text = "5. Section 100.94 is added to subpart C to read as follows:"
+        result = parse_text(text)
+        self.assertEqual(result, [
+            tokens.Context(['100', None, '94'], certain=False),
+            tokens.Verb(tokens.Verb.POST, active=False, and_prefix=False),
+            tokens.Context([None, 'Subpart:C'], certain=True)
+        ])

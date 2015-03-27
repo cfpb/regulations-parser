@@ -150,9 +150,13 @@ def match_to_label(match, initial_label, comment=False):
     return label
 
 
-def internal_citations(text, initial_label=None, require_marker=False):
+def internal_citations(text, initial_label=None,
+                       require_marker=False, title=None):
     """List of all internal citations in the text. require_marker helps by
-    requiring text be prepended by 'comment'/'paragraphs'/etc."""
+    requiring text be prepended by 'comment'/'paragraphs'/etc. title
+    represents the CFR title (e.g. 11 for FEC, 12 for CFPB regs) and is used
+    to correctly parse citations of the the form 11 CFR 110.1 when
+    11 CFR 110 is the regulation being parsed."""
     if not initial_label:
         initial_label = Label()
     citations = []
@@ -215,6 +219,37 @@ def internal_citations(text, initial_label=None, require_marker=False):
             start, end, initial_label.copy(
                 appendix=match.appendix, appendix_section=match.a1,
                 **label), full_start=full_start))
+
+    # Internal citations can sometimes be in the form XX CFR YY.ZZ
+    for match, start, end in grammar.internal_cfr_p.scanString(text):
+        # Check if this is a reference to the CFR title and part we are parsing
+        if match.cfr_title == title and match[1] == initial_label.to_list()[0]:
+            full_start = start
+            if match.marker is not '':
+                #   Remove the marker from the beginning of the string
+                start = match.marker.pos[1]
+            citations.append(ParagraphCitation(
+                start, end, match_to_label(match, initial_label),
+                full_start=full_start))
+        else:
+            continue
+
+    # And sometimes there are several of them
+    for match, start, end in grammar.multiple_cfr_p.scanString(text):
+        label = initial_label
+        if match.head.cfr_title == title:
+            for submatch in chain([match.head], match.tail):
+                if submatch.part == initial_label.to_list()[0]:
+                    cit = ParagraphCitation(
+                        submatch.pos[0], submatch.pos[1],
+                        match_to_label(submatch.tokens, label),
+                        full_start=start,
+                        full_end=end,
+                        in_clause=True)
+                    label = cit.label   # update the label to keep context
+                    citations.append(cit)
+        else:
+            continue
 
     # Remove any sub-citations
     final_citations = []

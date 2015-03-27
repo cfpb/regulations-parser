@@ -68,7 +68,7 @@ reserve_active = generate_verb(['reserve', 'reserving'],
 
 #   Context
 context_certainty = Optional(
-    Marker("in") | (
+    Marker("in") | Marker("to") | (
         Marker("under") + Optional(
             Marker("subheading")))).setResultsName("certain")
 
