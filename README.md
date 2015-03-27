@@ -20,10 +20,8 @@ Here's an example, using CFPB's regulation H.
 1. `git clone https://github.com/cfpb/regulations-parser.git`
 1. `cd regulations-parser`
 1. `pip install -r requirements.txt`
-1. `wget
-   http://www.gpo.gov/fdsys/pkg/CFR-2012-title12-vol8/xml/CFR-2012-title12-vol8-part1004.xml`
-1. `python build_from.py CFR-2012-title12-vol8-part1004.xml 12 2011-18676 15
-   1693`
+1. `wget http://www.gpo.gov/fdsys/pkg/CFR-2012-title12-vol8/xml/CFR-2012-title12-vol8-part1004.xml`
+1. `python build_from.py CFR-2012-title12-vol8-part1004.xml 12 2011-18676 15 1693`
 
 At the end, you will have new directories for `regulation`, `layer`,
 `diff`, and `notice` which would mirror the JSON files sent to the API.
@@ -38,8 +36,7 @@ tweaked to pass the parser.
 1. `git clone https://github.com/micahsaul/fec_docs`
 1. `pip install -r requirements.txt`
 1. `echo "LOCAL_XML_PATHS = ['fec_docs']" >> local_settings.py`
-1. `python build_from.py fec_docs/1997CFR/CFR-1997-title11-vol1-part110.xml 11
-   96-20102 5 552`
+1. `python build_from.py fec_docs/1997CFR/CFR-1997-title11-vol1-part110.xml 11 96-20102 5 552`
 
 If you review the history of the `fec_docs` repo, you'll see some of the types
 of changes that need to be made.
@@ -144,13 +141,13 @@ The syntax is
 $ python build_from.py regulation.ext title notice_doc_# act_title act_section
 ```
 
-For example, to match the reissuance above:
+For example, to match regulation H in the quick start above:
 ```bash
-$ python build_from.py 725.xml 12 2013-1725 15 1693
+$ python build_from.py CFR-2012-title12-vol8-part1004.xml 12 2011-18676 15 1693
 ```
 
 Here ```12``` is the CFR title number (in our case, for "Banks and
-Banking"), ```2013-1725``` is the last notice used to create this version
+Banking"), ```2011-18676``` is the last notice used to create this version
 (i.e. the last "final rule" which is currently in effect), ```15``` is the
 title of "the Act" and ```1693``` is the relevant section. Wherever the
 phrase "the Act" is used in the regulation, the external link parser will
