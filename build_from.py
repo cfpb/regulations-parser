@@ -18,7 +18,6 @@ logger = logging.getLogger('build_from')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
-
 if __name__ == "__main__":
     if len(sys.argv) < 6:
         print("Usage: python build_from.py regulation.xml title "
@@ -41,6 +40,7 @@ if __name__ == "__main__":
     title_part = reg_tree.label_id()   
     doc_number = fetch_doc_number_json(title, title_part, pub_date, only_final=True)
     print doc_number
+    print originaldate
 
     builder = Builder(cfr_title=title,
                       cfr_part=title_part,
