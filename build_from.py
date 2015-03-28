@@ -19,28 +19,30 @@ logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
 if __name__ == "__main__":
-    if len(sys.argv) < 6:
+    if len(sys.argv) < 5:
         print("Usage: python build_from.py regulation.xml title "
               + "notice_doc_# act_title act_section (Generate diffs? "
               + "True/False)")
-        print("  e.g. python build_from.py rege.txt 12 2011-31725 15 1693 "
+        print("  e.g. python build_from.py rege.txt 12 15 1693 "
               + "False")
         exit()
 
     with codecs.open(sys.argv[1], 'r', 'utf-8') as f:
         reg = f.read()
 
-    pub_date = sys.argv[3]
+    #pub_date = sys.argv[3]
     # doc_number = sys.argv[3]
 
     #   First, the regulation tree
+    #Build = Builder()
     reg_tree = Builder.reg_tree(reg)
 
     title = int(sys.argv[2])
-    title_part = reg_tree.label_id()   
+    title_part = reg_tree.label_id()
+    pub_date = Builder.org_date(reg)
+    print pub_date
     doc_number = fetch_doc_number_json(title, title_part, pub_date, only_final=True)
     print doc_number
-    print originaldate
 
     builder = Builder(cfr_title=title,
                       cfr_part=title_part,
@@ -57,9 +59,9 @@ if __name__ == "__main__":
     logger.info("Version %s", doc_number)
     builder.write_regulation(reg_tree)
     layer_cache = LayerCacheAggregator()
-    builder.gen_and_write_layers(reg_tree, sys.argv[4:6], layer_cache)
+    builder.gen_and_write_layers(reg_tree, sys.argv[3:4], layer_cache)
     layer_cache.replace_using(reg_tree)
-    if len(sys.argv) < 7 or sys.argv[6].lower() == 'true':
+    if len(sys.argv) < 7 or sys.argv[5].lower() == 'true':
         all_versions = {doc_number: reg_tree}
         for last_notice, old, new_tree, notices in builder.revision_generator(
                 reg_tree):
@@ -69,7 +71,7 @@ if __name__ == "__main__":
             builder.doc_number = version
             builder.write_regulation(new_tree)
             layer_cache.invalidate_by_notice(last_notice)
-            builder.gen_and_write_layers(new_tree, sys.argv[4:6],
+            builder.gen_and_write_layers(new_tree, sys.argv[3:4],
                                          layer_cache, notices)
             layer_cache.replace_using(new_tree)
 
