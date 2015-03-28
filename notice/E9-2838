@@ -1,0 +1,208 @@
+{
+    "abstract": "The Federal Election Commission is promulgating regulations implementing new statutory provisions regarding the disclosure of information about bundled contributions provided by certain lobbyists, registrants, and political committees established or controlled by lobbyists and registrants. The final rules require authorized committees, leadership PACs, and political committees of political parties to disclose certain information about lobbyists, registrants, and lobbyists' and registrants' political committees that provide bundled contributions. Further information is provided in the supplementary information that follows.", 
+    "action": "Final Rules and Transmittal of Regulations to Congress.", 
+    "agency_names": [
+        "Federal Election Commission"
+    ], 
+    "amendments": [
+        [
+            "POST", 
+            [
+                "100", 
+                "5", 
+                "e", 
+                "6"
+            ]
+        ], 
+        [
+            "POST", 
+            [
+                "100", 
+                "5", 
+                "e", 
+                "7"
+            ]
+        ], 
+        [
+            "POST", 
+            [
+                "104", 
+                "22"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "110", 
+                "17", 
+                "e"
+            ]
+        ], 
+        [
+            "POST", 
+            [
+                "110", 
+                "17", 
+                "f"
+            ]
+        ]
+    ], 
+    "cfr_parts": [
+        "100", 
+        "110", 
+        "104"
+    ], 
+    "cfr_title": 11, 
+    "changes": {
+        "100-5-e-6": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "5", 
+                        "e", 
+                        "6"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(6)<E T=\"03\">Leadership PAC. Leadership PAC</E>means a political committee that is directly or indirectly established, financed, maintained or controlled by a candidate for Federal office or an individual holding Federal office but which is not an authorized committee of the candidate or individual and which is not affiliated with an authorized committee of the candidate or individual, except that leadership PAC does not include a political committee of a political party.", 
+                    "text": "(6) Leadership PAC. Leadership PAC means a political committee that is directly or indirectly established, financed, maintained or controlled by a candidate for Federal office or an individual holding Federal office but which is not an authorized committee of the candidate or individual and which is not affiliated with an authorized committee of the candidate or individual, except that leadership PAC does not include a political committee of a political party.", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-5-e-7": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "5", 
+                        "e", 
+                        "7"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(7)<E T=\"03\">Lobbyist/Registrant PAC. See</E>11 CFR 104.22(a)(3).", 
+                    "text": "(7) Lobbyist/Registrant PAC. See 11 CFR 104.22(a)(3).", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-22": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "22"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "\n             \n              <E T=\"03\">Designations or other means of recognizing bundled contributions</E>means benefits given by the reporting committee to persons for raising a certain amount of contributions, including but not limited to:", 
+                    "text": "\n             Designations or other means of recognizing bundled contributions means benefits given by the reporting committee to persons for raising a certain amount of contributions, including but not limited to:", 
+                    "title": "\u00a7 104.22 Disclosure of bundling by Lobbyists/Registrants and Lobbyist/Registrant PACs (2 U.S.C. 434(i))."
+                }
+            }
+        ], 
+        "110-17-e": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "110-17-e-1", 
+                        "110-17-e-2"
+                    ], 
+                    "label": [
+                        "110", 
+                        "17", 
+                        "e"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(e)<E T=\"03\">Publication of price index increases.</E>\n            ", 
+                    "text": "(e) Publication of price index increases.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-17-e-1": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "17", 
+                        "e", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1)<E T=\"03\">Expenditure and Contribution Limitations.</E>In every odd-numbered year, the Commission will publish in the<E T=\"03\">Federal Register</E>the amount of the expenditure and contribution limitations in effect and place such information on the Commission's Web site.", 
+                    "text": "(1) Expenditure and Contribution Limitations. In every odd-numbered year, the Commission will publish in the Federal Register the amount of the expenditure and contribution limitations in effect and place such information on the Commission's Web site.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-17-e-2": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "17", 
+                        "e", 
+                        "2"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(2)<E T=\"03\">Lobbyist/registrant and lobbyist/registrant PAC contribution bundling disclosure threshold.</E>In every calendar year, the Commission will publish in the<E T=\"03\">Federal Register</E>the amount of the lobbyist/registrant and lobbyist/registrant PAC contribution bundling disclosure threshold in effect and place such information on the Commission's Web site.", 
+                    "text": "(2) Lobbyist/registrant and lobbyist/registrant PAC contribution bundling disclosure threshold. In every calendar year, the Commission will publish in the Federal Register the amount of the lobbyist/registrant and lobbyist/registrant PAC contribution bundling disclosure threshold in effect and place such information on the Commission's Web site.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-17-f": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "17", 
+                        "f"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(f)<E T=\"03\">Price index increases for lobbyist/registrant and lobbyist/registrant PAC contribution bundling threshold.</E>The threshold for disclosure of lobbyists/registrants and lobbyist/registrant PACs that bundle contributions shall be indexed for each calendar year in accordance with 11 CFR 104.22(g).", 
+                    "text": "(f) Price index increases for lobbyist/registrant and lobbyist/registrant PAC contribution bundling threshold. The threshold for disclosure of lobbyists/registrants and lobbyist/registrant PACs that bundle contributions shall be indexed for each calendar year in accordance with 11 CFR 104.22(g).", 
+                    "title": null
+                }
+            }
+        ]
+    }, 
+    "contact": "Ms. Amy L. Rothstein, Assistant General Counsel, Ms. Cheryl A.F. Hemsley, or Ms. Esther Heiden, Attorneys, 999 E Street, NW., Washington, DC 20463, (202) 694-1650 or (800) 424-9530.", 
+    "document_number": "E9-2838", 
+    "effective_on": "2009-03-19", 
+    "footnotes": {
+        "1": "The term \u201clobbyist\u201d is defined as any individual \u201cwho is employed or retained by a client for financial or other compensation for services that include more than one lobbying contact, other than an individual whose lobbying activities constitute less than 20 percent of the time engaged in the services provided by such individual to that client over a 3-month period.\u201d 2 U.S.C. 1602(10). Any lobbyist who makes more than one lobbying contact or who is employed or retained to make lobbying contacts, and exceeds the work activity threshold, must register with the Secretary of the Senate and the Clerk of the House of Representatives (\u201cClerk of the House\u201d) if certain income or expense levels are exceeded. <em data-original=\"E-03\">See</em> 2 U.S.C. 1603(a).", 
+        "10": "Under FECA, political committees are subject to the following campaign finance reporting requirements: national committees of political parties (including the national congressional campaign committees) must report monthly in all calendar years, <em data-original=\"E-03\">see</em> 2 U.S.C. 434(a)(4)(B); 11 CFR 104.5(c)(4); state, district and local committees of political parties are required to file monthly if they exceed certain levels of Federal election activity, <em data-original=\"E-03\">see</em> 2 U.S.C. 434(e)(4); 11 CFR 300.36(c); most authorized committees of presidential candidates are required to file monthly during presidential election years, <em data-original=\"E-03\">see</em> 2 U.S.C. 434(a)(3); 11 CFR 104.5(b); authorized committees of House and Senate candidates are required to file quarterly, <em data-original=\"E-03\">see</em> 2 U.S.C. 434(a)(2); 11 CFR 104.5(a); other political committees may choose to file on either a monthly or a quarterly basis, <em data-original=\"E-03\">see</em> 2 U.S.C. 434(a)(4); 11 CFR 104.5(c)(1)-(3).", 
+        "11": "As discussed in section III.H below, because the term \u201ccontributions\u201d in FECA includes in-kind contributions, the rules for \u201cbundled contributions\u201d apply to both monetary and in-kind contributions. <em data-original=\"E-03\">See</em> 2 U.S.C. 431(8)(A)(i) and 11 CFR 100.51(a), 100.54, 100.56, 109.21(b).", 
+        "12": "The Commission notes that, in these examples, the lobbyist/registrant also might have to file a conduit report pursuant to 11 CFR 110.6. Conduits, intermediaries, and lobbyist/registrants and lobbyist/registrant PACs that forward bundled contributions are also subject to the rules in 11 CFR 102.8. Conduit or intermediary activities are additionally subject to disclosure by reporting committees under these final rules if the conduits or intermediaries are lobbyist/registrants or lobbyist/registrant PACs and provide bundled contributions exceeding the reporting threshold within the covered period. Furthermore, these final rules do not make permissible any activity otherwise prohibited by the FECA and Commission regulations (<em data-original=\"E-03\">e.g.</em>, making or facilitating contributions by prohibited sources). <em data-original=\"E-03\">See, e.g.</em>, 2 U.S.C. 441b(a) and 11 CFR 114.2(f).", 
+        "13": "For 2009, the applicable reporting threshold is $16,000. AlthoughHLOGA Section 204 set the initial reporting threshold at $15,000, 2 U.S.C. 434(i)(3)(A), this number will be indexed for inflation annually. 2 U.S.C. 434(i)(3)(B); 11 CFR 104.22(g).", 
+        "14": "The reporting committee would report having received only $20,000 on FEC Form 3 and would provide itemized information on Schedule A related to the $20,000 of received contributions. It is only the credit that is reported twice on FEC Form 3L (<em data-original=\"E-03\">see</em> section III-B below) and this would be a direct result of the reporting committee having given the full $20,000 credit to two different lobbyists. A reporting committee may give credit to all co-hosts for the full amount raised, but is not required to do so.", 
+        "2": "Any organization that has one or more employees who are lobbyists must register on behalf of its lobbyist employees. <em data-original=\"E-03\">See</em> 2 U.S.C. 1603(a); <em data-original=\"E-03\">see also http://www.senate.gov/legislative/common/briefing/lobby_disc_briefing.htm#3</em> ; <em data-original=\"E-03\">http://lobbyingdisclosure.house.gov/lda_guide.html</em>.", 
+        "3": "\u201cPAC\u201d is an acronym often used to refer to a political action committee other than an authorized committee or a political committee of a political party.", 
+        "4": "One of these comments was from the Internal Revenue Service, stating that the Internal Revenue Service did not find any conflict between its regulations and the Commission's proposed rules.", 
+        "5": "This definition is consistent with the Commission's rules that treat such committees as unaffiliated with a candidate's authorized committee. <em data-original=\"E-03\">See</em> 11 CFR 100.5(g).", 
+        "6": "<em data-original=\"E-03\">See</em> News Release, Federal Election Commission Announces Plans to Issue New Regulations to Implement the Honest Leadership and Open Government Act of 2007, available at <em data-original=\"E-03\">http://www.fec.gov/press/press2007/20070924travel.shtml</em>.", 
+        "7": "The term \u201cpolitical committee\u201d applies only to those organizations that are for the purpose of influencing Federal elections. The definition of \u201cleadership PAC\u201d does not cover committees that are not included in the definition of \u201cpolitical committee\u201d (such as State leadership PACs that are established, financed, maintained, or controlled by a State official who runs for Federal office).", 
+        "8": "Comments filed in the candidate travel rulemaking are available at <em data-original=\"E-03\">http://www.fec.gov/law/law_rulemakings.shtml#travel07</em>.", 
+        "9": "Under Section (4)(b)(6) of the LDA, each registration filed with the Secretary of the Senate or Clerk of the House must include the name of each employee of the registrant who has acted or whom the registrant expects to act as a lobbyist on behalf of the registrant or a client; under Section 5(b)(2)(C), each registrant must file quarterly reports with the Secretary of the Senate and the Clerk of the House that include a list of the registrant's employees who acted as lobbyists on behalf of a client of the registrant during the quarter. <em data-original=\"E-03\">See</em> 2 U.S.C. 1603(b)(6); 2 U.S.C. 1604(b)(2)(C)."
+    }, 
+    "fr_citation": "74 FR 7285", 
+    "fr_url": "https://www.federalregister.gov/articles/2009/02/17/E9-2838/no-title-available", 
+    "fr_volume": 74, 
+    "initial_effective_on": "2009-03-19", 
+    "publication_date": "2009-02-17", 
+    "section_by_section": []
+}

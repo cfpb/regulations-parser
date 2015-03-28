@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="cfr.xsl"?>
+<CFRGRANULE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="CFRMergedXML.xsd">
+  <FDSYS>
+    <CFRTITLE>12</CFRTITLE>
+    <CFRTITLETEXT>Banks and Banking</CFRTITLETEXT>
+    <VOL>8</VOL>
+    <DATE>2012-01-01</DATE>
+    <ORIGINALDATE>2012-01-01</ORIGINALDATE>
+    <COVERONLY>false</COVERONLY>
+    <TITLE>ALTERNATIVE MORTGAGE TRANSACTION PARITY (REGULATION D)</TITLE>
+    <GRANULENUM>1004</GRANULENUM>
+    <HEADING>PART 1004</HEADING>
+    <ANCESTORS>
+      <PARENT HEADING="Title 12" SEQ="1">Banks and Banking</PARENT>
+      <PARENT HEADING="CHAPTER X" SEQ="0">BUREAU OF CONSUMER FINANCIAL PROTECTION</PARENT>
+    </ANCESTORS>
+  </FDSYS>
+  <PART>
+    <EAR>Pt. 1004</EAR>
+    <HD SOURCE="HED">PART 1004—ALTERNATIVE MORTGAGE TRANSACTION PARITY (REGULATION D)</HD>
+    <CONTENTS>
+      <SECHD>Sec.</SECHD>
+      <SECTNO>1004.1</SECTNO>
+      <SUBJECT>Authority, purpose, and scope.</SUBJECT>
+      <SECTNO>1004.2</SECTNO>
+      <SUBJECT>Definitions.</SUBJECT>
+      <SECTNO>1004.3</SECTNO>
+      <SUBJECT>Preemption of State law.</SUBJECT>
+      <SECTNO>1004.4</SECTNO>
+      <SUBJECT>Requirements for alternative mortgage transactions.</SUBJECT>
+      <APP>Appendix A to Part 1004—Official Commentary on Regulation D</APP>
+    </CONTENTS>
+    <AUTH>
+      <HD SOURCE="HED">Authority:</HD>
+      <P>12 U.S.C. 3802, 3803; 15 U.S.C. 1604, 1639b; Pub. L. No. 111-203, 124 Stat. 1376.</P>
+    </AUTH>
+    <SOURCE>
+      <HD SOURCE="HED">Source:</HD>
+      <P>76 FR 44242, July 22, 2011, unless otherwise noted.</P>
+    </SOURCE>
+    <SECTION>
+      <PRTPAGE P="166"/>
+      <SECTNO>§ 1004.1</SECTNO>
+      <SUBJECT>Authority, purpose, and scope.</SUBJECT>
+      <P>(a) <E T="03">Authority.</E> This regulation, known as Regulation D, is issued by the Bureau of Consumer Financial Protection to implement the Alternative Mortgage Transaction Parity Act, 12 U.S.C. 3801 <E T="03">et seq.,</E> as amended by title X, Section 1083 of the Dodd-Frank Wall Street Reform and Consumer Protection Act (Pub. L. 111-203, 124 Stat. 1376). Section 1004.4 is issued pursuant to the Alternative Mortgage Transaction Parity Act (as amended) and the Truth in Lending Act, 15 U.S.C. 1601 <E T="03">et seq.</E>
+      </P>
+      <P>(b) <E T="03">Purpose.</E> Consistent with the Alternative Mortgage Transaction Parity Act, the Truth in Lending Act, and the Dodd-Frank Wall Street Reform and Consumer Protection Act, the purpose of this regulation is to balance access to responsible credit and enhanced parity between State and federal housing creditors regarding the making, purchase, and enforcement of alternative mortgage transactions with consumer protection and the interests of the States in regulating mortgage transactions generally.</P>
+      <P>(c) <E T="03">Scope.</E> This regulation applies to an alternative mortgage transaction if the creditor received an application for that transaction on or after July 22, 2011. This regulation does not apply to a transaction if the creditor received the application for that transaction before July 22, 2011.</P>
+    </SECTION>
+    <SECTION>
+      <SECTNO>§ 1004.2</SECTNO>
+      <SUBJECT>Definitions.</SUBJECT>
+      <P>For purposes of this part:</P>
+      <P>
+        <E T="03">Alternative mortgage transaction</E> means a loan, credit sale, or account:</P>
+      <P>(1) That is secured by an interest in a residential structure that contains one to four units, whether or not that structure is attached to real property, including an individual condominium unit, cooperative unit, mobile home, or trailer, if it is used as a residence;</P>
+      <P>(2) That is made primarily for personal, family, or household purposes; and</P>
+      <P>(3) In which the interest rate or finance charge may be adjusted or renegotiated.</P>
+      <P>
+        <E T="03">Creditor</E> shall have the same meaning as in 12 CFR 226.2.</P>
+      <P>
+        <E T="03">Housing creditor</E> means:</P>
+      <P>(1) A depository institution, as defined in section 501(a)(2) of the Depository Institutions Deregulation and Monetary Control Act of 1980;</P>
+      <P>(2) A lender approved by the Secretary of Housing and Urban Development for participation in any mortgage insurance program under the National Housing Act;</P>
+      <P>(3) Any person who regularly makes loans, credit sales, or advances on an account secured by an interest in a residential structure that contains one to four units, whether or not the structure is attached to real property, including an individual condominium unit, cooperative unit, mobile home, or trailer, if it is used as a residence; and</P>
+      <P>(4) Any transferee of a party listed in paragraph (c)(1), (2), or (3) of this section.</P>
+      <P>
+        <E T="03">State</E> means any State of the United States of America, the District of Columbia, Puerto Rico, the Virgin Islands, the Northern Mariana Islands, American Samoa, Guam, and any other territory or possession of the United States.</P>
+      <P>
+        <E T="03">State law</E> means a State constitution, statute, or regulation or any provision thereof.</P>
+    </SECTION>
+    <SECTION>
+      <SECTNO>§ 1004.3</SECTNO>
+      <SUBJECT>Preemption of State law.</SUBJECT>
+      <P>Pursuant to 12 U.S.C. 3803, a State-chartered or -licensed housing creditor may make, purchase, and enforce alternative mortgage transactions in accordance with § 1004.4(a) through (c) of this part (as applicable), notwithstanding any provision of State law that restricts the ability of the housing creditor to adjust or renegotiate an interest rate or finance charge with respect to the transaction or to change the amount of interest or finance charges included in a regular periodic payment as a result of such an adjustment or renegotiation.</P>
+    </SECTION>
+    <SECTION>
+      <SECTNO>§ 1004.4</SECTNO>
+      <SUBJECT>Requirements for alternative mortgage transactions.</SUBJECT>
+      <P>(a) <E T="03">Mortgages with adjustable rates or finance charges and home equity lines of credit.</E> A creditor that makes an alternative mortgage transaction with an adjustable rate or finance charge may only increase the interest rate or finance charge as follows:<PRTPAGE P="167"/>
+      </P>
+      <P>(1) If the transaction is subject to 12 CFR 226.5b, the creditor must comply with 12 CFR 226.5b(f)(1).</P>
+      <P>(2) For all other transactions, the creditor must use either:</P>
+      <P>(i) An index to which changes in the interest rate are tied that is readily available to and verifiable by the borrower and beyond the control of the creditor; or</P>
+      <P>(ii) A formula or schedule identifying the amount that the interest rate or finance charge may increase and the times at which, or circumstances under which, a change may be made.</P>
+      <P>(b) <E T="03">Renegotiable rates for renewable balloon-payment mortgages.</E> A creditor that makes an alternative mortgage transaction with payments based on an amortization period and a large final payment due after a shorter term may negotiate an increase or decrease in the interest rate when the transaction is renewed only if the creditor makes a written commitment to renew the transaction at specified intervals throughout the amortization period. However, the creditor is not required to renew the transaction if:</P>
+      <P>(1) Any action or inaction by the consumer materially and adversely affects the creditor's security for the transaction or any right of the creditor in such security;</P>
+      <P>(2) There is a material failure by the consumer to meet the repayment terms of the transaction;</P>
+      <P>(3) There is fraud or a willful or knowing material misrepresentation by the consumer in connection with the transaction; or</P>
+      <P>(4) Federal law dealing with credit extended by a depository institution to its executive officers specifically requires that as a condition of the extension the credit shall become due and payable on demand, provided that the creditor includes such a provision in the initial agreement.</P>
+      <P>(c) <E T="03">Requirements for high-cost and higher-priced mortgage loans.</E> (1) If an alternative mortgage transaction is subject to 12 CFR 226.32, the creditor must comply with 12 CFR 226.32 and 12 CFR 226.34.</P>
+      <P>(2) If an alternative mortgage transaction is subject to 12 CFR 226.35, the creditor must comply with 12 CFR 226.35.</P>
+      <P>(d) <E T="03">Other applicable law.</E> Notwithstanding paragraphs (a) through (c) of this section, a housing creditor that is not making an alternative mortgage transaction pursuant to § 1004.3 of this part may make that transaction consistent with applicable State or Federal law other than this section.</P>
+      <P>(e) <E T="03">Reductions in interest rate or finance charge.</E> Nothing in this section prohibits a creditor from decreasing the interest rate or finance charge on an alternative mortgage transaction.</P>
+    </SECTION>
+    <APPENDIX>
+      <EAR>Pt. 1004, App. A</EAR>
+      <HD SOURCE="HED">Appendix A to Part 1004—Official Commentary on Regulation D</HD>
+      <HD SOURCE="HD2">§ 1004.1Authority, Purpose, and Scope</HD>
+      <HD SOURCE="HD2">1(c)Scope.</HD>
+      <P>1. <E T="03">Application received before July 22, 2011.</E> This Part does not apply to a transaction if the creditor received the application for that transaction before July 22, 2011, even if the transaction was consummated or completed on or after July 22, 2011. Whether 12 U.S.C. 3803(c) preempts State law with respect to such a transaction depends on whether: (1) The transaction was an alternative mortgage transaction as defined by the version of 12 U.S.C. 3802(1) in effect at the time of application; and (2) the State housing creditor complied with applicable federal regulations issued by the Office of the Comptroller of the Currency, the National Credit Union Administration, the Office of Thrift Supervision, or the Federal Home Loan Bank Board in effect at the time of application.</P>
+      <P>2. <E T="03">Subsequent modifications and other actions.</E> If applicable regulations under 12 U.S.C. 3803(c) (including this Part) preempted State law with respect to an alternative mortgage transaction at the time the application was received, the following actions with respect to that transaction are entitled to the same degree of preemption under such regulations:</P>
+      <P>i. The subsequent consummation, completion, purchase, or enforcement of the transaction by a housing creditor.</P>
+      <P>ii. The subsequent modification, renewal, or extension of the transaction. However, if such a transaction is satisfied and replaced by another transaction, the second transaction must independently meet the requirements for preemption in effect at the time the application for the second transaction was received.</P>
+      <HD SOURCE="HD2">§ 1004.2Definitions</HD>
+      <HD SOURCE="HD2">2(a)Alternative Mortgage Transaction</HD>
+      <P>1. <E T="03">Alternative mortgage transaction.</E> For purposes of this Part, an alternative mortgage transaction that meets the definition in § 1004.2(a) includes any consumer credit <PRTPAGE P="168"/>transaction that is secured by a mortgage, deed of trust, or other equivalent consensual security interest in a dwelling or in residential real property that includes a dwelling. The dwelling need not be the primary dwelling of the consumer. Home equity lines of credit and subordinate lien mortgages are alternative mortgage transactions for purposes of this Part to the extent they meet the definition in § 1004.2(a).</P>
+      <P>2. <E T="03">Examples of alternative mortgage transactions.</E> Examples of alternative mortgage transactions include:</P>
+      <P>i. Transactions in which the interest rate changes in accordance with fluctuations in an index.</P>
+      <P>ii. Transactions in which the interest rate or finance charge may be increased or decreased after a specified period of time or under specified circumstances.</P>
+      <P>iii. Balloon transactions in which payments are based on an amortization schedule and a large final payment is due after a shorter term, where the creditor makes a commitment to renew the transaction at specified intervals throughout the amortization period, but the interest rate may be renegotiated at renewal. For example, a fixed-rate mortgage loan with a 30-year amortization period but a balloon payment due five years after consummation is an alternative mortgage transaction under § 1004.2(a) if the creditor commits to renew the mortgage at five-year intervals for the entire 30-year amortization period.</P>
+      <P>iv. Transactions in which the creditor and the consumer agree to share some or all of the appreciation in the value of the property (shared equity/shared appreciation).</P>
+      <P>However, this Part preempts State law only to the extent provided in § 1004.3 and only to the extent that the requirements of § 1004.4(a) through (c) (as applicable) are met.</P>
+      <P>3. <E T="03">Examples of transactions that are not alternative mortgage transactions.</E> The following are examples of transactions that are not alternative mortgage transactions:</P>
+      <P>i. Transactions with a fixed interest rate where one or more of the regular periodic payments may be applied solely to accrued interest and not to loan principal (an interest-only feature).</P>
+      <P>ii. Balloon transactions with a fixed interest rate where payments are based on an amortization schedule and a large final payment is due after a shorter term, where the creditor does not make a commitment to renew the transaction at specified intervals throughout the amortization period.</P>
+      <P>iii. Transactions with a fixed interest rate where one or more of the regular periodic payments may result in an increase in the principal balance (a negative amortization feature).</P>
+      <HD SOURCE="HD2">2(b)Creditor</HD>
+      <P>1. <E T="03">Creditor.</E> As defined in 12 CFR 226.2, “creditor” includes federally and State-chartered banks, thrifts, and credit unions, as well as non-depository institutions, such as State-licensed lenders. The Official Staff Commentary to 12 CFR 226.2 contains additional guidance on the definition of the term “creditor.” <E T="03">See</E> 12 CFR 226.2, Supp. I.</P>
+      <HD SOURCE="HD2">§ 1004.3Preemption of State Law</HD>
+      <P>1. <E T="03">Scope of State laws.</E> Regardless of whether a State law applies solely to alternative mortgage transactions or applies to both alternative mortgage transactions and other mortgage or consumer credit transactions, that law is preempted by § 1004.3 only to the extent that it restricts the ability of a State-chartered or -licensed housing creditor to adjust or renegotiate an interest rate or finance charge with respect to an alternative mortgage transaction or to change the amount of interest or finance charges included in a regular periodic payment as a result of such an adjustment or renegotiation.</P>
+      <P>2. <E T="03">Examples of State laws that are preempted.</E> The following are examples of State laws that are preempted by § 1004.3:</P>
+      <P>i. Restrictions on the adjustment or renegotiation of an interest rate or finance charge, including restrictions on the circumstances under which a rate or charge may be adjusted, the method by which a rate or charge may be adjusted, and the amount of the adjustment to the rate or charge. For example, if a provision of State law prohibits creditors from increasing an adjustable rate more than two percentage points or from increasing an adjustable rate more than once during a year, that provision is preempted by § 1004.3 with respect to alternative mortgage transactions that comply with § 1004.4(a) through (c), as applicable. Similarly, if a provision of State law prohibits housing creditors from renewing balloon transactions that meet the definition of an alternative mortgage transaction in § 1004.2(a) on different terms, that provision is preempted by § 1004.3 only to the extent that it restricts a state housing creditor's ability to adjust or renegotiate the interest rate or finance charge at renewal. See also comment 1004.3-3.i.</P>
+
+      <P>ii. Restrictions on the ability of a housing creditor to change the amount of interest or finance charges included in regular periodic payments as a result of the adjustment or renegotiation of an interest rate or finance charge. For example, if a provision of State law prohibits housing creditors from increasing payments or limits the amount of such increases with respect to both alternative mortgage transactions and other mortgage or consumer credit transactions, that provision is preempted by § 1004.3 to the extent that it restricts a housing creditor's ability <PRTPAGE P="169"/>to adjust payments as a result of the adjustment or renegotiation of an interest rate on an alternative mortgage transaction. Other restrictions on changes to payments are not preempted, including restrictions on transactions in which one or more of the regular periodic payments may result in an increase in the principal balance (a negative amortization feature) or may be applied solely to accrued interest and not to loan principal (an interest-only feature).</P>
+      <P>iii. Restrictions on the creditor and the consumer sharing some or all of the appreciation in the value of the property (shared equity/shared appreciation).</P>
+      <P>iv. Underwriting requirements that address the adjustment or renegotiation of interest rates or finance charges. For example, if a provision of State law requires housing creditors to underwrite based on the maximum contractual rate, that provision is preempted by § 1004.3 with respect to alternative mortgage transactions, regardless of whether the provision applies solely to alternative mortgage transactions or to both alternative mortgage transactions and other mortgage or consumer credit transactions.</P>
+      <P>3. <E T="03">Examples of State laws that are not preempted.</E> The following are examples of State laws that are not preempted by § 1004.3 regardless of whether the provision applies solely to alternative mortgage transactions or to both alternative mortgage transactions and other mortgage or consumer credit transactions:</P>
+      <P>i. Restrictions on prepayment penalties or late charges (including an increase in an interest rate or finance charge as a result of a late payment).</P>
+      <P>ii. Restrictions on transactions in which one or more of the regular periodic payments may result in an increase in the principal balance (a negative amortization feature) or may be applied solely to accrued interest and not to loan principal (an interest-only feature).</P>
+      <P>iii. Requirements that disclosures be provided.</P>
+      <HD SOURCE="HD2">§ 1004.4Requirements for Alternative Mortgage Transactions</HD>
+      <HD SOURCE="HD2">4(a)Mortgages With Adjustable or Renegotiable Rates or Finance Charges and Home Equity Lines of Credit</HD>
+      <P>1. <E T="03">Index values.</E> A creditor may use any measure of index values that meets the requirements in § 1004.4(a)(2)(i). For example, the index may be either single values as of a specific date or an average of values calculated over a specified period.</P>
+      <P>2. <E T="03">Index beyond creditor's control.</E> A creditor may increase an adjustable interest rate pursuant to § 1004.4(a)(2)(i) only if the increase is based on an index that is beyond the creditor's control. For purposes of § 1004.4(a)(2)(i), an index is not beyond the creditor's control if the index is the creditor's own prime rate or cost of funds. A creditor is permitted, however, to use a published prime rate, such as the prime rate published in the <E T="03">Wall Street Journal,</E> even if the creditor's own prime rate is one of several rates used to establish the published rate.</P>
+      <P>3. <E T="03">Publicly available.</E> For purposes of § 1004.4(a)(2)(i), the index must be available to the public. A publicly available index need not be published in a newspaper, but it must be one the consumer can independently obtain (by telephone, for example) and use to verify the annual percentage rate applied to the alternative mortgage transaction.</P>
+      <HD SOURCE="HD2">4(c)Requirements for High-Cost and Higher-Priced Mortgage Loans</HD>
+      <P>1. <E T="03">Prepayment penalties.</E> If applicable, creditors must comply with 12 CFR 226.32, including 12 CFR 226.32(d)(6) and (d)(7) which provide limitations on prepayment penalties. Similarly, if applicable, creditors must comply with 12 CFR 226.35, including 12 CFR 226.35(b)(2), which also provides limitations on prepayment penalties. However, under § 1004.3, State laws regarding prepayment penalties are not preempted. <E T="03">See</E> comment 1004.3-3.i. Accordingly, creditors must also comply with any State laws regarding prepayment penalties unless an independent basis for preemption exists, such as because the State law is inconsistent with the requirements of Regulation Z, 12 CFR Part 226. <E T="03">See</E> 12 CFR 226.28.</P>
+      <HD SOURCE="HD2">4(d)Other Applicable Law</HD>
+      <P>1. <E T="03">Other applicable law.</E> Section 1004.4(d) permits state housing creditors that do not seek preemption under § 1004.3 and federal housing creditors to make alternative mortgage transactions consistent with applicable State or federal law other than § 1004.4(a) through (c). However, § 1004.4(d) does not exempt those housing creditors from complying with the provisions of federal law that are incorporated by reference in § 1004.4 and are otherwise applicable to the creditor. Specifically, nothing in § 1004.4(d) exempts a housing creditor from complying with 12 CFR 226.5b, 226.32, 226.34, or 226.35.</P>
+    </APPENDIX>
+  </PART>
+</CFRGRANULE>

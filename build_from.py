@@ -12,7 +12,7 @@ except ImportError:
 
 from regparser.diff import treediff
 from regparser.builder import Builder, LayerCacheAggregator
-
+from regparser.federalregister import fetch_doc_number_json
 
 logger = logging.getLogger('build_from')
 logger.setLevel(logging.INFO)
@@ -31,13 +31,19 @@ if __name__ == "__main__":
     with codecs.open(sys.argv[1], 'r', 'utf-8') as f:
         reg = f.read()
 
-    doc_number = sys.argv[3]
+    pub_date = sys.argv[3]
+    # doc_number = sys.argv[3]
 
     #   First, the regulation tree
     reg_tree = Builder.reg_tree(reg)
 
-    builder = Builder(cfr_title=int(sys.argv[2]),
-                      cfr_part=reg_tree.label_id(),
+    title = int(sys.argv[2])
+    title_part = reg_tree.label_id()   
+    doc_number = fetch_doc_number_json(title, title_part, pub_date, only_final=True)
+    print doc_number
+
+    builder = Builder(cfr_title=title,
+                      cfr_part=title_part,
                       doc_number=doc_number)
 
     #  Didn't include the provided version

@@ -1,0 +1,282 @@
+{
+    "abstract": "The Federal Election Commission is revising its rules covering four areas: (1) Multicandidate political committee status, (2) annual contributions by persons other than multicandidate committees to national party committees, (3) contributions to candidates for more than one Federal office; and (4) biennial contribution limits for individuals. These final rules provide that once a political committee satisfies certain criteria, it automatically becomes a multicandidate committee and is required to notify the Commission of its new status. The final rules also update the limit on contributions from persons other than multicandidate committees to national party committees and to candidates running for more than one Federal office. In addition, the final rules adjust the attribution of contributions to candidates from individuals under the biennial limits. Further information is provided in the supplementary information that follows.", 
+    "action": "Final rules and transmittal of regulations to Congress.", 
+    "agency_names": [
+        "Federal Election Commission"
+    ], 
+    "amendments": [
+        [
+            "PUT", 
+            [
+                "102", 
+                "2", 
+                "a", 
+                "3"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "110", 
+                "1", 
+                "c", 
+                "3"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "110", 
+                "1", 
+                "f"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "110", 
+                "2", 
+                "a", 
+                "1"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "110", 
+                "5", 
+                "c"
+            ]
+        ]
+    ], 
+    "cfr_parts": [
+        "102", 
+        "110"
+    ], 
+    "cfr_title": 11, 
+    "changes": {
+        "102-2-a-3": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "102", 
+                        "2", 
+                        "a", 
+                        "3"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(3) A committee shall certify to the Commission that it has satisfied the criteria for becoming a multicandidate committee set forth at 11 CFR 100.5(e)(3) by filing FEC Form 1M no later than ten (10) calendar days after qualifying for multicandidate committee status.", 
+                    "text": "(3) A committee shall certify to the Commission that it has satisfied the criteria for becoming a multicandidate committee set forth at 11 CFR 100.5(e)(3) by filing FEC Form 1M no later than ten (10) calendar days after qualifying for multicandidate committee status.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-1-c-3": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "1", 
+                        "c", 
+                        "3"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(3) Each recipient committee referred to in 11 CFR 110.1(c)(2) may receive up to the $25,000 limitation from a contributor, but the limits of 11 CFR 110.5 shall also apply to contributions made by an individual.", 
+                    "text": "(3) Each recipient committee referred to in 11 CFR 110.1(c)(2) may receive up to the $25,000 limitation from a contributor, but the limits of 11 CFR 110.5 shall also apply to contributions made by an individual.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-1-f": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "1", 
+                        "f"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(f)<E T=\"03\">Contributions to candidates for more than one Federal office.</E>If an individual is a candidate for more than one Federal office, a person may make contributions which do not exceed $2,000 to the candidate, or his or her authorized political committees for each election for each office, as long as\u2014", 
+                    "text": "(f) Contributions to candidates for more than one Federal office. If an individual is a candidate for more than one Federal office, a person may make contributions which do not exceed $2,000 to the candidate, or his or her authorized political committees for each election for each office, as long as\u2014", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-2-a-1": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "2", 
+                        "a", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1)<E T=\"03\">Scope.</E>This section applies to all contributions made by any multicandidate political committee as defined in 11 CFR 100.5(e)(3). See 11 CFR 102.2(a)(3) for multicandidate political committee certification requirements. A political committee becomes a multicandidate committee at the time the political committee meets the requirements of 11 CFR 100.5(e)(3) or becomes affiliated with an existing multicandidate committee, whether or not the political committee has certified its status as a multicandidate committee with the Commission in accordance with 11 CFR 102.2(a)(3).", 
+                    "text": "(1) Scope. This section applies to all contributions made by any multicandidate political committee as defined in 11 CFR 100.5(e)(3). See 11 CFR 102.2(a)(3) for multicandidate political committee certification requirements. A political committee becomes a multicandidate committee at the time the political committee meets the requirements of 11 CFR 100.5(e)(3) or becomes affiliated with an existing multicandidate committee, whether or not the political committee has certified its status as a multicandidate committee with the Commission in accordance with 11 CFR 102.2(a)(3).", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-5-c": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "110-5-c-1", 
+                        "110-5-c-2"
+                    ], 
+                    "label": [
+                        "110", 
+                        "5", 
+                        "c"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(c)", 
+                    "text": "(c)", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-5-c-1": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "5", 
+                        "c", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1) Contributions made on or after January 1, 2004. Any contribution subject to this paragraph (c)(1) to a candidate or his or her authorized committee with respect to a particular election shall be considered to be made during the two-year period described in paragraph (b)(1) of this section in which the contribution is actually made,regardless of the year in which the particular election is held. See 11 CFR 110.1(b)(6). This paragraph (c)(1) also applies to earmarked contributions and contributions to a single candidate committee that has supported or anticipates supporting the candidate.", 
+                    "text": "(1) Contributions made on or after January 1, 2004. Any contribution subject to this paragraph (c)(1) to a candidate or his or her authorized committee with respect to a particular election shall be considered to be made during the two-year period described in paragraph (b)(1) of this section in which the contribution is actually made, regardless of the year in which the particular election is held. See 11 CFR 110.1(b)(6). This paragraph (c)(1) also applies to earmarked contributions and contributions to a single candidate committee that has supported or anticipates supporting the candidate.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-5-c-2": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "110-5-c-2-i", 
+                        "110-5-c-2-ii"
+                    ], 
+                    "label": [
+                        "110", 
+                        "5", 
+                        "c", 
+                        "2"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(2) Contributions made prior to January 1, 2004.", 
+                    "text": "(2) Contributions made prior to January 1, 2004.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-5-c-2-i": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "5", 
+                        "c", 
+                        "2", 
+                        "i"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(i) For purposes of this paragraph (c)(2), a contribution to a candidate or his or her authorized committee with respect to a particular election shall be considered to be made during the calendar year in which such election is held.", 
+                    "text": "(i) For purposes of this paragraph (c)(2), a contribution to a candidate or his or her authorized committee with respect to a particular election shall be considered to be made during the calendar year in which such election is held.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-5-c-2-ii": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "110-5-c-2-ii-A", 
+                        "110-5-c-2-ii-B"
+                    ], 
+                    "label": [
+                        "110", 
+                        "5", 
+                        "c", 
+                        "2", 
+                        "ii"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(ii) For purposes of this paragraph (c)(2), any contribution to an unauthorized committee shall not be considered to be made during the calendar year in which an election is held unless:", 
+                    "text": "(ii) For purposes of this paragraph (c)(2), any contribution to an unauthorized committee shall not be considered to be made during the calendar year in which an election is held unless:", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-5-c-2-ii-A": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "5", 
+                        "c", 
+                        "2", 
+                        "ii", 
+                        "A"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(A) The political committee is a single candidate committee which has supported or anticipates supporting the candidate; or", 
+                    "text": "(A) The political committee is a single candidate committee which has supported or anticipates supporting the candidate; or", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-5-c-2-ii-B": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "5", 
+                        "c", 
+                        "2", 
+                        "ii", 
+                        "B"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(B) The contribution is earmarked by the contributor for a particular candidate with respect to a particular election.", 
+                    "text": "(B) The contribution is earmarked by the contributor for a particular candidate with respect to a particular election.", 
+                    "title": null
+                }
+            }
+        ]
+    }, 
+    "contact": "Mr. John C. Vergelli, Acting Assistant General Counsel, Mr. Richard T. Ewell, Attorney, or Mr. Albert J. Kiss, Attorney,", 
+    "document_number": "03-28469", 
+    "effective_on": "2003-12-15", 
+    "footnotes": {
+        "1": "The Commission received written comments from: Perkins, Coie LLP; The Campaign Legal Center, National Republican Senatorial Committee, Republican National Committee; Sandler, Reiff  Young, P.C.; attorneys Lyn Utrecht, Eric Kleinfeld, Pat Fiori, and James Lamb of Ryan, Phillips, Utrecht  MacKinnon; and the Internal Revenue Service."
+    }, 
+    "fr_citation": "68 FR 64512", 
+    "fr_url": "https://www.federalregister.gov/articles/2003/11/14/03-28469/no-title-available", 
+    "fr_volume": 68, 
+    "initial_effective_on": "2003-12-15", 
+    "publication_date": "2003-11-14", 
+    "section_by_section": []
+}

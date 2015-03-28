@@ -1,0 +1,854 @@
+{
+    "abstract": "The Federal Election Commission is promulgating new rules regarding disclosure requirements for Presidential inaugural committees. The new rules also ban inaugural committees from accepting donations from foreign nationals. These regulations implement requirements of the Bipartisan Campaign Reform Act of 2002. Further information is provided in the Supplementary Information that follows.", 
+    "action": "Final rules and transmittal of regulations to Congress.", 
+    "agency_names": [
+        "Federal Election Commission"
+    ], 
+    "amendments": [
+        [
+            "POST", 
+            [
+                "104", 
+                "21"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "110"
+            ]
+        ], 
+        [
+            "POST", 
+            [
+                "110", 
+                "20", 
+                "j"
+            ]
+        ]
+    ], 
+    "cfr_parts": [
+        "110", 
+        "104"
+    ], 
+    "cfr_title": 11, 
+    "changes": {
+        "104-21": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "104-21-a", 
+                        "104-21-b", 
+                        "104-21-c", 
+                        "104-21-d"
+                    ], 
+                    "label": [
+                        "104", 
+                        "21"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "\n            ", 
+                    "text": "\n            ", 
+                    "title": "\u00a7 104.21 Reporting by inaugural committees."
+                }
+            }
+        ], 
+        "104-21-a": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "104-21-a-1", 
+                        "104-21-a-2"
+                    ], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "a"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(a)<E T=\"03\">Definitions</E>\u2014", 
+                    "text": "(a) Definitions \u2014", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-a-1": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "a", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1)<E T=\"03\">Inaugural committee.</E>Inaugural committee means the committee appointed by the President-elect to be in charge of the Presidential inaugural ceremony and functions and activities connected with the inaugural ceremony.", 
+                    "text": "(1) Inaugural committee. Inaugural committee means the committee appointed by the President-elect to be in charge of the Presidential inaugural ceremony and functions and activities connected with the inaugural ceremony.", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-a-2": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "a", 
+                        "2"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(2)<E T=\"03\">Donation.</E>For purposes of this section, donation has the same meaning as in 11 CFR 300.2(e).", 
+                    "text": "(2) Donation. For purposes of this section, donation has the same meaning as in 11 CFR 300.2(e).", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-b": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "104-21-b-1", 
+                        "104-21-b-2"
+                    ], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "b"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(b)<E T=\"03\">Initial letter-filing by inaugural committees.</E>", 
+                    "text": "(b) Initial letter-filing by inaugural committees. ", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-b-1": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "104-21-b-1-i", 
+                        "104-21-b-1-ii", 
+                        "104-21-b-1-iii"
+                    ], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "b", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1) In order to be considered the inaugural committee under 36 U.S.C. Chapter 5, within 15 days of appointment by the President-elect, the appointed committee must file a signed letter with the Commission containing the following:", 
+                    "text": "(1) In order to be considered the inaugural committee under 36 U.S.C. Chapter 5, within 15 days of appointment by the President-elect, the appointed committee must file a signed letter with the Commission containing the following:", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-b-1-i": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "b", 
+                        "1", 
+                        "i"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(i) The name and address of the inaugural committee;", 
+                    "text": "(i) The name and address of the inaugural committee;", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-b-1-ii": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "b", 
+                        "1", 
+                        "ii"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(ii) The name of the chairperson, or the name and title of another officer who will serve as the point of contact; and", 
+                    "text": "(ii) The name of the chairperson, or the name and title of another officer who will serve as the point of contact; and", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-b-1-iii": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "b", 
+                        "1", 
+                        "iii"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(iii) A statement agreeing to comply with paragraphs (c) and (d) of this section and with 11 CFR 110.20(j).", 
+                    "text": "(iii) A statement agreeing to comply with paragraphs (c) and (d) of this section and with 11 CFR 110.20(j).", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-b-2": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "b", 
+                        "2"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(2) Upon receipt of the letter filed under this paragraph (b), the Commission will assign a FEC committee identification number to the inaugural committee. The inaugural committee must include this FEC committee identification number on all reports and supplements thereto required under paragraph (c) of this section, as well as on all communications with the Commission concerning the letter filed under this paragraph (b).", 
+                    "text": "(2) Upon receipt of the letter filed under this paragraph (b), the Commission will assign a FEC committee identification number to the inaugural committee. The inaugural committee must include this FEC committee identification number on all reports and supplements thereto required under paragraph (c) of this section, as well as on all communications with the Commission concerning the letter filed under this paragraph (b).", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "104-21-c-1", 
+                        "104-21-c-2", 
+                        "104-21-c-3", 
+                        "104-21-c-4", 
+                        "104-21-c-5", 
+                        "104-21-c-6"
+                    ], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(c)<E T=\"03\">Reporting requirements for inaugural committees</E>\u2014", 
+                    "text": "(c) Reporting requirements for inaugural committees \u2014", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-1": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1)<E T=\"03\">Who must report.</E>The chairperson or other officer identified in the letter-filing required by paragraph (b) of this section must file a report and any supplements thereto as required by this paragraph (c). Such person must sign the report and any supplements thereto in accordance with 11 CFR 104.14(a). The signature on the report and any supplements thereto certifies that the contents are true, correct, and complete, to the best of knowledge of the chairperson or other officer identified in the letter-filing required by paragraph (b) of this section.", 
+                    "text": "(1) Who must report. The chairperson or other officer identified in the letter-filing required by paragraph (b) of this section must file a report and any supplements thereto as required by this paragraph (c). Such person must sign the report and any supplements thereto in accordance with 11 CFR 104.14(a). The signature on the report and any supplements thereto certifies that the contents are true, correct, and complete, to the best of knowledge of the chairperson or other officer identified in the letter-filing required by paragraph (b) of this section.", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-2": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "104-21-c-2-i", 
+                        "104-21-c-2-ii"
+                    ], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "2"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(2)<E T=\"03\">When to file.</E>A report, and any supplements thereto, must be timely filed in accordance with 11 CFR 100.19 as follows:", 
+                    "text": "(2) When to file. A report, and any supplements thereto, must be timely filed in accordance with 11 CFR 100.19 as follows:", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-2-i": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "2", 
+                        "i"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(i)<E T=\"03\">Report.</E>An inaugural committee must file a report with the Commission no later than the 90th day following the date on which the Presidential inaugural ceremony is held.", 
+                    "text": "(i) Report. An inaugural committee must file a report with the Commission no later than the 90th day following the date on which the Presidential inaugural ceremony is held.", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-2-ii": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "104-21-c-2-ii-A", 
+                        "104-21-c-2-ii-B"
+                    ], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "2", 
+                        "ii"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(ii)<E T=\"03\">Supplements to the report.</E>", 
+                    "text": "(ii) Supplements to the report. ", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-2-ii-A": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "2", 
+                        "ii", 
+                        "A"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(A) An inaugural committee must file a supplement to its report if it accepts a reportable donation, or makes a refund during the 90 days following the end of the covering period of its original report or its most recent supplement.", 
+                    "text": "(A) An inaugural committee must file a supplement to its report if it accepts a reportable donation, or makes a refund during the 90 days following the end of the covering period of its original report or its most recent supplement.", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-2-ii-B": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "2", 
+                        "ii", 
+                        "B"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(B) Any supplement must be filed no later than the 90th day following the filing date of an original report, or if a supplement has already been filed, the filing date of the most recent supplement.", 
+                    "text": "(B) Any supplement must be filed no later than the 90th day following the filing date of an original report, or if a supplement has already been filed, the filing date of the most recent supplement.", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-3": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "3"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(3)<E T=\"03\">Where to file.</E>All letters, reports, and any supplements thereto, as required under this section, shall be filed with the Federal Election Commission, 999 E Street, NW., Washington, DC 20463.", 
+                    "text": "(3) Where to file. All letters, reports, and any supplements thereto, as required under this section, shall be filed with the Federal Election Commission, 999 E Street, NW., Washington, DC 20463.", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-4": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "4"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(4)<E T=\"03\">How to file.</E>An inaugural committee must file its letter, report, and any supplements thereto, in original form; however, an inaugural committee may choose to file its reports in an electronic format that meets the requirements of 11 CFR 104.18.", 
+                    "text": "(4) How to file. An inaugural committee must file its letter, report, and any supplements thereto, in original form; however, an inaugural committee may choose to file its reports in an electronic format that meets the requirements of 11 CFR 104.18.", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-5": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "5"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(5)<E T=\"03\">Form.</E>An inaugural committee must file the report required by this paragraph on FEC Form 13.", 
+                    "text": "(5) Form. An inaugural committee must file the report required by this paragraph on FEC Form 13.", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "104-21-c-6-i", 
+                        "104-21-c-6-ii", 
+                        "104-21-c-6-iii", 
+                        "104-21-c-6-iv"
+                    ], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(6)<E T=\"03\">Content of report.</E>Each report, and any supplements thereto, filed with the Commission under this section must contain the following:", 
+                    "text": "(6) Content of report. Each report, and any supplements thereto, filed with the Commission under this section must contain the following:", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-i": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "104-21-c-6-i-A", 
+                        "104-21-c-6-i-B"
+                    ], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "i"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(i) Covering period beginning and ending dates, as follows:", 
+                    "text": "(i) Covering period beginning and ending dates, as follows:", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-i-A": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "i", 
+                        "A"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(A) The covering period of a report means the period of time beginning on the date of the inaugural committee's appointment by the President-elect and ending no earlier than 15 days before the day on which the inauguralcommittee files its report with the Commission.", 
+                    "text": "(A) The covering period of a report means the period of time beginning on the date of the inaugural committee's appointment by the President-elect and ending no earlier than 15 days before the day on which the inaugural committee files its report with the Commission.", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-i-B": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "i", 
+                        "B"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(B) The covering period of a supplement to the report means the period of time beginning on the day after the ending date of the covering period of the original report, or the most recent supplement thereto, and ending no earlier than 15 days before the day on which the inaugural committee files such supplement with the Commission.", 
+                    "text": "(B) The covering period of a supplement to the report means the period of time beginning on the day after the ending date of the covering period of the original report, or the most recent supplement thereto, and ending no earlier than 15 days before the day on which the inaugural committee files such supplement with the Commission.", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-ii": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "104-21-c-6-ii-A", 
+                        "104-21-c-6-ii-B", 
+                        "104-21-c-6-ii-C"
+                    ], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "ii"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(ii) Cumulative totals from the date of the inaugural committee's appointment by the President-elect for all:", 
+                    "text": "(ii) Cumulative totals from the date of the inaugural committee's appointment by the President-elect for all:", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-ii-A": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "ii", 
+                        "A"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(A) Donations reported under paragraph (c)(6)(iii) of this section;", 
+                    "text": "(A) Donations reported under paragraph (c)(6)(iii) of this section;", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-ii-B": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "ii", 
+                        "B"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(B) Refunds reported under paragraph (c)(6)(iv) of this section; and", 
+                    "text": "(B) Refunds reported under paragraph (c)(6)(iv) of this section; and", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-ii-C": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "ii", 
+                        "C"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(C) Net reported donations;", 
+                    "text": "(C) Net reported donations;", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-iii": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "104-21-c-6-iii-A", 
+                        "104-21-c-6-iii-B", 
+                        "104-21-c-6-iii-C", 
+                        "104-21-c-6-iii-D"
+                    ], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "iii"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(iii) Itemization of previously unreported donations of $200 or more, and donations that aggregate $200 or more, including:", 
+                    "text": "(iii) Itemization of previously unreported donations of $200 or more, and donations that aggregate $200 or more, including:", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-iii-A": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "iii", 
+                        "A"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(A) The full name of each person who made such a donation, including first name, middle name or initial, if available, and last name, in the case of an individual;", 
+                    "text": "(A) The full name of each person who made such a donation, including first name, middle name or initial, if available, and last name, in the case of an individual;", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-iii-B": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "iii", 
+                        "B"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(B) The address of each such person;", 
+                    "text": "(B) The address of each such person;", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-iii-C": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "iii", 
+                        "C"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(C) The amount of each such donation; and", 
+                    "text": "(C) The amount of each such donation; and", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-iii-D": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "iii", 
+                        "D"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(D) The date of receipt of each such donation; and", 
+                    "text": "(D) The date of receipt of each such donation; and", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-iv": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "104-21-c-6-iv-A", 
+                        "104-21-c-6-iv-B", 
+                        "104-21-c-6-iv-C", 
+                        "104-21-c-6-iv-D"
+                    ], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "iv"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(iv) Itemization of previously unreported refunds of previously, or contemporaneously, reported donations, including:", 
+                    "text": "(iv) Itemization of previously unreported refunds of previously, or contemporaneously, reported donations, including:", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-iv-A": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "iv", 
+                        "A"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(A) The full name of each person to whom such a refund was made, including first name, middle name or initial, if available, and last name, in the case of an individual;", 
+                    "text": "(A) The full name of each person to whom such a refund was made, including first name, middle name or initial, if available, and last name, in the case of an individual;", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-iv-B": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "iv", 
+                        "B"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(B) The address of each such person;", 
+                    "text": "(B) The address of each such person;", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-iv-C": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "iv", 
+                        "C"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(C) The amount of each such refund; and", 
+                    "text": "(C) The amount of each such refund; and", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-c-6-iv-D": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "c", 
+                        "6", 
+                        "iv", 
+                        "D"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(D) The date of each such refund.", 
+                    "text": "(D) The date of each such refund.", 
+                    "title": null
+                }
+            }
+        ], 
+        "104-21-d": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "104", 
+                        "21", 
+                        "d"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(d)<E T=\"03\">Recordkeeping.</E>All inaugural committees must maintain records in accordance with 11 CFR 104.14.", 
+                    "text": "(d) Recordkeeping. All inaugural committees must maintain records in accordance with 11 CFR 104.14.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-20-j": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "20", 
+                        "j"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(j)<E T=\"03\">Donations by foreign nationals to inaugural committees.</E>A foreign national shall not, directly or indirectly, make a donation to an inaugural committee, as defined in 11 CFR 104.21(a)(1). No person shall knowingly accept from a foreign national any donation to an inaugural committee.", 
+                    "text": "(j) Donations by foreign nationals to inaugural committees. A foreign national shall not, directly or indirectly, make a donation to an inaugural committee, as defined in 11 CFR 104.21(a)(1). No person shall knowingly accept from a foreign national any donation to an inaugural committee.", 
+                    "title": null
+                }
+            }
+        ]
+    }, 
+    "contact": "Mr. Brad C. Deutsch, Assistant General Counsel, or Ms. Esa L. Sferra, Attorney, 999 E Street, NW., Washington, DC 20463, (202) 694-1650 or (800) 424-9530.", 
+    "document_number": "04-22393", 
+    "effective_on": "2004-11-05", 
+    "footnotes": {
+        "1": "The Joint Congressional Committee on Inaugural Ceremonies, which is formed by a Congressional resolution every four years, several months in advance of the Presidential election, plans and finances the Presidential inaugural events held at the Capitol, including the swearing-in ceremony and the Congressional luncheon to honor the President and Vice-President.", 
+        "2": "The District of Columbia has statutory authority to regulate many aspects of the activities of the inaugural committee, such as the inaugural parade route, public safety at inaugural events, and concession sales permits at inaugural events. <em data-original=\"E-03\">See</em> 36 U.S.C. 502, 503, and 505.", 
+        "3": "Although an inaugural committee is required only to report donations that have been <em data-original=\"E-03\">accepted</em> (<em data-original=\"E-03\">i.e.</em>, donations deposited into a committee's account), the statute requires that the committee report &#8220;the date the donation is <em data-original=\"E-03\">received</em>,&#8221; which may be different from the date the donation is accepted. 36 U.S.C. 510(b)(1)(B) (emphasis added).", 
+        "4": "This approach is consistent with Commission regulations in 11 CFR 100.53 that indicate that the entire amount paid to attend a political committee fundraiser or political event is a contribution."
+    }, 
+    "fr_citation": "69 FR 59775", 
+    "fr_url": "https://www.federalregister.gov/articles/2004/10/06/04-22393/no-title-available", 
+    "fr_volume": 69, 
+    "initial_effective_on": "2004-11-05", 
+    "publication_date": "2004-10-06", 
+    "section_by_section": []
+}

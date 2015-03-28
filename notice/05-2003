@@ -1,0 +1,140 @@
+{
+    "abstract": "The Federal Election Commission is amending its rules regarding contributions and donations by individuals aged 17 years or younger (``Minors''). These final rules conform to the decision of the United States Supreme Court in McConnell v. Federal Election Commission. In McConnell, the Supreme Court held unconstitutional section 318 of the Bipartisan Campaign Reform Act of 2002, which prohibited Minors from contributing to candidates and from contributing or donating to political party committees. Accordingly, this final rule amends the Commission's regulations to reflect the Supreme Court's decision by removing the regulatory prohibitions on contributions by Minors to candidates, and on contributions and donations by Minors to political party committees. Additional information appears in the SUPPLEMENTARY INFORMATION section.", 
+    "action": "Final rules and transmittal of rules to Congress.", 
+    "agency_names": [
+        "Federal Election Commission"
+    ], 
+    "amendments": [
+        [
+            "PUT", 
+            [
+                "110", 
+                "1", 
+                "a"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "110", 
+                "5", 
+                "a"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "110", 
+                "19"
+            ]
+        ]
+    ], 
+    "cfr_parts": [
+        "110"
+    ], 
+    "cfr_title": 11, 
+    "changes": {
+        "110-19": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "110-19-a", 
+                        "110-19-b", 
+                        "110-19-c"
+                    ], 
+                    "label": [
+                        "110", 
+                        "19"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "\n             An individual who is 17 years old or younger (a Minor) may make contributions to any candidate or political committee that in the aggregate do not exceed the limitations on contributions of 11 CFR 110.1 and 110.5, if\u2014", 
+                    "text": "\n             An individual who is 17 years old or younger (a Minor) may make contributions to any candidate or political committee that in the aggregate do not exceed the limitations on contributions of 11 CFR 110.1 and 110.5, if\u2014", 
+                    "title": "\u00a7 110.19 Contributions by minors."
+                }
+            }
+        ], 
+        "110-19-a": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "19", 
+                        "a"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(a) The decision to contribute is made knowingly and voluntarily by the Minor;", 
+                    "text": "(a) The decision to contribute is made knowingly and voluntarily by the Minor;", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-19-b": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "19", 
+                        "b"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(b) The funds, goods, or services contributed are owned or controlled by the Minor, such as income earned by the Minor, the proceeds of a trust for which the Minor is the beneficiary, or funds withdrawn by the Minor from a financial account opened and maintained in the Minor's name; and", 
+                    "text": "(b) The funds, goods, or services contributed are owned or controlled by the Minor, such as income earned by the Minor, the proceeds of a trust for which the Minor is the beneficiary, or funds withdrawn by the Minor from a financial account opened and maintained in the Minor's name; and", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-19-c": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "19", 
+                        "c"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(c) The contribution is not made from the proceeds of a gift, the purpose of which was to provide funds to be contributed, or is not in any other way controlled by another individual.", 
+                    "text": "(c) The contribution is not made from the proceeds of a gift, the purpose of which was to provide funds to be contributed, or is not in any other way controlled by another individual.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-5-a": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "5", 
+                        "a"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(a)<E T=\"03\">Scope</E>. This section applies to all contributions made by any individual, except individuals prohibited from making contributions under 11 CFR 110.20 and 11 CFR part 115.", 
+                    "text": "(a) Scope. This section applies to all contributions made by any individual, except individuals prohibited from making contributions under 11 CFR 110.20 and 11 CFR part 115.", 
+                    "title": null
+                }
+            }
+        ]
+    }, 
+    "contact": "Mr. Brad C. Deutsch, Assistant General Counsel, or Ms. Amy L. Rothstein, Attorney, 999 E Street NW., Washington, DC 20463, (202) 694-1650 or (800) 424-9530.", 
+    "document_number": "05-2003", 
+    "effective_on": "2005-03-07", 
+    "footnotes": {
+        "1": "Before BCRA, the Commission's regulations had addressed only <em data-original=\"E-03\">contributions</em>, not <em data-original=\"E-03\">donations</em>, by Minors. A <em data-original=\"E-03\">contribution</em> includes a gift, subscription, loan, advance, or deposit of money or anything of value by any person for the purpose of influencing any election for Federal office. <em data-original=\"E-03\">See</em>, <em data-original=\"E-03\">e.g.</em>, 11 CFR 100.52(a). A <em data-original=\"E-03\">donation</em> is a payment, gift, subscription, loan, advance, deposit or anything of value given to a person, other than a contribution. <em data-original=\"E-03\">See</em>, <em data-original=\"E-03\">e.g.</em>, 11 CFR 300.2(e).", 
+        "2": "The Commission received written comments from The National Youth Rights Association and from the Oakland County (Michigan) Democratic Party.", 
+        "3": "Consistent with the nomenclature of the pre-BCRA rule governing contributions by Minors, the Commission is substituting the term \u201cthe Minor\u201d\u2014defined as an individual who is 17 years old or younger\u2014for \u201cthat individual\u201d in the revised 11 CFR 110.19. Because the substitution occurs throughout the revised rule and is for the convenience of the reader, rather than substantive, this Explanation and Justification does not identify it separately each time it appears.", 
+        "4": "The Commission has long permitted adults to make contributions from joint accounts. <em data-original=\"E-03\">See</em> 11 CFR 110.1(k)."
+    }, 
+    "fr_citation": "70 FR 5565", 
+    "fr_url": "https://www.federalregister.gov/articles/2005/02/03/05-2003/no-title-available", 
+    "fr_volume": 70, 
+    "publication_date": "2005-02-03", 
+    "section_by_section": []
+}

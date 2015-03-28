@@ -1,0 +1,81 @@
+{
+    "abstract": "The Commission is making technical amendments to correct certain citations and headings in the BCRA final rules governing the definitions of ``contribution'' and ``expenditure,'' personal use of campaign funds, and reporting. Corrections are also being made to the explanation and justification for the BCRA rules on disclaimers and personal use of campaign funds. Further information is provided in the supplementary information that follows.", 
+    "action": "Final rule; technical amendments.", 
+    "agency_names": [
+        "Federal Election Commission"
+    ], 
+    "amendments": [
+        [
+            "PUT", 
+            [
+                "100", 
+                "89"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "100", 
+                "149"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "113"
+            ]
+        ]
+    ], 
+    "cfr_parts": [
+        "100", 
+        "113", 
+        "110", 
+        "104"
+    ], 
+    "cfr_title": 11, 
+    "changes": {
+        "100-149": [
+            {
+                "action": "PUT", 
+                "field": "[title]", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "149"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "\n            ", 
+                    "text": "\n            ", 
+                    "title": "\u00a7 100.149 Voter registration and get-out-the-vote activities for Presidential candidates."
+                }
+            }
+        ], 
+        "100-89": [
+            {
+                "action": "PUT", 
+                "field": "[title]", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "89"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "\n            ", 
+                    "text": "\n            ", 
+                    "title": "\u00a7 100.89 Voter registration and get-out-the-vote activities for Presidential candidates."
+                }
+            }
+        ]
+    }, 
+    "contact": "Mr. Brad C. Deutsch, Assistant General Counsel, or Ms. Cheryl A.F. Hemsley, Attorney, 999 E Street, NW., Washington, DC 20463, (202) 694-1650 or (800) 424-9530.", 
+    "document_number": "04-26042", 
+    "effective_on": "2004-11-24", 
+    "footnotes": {}, 
+    "fr_citation": "69 FR 68237", 
+    "fr_url": "https://www.federalregister.gov/articles/2004/11/24/04-26042/no-title-available", 
+    "fr_volume": 69, 
+    "publication_date": "2004-11-24", 
+    "section_by_section": []
+}

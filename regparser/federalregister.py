@@ -34,3 +34,26 @@ def fetch_notices(cfr_title, cfr_part, only_final=False):
     for result in fetch_notice_json(cfr_title, cfr_part, only_final):
         notices.extend(build_notice(cfr_title, cfr_part, result))
     return notices
+
+def fetch_doc_number_json(cfr_title, cfr_part, pub_date, only_final=False):
+    """Search through all articles associated with this part. Right now,
+    limited to 1000; could use paging to fix this in the future."""
+    params = {
+        "conditions[cfr][title]": cfr_title,
+        "conditions[cfr][part]": cfr_part,
+        "per_page": 1000,
+        "condition[effective_date][lte]": pub_date,
+        "order": "oldest",
+        "fields[]": [
+            "abstract", "action", "agency_names", "cfr_references", "citation",
+            "comments_close_on", "dates", "document_number", "effective_on",
+            "end_page", "full_text_xml_url", "html_url", "publication_date",
+            "regulation_id_numbers", "start_page", "type", "volume"]}
+    if only_final:
+        params["conditions[type][]"] = 'RULE'
+    response = requests.get(API_BASE + "articles", params=params).json()
+    if 'results' in response:
+        return response['results'][0]['document_number']
+    else:
+        return []
+    pass

@@ -1,0 +1,1134 @@
+{
+    "abstract": "The Federal Election Commission is amending its rules to include paid advertisements on the Internet in the definition of ``public communication.'' These final rules implement the recent decision of the U.S. District Court for the District of Columbia in Shays v. Federal Election Commission, which held that the previous definition of ``public communication'' impermissibly excluded all Internet communications. The revised definition of ``public communication'' includes paid Internet advertising placed on another person's website, but does not encompass any other form of Internet communication. The Commission is also re-promulgating without change its definition of ``generic campaign activity'' and amending the scope of its disclaimer regulations, both of which incorporate the revised definition of ``public communication.'' Additionally, the Commission is adding new exceptions to the definitions of ``contribution'' and ``expenditure'' to exclude Internet activities and communications that qualify as individual activity or that qualify for the ``media exemption.'' These final rules are intended to ensure that political committees properly finance and disclose their Internet communications, without impeding individual citizens from using the Internet to speak freely regarding candidates and elections. Further information is provided in the Supplementary Information that follows.", 
+    "action": "Final Rules and Transmittal to Congress.", 
+    "agency_names": [
+        "Federal Election Commission"
+    ], 
+    "amendments": [
+        [
+            "PUT", 
+            [
+                "100", 
+                "26"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "100"
+            ]
+        ], 
+        [
+            "POST", 
+            [
+                "100", 
+                "94"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "100"
+            ]
+        ], 
+        [
+            "POST", 
+            [
+                "100", 
+                "155"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "110", 
+                "11", 
+                "a"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "114", 
+                "9", 
+                "a"
+            ]
+        ], 
+        [
+            "PUT", 
+            [
+                "114", 
+                "9", 
+                "b"
+            ]
+        ], 
+        [
+            "POST", 
+            [
+                "114", 
+                "9", 
+                "e"
+            ]
+        ]
+    ], 
+    "cfr_parts": [
+        "114", 
+        "100", 
+        "110"
+    ], 
+    "cfr_title": 11, 
+    "changes": {
+        "100-155": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "100-155-a", 
+                        "100-155-b", 
+                        "100-155-c", 
+                        "100-155-d", 
+                        "100-155-e"
+                    ], 
+                    "label": [
+                        "100", 
+                        "155"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "\n            ", 
+                    "text": "\n            ", 
+                    "title": "\u00a7 100.155 Uncompensated Internet activity by individuals that is not an expenditure."
+                }
+            }
+        ], 
+        "100-155-a": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "100-155-a-1", 
+                        "100-155-a-2"
+                    ], 
+                    "label": [
+                        "100", 
+                        "155", 
+                        "a"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(a) When an individual or a group of individuals, acting independently or in coordination with any candidate, authorized committee, or political party committee, engages in Internet activities for the purpose of influencing a Federal election, neither of the following is an expenditure by that individual or group of individuals:", 
+                    "text": "(a) When an individual or a group of individuals, acting independently or in coordination with any candidate, authorized committee, or political party committee, engages in Internet activities for the purpose of influencing a Federal election, neither of the following is an expenditure by that individual or group of individuals:", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-155-a-1": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "155", 
+                        "a", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1) The individual's uncompensated personal services related to such Internet activities;", 
+                    "text": "(1) The individual's uncompensated personal services related to such Internet activities;", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-155-a-2": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "155", 
+                        "a", 
+                        "2"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(2) The individual's use of equipment or services for uncompensated Internet activities, regardless of who owns the equipment and services.", 
+                    "text": "(2) The individual's use of equipment or services for uncompensated Internet activities, regardless of who owns the equipment and services.", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-155-b": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "155", 
+                        "b"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(b)<E T=\"03\">Internet activities.</E>For the purposes of this section, the term \u201cInternet activities\u201d includes, but is not limited to: Sending or forwarding electronic messages; providing a hyperlink or other direct access to another person's website; blogging; creating maintaining or hosting a website; paying a nominal fee for the use of another person's website; and any other form of communication distributed over the Internet.", 
+                    "text": "(b) Internet activities. For the purposes of this section, the term \u201cInternet activities\u201d includes, but is not limited to: Sending or forwarding electronic messages; providing a hyperlink or other direct access to another person's website; blogging; creating maintaining or hosting a website; paying a nominal fee for the use of another person's website; and any other form of communication distributed over the Internet.", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-155-c": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "155", 
+                        "c"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(c)<E T=\"03\">Equipment and services.</E>For the purposes of this section, the term \u201cequipment and services\u201d includes, but is not limited to: Computers, software, Internet domain names, Internet Service Providers (ISP), and any other technology that is used to provide access to or use of the Internet.", 
+                    "text": "(c) Equipment and services. For the purposes of this section, the term \u201cequipment and services\u201d includes, but is not limited to: Computers, software, Internet domain names, Internet Service Providers (ISP), and any other technology that is used to provide access to or use of the Internet.", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-155-d": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "155", 
+                        "d"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(d) Paragraph (a) of this section also applies to any corporation that is wholly owned by one or more individuals, that engages primarily in Internet activities, and that does not derive a substantial portion of its revenues from sources other than income from its Internet activities.", 
+                    "text": "(d) Paragraph (a) of this section also applies to any corporation that is wholly owned by one or more individuals, that engages primarily in Internet activities, and that does not derive a substantial portion of its revenues from sources other than income from its Internet activities.", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-155-e": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "100-155-e-1", 
+                        "100-155-e-2", 
+                        "100-155-e-3"
+                    ], 
+                    "label": [
+                        "100", 
+                        "155", 
+                        "e"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(e) This section does not exempt from the definition of expenditure:", 
+                    "text": "(e) This section does not exempt from the definition of expenditure:", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-155-e-1": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "155", 
+                        "e", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1) Any payment for a public communication (as defined in 11 CFR 100.26) other than a nominal fee;", 
+                    "text": "(1) Any payment for a public communication (as defined in 11 CFR 100.26) other than a nominal fee;", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-155-e-2": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "155", 
+                        "e", 
+                        "2"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(2) Any payment for the purchase or rental of an e-mail address list made at the direction of a political committee; or", 
+                    "text": "(2) Any payment for the purchase or rental of an e-mail address list made at the direction of a political committee; or", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-155-e-3": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "155", 
+                        "e", 
+                        "3"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(3) Any payment for an e-mail address list that is transferred to a political committee.", 
+                    "text": "(3) Any payment for an e-mail address list that is transferred to a political committee.", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-26": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "26"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "\n             \n              <E T=\"03\">Public communication</E>means a communication by means of any broadcast, cable, or satellite communication, newspaper, magazine, outdoor advertising facility, mass mailing, or telephone bank to the general public, or any other form of general public political advertising. The term<E T=\"03\">general public political advertising</E>shall not include communications over the Internet, except for communications placed for a fee on another person's Web site.", 
+                    "text": "\n             Public communication means a communication by means of any broadcast, cable, or satellite communication, newspaper, magazine, outdoor advertising facility, mass mailing, or telephone bank to the general public, or any other form of general public political advertising. The term general public political advertising shall not include communications over the Internet, except for communications placed for a fee on another person's Web site.", 
+                    "title": "\u00a7 100.26 Public communication (2 U.S.C. 431(22))."
+                }
+            }
+        ], 
+        "100-94": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "100-94-a", 
+                        "100-94-b", 
+                        "100-94-c", 
+                        "100-94-d", 
+                        "100-94-e"
+                    ], 
+                    "label": [
+                        "100", 
+                        "94"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "\n            ", 
+                    "text": "\n            ", 
+                    "title": "\u00a7 100.94 Uncompensated Internet activity by individuals that is not a contribution."
+                }
+            }
+        ], 
+        "100-94-a": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "100-94-a-1", 
+                        "100-94-a-2"
+                    ], 
+                    "label": [
+                        "100", 
+                        "94", 
+                        "a"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(a) When an individual or a group of individuals, acting independently or in coordination with any candidate, authorized committee, or political party committee, engages in Internet activities for the purpose of influencing a Federal election, neither of the following is a contribution by that individual or group of individuals:", 
+                    "text": "(a) When an individual or a group of individuals, acting independently or in coordination with any candidate, authorized committee, or political party committee, engages in Internet activities for the purpose of influencing a Federal election, neither of the following is a contribution by that individual or group of individuals:", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-94-a-1": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "94", 
+                        "a", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1) The individual's uncompensated personal services related to such Internet activities;", 
+                    "text": "(1) The individual's uncompensated personal services related to such Internet activities;", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-94-a-2": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "94", 
+                        "a", 
+                        "2"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(2) The individual's use of equipment or services for uncompensated Internet activities, regardless of who owns the equipment and services.", 
+                    "text": "(2) The individual's use of equipment or services for uncompensated Internet activities, regardless of who owns the equipment and services.", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-94-b": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "94", 
+                        "b"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(b)<E T=\"03\">Internet activities.</E>For the purposes of this section, the term \u201cInternet activities\u201d includes, but is not limited to: Sending or forwarding electronic messages; providing a hyperlink or other direct access to another person's Web site; blogging; creating, maintaining or hosting a Web site; paying a nominal fee for the use of another person's Web site; and any other form of communication distributed over the Internet.", 
+                    "text": "(b) Internet activities. For the purposes of this section, the term \u201cInternet activities\u201d includes, but is not limited to: Sending or forwarding electronic messages; providing a hyperlink or other direct access to another person's Web site; blogging; creating, maintaining or hosting a Web site; paying a nominal fee for the use of another person's Web site; and any other form of communication distributed over the Internet.", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-94-c": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "94", 
+                        "c"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(c)<E T=\"03\">Equipment and services.</E>For the purposes of this section, the term \u201cequipment and services\u201d includes, but is not limited to: Computers, software, Internet domain names, Internet Service Providers (ISP), and any other technology that is used to provide access to or use of the Internet.", 
+                    "text": "(c) Equipment and services. For the purposes of this section, the term \u201cequipment and services\u201d includes, but is not limited to: Computers, software, Internet domain names, Internet Service Providers (ISP), and any other technology that is used to provide access to or use of the Internet.", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-94-d": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "94", 
+                        "d"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(d) Paragraph (a) of this section also applies to any corporation that is wholly owned by one or more individuals, that engages primarily in Internet activities, and that does not derive a substantial portion of its revenues from sources other than income from its Internet activities.", 
+                    "text": "(d) Paragraph (a) of this section also applies to any corporation that is wholly owned by one or more individuals, that engages primarily in Internet activities, and that does not derive a substantial portion of its revenues from sources other than income from its Internet activities.", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-94-e": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [
+                        "100-94-e-1", 
+                        "100-94-e-2", 
+                        "100-94-e-3"
+                    ], 
+                    "label": [
+                        "100", 
+                        "94", 
+                        "e"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(e) This section does not exempt from the definition of contribution:", 
+                    "text": "(e) This section does not exempt from the definition of contribution:", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-94-e-1": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "94", 
+                        "e", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1) Any payment for a public communication (as defined in 11 CFR 100.26) other than a nominal fee;", 
+                    "text": "(1) Any payment for a public communication (as defined in 11 CFR 100.26) other than a nominal fee;", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-94-e-2": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "94", 
+                        "e", 
+                        "2"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(2) Any payment for the purchase or rental of an e-mail address list made at the direction of a political committee; or", 
+                    "text": "(2) Any payment for the purchase or rental of an e-mail address list made at the direction of a political committee; or", 
+                    "title": null
+                }
+            }
+        ], 
+        "100-94-e-3": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "100", 
+                        "94", 
+                        "e", 
+                        "3"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(3) Any payment for an e-mail address list that is transferred to a political committee.", 
+                    "text": "(3) Any payment for an e-mail address list that is transferred to a political committee.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-11-a": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "110-11-a-1", 
+                        "110-11-a-2", 
+                        "110-11-a-3", 
+                        "110-11-a-4"
+                    ], 
+                    "label": [
+                        "110", 
+                        "11", 
+                        "a"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(a)<E T=\"03\">Scope.</E>The following communications must include disclaimers, as specified in this section:", 
+                    "text": "(a) Scope. The following communications must include disclaimers, as specified in this section:", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-11-a-1": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "11", 
+                        "a", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1) All public communications, as defined in 11 CFR 100.26, made by a political committee; electronic mail of more than 500 substantially similar communications when sent by a political committee; and all Internet websites of political committees available to the general public.", 
+                    "text": "(1) All public communications, as defined in 11 CFR 100.26, made by a political committee; electronic mail of more than 500 substantially similar communications when sent by a political committee; and all Internet websites of political committees available to the general public.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-11-a-2": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "11", 
+                        "a", 
+                        "2"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(2) All public communications, as defined in 11 CFR 100.26, by any person that expressly advocate the election or defeat of a clearly identified candidate.", 
+                    "text": "(2) All public communications, as defined in 11 CFR 100.26, by any person that expressly advocate the election or defeat of a clearly identified candidate.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-11-a-3": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "11", 
+                        "a", 
+                        "3"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(3) All public communications, as defined in 11 CFR 100.26, by any person that solicit any contribution.", 
+                    "text": "(3) All public communications, as defined in 11 CFR 100.26, by any person that solicit any contribution.", 
+                    "title": null
+                }
+            }
+        ], 
+        "110-11-a-4": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "110", 
+                        "11", 
+                        "a", 
+                        "4"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(4) All electioneering communcations by any person.", 
+                    "text": "(4) All electioneering communcations by any person.", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-a": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "114-9-a-1", 
+                        "114-9-a-2", 
+                        "114-9-a-3"
+                    ], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "a"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(a)<E T=\"03\">Use of corporate facilities for individual volunteer activity by stockholders and employees.</E>\n            ", 
+                    "text": "(a) Use of corporate facilities for individual volunteer activity by stockholders and employees.", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-a-1": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "114-9-a-1-i", 
+                        "114-9-a-1-ii"
+                    ], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "a", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1) Stockholders and employees of the corporation may, subject to the rules and practices of the corporation and 11 CFR 100.54, make occasional, isolated, or incidental use of the facilities of a corporation for individual volunteer activity in connection with a Federal election and will be required to reimburse the corporation only to the extent that the overhead or operating costs of the corporation are increased. A corporation may not condition the availability of its facilities on their being used for political activity, or on support for or opposition to any particular candidate or political party. As used in this paragraph,<E T=\"03\">occasional, isolated, or incidental use</E>generally means\u2014", 
+                    "text": "(1) Stockholders and employees of the corporation may, subject to the rules and practices of the corporation and 11 CFR 100.54, make occasional, isolated, or incidental use of the facilities of a corporation for individual volunteer activity in connection with a Federal election and will be required to reimburse the corporation only to the extent that the overhead or operating costs of the corporation are increased. A corporation may not condition the availability of its facilities on their being used for political activity, or on support for or opposition to any particular candidate or political party. As used in this paragraph, occasional, isolated, or incidental use generally means\u2014", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-a-1-i": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "a", 
+                        "1", 
+                        "i"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(i) When used by employees during working hours, an amount of activity which does not prevent the employee from completing the normal amount of work which that employee usually carries out during such work period; or", 
+                    "text": "(i) When used by employees during working hours, an amount of activity which does not prevent the employee from completing the normal amount of work which that employee usually carries out during such work period; or", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-a-1-ii": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "a", 
+                        "1", 
+                        "ii"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(ii) When used by stockholders other than employees during the working period, such use does not interfere with the corporation in carrying out its normal activities.", 
+                    "text": "(ii) When used by stockholders other than employees during the working period, such use does not interfere with the corporation in carrying out its normal activities.", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-a-2": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "114-9-a-2-i", 
+                        "114-9-a-2-ii"
+                    ], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "a", 
+                        "2"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(2)<E T=\"03\">Safe harbor.</E>For the purposes of paragraph (a)(1) of this section, the following shall be considered occasional, isolated, or incidental use of corporate facilities:", 
+                    "text": "(2) Safe harbor. For the purposes of paragraph (a)(1) of this section, the following shall be considered occasional, isolated, or incidental use of corporate facilities:", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-a-2-i": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "a", 
+                        "2", 
+                        "i"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(i) Any individual volunteer activity that does not exceed one hour per week or four hours per month, regardless of whether the activity is undertaken during or after normal working hours; or", 
+                    "text": "(i) Any individual volunteer activity that does not exceed one hour per week or four hours per month, regardless of whether the activity is undertaken during or after normal working hours; or", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-a-2-ii": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "114-9-a-2-ii-A", 
+                        "114-9-a-2-ii-B", 
+                        "114-9-a-2-ii-C"
+                    ], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "a", 
+                        "2", 
+                        "ii"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(ii) Any such activity that constitutes voluntary individual Internet activities (as defined in 11 CFR 100.94), in excess of one hour per week or four hours per month, regardless of whether the activity is undertaken during or after normal working hours, provided that:", 
+                    "text": "(ii) Any such activity that constitutes voluntary individual Internet activities (as defined in 11 CFR 100.94), in excess of one hour per week or four hours per month, regardless of whether the activity is undertaken during or after normal working hours, provided that:", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-a-2-ii-A": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "a", 
+                        "2", 
+                        "ii", 
+                        "A"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(A) As specified in 11 CFR 100.54, the activity does not prevent the employee from completing the normal amount of work for which the employee is paid or is expected to perform;", 
+                    "text": "(A) As specified in 11 CFR 100.54, the activity does not prevent the employee from completing the normal amount of work for which the employee is paid or is expected to perform;", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-a-2-ii-B": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "a", 
+                        "2", 
+                        "ii", 
+                        "B"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(B) The activity does not increase the overhead or operating costs of the corporation; and", 
+                    "text": "(B) The activity does not increase the overhead or operating costs of the corporation; and", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-a-2-ii-C": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "a", 
+                        "2", 
+                        "ii", 
+                        "C"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(C) The activity is not performed under coercion.", 
+                    "text": "(C) The activity is not performed under coercion.", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-a-3": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "a", 
+                        "3"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(3) A stockholder or employee who makes more than occasional, isolated, or incidental use of a corporation's facilities for individual volunteer activities in connection with a Federal election is required to reimburse the corporation within a commercially reasonable time for the normal and usual rental charge, as defined in 11 CFR 100.52(d)(2), for the use of such facilities.", 
+                    "text": "(3) A stockholder or employee who makes more than occasional, isolated, or incidental use of a corporation's facilities for individual volunteer activities in connection with a Federal election is required to reimburse the corporation within a commercially reasonable time for the normal and usual rental charge, as defined in 11 CFR 100.52(d)(2), for the use of such facilities.", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-b": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "114-9-b-1", 
+                        "114-9-b-2", 
+                        "114-9-b-3"
+                    ], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "b"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(b)<E T=\"03\">Use of labor organization facilities for individual volunteer activity by officials, members, and employees.</E>\n            ", 
+                    "text": "(b) Use of labor organization facilities for individual volunteer activity by officials, members, and employees.", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-b-1": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "114-9-b-1-i", 
+                        "114-9-b-1-ii"
+                    ], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "b", 
+                        "1"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(1) The officials, members, and employees of a labor organization may, subject to the rules and practices of the labor organization and 11 CFR 100.54, make occasional, isolated, or incidental use of the facilities of a labor organization for individual volunteer activity in connection with a Federal election and will be required to reimburse the labor organization only to the extent that the overhead or operating costs of the labor organization are increased. A labor organization may not condition the availability of its facilities on their being used for political activity, or on support for or opposition to any particular candidate or political party. As used in this paragraph,<E T=\"03\">occasional, isolated, or incidental use</E>generally means\u2014", 
+                    "text": "(1) The officials, members, and employees of a labor organization may, subject to the rules and practices of the labor organization and 11 CFR 100.54, make occasional, isolated, or incidental use of the facilities of a labor organization for individual volunteer activity in connection with a Federal election and will be required to reimburse the labor organization only to the extent that the overhead or operating costs of the labor organization are increased. A labor organization may not condition the availability of its facilities on their being used for political activity, or on support for or opposition to any particular candidate or political party. As used in this paragraph, occasional, isolated, or incidental use generally means\u2014", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-b-1-i": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "b", 
+                        "1", 
+                        "i"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(i) When used by employees during working hours, an amount of activity during any particular work period which does not prevent the employee from completing the normal amount of work which that employee usually carries out during such work period; or", 
+                    "text": "(i) When used by employees during working hours, an amount of activity during any particular work period which does not prevent the employee from completing the normal amount of work which that employee usually carries out during such work period; or", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-b-1-ii": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "b", 
+                        "1", 
+                        "ii"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(ii) When used by members other than employees during the working period, such use does not interfere with the labor organization in carrying out its normal activities.", 
+                    "text": "(ii) When used by members other than employees during the working period, such use does not interfere with the labor organization in carrying out its normal activities.", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-b-2": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "114-9-b-2-i", 
+                        "114-9-b-2-ii"
+                    ], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "b", 
+                        "2"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(2)<E T=\"03\">Safe harbor.</E>For the purposes of paragraph (b)(1) of this section, the following shall be considered occasional, isolated, or incidental use of labor organization facilities:", 
+                    "text": "(2) Safe harbor. For the purposes of paragraph (b)(1) of this section, the following shall be considered occasional, isolated, or incidental use of labor organization facilities:", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-b-2-i": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "b", 
+                        "2", 
+                        "i"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(i) Any individual volunteer activity that does not exceed one hour per week or four hours per month, regardless of whether the activity is undertaken during or after normal working hours; or", 
+                    "text": "(i) Any individual volunteer activity that does not exceed one hour per week or four hours per month, regardless of whether the activity is undertaken during or after normal working hours; or", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-b-2-ii": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [
+                        "114-9-b-2-ii-A", 
+                        "114-9-b-2-ii-B", 
+                        "114-9-b-2-ii-C"
+                    ], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "b", 
+                        "2", 
+                        "ii"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(ii) Any such activity that constitutes voluntary individual Internet activities (as defined in 11 CFR 100.94), in excess of one hour per week or four hours per month, regardless of whether the activity is undertaken during or after normal working hours, provided that:", 
+                    "text": "(ii) Any such activity that constitutes voluntary individual Internet activities (as defined in 11 CFR 100.94), in excess of one hour per week or four hours per month, regardless of whether the activity is undertaken during or after normal working hours, provided that:", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-b-2-ii-A": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "b", 
+                        "2", 
+                        "ii", 
+                        "A"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(A) As specified in 11 CFR 100.54, the activity does not prevent the employee from completing the normal amount of work for which the employee is paid or is expected to perform;", 
+                    "text": "(A) As specified in 11 CFR 100.54, the activity does not prevent the employee from completing the normal amount of work for which the employee is paid or is expected to perform;", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-b-2-ii-B": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "b", 
+                        "2", 
+                        "ii", 
+                        "B"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(B) The activity does not increase the overhead or operating costs of the labor organization; and", 
+                    "text": "(B) The activity does not increase the overhead or operating costs of the labor organization; and", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-b-2-ii-C": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "b", 
+                        "2", 
+                        "ii", 
+                        "C"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(C) The activity is not performed under coercion.", 
+                    "text": "(C) The activity is not performed under coercion.", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-b-3": [
+            {
+                "action": "PUT", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "b", 
+                        "3"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(3) The officials, members, and employees who make more than occasional, isolated, or incidental use of a labor organization's facilities for individual volunteer activities in connection with a Federal election are required to reimburse the labor organization within a commercially reasonable time for the normal and usual rental charge, as defined in 11 CFR 100.52(d)(2), for the use of such facilities.", 
+                    "text": "(3) The officials, members, and employees who make more than occasional, isolated, or incidental use of a labor organization's facilities for individual volunteer activities in connection with a Federal election are required to reimburse the labor organization within a commercially reasonable time for the normal and usual rental charge, as defined in 11 CFR 100.52(d)(2), for the use of such facilities.", 
+                    "title": null
+                }
+            }
+        ], 
+        "114-9-e": [
+            {
+                "action": "POST", 
+                "node": {
+                    "child_labels": [], 
+                    "label": [
+                        "114", 
+                        "9", 
+                        "e"
+                    ], 
+                    "node_type": "regtext", 
+                    "tagged_text": "(e) Nothing in this section shall be construed to alter the provisions in 11 CFR Part 114 regarding communications to and beyond a restricted class.", 
+                    "text": "(e) Nothing in this section shall be construed to alter the provisions in 11 CFR Part 114 regarding communications to and beyond a restricted class.", 
+                    "title": null
+                }
+            }
+        ]
+    }, 
+    "contact": "Mr. Brad C. Deutsch, Assistant General Counsel, Mr. Richard T. Ewell, Ms. Amy L. Rothstein, or Ms. Esa L. Sferra, Attorneys, 999 E Street, NW., Washington, DC 20463, (202) 694-1650 or (800) 424-9530.", 
+    "document_number": "06-3190", 
+    "effective_on": "2006-05-12", 
+    "footnotes": {
+        "1": "The comments and a transcript of the hearing are available at <em data-original=\"E-03\">http://www.fec.gov/law/law_rulemakings.shtml#Internet05.</em>", 
+        "10": "<em data-original=\"E-03\">See</em> Pew Internet  American Life Project, Trends 2005, Chapter 4, Internet: The Mainstreaming of Online Life, p. 58 (2005) <em data-original=\"E-03\">available at http://www.pewInternet.org/pdfs/Internet_Status_2005.pdf</em> (last visited 3/24/06).", 
+        "11": "<em data-original=\"E-03\">See</em> Pew Internet  American Life Project and the University of Michigan School of Information, The Internet and the Democratic Debate, p. 2 (October 27, 2004) <em data-original=\"E-03\">available at http://www.pewInternet.org/pdfs/PIP_Political_Info_Report.pdf</em> (last visited 3/24/06).", 
+        "12": "A \u201clistserv\u201d is a software program that automatically sends electronic mail messages to multiple e-mail addresses on an electronic mail list. <em data-original=\"E-03\">See, e.g., http://www.lsoft.com/products/listserv.asp</em> (last visited 3/24/06). The term &#8220;listserv&#8221; is commonly used, however, to denote the electronic mail list itself or the automated forwarding to all addresses on the mailing list of an e-mail sent only to the listserv's e-mail address.", 
+        "13": "<em data-original=\"E-03\">See</em> Pew Internet  American Life Project, The Internet and Campaign 2004, <em data-original=\"E-03\">available at http://www.pewInternet.org/pdfs/PIP_2004_Campaign.pdf</em> (last visited 3/24/06).", 
+        "14": "<em data-original=\"E-03\">See</em> note 9, above, The Internet and Democratic Debate, p. 2. During the same time period, the number of people reporting television as their primary source of campaign information declined. <em data-original=\"E-03\">Id.</em>", 
+        "15": "<em data-original=\"E-03\">See</em> Jessica Mintz, <em data-original=\"E-03\">When Bloggers Make News&#8212;As Their Count Increases, Web Diarists Are Asking: Just What Are the Rules?</em> Wall St. J., Jan. 21, 2005 at B1.", 
+        "16": "<em data-original=\"E-03\">See</em> note 10, above, The Mainstreaming of Online Life, p. 2.", 
+        "17": "\u201cFederal funds\u201d are funds subject to the limitations, prohibitions, and reporting requirements of the Act. <em data-original=\"E-03\">See</em> 11 CFR 300.2(g). &#8220;Non-Federal funds&#8221; are funds not subject to the limitations and prohibitions of the Act. <em data-original=\"E-03\">See</em> 11 CFR 300.2(k).", 
+        "18": "There are four types of \u201cFederal election activity\u201d: Type 1\u2014Voter registration activity during the period that begins on the date that is 120 days before a regularly scheduled Federal election is held and ends on the date of the election; Type 2\u2014Voter identification, get-out-the-vote activity, or \u201cgeneric campaign activity\u201d conducted in connection with an election in which a candidate for Federal office appears on the ballot; Type 3\u2014A \u201cpublic communication\u201d that promotes, supports, attacks or opposes a clearly identified candidate for Federal office; and Type 4\u2014Services provided during any month by an employee of a State, district, or local committee of a political party who spends more than 25 percent of that individual's compensated time during that month on activities in connection with a Federal election. <em data-original=\"E-03\">See</em> 2 U.S.C. 431(20) and 11 CFR 100.24.", 
+        "19": "State, district, and local party committees and organizations may use an allocated mix of Federal funds and \u201cLevin funds\u201d to pay for \u201cgeneric campaign activity\u201d conducted in connection with an election in which a candidate for Federal office appears on the ballot (regardless of whether a candidate for State or local office also appears on the ballot), or the party committee or organization must pay for the communication entirely with Federal funds. <em data-original=\"E-03\">See</em> 2 U.S.C. 441i(b)(2)(A); 11 CFR 300.32(b)(1)(ii), 300.32(c) and 300.33. &#8220;Levin funds&#8221; are a type of non-Federal funds created by BCRA that may be raised and spent by State, district, and local party committees and organizations to pay for the allocable portion of Types 1 and 2 Federal election activity. <em data-original=\"E-03\">See</em> 2 U.S.C. 441i(b)(2)(A) and (B); 11 CFR 300.2(i), 300.32(b). These funds may include donations from some sources ordinarily prohibited by Federal law (<em data-original=\"E-03\">e.g.</em>, corporations, labor organizations and Federal contractors) to the extent permitted by State law, but are limited to $10,000 per calendar year from any source or to the limits set by State law&#8212;whichever limit is lower. <em data-original=\"E-03\">See</em> 11 CFR 300.31.", 
+        "2": "The change affects only the following regulatory provisions: the restrictions on funding of Federal election activity by political party committees and State and local candidates (2 U.S.C. 431(20)); the allocation of costs of certain communications by some political committees under 11 CFR 106.6(b); the determination that certain communications must be treated as contributions if coordinated with a Federal candidate or political party committee under 11 CFR 109.21 and 109.37; and the requirement to include disclaimer statements on certain communications pursuant to 11 CFR 110.11.", 
+        "20": "An \u201celectioneering communication\u201d may also be a coordinated communication. <em data-original=\"E-03\">See</em> 11 CFR 109.21(c)(1). However, because &#8220;electioneering communications&#8221; are limited to broadcast, cable, or satellite communications, they constitute a subset of &#8220;public communications.&#8221; <em data-original=\"E-03\">See</em> 2 U.S.C. 434(f)(3); 11 CFR 100.29 (defining an &#8220;electioneering communication&#8221; as a &#8220;broadcast, cable, or satellite communication&#8221; that refers to a clearly identified candidate for Federal office, is publicly distributed within 60 days before a general election for the office sought by the candidate, or within 30 days before the primary election for that office, and is targeted to the relevant electorate).", 
+        "21": "The <em data-original=\"E-03\">Shays District</em> court analyzed the Commission's rules under a two-step test set out by the Supreme Court in <em data-original=\"E-03\">Chevron, U.S.A., Inc.</em> v. <em data-original=\"E-03\">National Res. Def. Council,</em> 467 U.S. 837 (1984) (&#8220;Chevron&#8221;). The first step of the Chevron analysis examines whether Congress has directly spoken to the precise questions at issue. The second step considers whether the agency's resolution of an issue not addressed in the statute is based on a permissible construction of the statute. In reviewing the definition of &#8220;public communication,&#8221; the <em data-original=\"E-03\">Shays District</em> court found that the rule's exclusion of all Internet communications did not comport with the plain meaning of the statutory requirement that all forms of general public political advertising be considered forms of &#8220;public communication,&#8221; and therefore did not satisfy step one of the <em data-original=\"E-03\">Chevron</em> test. <em data-original=\"E-03\">Shays District</em> at 69-70. The Commission did not appeal the portion of the <em data-original=\"E-03\">Shays District</em> decision regarding the definition of a &#8220;public communication.&#8221; The <em data-original=\"E-03\">Shays District</em> decision also stated that, in the alternative, the regulatory definition of &#8220;public communication&#8221; as applied to the &#8220;content prong&#8221; of the coordinated communication regulations in 11 CFR 109.21(c) was impermissibly narrowed by the coordination regulation, thereby undermining the purposes of the Act and thus providing an independent basis for invalidation under step two of the <em data-original=\"E-03\">Chevron</em> test. <em data-original=\"E-03\">See Shays District</em> at 70-71.", 
+        "22": "The term \u201cperson\u201d is defined to include \u201can individual, partnership, committee, association, corporation, labor organization, or any other organization or group of persons, but such term does not include the Federal Government or any authority of the Federal Government.\u201d 2 U.S.C. 431(11).", 
+        "23": "Several commenters argued that the Commission should preserve the <em data-original=\"E-03\">status quo</em> and continue to exclude all Internet communications from the definition of &#8220;public communication.&#8221; The Commission does not believe that such an approach would comport with the <em data-original=\"E-03\">Shays District</em> decision.", 
+        "24": "The \u201cusual and normal charge for goods\u201d is defined as \u201cthe price of those goods in the market from which they ordinarily would have been purchased at the time of the [contribution or expenditure],\u201d and the \u201cusual and normal charge for services\u201d is defined as \u201cthe hourly or piecework charge for the services at a commercially reasonable rate prevailing at the time the services were rendered.\u201d 11 CFR 100.57(d)(2) and 100.111(e)(2). <em data-original=\"E-03\">See, e.g.</em>, Advisory Opinion 2006-01 (Pac for a Change) (discounted rate provided by publisher to other large-quantity purchasers is the normal and usual charge that candidate's committee is required to pay to purchase large quantities of the candidate's book).", 
+        "25": "\u201cBanner advertisements\u201d are advertisements on a Web page that convey messages in text, animated graphics, and sound. They traditionally appear in rectangular shape, but may take any shape. Typically, banner advertisements are linked to the advertiser's website, which enables a viewer to \u201cclick through\u201d the advertisement to view the advertiser's website for further information on the product or service advertised. <em data-original=\"E-03\">See http://www.netlingo.com/lookup.cfm?term=ad+banner</em> (last visited 3/24/06).", 
+        "26": "\u201cPop-up\u201d advertisements usually appear in a separate browser window from the one being viewed. The advertisements are superimposed over the window being viewed, and require the viewer to take some action, such as closing the window in which the pop-up advertisement appears, to continue viewing the underlying browser window. <em data-original=\"E-03\">See http://www.netlingo.com/lookup.cfm?term=pop%2Dup%20ad</em> (last visited 3/24/06).", 
+        "27": "Although a pop-up advertisement may not technically be part of the underlying website or account, the Commission determines that it is \u201cplaced on\u201d a website such that it qualifies as a \u201cpublic communication\u201d when a fee is paid for the pop-up.", 
+        "28": "For example, companies such as Google and Yahoo! permit an advertiser to pay a fee to have its website appear as a \u201csponsored link,\u201d or otherwise featured, when specific words are typed into the website's search engine. <em data-original=\"E-03\">See http://www.google.com/intl/en/webmasters/1.html</em> (last visited 3/24/06) and <em data-original=\"E-03\">http://searchmarketing.yahoo.com/srch/index.php</em> (last visited 3/24/06). If a fee is paid for such a service, then the resulting display of the product, hyperlink, or other message constitutes a form of &#8220;general public political advertising.&#8221; However, when the search results are displayed as a result of the normal function of a search engine, and not based on any payment for the display of a result, the search results are not forms of &#8220;general public political advertising.&#8221; In addition, where a search engine returns a website hyperlink in its normal course, and features the same hyperlink separately as the result of a paid sponsorship arrangement, the latter is a &#8220;public communication&#8221; while the former is not.", 
+        "29": "<em data-original=\"E-03\">See</em> Interactive Advertising Bureau, &#8220;Internet Advertising Revenues Surpass $3 Billion for Q3; Run Rate for Full Year 2005 on Pace to Exceed $12 Billion&#8221; (Nov. 21, 2005), available at <em data-original=\"E-03\">http://www.iab.net/news/pr_2005_11_21.asp</em> (last visited 3/24/06).", 
+        "3": "The terms \u201ccontribution\u201d and \u201cexpenditure\u201d include gifts, subscriptions, purchases, payments, distributions, loans, advances or deposits of money, or anything of value made by any person for the purpose of influencing any election for Federal office. <em data-original=\"E-03\">See</em> 2 U.S.C. 431(8)(A)(i) and 431(9)(A); <em data-original=\"E-03\">see also</em> 11 CFR Part 100, Subparts B  D.", 
+        "30": "<em data-original=\"E-03\">See http://www.dailykos.com/special/advertising</em> (last visited 3/24/06).", 
+        "31": "The term \u201cexpressly advocating\u201d is defined in 11 CFR 100.22 to include phrases such as \u201cvote for the President, re-elect your Congressman,\u201d and other slogans and words \u201cwhich in context can have no other reasonable meaning than to urge the election or defeat of one or more clearly identified candidate(s),\u201d or that, \u201cwhen taken as a whole and with limited reference to external events such as the proximity to the election, could only be interpreted by a reasonable person as containing advocacy of the election or defeat of one or more clearly identified candidates.\u201d", 
+        "32": "\u201cPodcasting\u201d is a form of file distribution that is currently used primarily to distribute audio files, like a radio program, over the Internet in a format that can be received and played through an Apple iPod or similar device. <em data-original=\"E-03\">See http://www.ipodder.org/whatIsPodcasting</em> (last visited 3/24/06).", 
+        "33": "The \u201crestricted class\u201d of a corporation is its stockholders and executive or administrative personnel, and their families, and the executive and administrative personnel of its subsidiaries, branches, divisions, and departments and their families. 11 CFR 114.1(j); <em data-original=\"E-03\">see also</em> 11 CFR 114.1(c). The &#8220;restricted class&#8221; of a labor organization is its members and executive or administrative personnel, and their families. <em data-original=\"E-03\">Id.</em>", 
+        "34": "Under the Act and Commission regulations, corporations and labor organizations may communicate with members of their restricted class on \u201cany subject.\u201d <em data-original=\"E-03\">See</em> 2 U.S.C. 431(9)(B)(iii) and 441b(b)(2)(A); 11 CFR 100.134(a) and 114.3(a); <em data-original=\"E-03\">see also</em> Advisory Opinion 1997-16 (Oregon Natural Resources Council Action). Membership organizations may similarly communicate with their members. <em data-original=\"E-03\">Id.</em> Corporations, labor organizations, and membership organizations are generally prohibited, however, from making communications to the general public in connection with a Federal election, but they may publicly endorse Federal candidates on their Web sites in the normal course of releasing a press release so long as the press release is distributed in the normal manner and the organizations make efforts to allow only <em data-original=\"E-03\">de minimis</em> exposure of their Web sites beyond their restricted classes. <em data-original=\"E-03\">See</em> 11 CFR 114.4(c)(6) and Advisory Opinion 1997-16. Thus, corporations, labor organizations, and membership organizations may expressly advocate the election or defeat of a clearly identified Federal candidate on the corporate or labor organization Web sites that are solely available to their respective restricted class. <em data-original=\"E-03\">See</em> discussion of revisions to 11 CFR 100.132 in section IX, below, and 11 CFR 114.5(g); <em data-original=\"E-03\">see also</em> Advisory Opinions 2000-07 (Alcatel USA, Inc.) (corporation permitted to solicit its restricted class by providing a password to members of the restricted class and limiting access to its Web site solely to those password holders) and 1997-16 (membership organization prohibited from making a list of candidate endorsements available on its Web sites unless it limited access to the list to its members only).", 
+        "35": "The other commenter addressing the issue supported an exception covering communications \u201cfrom corporations and labor organizations to their restricted classes.\u201d These communications, however, would not result in a \u201cpublic communication\u201d under the proposed or final rules because they are not communications placed on another person's Web site for a fee.", 
+        "36": "Numerous e-mail service providers, such as Hotmail, Google, and Yahoo!, provide free Web-based e-mail accounts that permit a user to receive and send thousands of e-mail messages without charge. <em data-original=\"E-03\">See http://join.msn.com/?page=hotmail/planspgmarket</em> (last visited 3/24/06), <em data-original=\"E-03\">http://mail.google.com/mail/help/about.html</em> (last visited 3/24/06), <em data-original=\"E-03\">http://dir.yahoo.com/Business_and_Economy/Business_to_Business/Communications_and_Networking/Internet_and_World_Wide_Web/E-mail_Providers/Free_E-mail</em> (last visited 3/24/06).", 
+        "37": "No commenters or witnesses supplied comments that would assist the Commission in determining how a State, district, or local party committee would pay for a Web site that was captured under the definition of \u201cpublic communication.\u201d The statute and regulations do not require a local party committee to pay for all of its \u201cpublic communications\u201d with Federal funds, only those that PASO a Federal candidate or otherwise constitute FEA, such as \u201cgeneric campaign activity.\u201d The Commission asked in the <em data-original=\"E-03\">NPRM</em> how the organizations would go about allocating the costs associated with the Web site if the Commission determined that Web sites for these organizations are &#8220;public communications.&#8221; Some commenters who supported including State, district, and local party committee Web sites in the definition of &#8220;public communication&#8221; suggested that a time/space allocation would be appropriate. However, the Commission is not convinced that the statute permits time/space allocation of any &#8220;public communication&#8221; that features PASO information about a Federal candidate. The existence of PASO would require the organizations to pay for the &#8220;public communications,&#8221; <em data-original=\"E-03\">i.e.</em>, the Web site itself, entirely with Federal funds. Such a result is inconsistent with the Act's regulation of Federal, but not non-Federal activity. For example, such a determination could have a ripple effect on the payment of other costs. The acquisition of the computers or the phone line (two costs that are generally allocated as administrative expenses) arguably could become expenses that would be required to be paid for entirely with Federal funds because one of the uses of the equipment would be to access or maintain a Web site.", 
+        "38": "One of these commenters called for limited rules focused exclusively on communications coordinated with corporations, while excluding all other communications. A different commenter urged the Commission to establish a separate rule for communications by State party committees on the grounds that \u201ccampaign finance laws provide for different levels of regulation of individuals, corporations and labor unions, and political committees (including party committees).\u201d The four principal Congressional sponsors of BCRA asserted that the definition of \u201cgeneral public political advertising\u201d applicable to State party committees should encompass all Internet communications \u201cintended to be seen by the general public.\u201d Similarly, a different group of commenters stated that a political committee should be deemed to make a \u201cpublic communication\u201d whenever it \u201cspends funds to communicate broadly over the Internet\u2014buying Web site ads, sending e-mails, maintaining its own publicly accessible Web site\u2014 * * * just as if it were spending funds to communicate by broadcast or mass mailing.\u201d", 
+        "39": "A telephone bank that supports or opposes a Federal candidate would be regulated as an additional form of FEA, which is a \u201cpublic communication\u201d that PASOs a clearly identified Federal candidate. 2 U.S.C. 431(20(A)(iii); 11 CFR 100.24(b)(3).", 
+        "4": "<em data-original=\"E-03\">See</em> Enrique Armijo, <em data-original=\"E-03\">Public Airwaves, Private Mergers: Analyzing the FCC's Faulty Justification for the 2003 Media Ownership Rule Change,</em> N.C. L. Rev. 1482, 1494 (May 2004) (discussing broadcast media and the Internet as &#8220;imperfect substitutes&#8221;); <em data-original=\"E-03\">see also</em> Ryan Z. Watts, <em data-original=\"E-03\">Independent Expenditures on the Internet: Federal Election Law and Political Speech on the World Wide Web,</em> 8 CommLaw Conspectus 149, 160 (Winter 2000) (discussing <em data-original=\"E-03\">Reno</em> v. <em data-original=\"E-03\">ACLU, 521 U.S. 844 (1997)</em> and the Internet's differences from traditional media).", 
+        "40": "As noted above, an \u201celectioneering communication\u201d may also be a coordinated communication. <em data-original=\"E-03\">See</em> 2 U.S.C. 441a(a)7)(C); 11 CFR 109.21(c)(1). However, &#8220;electioneering communications&#8221; are a subset of &#8220;public communications.&#8221;", 
+        "41": "The Court of Appeals found that the Commission had provided inadequate justification under the APA for excluding from the coordinated communication rules certain \u201cpublic communications\u201d that are publicly distributed or otherwise publicly disseminated more than 120 days before an election. <em data-original=\"E-03\">See Shays Appeal</em> at 100. The Commission initiated a separate rulemaking on the coordinated communication rules to address that issue. <em data-original=\"E-03\">See</em> Coordinated Communication Notice of Proposed Rulemaking, 70 FR 73946 (Dec. 14, 2005). The <em data-original=\"E-03\">Shays Appeal</em> decision did not address the definition of &#8220;public communication.&#8221;", 
+        "42": "Senator Russ Feingold, \u201cBlogs Don't Need Big Government\u201d available at <em data-original=\"E-03\">http://www.mydd.com/story/2005/3/10/112323/534</em> (last visited 3/24/06).", 
+        "43": "<em data-original=\"E-03\">See Disclaimer Final Rules</em>, 67 FR at 76963.", 
+        "44": "\u201cSpam\u201d is a common term for \u201cbulk e-mail sent out over the Internet. These messages are often unsolicited and unwanted by the recipient.\u201d <em data-original=\"E-03\">Modern Dictionary for the Legal Profession</em>, 866 (3rd ed. 2001).", 
+        "45": "<em data-original=\"E-03\">See</em> note 22 for the definition of &#8220;person.&#8221;", 
+        "46": "In Advisory Opinion 1999-17 (George W. Bush for President Exploratory Committee), the Commission concluded that a campaign's permission \u201cat some level\u201d was essential for the volunteer exception to apply to an individual's Internet activity on behalf of a presidential candidate. Advisory Opinion 1999-17 is superseded to the extent that it indicates that the campaign or political committee must be aware of or sanction the individual's Internet activities in order for the individual's activity to be exempt.", 
+        "47": "<em data-original=\"E-03\">See</em> 11 CFR 100.5 (&#8220;Political committee means * * * any committee, club, association, or other group of persons which receives contributions aggregating in excess of $1,000 or which makes expenditures aggregating in excess of $1,000 during a calendar year&#8221;). As discussed below, payments to place advertisements on another person's website, other than for a nominal fee, are not exempt under the new exceptions for Internet activities by individuals, and such payments could result in expenditures or contributions.", 
+        "48": "<em data-original=\"E-03\">See</em> note 22 for the definition of &#8220;person.&#8221;", 
+        "49": "In Advisory Opinion 1998-22 (Leo Smith), the Commission concluded that even if an individual acting independently incurs no additional costs in creating a website that expressly advocates the election or defeat of a clearly identified candidate, at least some portion of the underlying costs of creating and maintaining that website is an expenditure under the Act and must be reported if it exceeds $250 in a calendar year. Later, in Advisory Opinion 1999-17 (George W. Bush for President Exploratory Committee), the Commission concluded that in the course of developing a website for a campaign, an individual could use \u201chis or her personal property at home, <em data-original=\"E-03\">i.e.</em>, a home computer&#8221; and incur &#8220;related costs (such as maintaining Internet service with a provider) that are part of the upkeep&#8221; of the website without making a contribution or expenditure, and without incurring any reporting obligations. Advisory Opinion 1998-22 is superseded to the extent that it treated as an &#8220;expenditure&#8221; an individual's use of computer equipment and services for uncompensated Internet activity.", 
+        "5": "The word \u201cblog\u201d derives from the term \u201cWeb log\u201d and is defined as \u201can online diary; a personal chronological log of thoughts published on a Web page.\u201d Webster's New Millennium Dictionary of English, available at <em data-original=\"E-03\">http://www.dictionary.com</em> (last visited 3/24/06). People who maintain blogs are known as &#8220;bloggers.&#8221;", 
+        "50": "<em data-original=\"E-03\">See Reader's Digest Association</em> v. <em data-original=\"E-03\">FEC</em>, 509 F. Supp. 1210, 1215 (S.D.N.Y. 1981); <em data-original=\"E-03\">FEC</em> v. <em data-original=\"E-03\">Phillips Publishing</em>, 517 F. Supp. 1308, 1312-1313 (D.D.C. 1981); Advisory Opinions 2005-16 (Fired Up! LLC), 2004-07 (MTV, MTV Networks, Viacom, Inc. and Viacom Internation, Inc.), 2000-13 (Ampex Corporation and iNEXTV Corporation), 1998-17 (Daniels Cablevision), 1996-48 (National Cable Satellite Corporation), 1996-41 (A.H. Belo Corporation), 1996-16 (Bloomberg, L.P.) and 1982-44 (Democratic National Committee and Republic National Committee).", 
+        "51": "The lone dissenting commenter supported exempting all Internet publications from regulation, but recommended that the Commission craft a broad exception independent of the media exemption.", 
+        "52": "The terms \u201cwebsite\u201d and \u201cany Internet or elctronic publication\u201d are meant to encompass a wide range of existing and developing technology, such as websites, \u201cpodcasts,\u201d etc. <em data-original=\"E-03\">See e.g.</em>, Testimony of Markos Moulitas Zuniga, Federal Election Commission Public Hearing on Internet Communications at 27-28 (June 28, 2005) (&#8220;It is really truly impossible for any one person to grasp the scope of Internet communication technologies * * * [O]ff the top of my head, I could think of * * * blogging, e-mail, instant messaging, message boards, Yahoo groups, Internet Relay Chat, chat groups, podcasting, Internet radio, Flash animations, Web video, Webcams, peer-to-peer, and social networking software. Then, there is Grokster, * * * And the new Apple operating system has these little applications called widgets * * * and Microsoft promises to do the same. All of these technologies have political applications, obviously, yet they are vastly different.&#8221;).", 
+        "53": "<em data-original=\"E-03\">Final Rules on Candidate Debates and News Stories</em>, 61 FR 18049 (Apr. 24, 1996).", 
+        "54": "<em data-original=\"E-03\">Id.</em> at 18050 (<em data-original=\"E-03\">quoting</em> H.R. Rep. No. 93-1239, 93rd Cong., 2d Sess. at 4 (1974)).", 
+        "55": "<em data-original=\"E-03\">Id.</em>", 
+        "56": "There have been recent instances in which media entities have solicited contributions for Federal candidates. See <em data-original=\"E-03\">e.g., Kerry for Prez: Why Him, Why Now and How to Put Him in the White House,</em> Philadelphia Daily News, June 16, 2004 (containing a lead editorial that stated &#8220;[Y]ou can learn more about Kerry, make a donation or volunteer to help through his web site * * * The commonwealth&#8212;indeed the nation&#8212;cannot afford another four years of George Bush.&#8221;). <em data-original=\"E-03\">See also</em> Charles Krauthammer, <em data-original=\"E-03\">The Delusional Dean,</em> Washington Post, December 5, 2003 at A31 (op-ed by a syndicated columnist containing a solicitation for the Republican National Committee, including instructions on where readers should send contributions).", 
+        "57": "In Advisory Opinion 1982-44 (Democratic National Committee and Republican National Committee) the Commission made clear that \u201ccommentary\u201d within the meaning of the press exemption is not limited to commentaries made by the broadcaster. The Commission emphasized that \u201ccommentary\u201d was intended to allow third persons access to the media to discuss issues. The statute and regulations do not define the issues permitted to be discussed or the format in which they are to be presented under the \u201ccommentary\u201d exemption.\u201d", 
+        "58": "<em data-original=\"E-03\">McConnell,</em> 540 U.S. at 208.", 
+        "59": "<em data-original=\"E-03\">See id.</em> (&#8220;Section 304(f)(3)(B)(I)'s effect * * * excepts news items and commentary only.&#8221;).", 
+        "6": "<em data-original=\"E-03\">See</em> Edward L. Carter, <em data-original=\"E-03\">Outlaw Speech on the Internet: Examining the Link Between Unique Characteristics of Online Media and Criminal Libel Prosecutions,</em> 21 Santa Clara Computer  High Tech. L.J. 289, 316-17 (January 2005) (&#8220;Internet is unlike traditional print or broadcast media in that messages can have a long shelf life&#8212;an Internet message can circulate via e-mail or remain posted somewhere even long after the message's creator has tried to retract it.&#8221;).", 
+        "60": "<em data-original=\"E-03\">See</em> note 52 clarifying that the terms &#8220;Website&#8221; and &#8220;any Internet or electronic publication&#8221; are meant to address a wide range of technology that may be used by entities entitled to the press exemption.", 
+        "61": "<em data-original=\"E-03\">See</em>\n            <em data-original=\"E-03\">http://www.cnn.com/2004/TECH/internet/07/23/conventionbloggers/</em> (last visited 3/24/06).", 
+        "62": "<em data-original=\"E-03\">See http://www.foxnews.com/story/0,2933,149689,00.html</em> (last visited 3/24/06).", 
+        "63": "The Commission notes that media entities such as the Washington Post, MSNBC, Fox News, and CNN have bloggers reporting news and commentary on their Web sites.", 
+        "64": "The Commission notes that under current 11 CFR 114.9 the term \u201cfacilities\u201d covers a wide variety of office equipment and supplies, including, but not limited to, copiers, fax machines, telephones, printers, scanners, and meeting and office space.", 
+        "65": "The Commission notes that an individual using corporate or labor organization facilities to engage in personal uncompensated Internet activities will not make a contribution or expenditure because such Internet activities by individuals is exempt under new 11 CFR 100.94 and 100.155, as discussed above.", 
+        "7": "<em data-original=\"E-03\">See</em> Internet World Stats <em data-original=\"E-03\">available at http://www.Internetworldstats.com/stats2.htm</em> (last visited 3/24/06).", 
+        "8": "<em data-original=\"E-03\">See</em> Pew Internet  American Life Project, How Women and Men use the Internet, p. I, (2005) <em data-original=\"E-03\">available at http://www.pewInternet.org/pdfs/PIP_Women_and_Men_online.pdf</em> (last visited 3/24/06).", 
+        "9": "<em data-original=\"E-03\">See</em> Pew Internet  American Life Project, Teens and Technology, p. I (2005) <em data-original=\"E-03\">available at http://www.pewInternet.org/pdfs/PIP_Teens_Tech_July2005web.pdf</em> (last visited 3/24/06)."
+    }, 
+    "fr_citation": "71 FR 18589", 
+    "fr_url": "https://www.federalregister.gov/articles/2006/04/12/06-3190/no-title-available", 
+    "fr_volume": 71, 
+    "publication_date": "2006-04-12", 
+    "section_by_section": []
+}
