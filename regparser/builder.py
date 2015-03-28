@@ -95,14 +95,6 @@ class Builder(object):
         else:
             return build_whole_regtree(reg_str)
 
-    # @staticmethod
-    # def org_date(reg_str):
-    #     if reg_str[:1] == '<':  # XML
-    #         return reg_text.build_orgDate(reg_str)
-    #     else:
-    #         return reg_text.build_orgDate(reg_str)
-
-
 class LayerCacheAggregator(object):
     """A lot of the reg tree remains the same between versions; we don't
     want to recompute layers every time. This object keeps track of what
