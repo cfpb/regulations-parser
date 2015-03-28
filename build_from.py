@@ -39,7 +39,8 @@ if __name__ == "__main__":
 
     title = int(sys.argv[2])
     title_part = reg_tree.label_id()
-    pub_date = Builder.org_date(reg)
+    print reg_tree
+    pub_date = reg_tree.original_date
     print pub_date
     doc_number = fetch_doc_number_json(title, title_part, pub_date, only_final=True)
     print doc_number
@@ -61,7 +62,7 @@ if __name__ == "__main__":
     layer_cache = LayerCacheAggregator()
     builder.gen_and_write_layers(reg_tree, sys.argv[3:4], layer_cache)
     layer_cache.replace_using(reg_tree)
-    if len(sys.argv) < 7 or sys.argv[5].lower() == 'true':
+    if len(sys.argv) < 6 or sys.argv[5].lower() == 'true':
         all_versions = {doc_number: reg_tree}
         for last_notice, old, new_tree, notices in builder.revision_generator(
                 reg_tree):
