@@ -42,9 +42,9 @@ if __name__ == "__main__":
     title_part = reg_tree.label_id()
     #print reg_tree
     pub_date = reg_tree.original_date
-    #print pub_date
+    print pub_date
     doc_number = fetch_doc_number_json(title, title_part, pub_date, only_final=True)
-
+    print doc_number
     builder = Builder(cfr_title=title,
                       cfr_part=title_part,
                       doc_number=doc_number)

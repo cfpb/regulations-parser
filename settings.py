@@ -1,5 +1,5 @@
 OUTPUT_DIR = ''
-API_BASE = 'http://localhost:8001/'
+API_BASE = ''
 META = {}
 
 #   All current, US CFR titles

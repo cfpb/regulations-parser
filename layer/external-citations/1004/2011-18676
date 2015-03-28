@@ -1,0 +1,284 @@
+{
+    "1004-1-a": [
+        {
+            "citation": [
+                "124", 
+                "Stat.", 
+                "1376"
+            ], 
+            "citation_type": "STATUTES_AT_LARGE", 
+            "offsets": [
+                [
+                    317, 
+                    331
+                ]
+            ]
+        }, 
+        {
+            "citation": [
+                "15", 
+                "1601"
+            ], 
+            "citation_type": "USC", 
+            "offsets": [
+                [
+                    462, 
+                    476
+                ]
+            ]
+        }, 
+        {
+            "citation": [
+                "12", 
+                "3801"
+            ], 
+            "citation_type": "USC", 
+            "offsets": [
+                [
+                    174, 
+                    188
+                ]
+            ]
+        }
+    ], 
+    "1004-2": [
+        {
+            "citation": [
+                "12", 
+                "226", 
+                "2"
+            ], 
+            "citation_type": "CFR", 
+            "offsets": [
+                [
+                    150, 
+                    162
+                ]
+            ]
+        }
+    ], 
+    "1004-3": [
+        {
+            "citation": [
+                "12", 
+                "3803"
+            ], 
+            "citation_type": "USC", 
+            "offsets": [
+                [
+                    20, 
+                    34
+                ]
+            ]
+        }
+    ], 
+    "1004-4-a-1": [
+        {
+            "citation": [
+                "12", 
+                "226", 
+                "5"
+            ], 
+            "citation_type": "CFR", 
+            "offsets": [
+                [
+                    37, 
+                    49
+                ], 
+                [
+                    82, 
+                    94
+                ]
+            ]
+        }
+    ], 
+    "1004-4-c-1": [
+        {
+            "citation": [
+                "12", 
+                "226", 
+                "32"
+            ], 
+            "citation_type": "CFR", 
+            "offsets": [
+                [
+                    57, 
+                    70
+                ], 
+                [
+                    102, 
+                    115
+                ]
+            ]
+        }, 
+        {
+            "citation": [
+                "12", 
+                "226", 
+                "34"
+            ], 
+            "citation_type": "CFR", 
+            "offsets": [
+                [
+                    120, 
+                    133
+                ]
+            ]
+        }
+    ], 
+    "1004-4-c-2": [
+        {
+            "citation": [
+                "12", 
+                "226", 
+                "35"
+            ], 
+            "citation_type": "CFR", 
+            "offsets": [
+                [
+                    57, 
+                    70
+                ], 
+                [
+                    102, 
+                    115
+                ]
+            ]
+        }
+    ], 
+    "1004-A-h10-1": [
+        {
+            "citation": [
+                "12", 
+                "226", 
+                "5"
+            ], 
+            "citation_type": "CFR", 
+            "offsets": [
+                [
+                    562, 
+                    574
+                ]
+            ]
+        }
+    ], 
+    "1004-A-h2-1": [
+        {
+            "citation": [
+                "12", 
+                "3803"
+            ], 
+            "citation_type": "USC", 
+            "offsets": [
+                [
+                    260, 
+                    274
+                ]
+            ]
+        }, 
+        {
+            "citation": [
+                "12", 
+                "3802"
+            ], 
+            "citation_type": "USC", 
+            "offsets": [
+                [
+                    441, 
+                    455
+                ]
+            ]
+        }
+    ], 
+    "1004-A-h2-2": [
+        {
+            "citation": [
+                "12", 
+                "3803"
+            ], 
+            "citation_type": "USC", 
+            "offsets": [
+                [
+                    79, 
+                    93
+                ]
+            ]
+        }
+    ], 
+    "1004-A-h5-1": [
+        {
+            "citation": [
+                "12", 
+                "226", 
+                "2"
+            ], 
+            "citation_type": "CFR", 
+            "offsets": [
+                [
+                    27, 
+                    39
+                ], 
+                [
+                    231, 
+                    243
+                ], 
+                [
+                    319, 
+                    331
+                ]
+            ]
+        }
+    ], 
+    "1004-A-h9-1": [
+        {
+            "citation": [
+                "12", 
+                "226", 
+                "32"
+            ], 
+            "citation_type": "CFR", 
+            "offsets": [
+                [
+                    67, 
+                    80
+                ], 
+                [
+                    92, 
+                    105
+                ]
+            ]
+        }, 
+        {
+            "citation": [
+                "12", 
+                "226", 
+                "28"
+            ], 
+            "citation_type": "CFR", 
+            "offsets": [
+                [
+                    688, 
+                    701
+                ]
+            ]
+        }, 
+        {
+            "citation": [
+                "12", 
+                "226", 
+                "35"
+            ], 
+            "citation_type": "CFR", 
+            "offsets": [
+                [
+                    227, 
+                    240
+                ], 
+                [
+                    252, 
+                    265
+                ]
+            ]
+        }
+    ]
+}

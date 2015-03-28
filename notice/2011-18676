@@ -1,0 +1,501 @@
+{
+    "abstract": "The Bureau of Consumer Financial Protection (CFPB) is publishing for public comment an interim final rule establishing Regulation D (Alternative Mortgage Transaction Parity) pursuant to the Alternative Mortgage Transaction Parity Act (AMTPA) and the Truth in Lending Act. The interim final rule is necessary to avoid a regulatory gap created by the amendments to AMTPA in the Dodd-Frank Wall Street Reform and Consumer Protection Act (Dodd-Frank Act). Without an interim final rule that takes immediate effect, state housing creditors would no longer be able to make variable rate mortgage loans and other alternative mortgage transactions pursuant to AMTPA in states that prohibit such transactions, thus denying consumers access to that form of credit. Until July 22, 2012, the interim final rule applies only to state housing creditors seeking to invoke federal preemption of state law under AMTPA. The interim final rule will be in place as a temporary measure pending the CFPB's completion of a notice-and-comment rulemaking to promulgate permanent rules, including rules governing alternative mortgage transactions made by federally chartered housing creditors. The CFPB seeks public comment in anticipation of that process.", 
+    "action": "Interim final rule with request for public comment.", 
+    "addresses": {
+        "instructions": [
+            "All submissions must include the agency name and docket number or Regulatory Information Number (RIN) for this rulemaking. In general, all comments received will be posted without change to http://www.regulations.gov . In addition, comments will be available for public inspection and copying at 1801 L Street, NW., Washington, DC 20036, on official business days between the hours of 10 a.m. and 5 p.m. Eastern Time. You can make an appointment to inspect the documents by telephoning (202) 435-7275.", 
+            "All comments, including attachments and other supporting materials, will become part of the public record and subject to public disclosure. Sensitive personal information, such as account numbers or social security numbers, should not be included. Comments will not be edited to remove any identifying or contact information."
+        ], 
+        "intro": "You may submit comments, identified by Docket No. CFPB-2011-0004, by any of the following methods:", 
+        "methods": [
+            [
+                "Electronic", 
+                "http://www.regulations.gov . Follow the instructions for submitting comments."
+            ], 
+            [
+                "Mail or Hand Delivery/Courier in Lieu of Mail", 
+                "Monica Jackson, Office of the Executive Secretary, Consumer Financial Protection Bureau, 1801 L Street, NW., Washington, DC 20036."
+            ]
+        ]
+    }, 
+    "agency_names": [
+        "Consumer Financial Protection Bureau"
+    ], 
+    "cfr_parts": [
+        "1004"
+    ], 
+    "cfr_title": 12, 
+    "contact": "Monica Jackson, Office of the Executive Secretary, Consumer Financial Protection Bureau, 1801 L Street, NW., Washington, DC 20036, (202) 435-7275.", 
+    "document_number": "2011-18676", 
+    "effective_on": "2011-07-22", 
+    "footnotes": {
+        "1": "12 U.S.C. 3801 <em data-original=\"E-03\">et seq.</em>", 
+        "10": "12 U.S.C. 3803(a).", 
+        "11": "<em data-original=\"E-03\">Id.</em>", 
+        "12": "AMTPA also directed these agencies to determine whether any of their existing regulations were \u201cinappropriate\u201d to apply to state housing creditors or needed to be conformed for use by such lenders. Garn-St Germain Depository Institutions Act of 1982, Public Law 97-320, \u00a7 807(b), 96 Stat. 1469 (Oct. 15, 1982) (codified at 12 U.S.C. 3801 note). No guidance was provided as to standards for appropriateness.", 
+        "13": "47 FR 54,424 (Dec. 3, 1982).", 
+        "14": "47 FR 55,911 (Dec. 14, 1982).", 
+        "15": "47 FR 51,732 (Nov. 17, 1982); <em data-original=\"E-03\">see also</em> 48 FR 23,032 (May 23, 1983) (explaining that the earlier rulemaking was designed to apply federal standards regarding adjustments to rate, payment, balance, and term, and regarding disclosure, but not general safety and soundness requirements such as loan-to-value ratios).", 
+        "16": "75 FR 57252 (Sept. 20, 2010).", 
+        "17": "Public Law 111-203, \u00a7 1083(a)(2)(B) (emphasis added).", 
+        "18": "<em data-original=\"E-03\">Id.</em> (emphasis added).", 
+        "19": "Public Law 111-203, \u00a7 1061 (transferring, among other things, the \u201cconsumer financial protection functions\u201d of the federal prudential regulators to the CFPB as of the designated transfer date); <em data-original=\"E-03\">see also</em> &#167; 1002(14) (defining &#8220;Federal consumer financial law&#8221; to include the &#8220;enumerated consumer laws&#8221;); <em data-original=\"E-03\">id.</em> &#167; 1002(12) (defining &#8220;enumerated consumer laws&#8221; to include AMTPA and TILA); <em data-original=\"E-03\">id.</em> &#167; 1083 (amending 12 U.S.C. 3803).", 
+        "2": "Public Law 111-203, 124 Stat. 1376 (2010) (hereinafter \u201cPub. L. 111-203\u201d).", 
+        "20": "Public Law 111-203, \u00a7 1083(a)(2)(A)(iv).", 
+        "21": "However, as discussed above, federal housing creditors and any state housing creditors that do not seek AMTPA preemption are not required to comply with the CFPB's regulations until July 22, 2012. Furthermore, \u00a7 1004.4(d) of the interim final rule provides that these creditors may continue to make variable rate mortgages and other alternative mortgage transactions consistent with other applicable provisions of law.", 
+        "22": "Public Law 111-203, \u00a7 1083(a)(2)(A)(i). As discussed below with respect to \u00a7 1004.1, an alternative mortgage transaction is made for purposes of this interim final rule on the date the creditor receives the application. Thus, the amended AMTPA preemption standards do not apply to an alternative mortgage transaction if the application was received on or before July 21, 2011, even if the transaction is completed after that date.", 
+        "23": "Public Law 111-203, \u00a7 1083(a)(2)(A)(iv).", 
+        "24": "Public Law 111-203, \u00a7 1061 (transferring, among other things, the \u201cconsumer financial protection functions\u201d of the federal prudential regulators to the CFPB as of the designated transfer date); \u00a7 1083(b) (transferring AMTPA authority to the CFPB on the designated transfer date); <em data-original=\"E-03\">see also id.</em> &#167; 1083(a)(2)(C) (directing the CFPB to issue AMTPA regulations &#8220;after the designated transfer date&#8221;).", 
+        "25": "Public Law 111-203, \u00a7 1061(a)(1). Effective on the designated transfer date, the CFPB is also granted \u201call powers and duties\u201d vested in each of the federal agencies, relating to the consumer financial protection functions, on the day before the designated transfer date.", 
+        "26": "Public Law 111-203, \u00a7 1002(14) (defining \u201cFederal consumer financial law\u201d to include the \u201cenumerated consumer laws\u201d); <em data-original=\"E-03\">id.</em> &#167; 1002(12) (defining &#8220;enumerated consumer laws&#8221; to include AMTPA and TILA).", 
+        "27": "Section 1066 of the Dodd-Frank Act grants the Secretary of the Treasury interim authority to perform certain functions of the CFPB. Pursuant to that authority, Treasury is publishing this interim final rule on behalf of the CFPB.", 
+        "28": "Public Law 111-203, \u00a7 1083(a)(2)(C) (creating a new 12 U.S.C. 3803(d)).", 
+        "29": "As discussed below with respect to \u00a7 1004.4, the CFPB believes that it is consistent with the intent and purpose of Section 1083 to interpret the requirement that the CFPB determine whether the OCC and NCUA regulations are unfair or deceptive as requiring the CFPB to determine whether those regulations are effective in <em data-original=\"E-03\">preventing</em> unfair or deceptive acts or practices. In addition, the CFPB believes that it is appropriate to consider the OTS regulations governing alternative mortgage transactions when making this determination.", 
+        "3": "Under 12 U.S.C. 3802(2), the term \u201chousing creditor\u201d means: (1) A depository institution as defined in 12 U.S.C. 1735f-7 note; (2) a lender approved by the Secretary of Housing and Urban Development for participation in any mortgage insurance program under the National Housing Act; (3) a person who regularly makes loans, credit sales, or advances secured by an interest in residential real property, dwellings, cooperatives or residential manufactured homes; and (4) any transferee of a person in the other three categories.", 
+        "30": "<em data-original=\"E-03\">Id.</em>", 
+        "31": "Furthermore, 12 U.S.C. 3801 note, which was enacted as part of AMTPA in 1982, directs the OCC, NCUA, and FHLBB to identify, describe, and publish existing regulations that should or should not apply to alternative mortgage transactions and to make any necessary changes to address alternative mortgage transactions. <em data-original=\"E-03\">See</em> Public Law 97-320 (1982). The Dodd-Frank Act does not remove this authority, which transfers to the CFPB pursuant to Section 1061 of the Dodd-Frank Act.", 
+        "32": "Public Law 111-203, \u00a7 1083(a)(2)(A)(iv) (emphasis added).", 
+        "33": "<em data-original=\"E-03\">Id.</em> &#167; 1100A(2); 15 U.S.C. 1604(a).", 
+        "34": "<em data-original=\"E-03\">Id.</em>", 
+        "35": "<em data-original=\"E-03\">See</em> Regulation Z, 12 CFR Part 226.", 
+        "36": "Public Law 111-203, \u00a7 1405(a); <em data-original=\"E-03\">see also</em> 15 U.S.C. 1639b, 1639c.", 
+        "37": "5 U.S.C. 551 <em data-original=\"E-03\">et seq.</em>", 
+        "38": "5 U.S.C. 553(b), (c).", 
+        "39": "5 U.S.C. 553(d).", 
+        "4": "Available at <em data-original=\"E-03\">http://www.consumerfinance.gov/wp-content/uploads/2011/06/Amendments-to-the-Alternative-Mortgage-Transaction-Parity-Act.pdf</em>.", 
+        "40": "5 U.S.C. 553(b)(B).", 
+        "41": "5 U.S.C. 553(d)(3).", 
+        "42": "The CFPB notes that the amendments to AMTPA and this interim final rule do not affect preemption of state law under other statutes.", 
+        "43": "Federal Reserve Bank of New York, Current Issues in Economics and Finance (Dec. 2010); Inside Mortgage Finance data; <em data-original=\"E-03\">see also</em> Tara Siegel Bernard, <em data-original=\"E-03\">Borrowers Wade Back Into Adjustable-Rate Mortgages,</em> N.Y. Times, June 21, 2011 (available at http://bucks.blogs.nytimes.com/2011/06/21/borrowers-wade-back-into-adjustable-rate-mortgages/).", 
+        "44": "<em data-original=\"E-03\">See, e.g.,</em> Cal. Civ. Code &#167; 1916.5 (2004) (requiring certain provisions for any variable rate loan, including caps on interest rate increases and a promise that the rate of interest shall change no more than twice a year); &#167; 1916.7 (1981) (requiring certain provisions for adjustable-rate mortgages, including minimum term and amortization periods, limitations on changes in interest and monthly payments, limitations on which indices lenders may use to determine interest rate changes, and requirements relating to extending the loan under certain circumstances); &#167; 1916.8 (1980) (defining a renegotiable rate mortgage loan as a loan issued for a term of three, four, or five years, automatically renewable at equal intervals, repayable in equal monthly installments of principal and interest, in an amount at least sufficient to amortize the loan over the remaining term of the mortgage, and setting requirements for interest rate changes and disclosures); &#167; 1920 (1997) (providing requirements for any mortgage instrument, including standards for the adjustment of interest rates and monthly payments); Cal. Fin. Code &#167; 7504 (1984) (allowing an association to adjust the interest rate, payment, balance, or term-to-maturity on any loan secured by real property as authorized by the loan contract; requiring that such adjustments be subject to certain limitations including loan term limits, loan-to-value ratios, and interest rate indices, and allowing loans to be fully amortized, partially amortized, nonamortized, a reverse annuity mortgage, or an open end line of credit loan); Ga. Code &#167; 7-6A-5 (2004) (subjecting high-cost home loans to certain limitations, including balloon payments and interest rate increases, and requiring creditors to allow the borrower to modify, renew, extend, or amend the loan at no cost); Ind. Code &#167; 28-15-11-14 (1997) (setting requirements for adjustable mortgage loans, including limitations on adjustments to the principal loan balance, interest rate adjustments, and fees); Kan. Stat. &#167; 16-207 (1999) (setting interest rate limitations on any loan, including all first mortgage loans and contracts for deed to real estate); Ky. Rev. Stat. &#167; 360.150 (1984) (subjecting all adjustable rate mortgages to certain provisions, including limitations on interest rate changes and installment payments and disclosures); La. Rev. Stat. &#167; 9:3504 (2004) (authorizing adjustable rate mortgages on certain terms relating to interest rate indices, the frequency of interest rate adjustments, and installment adjustments, and exempting certain types of adjustable rate mortgages from the applications of laws on usury and interest upon interest); N.J. Stat. &#167; 46:10B-40 (2008) (providing for a mandatory three-year extension period during which the interest rate on an introductory rate mortgage shall not increase for certain eligible borrowers who do not have sufficient monthly income to pay monthly payments that will apply after the interest rate resets); N.M. Stat. 56-1-16 (1983) (setting requirements for mobile home loans, including that adjustments in the rate shall be tied to a specific index, limitations on frequency and amount of rate adjustments, and allowance of changes in installment payments due to rate adjustments); 41 Pa. Stat. &#167; 301 (2008) (setting caps on interest rates and limitations on frequency and amount of rate adjustments for residential mortgages); Tex. Fin. Code &#167; 347.102 (1997) (authorizing interest rate adjustments provided that the lender ties the rate changes to an approved index according to the statute). This footnote is included for illustrative purposes and does not constitute a determination by the CFPB that specific state laws are or are not preempted by the interim final rule.", 
+        "45": "<em data-original=\"E-03\">See, e.g.,</em> Cal. Bus. &amp; Prof. &#167; 10244.1 (1973) (restricting payments greater than twice the amount of the smallest installment for loans with a term of six years or less); Colo. Rev. Stat. &#167; 5-3.5-102 (2003) (restricting payments greater than twice the average of earlier regularly scheduled payments unless such balloon payment becomes due and payable not less than 120 months after the date of execution of the loan); DC Code &#167; 26-1152.13 (2002) (restricting scheduled payment more than twice as large as the average of earlier scheduled monthly payments unless the balloon payment becomes due and payable not less than 7 years after the date of the loan closing); Ga. Code, &#167; 7-6A-5(2) (2002) (prohibiting scheduled payments more than twice as large as earlier payments in certain high cost home loans); Ill. Admin. Code tit. 38, &#167; 1050.1272 (2005) (restricting certain balloon payments unless such balloon payment becomes due and payable at least 15 years after the loan's origination); Ind. Code &#167; 24-9-4-3 (2005) (restricting payments greater than twice the average of earlier regularly scheduled payments for certain high cost loans unless such balloon payment becomes due and payable not less than 120 months after the date of execution of the loan); Ky. Rev. Stat. Ann. &#167; 360.100 (2010) (restricting payments greater than twice the amount of the smallest installment for certain high cost loans); N.C. Gen. Stat. &#167; 24-1.1A (1973) (restricting certain affiliates from providing balloon payments on home loans in excess of six months); 7 Pa. Cons. Stat. Ann. &#167; 6020-155 (1995) (prohibiting balloon loans for financing the purchase of an owner occupied one or two family residential property); Tex. Fin. Code Ann. &#167; 343.202 (2006) (restricting scheduled payments more than twice as large as earlier payments in certain high cost home loans unless the balloon payment becomes due not less than 60 months after the date of the loan); W. Va. Code &#167; 46A-4-110a (1996) (prohibiting balloon payments unless preempted by federal law). This footnote is included for illustrative purposes and does not constitute a determination by the CFPB that specific state laws are or are not preempted by the interim final rule.", 
+        "46": "Public Law 111-203 \u00a7 1021(a).", 
+        "47": "Available at <em data-original=\"E-03\">http://www.consumerfinance.gov/wp-content/uploads/2011/06/Amendments-to-the-Alternative-Mortgage-Transaction-Parity-Act.pdf.</em>", 
+        "48": "12 U.S.C. 3804(a)(2) (providing that \u201cany renewal, extension, refinancing, or other modification of an alternative mortgage transaction that was entered into during the preemption period\u201d would also be afforded AMTPA preemption).", 
+        "49": "<em data-original=\"E-03\">See</em> 12 U.S.C. 3801(a)(1) (finding that &#8220;increasingly volatile and dynamic changes in interest rates have seriously impaired the ability of housing creditors to provide <em data-original=\"E-03\">consumers</em> with fixed-term, fixed-rate credit secured by interests in real property, cooperative housing, manufactured homes, and other dwellings&#8221; (emphasis added)).", 
+        "5": "15 U.S.C. 1601, <em data-original=\"E-03\">et seq.</em>", 
+        "50": "<em data-original=\"E-03\">See</em> OTS Letter P-2003-9 (Dec. 2, 2003).", 
+        "51": "These examples are consistent with the definition of an \u201cadjustable rate mortgage loan\u201d in AMTPA, 12 U.S.C. 3806(d)(2), as one in which the loan agreement permits the creditor to adjust the rate of interest from time to time. While the definition of \u201cadjustable rate mortgage loan\u201d applies to a section of AMTPA that requires adjustable rate mortgages to have maximum interest rates (rather than to the preemption provisions), it sheds light on the types of loans contemplated by AMTPA as having adjustable rates.", 
+        "52": "<em data-original=\"E-03\">See</em> OTS Letter P-2003-9 (Dec. 2, 2003); OTS Letter P-96-13 (Nov. 27, 1996).", 
+        "53": "As discussed below, Regulation Z also treats renewable balloon payment loans as variable rate transactions. See 12 CFR 226.17 comment 17(b)-11.", 
+        "54": "<em data-original=\"E-03\">See</em> 12 CFR 34.20, 34.24 (authorizing state chartered banks to make &#8220;adjustable rate mortgages,&#8221; defined generally to include secured extensions of credit &#8220;where the lender, pursuant to an agreement with the borrower, may adjust the rate of interest from time to time&#8221;).", 
+        "55": "<em data-original=\"E-03\">See</em> 12 CFR 226 comment 17(c)(1)-11.", 
+        "56": "<em data-original=\"E-03\">See, e.g.</em>, 45 FR 24,108 (Apr. 9, 1980). The FHLBB initially provided very detailed rules regarding renegotiable rate mortgages, which were subsumed into regulations on adjustable rate mortgages at 46 FR 24,148 (Apr. 30, 1981). The Federal Reserve also has moved from a narrower definition of &#8220;renegotiable rate mortgages&#8221; to a broader category of &#8220;renewable&#8221; balloon loans. <em data-original=\"E-03\">Compare</em> 66 Fed.Res.Bull. 830 (Oct. 1980) (defining &#8220;renegotiable rate mortgages&#8221; to include fixed-rate balloon loan mortgages for which the lender was obliged to renew the loan upon expiration of the loan on the same credit terms except for a change in the interest rate, and interpreting Regulation Z to permit lenders to disclose such mortgages either as a variable-rate obligation under 12 CFR 226.8(b)(8) or as a balloon-payment obligation under 12 CFR 226.8(b)(3)), <em data-original=\"E-03\">with</em> 56 FR 13751, 13754 (Apr. 4, 1991) (dropping the term &#8220;renegotiable rate mortgage&#8221; in favor of a more generic category of renewable loans with balloon payments, where the creditor is either unconditionally obligated to renew the loan or obligated to renew subject only to conditions within the consumer's control, and requiring that such loans be disclosed as long-term variable rate loans rather than as short-term balloon loans).", 
+        "57": "12 U.S.C. 3802(1)(B).", 
+        "58": "This approach is also consistent with the OCC's regulations applicable to AMTPA loans, which define \u201cadjustable rate mortgages\u201d to exclude \u201cfixed-rate extensions of credit that are payable at the end of a term that, when added to any terms for which the bank has promised to renew the loan, is shorter than the term of the amortization schedule.\u201d 12 CFR 34.20. Thus, if the bank promises to renew the loan for the term of the amortization schedule, the loan fell within the OCC's definition of \u201cadjustable rate mortgage.\u201d", 
+        "59": "See, <em data-original=\"E-03\">e.g.,</em> Roberto G. Quercia, Michael A. Stegman &amp; Walter Davis, <em data-original=\"E-03\">The impact of predatory loan terms on subprime foreclosures: The special case of prepayment penalties and balloon payments,</em> 18 Housing Pol'y Debate 311 (2007) (finding that first-lien subprime refinance mortgage loans with balloon payments in general were 50% more likely to go into foreclosure than other loans, holding other factors constant).", 
+        "6": "Testimony cited in 67 FR 60542, 60543 (Sept. 26, 2002).", 
+        "60": "<em data-original=\"E-03\">See</em> 12 U.S.C. 3802(1)(C) (referring to loans &#8220;involving any <em data-original=\"E-03\">similar</em> type of rate, method of determining return, term, repayment, or other variation not common to traditional fixed rate, fixed term transactions, including without limitation, transactions that involve the sharing of equity or appreciation&#8221;) (emphasis added).", 
+        "61": "<em data-original=\"E-03\">See, e.g.,</em> 12 CFR 561.50; 12 CFR 563f.2; 12 CFR 700.2.", 
+        "62": "Public Law 111-203, \u00a7 1083(a)(2)(B) (emphasis added).", 
+        "63": "<em data-original=\"E-03\">Id.</em>", 
+        "64": "<em data-original=\"E-03\">See, e.g.,</em> Webster's New World Dictionary 1075 (3d College ed. 1991) (&#8220;1 to refuse to permit; forbid by law or by an order 2 to prevent; hinder&#8221;); Black's Law Dictionary 1331 (9th ed. 2009) (&#8220;Prohibit, vb. 1. To forbid by law. 2. To prevent or hinder.&#8221;).", 
+        "65": "12 U.S.C. 3801(b).", 
+        "66": "However, as explained in comment 2, other state law restrictions on changes to payments are not preempted by \u00a7 1004.3.", 
+        "67": "Public Law 111-203, \u00a7 1083(b).", 
+        "68": "As discussed below, however, nothing in Part 1004 alters the obligation of all creditors to continue to comply with the requirements of Regulation Z that are incorporated by reference in \u00a7 1004.4 (specifically, 12 CFR 226.5b, 12 CFR 226.32, 12 CFR 226.34, and 12 CFR 226.35, as applicable).", 
+        "69": "12 CFR 34.20-25; 12 CFR 560.220.", 
+        "7": "12 U.S.C. 3801(b).", 
+        "70": "<em data-original=\"E-03\">See</em> 12 CFR 226.5b comment 5b(f)(1)-1.", 
+        "71": "<em data-original=\"E-03\">See</em> 12 CFR 226.55(b)(2) comment 55(b)(2)-2.", 
+        "72": "<em data-original=\"E-03\">See</em> 12 CFR 226.5b comment 5b(f)(1)-2", 
+        "73": "See 12 CFR 226.17 comment 17(b)-11.", 
+        "74": "Because 12 CFR 226.32, 12 CFR 226.34, and 12 CFR 226.35 already apply to all creditors, all creditors must continue to comply with those provisions, regardless of whether they seek AMTPA preemption.", 
+        "75": "<em data-original=\"E-03\">See</em> 12 CFR 226.28.", 
+        "76": "12 CFR 226.35(b)(2)(ii)(A).", 
+        "77": "5 U.S.C. 601 <em data-original=\"E-03\">et seq.</em>", 
+        "78": "5 U.S.C. 553(b)(B); 5 U.S.C. 605(b); 62 FR 23,538 (April 30, 1997); 66 FR 37,752 (July 19, 2001); 64 FR 3,865 (Jan. 26, 1999).", 
+        "79": "Available at <em data-original=\"E-03\">http://www.consumerfinance.gov/wp-content/uploads/2011/06/Amendments-to-the-Alternative-Mortgage-Transaction-Parity-Act.pdf</em>.", 
+        "8": "12 U.S.C. 3804. Six states exercised their opt-out authority in whole or in part: Arizona, Maine, Massachusetts, New York, South Carolina, and Wisconsin. <em data-original=\"E-03\">See, e.g.,</em> Grant S. Nelson &amp; Dale A. Whitman, Real Estate Finance Law &#167; 11.4 (4th ed. 2001).", 
+        "80": "The President's July 11, 2011, Executive Order 13579 entitled \u201cRegulation and Independent Regulatory Agencies,\u201d asks the independent agencies to follow the cost-saving, burden-reducing principles in Executive Order 13563; harmonization and simplification of rules; flexible approaches that reduce costs; and scientific integrity. In the spirit of Executive Order 13563, the CFPB has consulted with the Office of Management and Budget regarding this interim final rule, including with respect to the CFPB's methodologies and analysis regarding the potential benefits, costs, and impacts of the rule.", 
+        "81": "Section 1022(b)(2)(A) calls for consideration of the potential benefits and costs of regulation to consumers and industry, including the potential reduction of access by consumers to consumer financial products or services; the impact of proposed rules on depository institutions and credit unions with $10 billion or less in total assets as described in Section 1026 of the Dodd-Frank Act; and the impact on consumers in rural areas. The CFPB is in the process of further developing its long-term policies and procedures in this area and evaluating potential methodologies for conducting impact analyses as required by the statute.", 
+        "82": "The sudden change in the nature of the regulatory environment and the short term market disruptions that would ensue in the absence of the interim final rule would lead to additional costs as well.", 
+        "83": "Intangible effects, such as the increase in state autonomy inherent in reducing the scope of preemption, are beyond the scope of the current discussion.", 
+        "84": "The interim final rule does not require these creditors to report to the CFPB the number of loans made under AMTPA.", 
+        "85": "12 U.S.C. 3804. Six states exercised their opt-out authority in whole or in part: Arizona, Maine, Massachusetts, New York, South Carolina, and Wisconsin. <em data-original=\"E-03\">See, e.g.,</em> Grant S. Nelson &amp; Dale A. Whitman, Real Estate Finance Law &#167; 11.4 (4th ed. 2001).", 
+        "9": "12 U.S.C. 3803(c)."
+    }, 
+    "fr_citation": "76 FR 44225", 
+    "fr_url": "https://www.federalregister.gov/articles/2011/07/22/2011-18676/no-title-available", 
+    "fr_volume": 76, 
+    "initial_effective_on": "2011-07-22", 
+    "publication_date": "2011-07-22", 
+    "regulation_id_numbers": [
+        "3170-AA04"
+    ], 
+    "section_by_section": [
+        {
+            "children": [
+                {
+                    "children": [], 
+                    "footnote_refs": [], 
+                    "page": 44231, 
+                    "paragraphs": [
+                        "Section 1004.1(a) explains that Part 1004 implements AMTPA as amended by Section 1083 of the Dodd-Frank Act, pursuant to the rulemaking authority transferred to the CFPB from various transferor agencies under Section 1061 of the Dodd-Frank Act. This section also explains that \u00a7 1004.4 is issued based on the CFPB's authority under TILA."
+                    ], 
+                    "title": "(a) Authority"
+                }, 
+                {
+                    "children": [], 
+                    "footnote_refs": [], 
+                    "page": 44232, 
+                    "paragraphs": [
+                        "Consistent with AMTPA, TILA, and the Dodd-Frank Act, \u00a7 1004.1(b) states that the purpose of Part 1004 is to balance: (1) Access to responsible credit and enhanced parity between state and federal housing creditors regarding the making, purchase, and enforcement of alternative mortgage transactions, with (2) consumer protection and the interests of the states in regulating mortgage transactions generally. The purpose of AMTPA (as defined in 12 U.S.C. 3801) is to provide parity between federal and state housing creditors \u201cby authorizing all housing creditors to make, purchase, and enforce alternative mortgage transactions so long as the transactions are in conformity with the regulations issued by the Federal agencies.\u201d However, as described above, the level of parity provided by AMTPA has been modified by the Dodd-Frank Act's amendments to the definition of \u201calternative mortgage transaction\u201d and the scope of preemption under AMTPA, which narrow the range of transactions eligible for AMTPA preemption and restore the effect of certain state mortgage laws. Section 1004.1(b) reflects this modification as well as the CFPB's use of its consumer protection authority under TILA."
+                    ], 
+                    "title": "(b) Purpose"
+                }, 
+                {
+                    "children": [], 
+                    "footnote_refs": [
+                        {
+                            "offset": 213, 
+                            "paragraph": 5, 
+                            "reference": "48"
+                        }
+                    ], 
+                    "page": 44232, 
+                    "paragraphs": [
+                        "Section 1004.1(c) states that Part 1004 applies to an alternative mortgage transaction if the creditor received an application for that transaction on or after July 22, 2011. This section further states that Part 1004 does not apply to a transaction if the creditor received the application for that transaction before July 22, 2011.", 
+                        "Section 1083(c) of the Dodd-Frank Act provides that its amendments to AMTPA do not affect \u201cany transaction covered by the Alternative Mortgage Transaction Parity Act of 1982 (12 U.S.C. 3801 <em data-original=\"E-03\">et seq.</em>) and entered into on or before the designated transfer date.&#8221; Accordingly, the CFPB must determine when a transaction is &#8220;entered into&#8221; for purposes of determining which preemption standards and rules&#8212;pre-Dodd-Frank Act amendments or post-Dodd-Frank Act amendments&#8212;are applicable. Rather than a single event, a mortgage transaction is a series of steps progressing from application to consummation to servicing. Each of these steps is subject to a variety of state and federal consumer protection statutes, many of which govern activities that occur prior to consummation (such as disclosure and underwriting). In order to establish a workable regulatory regime, there must be a readily identifiable date and a single set of rules to govern the entire transaction. In light of these considerations, the CFPB has interpreted an &#8220;alternative mortgage transaction&#8221; as being &#8220;entered into&#8221; on the date the application is received by the creditor. This interpretation seeks to ensure that the entire transaction is governed by a consistent set of rules. For example, if an application for a mortgage transaction is received on July 21, 2011, but is not completed on August 21, 2011, AMTPA preemption is determined under the regime in effect prior to the Dodd-Frank Act amendments. However, if the application is received on July 22, 2011, AMTPA preemption is determined under the regime established by the Dodd-Frank Act amendments and this interim final rule.", 
+                        "Comment 1(c)-1 clarifies that, if an application for a transaction is received by a creditor prior to July 22, 2011, whether 12 U.S.C. 3803(c) preempts state law with respect to that transaction depends on whether: (1) The transaction was an alternative mortgage transaction as defined by the version of 12 U.S.C. 3802(1) in effect at the time of application; and (2) the state housing creditor complied with applicable federal regulations issued by the OCC, NCUA, or OTS/FHLBB in effect at the time of application.", 
+                        "Comment 1(c)-2 clarifies that, if 12 U.S.C. 3803(c) or this interim final rule (as applicable) preempted state law at the time an application was received, certain subsequent actions with respect to that transaction are entitled to the same degree of preemption. This comment applies regardless of whether the application was received before, on, or after July 22, 2011. First, if state law was preempted at the time of application, state law is also preempted with respect to the subsequent consummation, completion, purchase, or enforcement of the transaction by a state housing creditor. This interpretation is consistent with 12 U.S.C. 3801(b) and 3803(a), which address state housing creditors' ability to \u201cmake, purchase, or enforce\u201d alternative mortgage transactions.", 
+                        "Second, if state law was preempted at the time of application, state law is also preempted with respect to the subsequent modification, renewal, or extension of the transaction. The CFPB interprets such activity as constituting a continuation of the same \u201ctransaction\u201d for purposes of AMTPA. For instance, if a distressed borrower with a variable rate mortgage loan that is currently subject to preemption under AMTPA would be able to avoid foreclosure through a modification, the CFPB believes that AMTPA should continue to preempt state law that would otherwise prohibit the modification. However, if state law was preempted at the time of application and the transaction is later satisfied and replaced by another transaction (such as through a refinancing), the second transaction must independently meet the requirements for preemption in effect at the time the second transaction is made under 12 U.S.C. 3803(c) or this interim final rule (as applicable).", 
+                        "This interpretation is generally similar to the statutory language that governed the transition period with regard to states that decided to opt-out of the statutory preemption regime when AMTPA was first enacted.\n             However, the interim final rule treats refinancings differently than modifications, extensions, and renewals because, as provided in 12 CFR 226.20, a refinancing constitutes a new transaction that satisfies and replaces an existing obligation. Under these circumstances, the CFPB believes that the new transaction should be evaluated independently with respect to AMTPA preemption. The CFPB seeks comment on these interpretations, particularly as to what types of modifications might otherwise be prohibited under state law and whether additional protections are needed with respect to modifications."
+                    ], 
+                    "title": "(c) Scope"
+                }
+            ], 
+            "footnote_refs": [], 
+            "labels": [
+                "1004-1"
+            ], 
+            "page": 44231, 
+            "paragraphs": [
+                "This section addresses the authority, purpose, and scope of the new Part 1004, which the CFPB is issuing to implement AMTPA, as amended by Section 1083 of the Dodd-Frank Act."
+            ], 
+            "title": "Section 1004.1 Authority, Purpose, Scope"
+        }, 
+        {
+            "children": [
+                {
+                    "children": [], 
+                    "footnote_refs": [
+                        {
+                            "offset": 395, 
+                            "paragraph": 2, 
+                            "reference": "49"
+                        }, 
+                        {
+                            "offset": 587, 
+                            "paragraph": 4, 
+                            "reference": "50"
+                        }, 
+                        {
+                            "offset": 183, 
+                            "paragraph": 7, 
+                            "reference": "51"
+                        }, 
+                        {
+                            "offset": 831, 
+                            "paragraph": 7, 
+                            "reference": "52"
+                        }, 
+                        {
+                            "offset": 197, 
+                            "paragraph": 8, 
+                            "reference": "53"
+                        }, 
+                        {
+                            "offset": 324, 
+                            "paragraph": 8, 
+                            "reference": "54"
+                        }, 
+                        {
+                            "offset": 546, 
+                            "paragraph": 9, 
+                            "reference": "55"
+                        }, 
+                        {
+                            "offset": 1003, 
+                            "paragraph": 11, 
+                            "reference": "56"
+                        }, 
+                        {
+                            "offset": 549, 
+                            "paragraph": 12, 
+                            "reference": "57"
+                        }, 
+                        {
+                            "offset": 529, 
+                            "paragraph": 14, 
+                            "reference": "58"
+                        }, 
+                        {
+                            "offset": 704, 
+                            "paragraph": 14, 
+                            "reference": "59"
+                        }, 
+                        {
+                            "offset": 875, 
+                            "paragraph": 17, 
+                            "reference": "60"
+                        }
+                    ], 
+                    "page": 44232, 
+                    "paragraphs": [
+                        "The interim final rule defines \u201calternative mortgage transaction\u201d to include a loan, credit sale, or account: (1) That is secured by an interest in a residential structure that contains one to four units, whether or not the structure is attached to real property, including an individual condominium unit, cooperative unit, mobile home, and trailer, if it is used as a residence; (2) that is made primarily for personal, family, or household purposes; and (3) in which the interest rate or finance charge may be adjusted or renegotiated.", 
+                        "Comment 2(a)-1 clarifies that home equity lines of credit and subordinate lien mortgages are alternative mortgage transactions as long as they meet the definition in \u00a7 1004.2(a). Comment 2(a)- 2, discussed in more detail below, provides specific examples of transactions that are alternative mortgage transactions, while comment 2(a)-3 provides examples of transactions that are not alternative mortgage transactions.", 
+                        "The first element of the definition of alternative mortgage transaction is derived from AMTPA as well as the definition of a \u201cdwelling\u201d in 12 CFR 226.2(a)(19). The second element of the definition requires that an alternative mortgage transaction involve an extension of consumer credit. AMTPA's findings indicate that Congress was concerned with the availability of housing credit to consumers.\n\n             In addition, AMTPA applies to transactions secured by <em data-original=\"E-03\">residential</em> real property or a <em data-original=\"E-03\">dwelling</em> (including stock allocated to a dwelling in a residential cooperative housing corporation or a residential manufactured home). While some consumers may use their residence as security for credit for non-consumer purposes (such as to finance a business), AMTPA's use of the terms &#8220;residential&#8221; property and &#8220;dwelling&#8221; indicate that it is intended to apply to alternative mortgage transactions involving consumer credit. In addition, requiring alternative mortgage transactions to be consumer credit aligns the AMTPA regulations with the CFPB's general scope of authority under TILA, which also serves as authority for this interim final rule. However, the CFPB seeks comment on this issue.", 
+                        "The third element of the definition requires that the interest rate or finance charge for the transaction may be adjusted or renegotiated. As described above, Section 1083 narrows AMTPA's definition of an \u201calternative mortgage transaction\u201d so that it refers only to loans and credit sales \u201cin which the interest rate or finance charge may be adjusted or renegotiated, [as] described and defined by applicable regulation.\u201d As noted above, Section 1083 deletes language that specifically included within the definition of alternative mortgage transaction: (1) Fixed-rate balloon loans \u201cwhich implicitly permit[] rate adjustments\u201d because the debt matures before the end of the loan's amortization schedule; and (2) mortgage loans \u201cinvolving any similar type of rate, method of determining return, term, repayment, or other variation not common to traditional fixed rate, fixed term transactions,\u201d including but not limited to shared equity and shared appreciation transactions.", 
+                        "The interim final rule construes the amendment to exclude only those mortgages that do not involve an adjustable or renegotiable rate or finance charge. For example, a fixed-rate loan that permits the consumer to make interest-only payments for a period of time does not involve an adjustment to or renegotiation of the interest rate or finance charge. Previously, such transactions were considered alternative mortgage transactions under the third prong of the original AMTPA definition since an interest-only feature was \u201cnot common to traditional fixed rate, fixed term transactions.\u201d\n\n             Under the interim final rule, however, such transactions are no longer alternative mortgage transactions. Yet transactions that are specifically mentioned in the second and third prongs of the original AMTPA definition, such as shared-equity/shared-appreciation transactions and renewable balloon-payment transactions (which involve renegotiation of or adjustments to the rate or finance charge), <em data-original=\"E-03\">do</em> continue to be alternative mortgage transactions under the interim final rule. Furthermore, under the interim final rule, a mortgage with <em data-original=\"E-03\">both</em> an adjustable or renegotiable rate or finance charge <em data-original=\"E-03\">and</em> one or more other &#8220;nontraditional&#8221; features continues to be an &#8220;alternative mortgage transaction.&#8221; (However, as discussed below with respect to &#167; 1004.3, the scope of AMTPA preemption has also been narrowed such that alternative mortgage transactions with certain nontraditional features like interest-only payments or negative amortization are subject to greater state regulation under the amended statute.)", 
+                        "The CFPB recognizes that the amendments to AMTPA's definition could be interpreted differently. Specifically, by eliminating references to balloon payment loans and shared-equity/shared-appreciation mortgages, the amendment could be interpreted as excluding all such transactions from the definition of an alternative mortgage transaction. In addition, the amendment removed a provision that defined alternative mortgage transactions as loans with variations to the rate, method of determining return, term, repayment, or other variations not common to traditional fixed-rate, fixed-term transactions. However, rather than attempting to identify each and every type of loan that could potentially fall under the deleted portions of the definition, the CFPB believes that, for purposes of this interim final rule, the best approach is to focus on whether particular types of transactions fit within the remaining statutory definition.", 
+                        "As discussed further below, the Dodd-Frank Act's amendments to both the definition of \u201calternative mortgage transaction\u201d and to the scope of preemption under AMTPA are subject to different interpretations and are interrelated. The CFPB seeks public comment about how best to effectuate congressional intent through implementing regulations that will protect consumers, promote parity, and be readily understandable and applicable by creditors, supervising agencies, and others. The CFPB also requests comment on whether any specific types of mortgages should be excluded from the definition of an alternative mortgage transaction.", 
+                        "<em data-original=\"E-03\">Mortgages with adjustable rates or finance charges.</em> Comment 2(a)-2 provides specific examples of transactions that are alternative mortgage transactions.\n             Examples of alternative mortgage transactions include transactions in which the interest rate changes in accordance with changes to an index and transactions in which the interest rate may be increased or decreased after a specified period of time or under specified circumstances. For example, the definition includes loans in which the interest rate or finance charge may be adjusted after a period of time as specified and defined by the contract, for instance to provide a &#8220;timely payment discount rate&#8221; upon an anniversary of loan origination to borrowers who have made timely payments for a specified period of time.\n             (However, as discussed below with respect to &#167; 1004.3, generally applicable state laws governing late charges, including increases in the interest rate due to default, are no longer preempted by AMTPA.)", 
+                        "The definition of \u201calternative mortgage transaction\u201d in \u00a7 1004.2(a) includes \u201cvariable rate transactions\u201d as defined under Regulation Z for purposes of providing disclosures under 12 CFR 226.19(b).\n             The definition is also similar to the OCC's definition of \u201cadjustable rate mortgage\u201d under its AMTPA regulations.\n            \n          ", 
+                        "With regard to shared appreciation and shared equity features in particular, although the Dodd-Frank Act amendments to AMTPA deleted the specific language referencing shared appreciation and shared equity mortgages, loans with these features continue to fall within the remaining definition of \u201calternative mortgage transaction\u201d because they are mortgage transactions in which a finance charge is adjustable. Indeed, the CFPB notes that Regulation Z currently categorizes shared-equity/shared appreciation mortgages as variable-rate transactions.\n             Accordingly, consistent with that interpretation, the interim final rule includes such mortgages within the definition of alternative mortgage transaction.", 
+                        "The CFPB seeks comment on whether the products discussed above should be considered alternative mortgage transactions and what other products in the current market have adjustable rates or finance charges. The CFPB in particular seeks comment on whether treating a mortgage that permits a rate adjustment upon default as an alternative mortgage transaction is an appropriate approach in light of the Dodd-Frank Act amendments that specifically preserve states' authority to regulate late charges.", 
+                        "<em data-original=\"E-03\">Mortgages with renegotiable rates or finance charges.</em> The statute does not define what types of loans provide for the &#8220;renegotiat[ion]&#8221; of the interest rate or finance charge. The CFPB does not believe that Congress intended this language to apply to every transaction in which the interest rate or finance charge might theoretically be renegotiated. Such an interpretation could encompass almost any mortgage transaction. Instead, the CFPB believes it is appropriate to consider historical regulations and interpretations issued by the FHLBB and by the Federal Reserve Board under Regulation Z, both of which suggest that &#8220;renegotiable rate mortgages&#8221; were commonly understood at the time that AMTPA was enacted to include a subset of fixed-rate balloon loans involving renewable short-term notes secured by long-term mortgages, where the creditor made a commitment to renew the notes but reserved discretion to adjust the interest rate at renewal.\n            \n          ", 
+                        "This commitment to renew distinguishes renegotiable/renewable loans from a broader and more generic category of balloon loans that was included in AMTPA's original definition of \u201calternative mortgage transaction,\u201d but was then removed from the definition by the Dodd-Frank Act amendments. That language referred to loans \u201cinvolving a fixed rate, but which implicitly permit[] rate adjustments by having the debt mature at the end of an interval shorter than the term of the amortization schedule,\u201d without reference or regard to renewal commitments.\n            \n          ", 
+                        "As discussed above, the fact that Section 1083 deleted the reference to balloon loans while retaining the reference to loans for which the interest rate or finance charge may be renegotiated creates significant ambiguity as to how balloon loans should be treated under AMTPA as amended. However, based on available information, it is unclear to what the phrase \u201crenegotiable rate\u201d in the amended AMTPA definition refers, if not to balloon loans where there is a commitment to renew the loan but the rate is subject to renegotiation.", 
+                        "For these reasons, the CFPB believes that, for purposes of this interim final rule, it is appropriate to construe the category of renegotiable rate loans to include fixed-rate balloon loans in which the lender has committed to renew the loan. For example, the interim final rule provides that, if a loan has, for instance, a 30-year amortization period but a balloon payment is due at the end of five years, the product is an \u201calternative mortgage transaction\u201d for purposes of AMTPA if the creditor commits to renew the mortgage.\n             The CFPB notes that the requirement of a lender commitment to renew can help protect borrowers from the heightened default risk associated with balloon payments.\n             Furthermore, as discussed below with respect to \u00a7 1004.4(b), this commitment must be made in writing in order for the transaction to receive AMTPA preemption.", 
+                        "The CFPB seeks comment on all aspects of this issue, including comment on what products, if any, should be considered renegotiable rate loans, how commitments to renew are typically structured, and whether further clarity or protections may be appropriate for these mortgage products.", 
+                        "<em data-original=\"E-03\">Adjustable or renegotiable rate loans with additional nontraditional features.</em> As noted above, the interim final rule defines &#8220;alternative mortgage transaction&#8221; by focusing on the language of the amended statutory definition&#8212;in other words, whether the loan has an adjustable or renegotiable rate or finance charge. It is unclear whether the deletion of AMTPA's language recognizing other nontraditional loan features such as negative amortization or interest-only payment periods was intended to exclude adjustable rate or renegotiable rate loans that also contain such features from AMTPA preemption. For purposes of the interim final rule, the CFPB has concluded that such loans should not be excluded, for several reasons.", 
+                        "First, a broader exclusion based on the absence of statutory text would create a number of practical difficulties. The definitions removed from AMTPA mention two specific loan types\u2014balloon loans and shared-equity/shared-appreciation loans\u2014which can, in certain circumstances, be loans with adjustable or renegotiable rates or finance charges, as discussed above. While this amendment could be interpreted as having been intended to exclude these products from AMTPA coverage entirely, there is no specific language in the amended statute that provides guidance as to why such products would no longer be considered loans with adjustable or renegotiable rates or finance charges, regardless of the other aspects of the loan. In addition, the definitions removed by the Dodd-Frank Act amendments were quite broad and vague and overlap substantially with the other definitions.\n             Accordingly, interpreting the amendments to exclude from AMTPA coverage any transactions described in the removed definitions could undermine the remaining definition.", 
+                        "Second, where unusual circumstances require publication of an interim rule to take immediate effect without advance notice and opportunity for comment, the CFPB believes that it is appropriate to minimize market disruption while the CFPB's notice-and-comment rulemaking is under way. Thus, it is appropriate to interpret the remaining definition of \u201calternative mortgage transaction\u201d broadly.", 
+                        "The CFPB also believes it is particularly important to consider the interaction between the Dodd-Frank Act's definitional changes (implemented in \u00a7 1004.2) and changes to the scope of preemption (implemented in \u00a7 1004.3). Under the definition adopted in the interim final rule, fixed-rate products involving negative amortization, interest-only periods, or graduated payment features do not meet the definition of \u201calternative mortgage transaction\u201d because they are not loans with adjustable or renegotiable rates or finance charges. Therefore, these types of loans are not eligible for federal preemption under AMTPA and instead are subject to applicable state law.", 
+                        "In contrast, loans containing the same features that also have adjustable or renegotiable rates or finance charges <em data-original=\"E-03\">would</em> continue to qualify as &#8220;alternative mortgage transactions&#8221; under the definition in &#167; 1004.2(a). However, state law is preempted with respect to such loans only to the extent provided in &#167; 1004.3 (and only if the transaction also complies with the requirements in &#167; 1004.4(a) through (c), as applicable). Thus, to the extent that a state has enacted a law regulating, for example, negative amortization or interest-only features, AMTPA would not preempt application of that law to an alternative mortgage transaction.", 
+                        "In addition, although the alternative mortgage transaction <em data-original=\"E-03\">definition</em> includes loans in which the contract permits the creditor to adjust the interest rate or finance charge upon default, applicable state laws governing late charges are not preempted under &#167; 1004.3. Accordingly, like the statute, the two parts of the interim final rule work in conjunction with each other to provide for more consistent application of state law across similar mortgage products.", 
+                        "The CFPB seeks comment not just about the specific definitional changes but also how those changes relate to the new scope of preemption as further discussed below."
+                    ], 
+                    "title": "(a) Alternative Mortgage Transaction"
+                }, 
+                {
+                    "children": [], 
+                    "footnote_refs": [], 
+                    "page": 44235, 
+                    "paragraphs": [
+                        "The term \u201ccreditor\u201d is defined to have the same meaning as under Regulation Z, 12 CFR 226.2. This reflects the fact that \u00a7 1004.4 of the interim final rule applies broadly to all \u201ccreditors\u201d as defined under and pursuant to TILA and Regulation Z when such creditors are engaged in the making of alternative mortgage transactions. Comment 2(b)-1 clarifies that, under Regulation Z, the term \u201ccreditor\u201d includes federally and state-chartered banks, thrifts, and credit unions, as well as non-depository institutions (such as state-licensed lenders). The comment also references the Official Staff Commentary to Regulation Z for additional guidance on the definition of the term \u201ccreditor.\u201d"
+                    ], 
+                    "title": "(b) Creditor"
+                }, 
+                {
+                    "children": [], 
+                    "footnote_refs": [], 
+                    "page": 44235, 
+                    "paragraphs": [
+                        "The definition of \u201chousing creditor\u201d generally mirrors the statutory language to include a depository institution as defined in 12 U.S.C. 1735f-7 note; a lender approved by the Secretary of Housing and Urban Development for participation in any mortgage insurance program under the National Housing Act; other persons who regularly make loans, credit sales, or advances secured by an interest in a residential structure that contains one to four units, whether or not that structure is attached to real property, including an individual condominium unit, cooperative unit, mobile home, and trailer, if it is used as a residence; and any transferee of a person in the other three categories."
+                    ], 
+                    "title": "(c) Housing Creditor"
+                }, 
+                {
+                    "children": [], 
+                    "footnote_refs": [
+                        {
+                            "offset": 396, 
+                            "paragraph": 0, 
+                            "reference": "61"
+                        }
+                    ], 
+                    "page": 44235, 
+                    "paragraphs": [
+                        "The term \u201cState\u201d is defined as a state of the United States, the District of Columbia, and U.S. territories and possessions, including Puerto Rico, the Virgin Islands, the Northern Mariana Islands, American Samoa, and Guam. This is generally consistent with the federal prudential agencies' regulations as well as the definition of \u201cState\u201d in various other federal consumer financial regulations.\n            \n          "
+                    ], 
+                    "title": "(d) State"
+                }, 
+                {
+                    "children": [], 
+                    "footnote_refs": [], 
+                    "page": 44235, 
+                    "paragraphs": [
+                        "Consistent with 12 U.S.C. 3803, the term \u201cState law\u201d is defined as a State constitution, statute, or regulation or any provision thereof."
+                    ], 
+                    "title": "(e) State Law"
+                }
+            ], 
+            "footnote_refs": [], 
+            "labels": [
+                "1004-2"
+            ], 
+            "page": 44232, 
+            "paragraphs": [], 
+            "title": "Section 1004.2 Definitions"
+        }, 
+        {
+            "children": [], 
+            "footnote_refs": [
+                {
+                    "offset": 211, 
+                    "paragraph": 1, 
+                    "reference": "62"
+                }, 
+                {
+                    "offset": 609, 
+                    "paragraph": 1, 
+                    "reference": "63"
+                }, 
+                {
+                    "offset": 189, 
+                    "paragraph": 2, 
+                    "reference": "64"
+                }, 
+                {
+                    "offset": 513, 
+                    "paragraph": 2, 
+                    "reference": "65"
+                }, 
+                {
+                    "offset": 674, 
+                    "paragraph": 3, 
+                    "reference": "66"
+                }
+            ], 
+            "labels": [
+                "1004-3"
+            ], 
+            "page": 44235, 
+            "paragraphs": [
+                "Section 1004.3 provides that a state housing creditor may make, purchase, and enforce alternative mortgage transactions in accordance with the requirements of \u00a7 1004.4(a) through (c) (as applicable), notwithstanding any provision of State law that restricts the ability of the housing creditor to adjust or renegotiate an interest rate or finance charge with respect to the transaction or to change the amount of interest or finance charges included in a regular periodic payment as a result of such an adjustment or renegotiation. This regulation generally tracks the language and structure of 12 U.S.C. 3803, as amended by the Dodd-Frank Act. However, in order to implement the purposes of the Dodd-Frank Act's amendments to AMTPA, \u00a7 1004.3 interprets and clarifies the amended preemption standard in 12 U.S.C. 3803(c) in several respects.", 
+                "As an initial matter, the amendments to 12 U.S.C. 3803(c) narrowed the scope of preemption to apply only to state laws that \u201c <em data-original=\"E-03\">prohibit</em> [] an alternative mortgage transaction.&#8221;\n             Although it is unclear from the statutory text what types of state laws prohibit alternative mortgage transactions for purposes of AMTPA, the amendments to 12 U.S.C. 3803(c) clarify that an alternative mortgage transaction is not prohibited by a state law that &#8220;regulates mortgage transactions generally, including any restriction on prepayment penalties or late charges.&#8221;\n            \n          ", 
+                "Neither AMTPA nor the Dodd-Frank Act specifically define the term \u201cprohibit.\u201d However, that term is generally understood to mean forbid by law or to otherwise prevent or hinder an activity.\n             Furthermore, the purpose of AMTPA remains providing state housing creditors \u201cwith parity with federally chartered institutions by authorizing all housing creditors to make, purchase, and enforce alternative mortgage transactions so long as the transactions are in conformity with [federal] regulations. * * * \u201d\n             This purpose would be thwarted if AMTPA were interpreted not to preempt state laws imposing restrictions on state housing creditors' ability to adjust interest rates and finance charges where such restrictions do not apply to federal housing creditors, as the ability to make such adjustments is integral to alternative mortgage transactions. Accordingly, because 12 U.S.C. 3802(1) defines an alternative mortgage transaction as a transaction \u201cin which the interest rate or finance charge may be adjusted or renegotiated,\u201d the interim final rule construes \u201cprohibit\u201d to include not only state laws banning the making, purchase, or enforcement of alternative mortgage transactions, but also state laws that restrict or hinder the adjustment or renegotiation of an interest rate or finance charge. For example, as explained in comment 2, state laws are preempted to the extent that they restrict the circumstances under which a rate may be adjusted, the method by which a rate may be adjusted, or the amount of a rate adjustment.", 
+                "Similarly, \u00a7 1004.3 provides that state laws are preempted with respect to alternative mortgage transactions to the extent that they restrict the ability of a state housing creditor to change the amount of a payment to include increased interest or finance charges as a result of the adjustment or renegotiation of an interest rate or finance charge. The CFPB believes that such changes to payment amounts are also integral to alternative mortgage transactions. Indeed, if housing creditors were not permitted to increase the payment amount to account for an increase in the interest rate, the transaction could negatively amortize, which would be harmful to some consumers.\n            \n          ", 
+                "Comment 1 clarifies that, regardless of whether a state law applies solely to alternative mortgage transactions or applies to both alternative mortgage transactions and other mortgage or consumer credit transactions, that law is preempted by \u00a7 1004.3 to the extent that it restricts the ability of a state housing creditor to adjust or renegotiate an interest rate or finance charge with respect to an alternative mortgage transaction or to adjust payments as a result of such an adjustment or renegotiation. Thus, the preemption regime under \u00a7 1004.3 is not tied to whether a state law by its terms applies solely to alternative mortgage transactions.", 
+                "Although the amendments to 12 U.S.C. 3803(c) indicate that state laws that regulate mortgage transactions generally are not preempted, the CFPB believes that narrowly focusing on whether a state law is by its terms general or specific would undermine the key determination of whether a state law <em data-original=\"E-03\">prohibits</em> an alternative mortgage transaction's adjustment or renegotiation of an interest rate or finance charge or changes to payments as a result of the adjustment or renegotiation. For example, applying preemption to any state law that specifically addresses alternative mortgage transactions would preempt state laws that do not prohibit alternative mortgage transactions because they do not forbid, prevent, or hinder the ability of the state housing creditor to make such transactions (such as a state law requiring that certain disclosures be provided regarding alternative mortgage transactions). Furthermore, this approach would shield from preemption state laws that might be couched in general terms but effectively prohibit an alternative mortgage transaction (for example, a law prohibiting increases in an interest rate based on increases in an index). Finally, focusing solely on whether a state law is specific to alternative mortgage transactions or more general in its terms could lead to anomalous results if, for example, one state prohibited certain conduct in a statute that specifically applied to alternative mortgage transactions while another state prohibited the same conduct in a statute that applied generally to all mortgage transactions. For these reasons, the CFPB believes that it would be inconsistent with the goals of the Dodd-Frank Act amendments to make AMTPA preemption determinations based solely on whether a state law was specific or general by its terms.", 
+                "Comment 2 also clarifies that state law restrictions on shared equity or shared appreciation transactions in which the creditor and the consumer share some or all of the appreciation in the value of the property are preempted by \u00a7 1004.3. As discussed above, such transactions are alternative mortgage transactions under \u00a7 1004.2(a). However, the CFPB solicits comment on whether additional protections are needed with respect to these types of transactions. The CFPB also solicits comment on the volume of these transactions.", 
+                "In addition, comment 2 clarifies that state law underwriting requirements are preempted by \u00a7 1004.3 to the extent that they effectively restrict the adjustment or renegotiation of interest rates or finance charges or changes in payments as a result of such adjustments or renegotiations. For example, if a state law requires housing creditors to underwrite based on the maximum contractual rate, that particular provision of the law is preempted by \u00a7 1004.3 with respect to alternative mortgage transactions, regardless of whether the provision applies solely to alternative mortgage transactions or to both alternative mortgage transactions and other mortgage or consumer credit transactions. In contrast, state underwriting requirements of general applicability that do not impact the adjustment or renegotiation of interest rates or finance charges or changes in payments as a result of such adjustments or renegotiations are not preempted. (However, as discussed below, \u00a7 1004.4(c) requires state housing creditors that invoke AMTPA preemption to comply Regulation Z's underwriting requirements for high-cost and higher-cost mortgages.)", 
+                "In contrast, comment 3 provides examples of state laws that are not preempted by \u00a7 1004.3 because they do not restrict the ability of the housing creditor to adjust or renegotiate an interest rate or finance charge or to change the amount of a payment as a result of such an adjustment or renegotiation. In particular, the comment states that, consistent with the amended 12 U.S.C. 3803(c), state law restrictions on prepayment penalties and late charges are not preempted by \u00a7 1004.3 regardless of whether the restriction applies solely to alternative mortgage transactions or to both alternative mortgage transactions and other mortgage or consumer credit transactions. Such a restriction does not prohibit or hinder a feature integral to an alternative mortgage transaction. The comment further clarifies that an increase in an interest rate or finance charge as a result of a late payment is a late charge for purposes of \u00a7 1004.3. Therefore, a state law that prohibits state housing creditors from increasing a consumer's interest rate as a result of a late payment is not preempted by \u00a7 1004.3.", 
+                "In addition, comment 3 clarifies that state law restrictions on transactions in which one or more of the regular periodic payments may result in an increase in the principal balance (a negative amortization feature) or may be applied solely to accrued interest and not to loan principal (an interest-only feature) are not preempted by \u00a7 1004.3. The comment also clarifies that state law disclosure requirements are not preempted by \u00a7 1004.3 regardless of whether the law applies specifically to alternative mortgage transactions because disclosure requirements do not prohibit a state housing creditor from adjusting or renegotiating an interest rate or finance charge or making a corresponding change to a payment. Finally, the CFPB notes that, as a general matter, state laws prohibiting unfair or deceptive acts or practices are not preempted under 12 U.S.C. 3803(c) or this interim final rule.", 
+                "The CFPB seeks comment on all aspects of \u00a7 1004.3(b) and on whether particular state laws should or should not be subject to AMTPA preemption. The CFPB notes, however, that nothing in this interim final rule affects the preemption of state law under provisions of federal law other than AMTPA."
+            ], 
+            "title": "Section 1004.3 Preemption of State law."
+        }, 
+        {
+            "children": [
+                {
+                    "children": [], 
+                    "footnote_refs": [
+                        {
+                            "offset": 662, 
+                            "paragraph": 1, 
+                            "reference": "69"
+                        }, 
+                        {
+                            "offset": 298, 
+                            "paragraph": 3, 
+                            "reference": "70"
+                        }, 
+                        {
+                            "offset": 601, 
+                            "paragraph": 3, 
+                            "reference": "71"
+                        }, 
+                        {
+                            "offset": 273, 
+                            "paragraph": 4, 
+                            "reference": "72"
+                        }
+                    ], 
+                    "page": 44237, 
+                    "paragraphs": [
+                        "Section 1004.4(a) of the interim final rule provides standards by which creditors making alternative mortgage transactions with adjustable rates or finance charges may increase the interest rate or finance charge. To rely on AMTPA's preemption provision, creditors making alternative mortgage transactions that are open-end home equity lines of credit subject to the Regulation Z requirements in 12 CFR 226.5b must comply with \u00a7 226.5b's requirement that changes in the annual percentage rate be made according to a publicly available index that is not subject to the creditor's control.", 
+                        "For closed-end alternative mortgage transactions involving an adjustable rate or finance charge, the interim final rule provides that adjustments must be made based on either: (1) an index outside the creditor's control to which changes in the interest rate are tied; or (2) a formula or schedule identifying the amount by which the interest rate or finance charge may increase and the times at which, or circumstances under which, a change may be made. The content of these rules is similar to the OCC and OTS regulations for national banks and federal thrifts, respectively, that were previously designated as applicable to state housing creditors under AMTPA.\n             Pursuant to its authority under Section 1405(a) of the Dodd-Frank Act (15 U.S.C. 1639b(e)(1)), the CFPB finds that the adoption of the standards in \u00a7 1004.4(a) as part of this interim final rule is necessary and proper to ensure that responsible, affordable mortgage credit remains available to consumers. Nevertheless, the CFPB seeks comment on whether additional or different requirements are more appropriate to protect consumers and promote parity between federal and state housing creditors.", 
+                        "Comment 4(a)-1 clarifies that a creditor may use any measure of index values that meets the requirements in \u00a7 1004.4(a)(2)(i). For example, the index may be either single values as of a specific date or an average of values calculated over a specified period.", 
+                        "Comment 4(a)-2 clarifies that an index is not beyond the creditor's control if the index is the creditor's own prime rate or cost of funds. A creditor is permitted to use a published prime rate, such as the prime rate published in the <em data-original=\"E-03\">Wall Street Journal.</em>\n            \n             The CFPB notes that, in other contexts, the Federal Reserve Board has concluded that a creditor's use of &#8220;rate floors&#8221; (in other words, minimum values below which the interest rate will not fall regardless of the index value) constituted control over the operation of an index.\n             Although the CFPB has not adopted that interpretation in this interim final rule, it seeks comment on whether it is appropriate to do so in a permanent final regulation implementing the amendments to AMTPA.", 
+                        "Comment 4(a)-3 clarifies that a publicly available index need not be published in a newspaper, but it must be one the consumer can independently obtain (by telephone, for example) and use to verify the annual percentage rate applied to the alternative mortgage transaction.\n            \n          "
+                    ], 
+                    "title": "(a) Adjustable rate mortgages."
+                }, 
+                {
+                    "children": [], 
+                    "footnote_refs": [
+                        {
+                            "offset": 376, 
+                            "paragraph": 1, 
+                            "reference": "73"
+                        }
+                    ], 
+                    "page": 44238, 
+                    "paragraphs": [
+                        "Renegotiable rates and renewable balloon-payment mortgages were not specifically discussed in the mortgage rules previously designated as applicable to state housing creditors under AMTPA by the OCC, NCUA, and OTS. However, pursuant to its authority under Section 1405(a) of the Dodd-Frank Act (15 U.S.C. 1639b(e)(1)), the CFPB finds that adoption of the standards in \u00a7 1004.4(b) as part of this interim final rule is necessary and proper to ensure that responsible, affordable mortgage credit remains available to consumers.", 
+                        "As discussed above, a renewable balloon-payment mortgage is generally a transaction in which payments are based on an amortization period and a large final payment is due after a shorter term, but the borrower has the option to renew the transaction at specified intervals throughout the amortization period at the interest rate offered by the creditor at the time of renewal.\n             To rely on AMTPA's preemption provision, creditors making such transactions must provide a written commitment to renew the transaction at specified intervals throughout the amortization period. Under the terms of the written commitment, the creditor may negotiate an increase or decrease in the interest rate at renewal.", 
+                        "The CFPB believes that a written commitment is necessary to ensure that balloon-payment mortgages made under AMTPA are provided responsibly. However, the CFPB also believes that, based on safety and soundness and other considerations, creditors should not be required to renew the loan in certain limited circumstances. Accordingly, the CFPB has adopted exceptions to the renewal requirement based on the exceptions in 12 CFR 226.5b(f)(2), which permit a creditor to terminate a home-equity line of credit and demand payment of the outstanding balance. The CFPB has modified the \u00a7 226.5b(f)(2) exceptions to ensure that a creditor generally cannot decline to renew a balloon-payment loan under \u00a7 1004.4(b) unless there has been a material change in circumstance.", 
+                        "Therefore, \u00a7 1004.4(b) provides that the creditor is not required to renew the transaction if: (1) Any action or inaction by the consumer materially and adversely affects the creditor's security for the transaction or any right of the creditor in such security; (2) there is a material failure by the consumer to meet the repayment terms of the transaction; (3) there is fraud or a willful or knowing material misrepresentation by the consumer in connection with the transaction; or (4) Federal law dealing with credit extended by a depository institution to its executive officers specifically requires that as a condition of the extension the credit shall become due and payable on demand, provided that the creditor includes such a provision in the initial agreement.", 
+                        "The CFPB seeks comment on whether the written commitment requirement and the exceptions in \u00a7 1004.4(b) are appropriate to protect consumers, promote access to responsible credit, and enhance parity between federal and state housing creditors."
+                    ], 
+                    "title": "(b) Renegotiable rates for balloon-payment mortgages."
+                }, 
+                {
+                    "children": [], 
+                    "footnote_refs": [
+                        {
+                            "offset": 687, 
+                            "paragraph": 0, 
+                            "reference": "74"
+                        }, 
+                        {
+                            "offset": 514, 
+                            "paragraph": 1, 
+                            "reference": "75"
+                        }, 
+                        {
+                            "offset": 705, 
+                            "paragraph": 1, 
+                            "reference": "76"
+                        }
+                    ], 
+                    "page": 44238, 
+                    "paragraphs": [
+                        "Section 1004.4(c) provides that, if an alternative mortgage transaction is a \u201chigh-cost\u201d loan subject to 12 CFR 226.32, the creditor must comply with 12 CFR 226.32 and 12 CFR 226.34. In addition, if an alternative mortgage transaction is a \u201chigher-priced mortgage loan\u201d subject to 12 CFR 226.35, the creditor must comply with 12 CFR 226.35. These provisions of Regulation Z contain underwriting requirements and restrictions on loan terms for certain types of loans with higher costs. Because the interim final rule preempts some state underwriting requirements, the CFPB believes it is appropriate to require creditors to comply with these provisions in order to obtain that preemption.\n             Pursuant to its authority under Section 1405(a) of the Dodd-Frank Act (15 U.S.C. 1639b(e)(1)), the CFPB finds that the adoption of \u00a7 1004.4(c) as part of this interim final rule is necessary and proper to ensure that responsible, affordable mortgage credit remains available to consumers.", 
+                        "Comment 1004.3(c)-1 clarifies that creditors must comply with the restrictions on prepayment penalties in Regulation Z, if applicable. However, as discussed above, creditors are <em data-original=\"E-03\">not</em> exempt under AMTPA and &#167; 1004.3 from state laws regarding prepayment penalties. Thus, with respect to prepayment penalties, creditors must comply with both Regulation Z and with state law unless another basis for preemption exists (such as because the state law is inconsistent with Regulation Z).\n             For example, if a loan is a higher-priced mortgage loan under 12 CFR 226.35, it may not have a prepayment penalty unless the penalty expires within two years after consummation.\n             However, if a state law prohibited prepayment penalties unless the penalty expires within one year, that state law would not be preempted by AMTPA (or by Regulation Z).", 
+                        "The CFPB seeks comment on the inclusion of these requirements in \u00a7 1004.4(c) and on whether additional underwriting requirements are warranted. In particular, the CFPB requests comment on whether, once the regulations implementing the ability-to-pay requirements in TILA Section 129C (15 U.S.C. 1639c) are finalized, all or part of those regulations should be incorporated into \u00a7 1004.4(c)."
+                    ], 
+                    "title": "(c) Requirements for High-Cost and Higher-Priced Mortgage Loans"
+                }, 
+                {
+                    "children": [], 
+                    "footnote_refs": [], 
+                    "page": 44239, 
+                    "paragraphs": [
+                        "Because \u00a7 1004.4 applies to all creditors on July 22, 2012, the interim final rule provides \u00a7 1004.4(d) as an alternative to compliance with \u00a7 1004.4(a) through (c) for creditors that do not seek preemption under \u00a7 1004.3. Specifically, \u00a7 1004.4(d) permits a housing creditor that is not making an alternative mortgage transaction pursuant to \u00a7 1004.3 to make that transaction consistent with applicable state or federal law other than \u00a7 1004.4. Thus, for example, a state housing creditor that does not invoke AMTPA preemption can make an alternative mortgage transaction consistent with applicable state law as well as applicable federal law other than \u00a7 1004.4. Similarly, a federally chartered housing creditor can make an alternative mortgage transaction consistent with federal law other than \u00a7 1004.4 (including any requirements imposed by the chartering agency and the requirements for high-cost and higher-priced mortgage loans found in 12 CFR 226.32, 12 CFR 226.34, and 12 CFR 226.35) as well as any applicable state law.", 
+                        "Particularly in view of the fact that this interim final rule is being published without notice and comment, the CFPB believes that this provision is necessary and appropriate to enable housing creditors that are not using AMTPA preemption to make alternative mortgage transactions to continue making such transactions in accordance with applicable federal or state standards. The CFPB believes that this interim final rule strikes an appropriate short-term balance that will promote greater parity between federal and state housing creditors, continued access to credit on currently-available terms, and consumer protection while reflecting the narrowed scope of AMTPA preemption under the Dodd-Frank Act. The CFPB seeks comment on both the short-term impacts of this provision and on potential long-term standards under \u00a7 1004.4 that would apply to all creditors or a defined subset of creditors. In addition, the CFPB seeks comment on whether it should utilize sources of statutory authority other than TILA to issue regulations governing alternative mortgage transactions.", 
+                        "Comment 4(d)-1 clarifies that \u00a7 1004.4(d) does not exempt housing creditors that do not seek preemption under \u00a7 1004.3 from complying with provisions of federal law that are incorporated by reference in \u00a7 1004.4. Specifically, nothing in \u00a7 1004.4(d) exempts a housing creditor from complying with 12 CFR 226.5b, 226.32, 226.34, or 226.35."
+                    ], 
+                    "title": "(d) Other Applicable Law"
+                }, 
+                {
+                    "children": [], 
+                    "footnote_refs": [], 
+                    "page": 44239, 
+                    "paragraphs": [
+                        "Section 1004.4(e) of the interim final rule provides that a creditor may always decrease the interest rate or finance charge on an alternative mortgage transaction without violating \u00a7 1004.4. The OCC regulations that are designated as applicable to state housing creditors contain a similar provision, and the CFPB believes it is appropriate to replicate that provision here because interest rate and finance charge reductions are beneficial to consumers."
+                    ], 
+                    "title": "(e) Reductions in interest rate or finance charge."
+                }
+            ], 
+            "footnote_refs": [
+                {
+                    "offset": 429, 
+                    "paragraph": 0, 
+                    "reference": "67"
+                }, 
+                {
+                    "offset": 739, 
+                    "paragraph": 2, 
+                    "reference": "68"
+                }
+            ], 
+            "labels": [
+                "1004-4"
+            ], 
+            "page": 44237, 
+            "paragraphs": [
+                "Section 1083 of the Dodd-Frank Act requires the CFPB to promulgate its own regulations governing alternative mortgage transactions after the designated transfer date. The CFPB is also required to review and determine whether the regulations governing alternative mortgage transactions designated by the OCC and NCUA pursuant to AMTPA are \u201cfair, not deceptive, and consistent with the purposes of [title X of the Dodd-Frank Act].\u201d\n\n             The CFPB believes that it is consistent with the intent and purpose of Section 1083 to interpret this provision as requiring the CFPB to determine whether the OCC and NCUA regulations are effective in <em data-original=\"E-03\">preventing</em> unfair or deceptive practices. In addition, although this provision does not require the CFPB to review OTS AMTPA regulations, the CFPB believes that it is appropriate to do so in order to predict potential impacts on the marketplace.", 
+                "Accordingly, the CFPB has completed an initial review of the regulations designated by the OCC, NCUA, and OTS as well as agency interpretive guidance, available court decisions, and secondary sources. Based on this review, the CFPB has made a preliminary determination that certain of those regulations are necessary to prevent unfairness and deception and are consistent with the purposes of title X of the Dodd-Frank Act. The CFPB has adopted those regulations in modified form in \u00a7 1004.4(a) and (b) of the interim final rule. However, the CFPB believes that additional research, consultation, and comment are needed before adoption of a permanent final rule. The CFPB therefore seeks comment on whether the requirements in \u00a7 1004.4 are sufficient to prevent unfair or deceptive acts or practices, whether modifications to those requirements are appropriate, and whether additional protections are needed.", 
+                "As discussed above, the CFPB is issuing \u00a7 1004.4 pursuant to its authority under TILA, which applies to all \u201ccreditors\u201d as defined by Regulation Z. Thus, \u00a7 1004.4 applies to all federal and state housing creditors that make alternative mortgage transactions. However, because there has not yet been an opportunity for notice and comment on the requirements in \u00a7 1004.4(a) through (c), the CFPB has delayed mandatory compliance with \u00a7 1004.4 until July 21, 2012 for federal housing creditors and for state housing creditors that are not relying on preemption of state law under \u00a7 1004.3. Accordingly, only state housing creditors that choose to seek AMTPA preemption under \u00a7 1004.3 are required to comply with \u00a7 1004.4 before July 22, 2012.\n            \n          ", 
+                "The CFPB's interim final rule is designed to protect consumers and preserve access to credit and federal-state parity while also providing an orderly transition period while the notice-and-comment rulemaking process occurs. Because the OCC, NCUA, and OTS AMTPA rules vary significantly in substance and scope and because the CFPB's rules must account for the Dodd-Frank Act amendments to AMTPA, the CFPB has concluded that it would not be practicable or appropriate to simply replicate the three pre-existing sets of regulations in the CFPB's interim final rule. However, the CFPB has adopted standards and language that are comparable to central elements of those regulations where it was consistent with the Dodd-Frank Act and otherwise appropriate to do so.", 
+                "The CFPB did consider simply requiring state housing creditors to comply with all requirements of federal law in order to receive AMTPA preemption. However, because state housing creditors are already required to comply with TILA and other applicable provisions of federal law that fall within the CFPB's authority, such an approach would be redundant and unnecessary and could cause confusion regarding the scope of preemption under \u00a7 1004.3. Instead, as discussed below, that CFPB has designated specific provisions of Regulation Z in \u00a7 1004.4.", 
+                "The CFPB notes that AMTPA provides an opportunity to cure violations of federal alternative mortgage transaction regulations that may be helpful to state housing creditors as they make adjustments necessary to comply with the interim final rule. Specifically, 12 U.S.C. 3803(b) provides that, where a state housing creditor has failed to comply with the alternative mortgage transaction regulations for federally chartered housing creditors, an alternative mortgage transaction will nonetheless be deemed to be made in accordance with the applicable regulation if: \u201c(1) The transaction is in substantial compliance with the regulation; and (2) within sixty days of discovering any error the housing creditor corrects such error, including making appropriate adjustments, if any, to the account.\u201d"
+            ], 
+            "title": "Section 1004.4 Requirements for Alternative Mortgage Transactions"
+        }
+    ]
+}
