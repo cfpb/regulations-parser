@@ -89,7 +89,6 @@ def build_tree(reg_xml):
     return tree
 
 
-
 def get_subpart_title(subpart_xml):
     hds = subpart_xml.xpath('./HD')
     return [hd.text for hd in hds][0]
