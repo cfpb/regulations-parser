@@ -1,7 +1,6 @@
 import codecs
 import logging
 import sys
-import unicodedata
 
 try:
     import requests_cache
@@ -31,20 +30,19 @@ if __name__ == "__main__":
     with codecs.open(sys.argv[1], 'r', 'utf-8') as f:
         reg = f.read()
 
-    #pub_date = sys.argv[3]
-    # doc_number = sys.argv[3]
-
     #   First, the regulation tree
-    #Build = Builder()
     reg_tree = Builder.reg_tree(reg)
 
     title = int(sys.argv[2])
     title_part = reg_tree.label_id()
-    #print reg_tree
+
+    #   Grab publication date from XML 
     pub_date = reg_tree.original_date
-    print pub_date
+
+    #   Grab oldest document number from Federal register API
     doc_number = fetch_doc_number_json(title, title_part, pub_date, only_final=True)
-    print doc_number
+
+    #   Run Builder
     builder = Builder(cfr_title=title,
                       cfr_part=title_part,
                       doc_number=doc_number)
