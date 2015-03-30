@@ -27,6 +27,32 @@ class RegTextTest(TestCase):
         self.assertEqual([], child.children)
         self.assertEqual(['8675', '309', 'a'], child.label)
 
+    def test_build_from_section_unnumbered_defs(self):
+        xml = u"""
+            <SECTION>
+                <SECTNO>§ 8675.309</SECTNO>
+                <SUBJECT>Definitions.</SUBJECT>
+                <P>(a) This is what things mean:</P>
+                <P>foo means bar</P>
+                <P>bop means baz</P>
+            </SECTION>
+        """
+        node = build_from_section('8675', etree.fromstring(xml))[0]
+        self.assertEqual('', node.text.strip())
+        self.assertEqual(1, len(node.children))
+        self.assertEqual(['8675', '309'], node.label)
+
+        child = node.children[0]
+        self.assertEqual('(a) This is what things mean:', child.text.strip())
+        self.assertEqual(2, len(child.children))
+        self.assertEqual(['8675', '309', 'a'], child.label)
+
+        grandchild = child.children[0]
+        self.assertEqual('foo means bar', grandchild.text.strip())
+        self.assertEqual([], grandchild.children)
+        self.assertEqual(['8675', '309', 'Foo'], grandchild.label)
+
+
     def test_build_from_section_collapsed_level(self):
         xml = u"""
         <SECTION>

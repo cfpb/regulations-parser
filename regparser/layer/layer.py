@@ -23,6 +23,7 @@ class Layer():
 
         return NotImplemented
 
+    # @profile
     def builder(self, node, cache=None):
         if cache:
             layer_element = cache.fetch_or_process(self, node)
@@ -34,6 +35,7 @@ class Layer():
         for c in node.children:
             self.builder(c, cache)
 
+    # @profile
     def build(self, cache=None):
         self.pre_process()
         self.builder(self.tree, cache)

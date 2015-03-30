@@ -61,7 +61,8 @@ for idx, level in enumerate(p_levels):
                            + Suppress(')'))
     _first_markers.append(marker)
 
-
+    
+# @profile
 def get_collapsed_markers(text):
     """Not all paragraph markers are at the beginning of of the text. This
     grabs inner markers like (1) and (i) here:
