@@ -11,8 +11,9 @@ from regparser.layer import (
     table_of_contents, terms)
 from regparser.notice.compiler import compile_regulation
 from regparser.tree import struct
-from regparser.tree.build import build_whole_regtree
+# from regparser.tree.build import build_whole_regtree
 from regparser.tree.xml_parser import reg_text
+
 
 class Builder(object):
     """Methods used to build all versions of a single regulation, their
@@ -93,7 +94,10 @@ class Builder(object):
         if reg_str[:1] == '<':  # XML
             return reg_text.build_tree(reg_str)
         else:
-            return build_whole_regtree(reg_str)
+            raise ValueError("Building from text input is no longer "
+                             "supported")
+            # return build_whole_regtree(reg_str)
+
 
 class LayerCacheAggregator(object):
     """A lot of the reg tree remains the same between versions; we don't

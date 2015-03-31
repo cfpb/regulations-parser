@@ -64,9 +64,8 @@ def build_tree(reg_xml):
 
     reg_part = get_reg_part(doc)
     title = get_title(doc)
-    original_date = get_original_date(doc)
 
-    tree = Node("", [], [reg_part], title, original_date)
+    tree = Node("", [], [reg_part], title)
 
     part = doc.xpath('//PART')[0]
 
