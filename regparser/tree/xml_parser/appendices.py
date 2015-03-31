@@ -131,6 +131,7 @@ class AppendixProcessor(object):
         #   Look through parents to determine which level this should be
         else:
             self.header_count += 1
+
             n = Node(node_type=Node.APPENDIX, title=text,
                      label=['h' + str(self.header_count)],
                      source_xml=xml_node)
@@ -324,7 +325,7 @@ def parsed_title(text, appendix_letter):
                         + Optional(grammar.paren_upper | grammar.paren_lower)
                         + Optional(grammar.paren_digit))
     part_roman_parser = Marker("part") + grammar.aI
-    parser = LineStart() + (digit_str_parser | part_roman_parser)
+    parser = LineStart() + (digit_str_parser | part_roman_parser | grammar.roman_upper)
 
     for match, _, _ in parser.scanString(text):
         return match
@@ -343,12 +344,14 @@ def title_label_pair(text, appendix_letter):
             return (match.a1, 2)
         elif match.aI:
             return (match.aI, 2)
+        elif match.roman_upper:
+            return (match.roman_upper, 2)
 
 
 def initial_marker(text):
     parser = (grammar.paren_upper | grammar.paren_lower | grammar.paren_digit
               | grammar.period_upper | grammar.period_digit
-              | grammar.period_lower)
+              | grammar.period_lower | grammar.roman_upper)
     for match, start, end in parser.scanString(text):
         if start != 0:
             continue

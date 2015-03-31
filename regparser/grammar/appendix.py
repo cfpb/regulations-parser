@@ -30,3 +30,5 @@ paren_digit = parenthesize(string.digits, "paren_digit")
 period_upper = decimalize(string.ascii_uppercase, "period_upper")
 period_lower = decimalize(string.ascii_lowercase, "period_lower")
 period_digit = decimalize(string.digits, "period_digit")
+
+roman_upper = decimalize('IVXLCDM', "roman_upper")
