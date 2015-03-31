@@ -38,6 +38,8 @@ if __name__ == "__main__":
     title_part = reg_tree.label_id()
 
     doc_number = Builder.determine_doc_number(reg, title, title_part)
+    if not doc_number:
+        raise ValueError("Could not determine document number")
 
     #   Run Builder
     builder = Builder(cfr_title=title,

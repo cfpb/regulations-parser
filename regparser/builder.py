@@ -177,7 +177,7 @@ def _fr_doc_to_doc_number(xml):
     frdoc_els = xml.xpath('//FRDOC')
     if len(frdoc_els) > 0:
         frdoc_pieces = frdoc_els[0].text.split()
-        if len(frdoc_pieces) > 2 and frdoc_pieces[:2] == ['FR', 'Doc.']:
+        if len(frdoc_pieces) > 2 and frdoc_pieces[:2] == ['[FR', 'Doc.']:
             return frdoc_pieces[2]
 
 
