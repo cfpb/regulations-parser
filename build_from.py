@@ -2,7 +2,6 @@ import codecs
 import logging
 import sys
 
-from lxml import etree
 
 try:
     import requests_cache
@@ -14,8 +13,6 @@ except ImportError:
 
 from regparser.diff import treediff
 from regparser.builder import Builder, LayerCacheAggregator
-from regparser.federalregister import fetch_doc_number_json
-from regparser.tree.xml_parser.reg_text import get_original_date
 
 
 logger = logging.getLogger('build_from')
@@ -40,13 +37,7 @@ if __name__ == "__main__":
     title = int(sys.argv[2])
     title_part = reg_tree.label_id()
 
-    #   Grab publication date from XML
-    #   @todo - move this out of build_from
-    pub_date = get_original_date(etree.fromstring(reg))
-
-    #   Grab oldest document number from Federal register API
-    doc_number = fetch_doc_number_json(title, title_part, pub_date,
-                                       only_final=True)
+    doc_number = Builder.determine_doc_number(reg, title, title_part)
 
     #   Run Builder
     builder = Builder(cfr_title=title,
