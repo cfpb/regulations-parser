@@ -10,9 +10,8 @@ class Node(object):
 
     INTERP_MARK = 'Interp'
 
-    def __init__(
-        self, text='', children=[], label=[], title=None, original_date=None,
-            node_type=REGTEXT, source_xml=None):
+    def __init__(self, text='', children=[], label=[], title=None,
+                 node_type=REGTEXT, source_xml=None):
 
         self.text = unicode(text)
 
@@ -24,12 +23,11 @@ class Node(object):
         self.title = title or None
         self.node_type = node_type
         self.source_xml = source_xml
-        self.original_date = original_date or None 
 
     def __repr__(self):
-        return (("Node( text = %s, children = %s, label = %s, title = %s, original_date= %s, "
+        return (("Node( text = %s, children = %s, label = %s, title = %s, "
                 + "node_type = %s)") % (repr(self.text), repr(self.children),
-                repr(self.label), repr(self.title), repr(self.original_date), repr(self.node_type)))
+                repr(self.label), repr(self.title), repr(self.node_type)))
 
     def __cmp__(self, other):
         return cmp(repr(self), repr(other))

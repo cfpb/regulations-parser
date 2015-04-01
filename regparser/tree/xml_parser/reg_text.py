@@ -37,12 +37,6 @@ def get_title(reg_doc):
     title = parent.text
     return title
 
-def get_original_date(reg_doc):
-    """ Extract the original date of the regulation. """
-    parent = reg_doc.xpath('//FDSYS/ORIGINALDATE')[0]
-    originaldate = parent.text
-    return originaldate
-
 
 def preprocess_xml(xml):
     """This transforms the read XML through macros. Each macro consists of
@@ -64,9 +58,8 @@ def build_tree(reg_xml):
 
     reg_part = get_reg_part(doc)
     title = get_title(doc)
-    original_date = get_original_date(doc)
 
-    tree = Node("", [], [reg_part], title, original_date)
+    tree = Node("", [], [reg_part], title)
 
     part = doc.xpath('//PART')[0]
 

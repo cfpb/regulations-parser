@@ -90,6 +90,40 @@ class BuilderTests(TestCase):
         arg = write.call_args_list[3][0][0]
         self.assertEqual(['1234-1-b'], list(sorted(arg.keys())))
 
+    def test_determine_doc_number_fr(self):
+        """Verify that a document number can be pulled out of an FR notice"""
+        xml_str = """
+        <RULE>
+            <FRDOC>[FR Doc. 2011-31715 Filed 12-21-11; 8:45 am]</FRDOC>
+            <BILCOD>BILLING CODE 4810-AM-P</BILCOD>
+        </RULE>"""
+        self.assertEqual(
+            '2011-31715', Builder.determine_doc_number(xml_str, '00', '00'))
+
+    @patch('regparser.builder.fetch_notice_json')
+    def test_determine_doc_number_annual(self, fetch_notice_json):
+        """Verify that a document number can be pulled out of an annual
+        edition of the reg"""
+        fetch_notice_json.return_value = [
+            {'el': 1, 'document_number': '111-111'},
+            {'el': 2, 'document_number': '222-222'}]
+        xml_str = """<?xml version="1.0"?>
+        <?xml-stylesheet type="text/xsl" href="cfr.xsl"?>
+        <CFRGRANULE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:noNamespaceSchemaLocation="CFRMergedXML.xsd">
+            <FDSYS>
+                <CFRTITLE>12</CFRTITLE>
+                <DATE>2013-01-01</DATE>
+                <ORIGINALDATE>2012-01-01</ORIGINALDATE>
+            </FDSYS>
+        </CFRGRANULE>"""
+        self.assertEqual(
+            '111-111', Builder.determine_doc_number(xml_str, '12', '34'))
+        args = fetch_notice_json.call_args
+        self.assertEqual(('12', '34'), args[0])     # positional args
+        self.assertEqual({'max_effective_date': '2012-01-01',
+                          'only_final': True}, args[1])   # kw args
+
 
 class LayerCacheAggregatorTests(TestCase):
     def test_invalidate(self):
