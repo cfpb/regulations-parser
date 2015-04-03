@@ -1,7 +1,9 @@
 import copy
 
+from lxml import etree
+
 from regparser import api_writer, content
-from regparser.federalregister import fetch_notices
+from regparser.federalregister import fetch_notice_json, fetch_notices
 from regparser.history.notices import (
     applicable as applicable_notices, group_by_eff_date)
 from regparser.history.delays import modify_effective_dates
@@ -11,7 +13,7 @@ from regparser.layer import (
     table_of_contents, terms)
 from regparser.notice.compiler import compile_regulation
 from regparser.tree import struct
-from regparser.tree.build import build_whole_regtree
+# from regparser.tree.build import build_whole_regtree
 from regparser.tree.xml_parser import reg_text
 
 
@@ -94,7 +96,20 @@ class Builder(object):
         if reg_str[:1] == '<':  # XML
             return reg_text.build_tree(reg_str)
         else:
-            return build_whole_regtree(reg_str)
+            raise ValueError("Building from text input is no longer "
+                             "supported")
+            # return build_whole_regtree(reg_str)
+
+    @staticmethod
+    def determine_doc_number(reg_str, title, title_part):
+        """Instead of requiring the user provide a doc number, we can find it
+        within the xml file"""
+        # @todo: remove the double-conversion
+        reg_xml = etree.fromstring(reg_str)
+        doc_number = _fr_doc_to_doc_number(reg_xml)
+        if not doc_number:
+            doc_number = _fdsys_to_doc_number(reg_xml, title, title_part)
+        return doc_number
 
 
 class LayerCacheAggregator(object):
@@ -155,6 +170,28 @@ class LayerCacheAggregator(object):
             return self._caches[layer_name]
         else:
             return EmptyCache()
+
+
+def _fr_doc_to_doc_number(xml):
+    """Pull out a document number from an FR document, i.e. a notice"""
+    frdoc_els = xml.xpath('//FRDOC')
+    if len(frdoc_els) > 0:
+        frdoc_pieces = frdoc_els[0].text.split()
+        if len(frdoc_pieces) > 2 and frdoc_pieces[:2] == ['[FR', 'Doc.']:
+            return frdoc_pieces[2]
+
+
+def _fdsys_to_doc_number(xml, title, title_part):
+    """Pull out a document number from an FDSYS document, i.e. an annual
+    edition of a reg"""
+    original_date_els = xml.xpath('//FDSYS/ORIGINALDATE')
+    if len(original_date_els) > 0:
+        date = original_date_els[0].text
+        #   Grab oldest document number from Federal register API
+        notices = fetch_notice_json(title, title_part, only_final=True,
+                                    max_effective_date=date)
+        if notices:
+            return notices[0]['document_number']
 
 
 class LayerCache(object):

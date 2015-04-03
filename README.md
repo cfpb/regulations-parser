@@ -138,27 +138,19 @@ regulation E).
 The syntax is 
 
 ```bash
-$ python build_from.py regulation.ext title notice_doc_# act_title act_section
+$ python build_from.py regulation.ext title act_title act_section
 ```
 
 For example, to match regulation H in the quick start above:
 ```bash
-$ python build_from.py CFR-2012-title12-vol8-part1004.xml 12 2011-18676 15 1693
+$ python build_from.py CFR-2012-title12-vol8-part1004.xml 12 15 1693
 ```
 
 Here ```12``` is the CFR title number (in our case, for "Banks and
-Banking"), ```2011-18676``` is the last notice used to create this version
-(i.e. the last "final rule" which is currently in effect), ```15``` is the
+Banking"), ```15``` is the
 title of "the Act" and ```1693``` is the relevant section. Wherever the
 phrase "the Act" is used in the regulation, the external link parser will
-treat it as "15 U.S.C. 1693".  The final rule number is used to pull in
-section-by-section analyses and deduce which notices were used to create
-this version of the regulation. It also helps determine which notices to use
-when building additional versions of the regulation. To find the document
-number, use the [Federal Register](https://www.federalregister.gov/),
-finding the last, effective final rule for your version of the regulation
-and copying the document number from the meta data (currently in a table on
-the right side).
+treat it as "15 U.S.C. 1693".
 
 Running the command will generate four folders, ```regulation```,
 ```notice```, ``layer`` and possibly ``diff`` in the ```OUTPUT_DIR```

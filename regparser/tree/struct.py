@@ -10,9 +10,8 @@ class Node(object):
 
     INTERP_MARK = 'Interp'
 
-    def __init__(
-        self, text='', children=[], label=[], title=None,
-            node_type=REGTEXT, source_xml=None):
+    def __init__(self, text='', children=[], label=[], title=None,
+                 node_type=REGTEXT, source_xml=None):
 
         self.text = unicode(text)
 
