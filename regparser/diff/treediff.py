@@ -82,8 +82,8 @@ def convert_opcode(op, new_text_list, old_text_list):
     if code == INSERT:
         return convert_insert(op, old_text_list, new_text_list)
     elif code == DELETE:
-        #Deletes have an extra set of co-ordinates which
-        #we don't need.
+        # Deletes have an extra set of co-ordinates which
+        # we don't need.
         return convert_delete((DELETE, op[1], op[2]), old_text_list)
     elif code == REPLACE:
         del_op = convert_delete((DELETE, op[1], op[2]), old_text_list)
@@ -123,13 +123,25 @@ def node_to_dict(node):
     return node_dict
 
 
+def frozen_to_dict(node):
+    return {
+        'child_labels': [c.label_id for c in node.children],
+        'label': node.label,
+        'node_type': node.node_type,
+        'tagged_text': node.tagged_text or None,  # maintain backwards compat
+        'text': node.text,
+        'title': node.title or None,
+    }
+
+
 class Compare(object):
     """ Compare two regulation trees. """
 
-    #Operations on nodes.
+    # Operations on nodes.
     ADDED = 'added'
     MODIFIED = 'modified'
     DELETED = 'deleted'
+    DELETED_OP = {"op": DELETED}
 
     def __init__(self, older, newer):
         self.older = older
@@ -161,7 +173,7 @@ class Compare(object):
 
     def deleted_and_modified(self, node):
         """ This method identifies nodes that were in the old tree that were
-        deletd in the new tree. It also how other nodes were modified. This
+        deleted in the new tree. It also how other nodes were modified. This
         method is meant to be run per node in the old tree. """
 
         older_label = node.label_id()
@@ -197,3 +209,65 @@ class Compare(object):
     def as_json(self):
         """ Write out the changes. """
         return struct.NodeEncoder().encode(self.changes)
+
+
+def text_changes(lhs, rhs):
+    """Account for only text changes between nodes. This explicitly excludes
+    children"""
+    text_opcodes = get_opcodes(lhs.text, rhs.text)
+    title_opcodes = get_opcodes(lhs.title, rhs.title)
+    if text_opcodes or title_opcodes:
+        node_changes = {"op": Compare.MODIFIED}
+        if text_opcodes:
+            node_changes["text"] = text_opcodes
+        if title_opcodes:
+            node_changes["title"] = title_opcodes
+        return node_changes
+
+
+def nodes_added(lhs_list, rhs_list):
+    """Compare the lhs and rhs lists to see if the rhs contains elements not
+    in the lhs"""
+    added = []
+    lhs_codes = tuple(map(lambda n: n.label_id, lhs_list))
+    for node in rhs_list:
+        if node.label_id not in lhs_codes:
+            added.append(node)
+    return added
+
+
+def treediff(lhs, rhs):
+    """Recursively return a list of changes between the lhs and rhs. lhs and
+    rhs should be FrozenNodes. Note that this *does not* account for
+    reordering nodes."""
+    changes = []
+    if lhs == rhs:
+        return changes
+
+    # Changes just within the compared nodes (not their children)
+    if lhs.text != rhs.text or lhs.title != rhs.title:
+        node_changes = text_changes(lhs, rhs)
+        if node_changes:
+            changes.append((lhs.label_id, node_changes))
+
+    # Removed children. Note params reversed
+    for removed in nodes_added(rhs.children, lhs.children):
+        remove_ops = struct.walk(
+            removed,
+            lambda n: (n.label_id, Compare.DELETED_OP))
+        changes.extend(remove_ops)
+
+    # Added children
+    for added in nodes_added(lhs.children, rhs.children):
+        add_ops = struct.walk(
+            added,
+            lambda n: (n.label_id,
+                       {"op": Compare.ADDED, "node": frozen_to_dict(n)}))
+        changes.extend(add_ops)
+
+    # Modified children. Again, this does *not* account for reordering
+    for lhs_child in lhs.children:
+        for rhs_child in rhs.children:
+            if lhs_child.label_id == rhs_child.label_id:
+                changes.extend(treediff(lhs_child, rhs_child))
+    return changes

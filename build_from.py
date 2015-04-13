@@ -11,8 +11,9 @@ except ImportError:
     # HTTP requests rather than looking it up from the cache
     pass
 
-from regparser.diff import treediff
 from regparser.builder import Builder, LayerCacheAggregator
+from regparser.diff.treediff import treediff
+from regparser.tree.struct import FrozenNode
 
 
 logger = logging.getLogger('build_from')
@@ -73,11 +74,17 @@ if __name__ == "__main__":
                                          layer_cache, notices)
             layer_cache.replace_using(new_tree)
 
+        from time import time
+        start_time = time()
+        # convert to frozen trees
+        for doc in all_versions:
+            all_versions[doc] = FrozenNode.from_node(all_versions[doc])
+
         # now build diffs - include "empty" diffs comparing a version to itself
         for lhs_version, lhs_tree in all_versions.iteritems():
             for rhs_version, rhs_tree in all_versions.iteritems():
-                comparer = treediff.Compare(lhs_tree, rhs_tree)
-                comparer.compare()
+                changes = treediff(lhs_tree, rhs_tree)
                 builder.writer.diff(
                     reg_tree.label_id(), lhs_version, rhs_version
-                ).write(comparer.changes)
+                ).write(dict(changes))
+        print(time() - start_time)
