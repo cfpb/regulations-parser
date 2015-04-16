@@ -498,3 +498,41 @@ structure. AMDPARs, which contain the list of changes may also need to be
 simplified. If the same type of change needs to be made for multiple
 documents, consider adding a corresponding rule to the parser -- just test
 existing docs first.
+
+### Integration with regulations-core and regulations-site
+
+With the above examples, you should have been able to run the parser and
+generate some output. "But where's the website?" you ask. The parser was
+written to be as generic as possible, but integrating with `regulations-core`
+and `regulations-site` is likely where you'll want to end up. Here, we'll show
+one way to connect these applications up; see the individual repos for more
+configuration detail.
+
+Let's set up `regulations-core` first. This is an API which will be used to
+both store and query the regulation data.
+
+ 1. `git clone https://github.com/cfpb/regulations-core.git`
+ 1. `cd regulations-core`
+ 1. `pip install zc.buildout`
+ 1. `buildout   # pulls in python dependencies`
+ 1. `./bin/django syncdb --migrate`
+ 1. `./bin/django runserver 127.0.0.0:8888 &   # Starts the API`
+
+Then, we can configure the parser to write to this API and run it, here using
+the regulation H example above
+
+ 1. `cd /path/to/regulations-parser`
+ 1. `echo "API_BASE = 'http://127.0.0.0:8888/'" >> local_settings.py`
+ 1. `python build_from.py CFR-2012-title12-vol8-part1004.xml 12 2011-18676 15
+   1693`
+
+Next up, we set up `regulations-site` to provide a webapp.
+
+ 1. `git clone https://github.com/cfpb/regulations-site.git`
+ 1. `cd regulations-site`
+ 1. `buildout`
+ 1. `echo "API_BASE = 'http://127.0.0.0:8888/'" >>
+    regulations/settings/local_settings.py`
+ 1. `./run_server.sh`
+
+Then, navigate to `http://localhost:8000/` in your browser to see the reg.
