@@ -503,13 +503,9 @@ existing docs first.
 
 With the above examples, you should have been able to run the parser and
 generate some output. "But where's the website?" you ask. The parser was
-written to be as generic as possible, but integrating with [regulations-core](https://github.com/cfpb/regulations-core)
-and [regulations-site](https://github.com/cfpb/regulations-site) is likely where you'll want to end up. Here, we'll show
-one way to connect these applications up; see the individual repos for more
-configuration detail.
+written to be as generic as possible, but integrating with [regulations-core](https://github.com/cfpb/regulations-core) and [regulations-site](https://github.com/cfpb/regulations-site) is likely where you'll want to end up. Here, we'll show one way to connect these applications up. See the individual repos for more configuration detail.
 
-Let's set up [regulations-core](https://github.com/cfpb/regulations-core) first. This is an API which will be used to
-both store and query the regulation data.
+Let's set up [regulations-core](https://github.com/cfpb/regulations-core) first. This is an API which will be used to both store and query the regulation data.
 
  1. `git clone https://github.com/cfpb/regulations-core.git`
  1. `cd regulations-core`
