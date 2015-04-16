@@ -144,12 +144,12 @@ class FrozenNode(object):
     """Immutable interface for nodes. No guarantees about internal state."""
     def __init__(self, text='', children=(), label=(), title='',
                  node_type=Node.REGTEXT, tagged_text=''):
-        self._text = text
+        self._text = text or ''
         self._children = tuple(children)
         self._label = tuple(label)
-        self._title = title
+        self._title = title or ''
         self._node_type = node_type
-        self._tagged_text = tagged_text
+        self._tagged_text = tagged_text or ''
 
     @property
     def text(self):

@@ -1,38 +1,12 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from unittest import TestCase
 
-from regparser.tree import reg_text, struct
+from regparser.tree import reg_text
+from regparser.tree.struct import FrozenNode
 from regparser.diff import treediff
 
 
 class TreeDiffTest(TestCase):
-    def test_build_hash(self):
-        title = u"Regulation Title"
-        sect1_title = u"§ 204.1 Best Section"
-        sect1 = u"(a) I believe this is (b) the (1) best section "
-        sect1 += "(2) don't (c) you?"
-        subpart_a = u"Subpart A—First subpart"
-        sect2_title = u"§ 204.2 Second Best Section"
-        sect2 = u"Some sections \ndon't have must \ndepth at all."
-        subpart_b = u"Subpart B—First subpart"
-        sect4_title = u"§ 204.4 I Skipped One"
-        sect4 = u"Others \n(a) Skip sections for (1) No \n(2) Apparent \n"
-        sect4 += "(3) Reason"
-
-        text = "\n".join(
-            (title, sect1_title, sect1, subpart_a, sect2_title, sect2,
-             subpart_b, sect4_title, sect4))
-        reg = reg_text.build_reg_text_tree(text, 204)
-
-        tree_hash = treediff.hash_nodes(reg)
-        keys = tree_hash.keys()
-        keys.sort()
-        self.assertEquals(
-            ['204', '204-1', '204-1-a', '204-1-b',
-             '204-1-b-1', '204-1-b-2', '204-1-c', '204-2', '204-4',
-             '204-4-a', '204-4-a-1', '204-4-a-2', '204-4-a-3', '204-Subpart',
-             '204-Subpart-A', '204-Subpart-B'], keys)
-
     def test_getopcodes(self):
         old = 'I have a string to change'
         new = 'We have a string to change now'
@@ -101,39 +75,41 @@ class TreeDiffTest(TestCase):
             nsect1, nsubpart_b, nsect2_title, nsect2])
         newer = reg_text.build_reg_text_tree(new_text, 204)
 
-        comparer = treediff.Compare(older, newer)
-        comparer.compare()
+        result = dict(treediff.changes_between(
+            FrozenNode.from_node(older), FrozenNode.from_node(newer)))
 
         self.assertEquals(
-            comparer.changes['204-Subpart-A'],
+            result['204-Subpart-A'],
             {"node": {
-                "text": "", "node_type": "subpart",
-                "label": ["204", "Subpart", "A"],
-                "child_labels": ["204-1"],
-                "title": "First subpart"},
+                "text": u"", "node_type": u"subpart",
+                "tagged_text": None,
+                "label": ("204", "Subpart", "A"),
+                "child_labels": ("204-1",),
+                "title": u"First subpart"},
                 "op": "added"})
-        self.assertTrue('204-Subpart-B' in comparer.changes)
-        self.assertEquals(comparer.changes['204-Subpart'], {"op": "deleted"})
+        self.assertTrue('204-Subpart-B' in result)
+        self.assertEquals(result['204-Subpart'], {"op": "deleted"})
 
     def test_deconstruct_text(self):
         words = treediff.deconstruct_text("Single-word")
         self.assertEqual(['Single-word'], words)
         words = treediff.deconstruct_text("This is a sentence.")
-        self.assertEqual(['This', ' ', 'is', ' ', 'a', ' ', 'sentence.'], words)
+        self.assertEqual(['This', ' ', 'is', ' ', 'a', ' ', 'sentence.'],
+                         words)
         words = treediff.deconstruct_text("An image: "
                                           + "![Appendix A9](ER27DE11.000)")
         self.assertEqual(['An', ' ', 'image:', ' ',
                           '![Appendix A9](ER27DE11.000)'], words)
         words = treediff.deconstruct_text("This\nis\t\ta test\n\tpattern")
-        self.assertEqual(['This', '\n', 'is', '\t\t', 'a', ' ', 'test', '\n\t',
-            'pattern'], words)
+        self.assertEqual(
+            ['This', '\n', 'is', '\t\t', 'a', ' ', 'test', '\n\t', 'pattern'],
+            words)
 
     def test_title_disappears(self):
-        lhs = struct.Node("Text", title="Some Title", label=['1111'])
-        rhs = struct.Node("Text", title=None, label=['1111'])
+        lhs = FrozenNode("Text", title="Some Title", label=['1111'])
+        rhs = FrozenNode("Text", title=None, label=['1111'])
 
-        comparer = treediff.Compare(lhs, rhs)
-        comparer.compare()
+        result = dict(treediff.changes_between(lhs, rhs))
         self.assertEqual(
-            comparer.changes['1111'],
+            result['1111'],
             {'title': [('delete', 0, 10)], 'op': 'modified'})

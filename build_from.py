@@ -12,7 +12,7 @@ except ImportError:
     pass
 
 from regparser.builder import Builder, LayerCacheAggregator
-from regparser.diff.treediff import treediff
+from regparser.diff.treediff import changes_between
 from regparser.tree.struct import FrozenNode
 
 
@@ -83,7 +83,7 @@ if __name__ == "__main__":
         # now build diffs - include "empty" diffs comparing a version to itself
         for lhs_version, lhs_tree in all_versions.iteritems():
             for rhs_version, rhs_tree in all_versions.iteritems():
-                changes = treediff(lhs_tree, rhs_tree)
+                changes = changes_between(lhs_tree, rhs_tree)
                 builder.writer.diff(
                     reg_tree.label_id(), lhs_version, rhs_version
                 ).write(dict(changes))
