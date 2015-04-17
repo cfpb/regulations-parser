@@ -12,7 +12,7 @@ except ImportError:
     pass
 
 from regparser.builder import Builder, LayerCacheAggregator
-from regparser.diff.treediff import changes_between
+from regparser.diff.tree import changes_between
 from regparser.tree.struct import FrozenNode
 
 
