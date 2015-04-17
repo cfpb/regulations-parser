@@ -197,3 +197,14 @@ class CheckpointerTests(TestCase):
         self.assertEqual(cp.checkpoint("1", lambda: -1), 1)
         self.assertEqual(cp.checkpoint("2", lambda: -2, force=True), -2)
         self.assertEqual(cp.checkpoint("3", lambda: -3), -3)
+
+    def test_exception_reading(self):
+        """If a file exists but is not the correct format, we expect
+        deserialization to gracefully fail (rather than exploding)"""
+        cp = Checkpointer(tempfile.mkdtemp())
+        self.assertEqual(1, cp.checkpoint("1", lambda: 1))
+        with open(cp._filename("1"), "w") as written_file:
+            written_file.write("")
+        cp._reset()
+        # pick will raise an exception, so we will recompute
+        self.assertEqual(-1, cp.checkpoint("1", lambda: -1))

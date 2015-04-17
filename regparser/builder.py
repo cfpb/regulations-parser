@@ -274,10 +274,14 @@ class Checkpointer(object):
         name = self._filename(tag)
         if os.path.exists(name):
             with open(name, 'rb') as to_read:
-                obj = pickle.load(to_read)
-                if isinstance(obj, struct.Node):
-                    struct.walk(obj, _deserialize_xml_fields)
-                return obj
+                try:
+                    obj = pickle.load(to_read)
+                except Exception:   # something bad happened during unpickling
+                    obj = None
+
+            if isinstance(obj, struct.Node):
+                struct.walk(obj, _deserialize_xml_fields)
+            return obj
 
     def _reset(self):
         """Used for testing"""
