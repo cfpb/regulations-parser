@@ -21,7 +21,7 @@ Here's an example, using CFPB's regulation H.
 1. `cd regulations-parser`
 1. `pip install -r requirements.txt`
 1. `wget http://www.gpo.gov/fdsys/pkg/CFR-2012-title12-vol8/xml/CFR-2012-title12-vol8-part1004.xml`
-1. `python build_from.py CFR-2012-title12-vol8-part1004.xml 12 2011-18676 15 1693`
+1. `python build_from.py CFR-2012-title12-vol8-part1004.xml 12 15 1693`
 
 At the end, you will have new directories for `regulation`, `layer`,
 `diff`, and `notice` which would mirror the JSON files sent to the API.
@@ -36,7 +36,7 @@ tweaked to pass the parser.
 1. `git clone https://github.com/micahsaul/fec_docs`
 1. `pip install -r requirements.txt`
 1. `echo "LOCAL_XML_PATHS = ['fec_docs']" >> local_settings.py`
-1. `python build_from.py fec_docs/1997CFR/CFR-1997-title11-vol1-part110.xml 11 96-20102 5 552`
+1. `python build_from.py fec_docs/1997CFR/CFR-1997-title11-vol1-part110.xml 11 5 552`
 
 If you review the history of the `fec_docs` repo, you'll see some of the types
 of changes that need to be made.
@@ -392,6 +392,22 @@ generating diffs (currently an n**2 operation). Generally, parsing will take
 less than ten minutes, but in the extreme example of reg Z, it currently
 requires several hours.
 
+There are a few methods to speed up this process. Installing `requests-cache`
+will cache API-read calls (such as those made when calling the Federal
+Register). The cache lives in an sqlite database (`fr_cache.sqlite`), which
+can be safely removed without error. The `build_from.py` pipeline can also
+include checkpoints -- that is, saving the state of the process up until some
+point in time. To activate this feature, pass in a directory name to the
+`--checkpoint` flag, e.g.
+
+```bash
+$ python build_from.py CFR-2012-title12-vol8-part1004.xml 12 15 1693 --checkpoint my-checkpoint-dir
+```
+
+Inspecting the `my-checkpoint-dir`, you will see a list of steps in the
+pipeline. Deleting one of these steps will cause the `build_from` script to
+effectively skip to that point when parsing.
+
 ### Parsing Error Example
 
 Let's say you are already in a good steady state, that you can parse the
@@ -503,9 +519,8 @@ Then, we can configure the parser to write to this API and run it, here using
 the FEC example above
 
  1. `cd /path/to/regulations-parser`
- 1. `echo "API_BASE = 'http://localhost:8000/'" >> local_settings.py`
- 1. `python build_from.py fec_docs/1997CFR/CFR-1997-title11-vol1-part110.xml 11
-    96-20102 5 552`
+ 1. `echo "API_BASE = 'http://localhost:8888/'" >> local_settings.py`
+ 1. `python build_from.py fec_docs/1997CFR/CFR-1997-title11-vol1-part110.xml 11 5 552`
 
 Next up, we set up `regulations-site` to provide a webapp.
 
