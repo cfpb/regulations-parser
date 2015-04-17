@@ -89,6 +89,9 @@ class TreeDiffTest(TestCase):
                 "op": "added"})
         self.assertTrue('204-Subpart-B' in result)
         self.assertEquals(result['204-Subpart'], {"op": "deleted"})
+        # Sections shouldn't have changed, though
+        self.assertFalse('204-1' in result)
+        self.assertFalse('204-2' in result)
 
     def test_deconstruct_text(self):
         words = treediff.deconstruct_text("Single-word")

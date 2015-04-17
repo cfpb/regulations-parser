@@ -15,7 +15,6 @@ EQUAL = 'equal'
 ADDED = 'added'
 MODIFIED = 'modified'
 DELETED = 'deleted'
-DELETED_OP = {"op": DELETED}
 
 
 def deconstruct_text(text):
@@ -106,32 +105,25 @@ def get_opcodes(old_text, new_text):
     return opcodes
 
 
-def frozen_to_dict(node):
-    return {
-        'child_labels': tuple(c.label_id for c in node.children),
-        'label': node.label,
-        'node_type': node.node_type,
-        'tagged_text': node.tagged_text or None,  # maintain backwards compat
-        'text': node.text,
-        'title': node.title or None,
-    }
-
-
-def text_changes(lhs, rhs):
+def _local_changes(lhs, rhs):
     """Account for only text changes between nodes. This explicitly excludes
     children"""
-    text_opcodes = get_opcodes(lhs.text, rhs.text)
-    title_opcodes = get_opcodes(lhs.title, rhs.title)
-    if text_opcodes or title_opcodes:
+    if lhs.text == rhs.text and lhs.title == rhs.title:
+        return []
+    else:
         node_changes = {"op": MODIFIED}
+
+        text_opcodes = get_opcodes(lhs.text, rhs.text)
         if text_opcodes:
             node_changes["text"] = text_opcodes
+
+        title_opcodes = get_opcodes(lhs.title, rhs.title)
         if title_opcodes:
             node_changes["title"] = title_opcodes
-        return node_changes
+        return [(lhs.label_id, node_changes)]
 
 
-def nodes_added(lhs_list, rhs_list):
+def _new_in_rhs(lhs_list, rhs_list):
     """Compare the lhs and rhs lists to see if the rhs contains elements not
     in the lhs"""
     added = []
@@ -142,36 +134,62 @@ def nodes_added(lhs_list, rhs_list):
     return added
 
 
+def _index_by_label_id(nodes):
+    # Replace with dict comprehension when not on 2.6
+    return dict((n.label_id, n) for n in nodes)
+
+
+def _data_for_add(node):
+    node_as_dict = {
+        'child_labels': tuple(c.label_id for c in node.children),
+        'label': node.label,
+        'node_type': node.node_type,
+        'tagged_text': node.tagged_text or None,  # maintain backwards compat
+        'text': node.text,
+        'title': node.title or None,
+    }
+    return (node.label_id, {"op": ADDED, "node": node_as_dict})
+
+
+def _data_for_delete(node):
+    return (node.label_id, {"op": DELETED})
+
+
 def changes_between(lhs, rhs):
     """Main entry point for this library. Recursively return a list of changes
     between the lhs and rhs. lhs and rhs should be FrozenNodes. Note that this
-    *does not* account for reordering nodes."""
+    *does not* account for reordering nodes, though it does account for
+    limited moves (e.g. when renaming subparts)."""
     changes = []
     if lhs == rhs:
         return changes
 
-    # Changes just within the compared nodes (not their children)
-    if lhs.text != rhs.text or lhs.title != rhs.title:
-        node_changes = text_changes(lhs, rhs)
-        if node_changes:
-            changes.append((lhs.label_id, node_changes))
+    changes.extend(_local_changes(lhs, rhs))
 
     # Removed children. Note params reversed
-    for removed in nodes_added(rhs.children, lhs.children):
-        remove_ops = struct.walk(
-            removed,
-            lambda n: (n.label_id, DELETED_OP))
-        changes.extend(remove_ops)
+    removed_children = _new_in_rhs(rhs.children, lhs.children)
+    changes.extend(map(_data_for_delete, removed_children))
+    # grandchildren which appear to be deleted, but may just have been moved
+    possibly_moved = _index_by_label_id(
+        grandchild
+        for child in removed_children for grandchild in child.children)
 
-    # Added children
-    for added in nodes_added(lhs.children, rhs.children):
-        add_ops = struct.walk(
-            added,
-            lambda n: (n.label_id,
-                       {"op": ADDED, "node": frozen_to_dict(n)}))
-        changes.extend(add_ops)
+    # New children. Determine if they are added or moved
+    for added in _new_in_rhs(lhs.children, rhs.children):
+        changes.append(_data_for_add(added))
+        for grandchild in added.children:
+            if grandchild.label_id in possibly_moved:   # it *was* moved
+                changes.extend(changes_between(
+                    possibly_moved[grandchild.label_id], grandchild))
+                del possibly_moved[grandchild.label_id]
+            else:   # Not moved; recursively add all of it's children
+                changes.extend(struct.walk(grandchild, _data_for_add))
 
-    # Modified children. Again, this does *not* account for reordering
+    # Remaining nodes weren't moved; they were *re*moved
+    for removed in possibly_moved.values():
+        changes.extend(struct.walk(removed, _data_for_delete))
+
+    # Recurse on modified children. Again, this does *not* track reordering
     for lhs_child in lhs.children:
         for rhs_child in rhs.children:
             if lhs_child.label_id == rhs_child.label_id:
