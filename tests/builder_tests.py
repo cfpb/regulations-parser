@@ -206,5 +206,5 @@ class CheckpointerTests(TestCase):
         with open(cp._filename("1"), "w") as written_file:
             written_file.write("")
         cp._reset()
-        # pick will raise an exception, so we will recompute
+        # pickle will raise an exception, so we will recompute
         self.assertEqual(-1, cp.checkpoint("1", lambda: -1))
