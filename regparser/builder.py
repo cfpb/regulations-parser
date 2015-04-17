@@ -32,8 +32,9 @@ class Builder(object):
         self.writer = api_writer.Client()
 
         self.notices = self.checkpointer.checkpoint(
-            "notices", lambda: fetch_notices(self.cfr_title, self.cfr_part,
-                                             only_final=True))
+            "notices",
+            lambda: fetch_notices(self.cfr_title, self.cfr_part,
+                                  only_final=True))
         modify_effective_dates(self.notices)
         #   Only care about final
         self.notices = [n for n in self.notices if 'effective_on' in n]
@@ -246,15 +247,16 @@ class Checkpointer(object):
     def __init__(self, path):
         self.counter = 0
         self.path = path
+        self.suffix = ""
         self.ignore_checkpoints = False
         if not os.path.isdir(path):
             os.makedirs(path)
 
     def _filename(self, tag):
         """Combine the counter and tag name to create a filename"""
-        name = str(self.counter).zfill(6)
+        name = str(self.counter).zfill(6) + ":"
         name += re.sub(r"\s", "", tag.lower())
-        name += ".p"
+        name += self.suffix + ".p"
         return os.path.join(self.path, name)
 
     def _serialize(self, tag, obj):
@@ -286,7 +288,7 @@ class Checkpointer(object):
         """Primary interface for storing an object"""
         self.counter += 1
         existing = self._deserialize(tag)
-        if not force and existing and not self.ignore_checkpoints:
+        if not force and existing is not None and not self.ignore_checkpoints:
             return existing
         else:
             result = fn()

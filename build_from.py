@@ -1,6 +1,7 @@
-import codecs
-import logging
 import argparse
+import codecs
+import hashlib
+import logging
 
 
 try:
@@ -12,7 +13,8 @@ except ImportError:
     pass
 
 from regparser.diff import treediff
-from regparser.builder import Builder, Checkpointer, LayerCacheAggregator
+from regparser.builder import (
+    Builder, Checkpointer, LayerCacheAggregator, NullCheckpointer)
 
 
 def treediff_changes(lhs_tree, rhs_tree):
@@ -20,7 +22,6 @@ def treediff_changes(lhs_tree, rhs_tree):
     comparer = treediff.Compare(lhs_tree, rhs_tree)
     comparer.compare()
     return comparer.changes
-
 
 
 logger = logging.getLogger('build_from')
@@ -37,23 +38,32 @@ if __name__ == "__main__":
     parser.add_argument('act_section', type=int, help='Act section')
     parser.add_argument('--generate-diffs', type=bool, help='Generate diffs?',
                         required=False, default=True)
+    parser.add_argument('--checkpoint', required=False,
+                        help='Directory to save checkpoint data')
 
     args = parser.parse_args()
     with codecs.open(args.filename, 'r', 'utf-8') as f:
         reg = f.read()
+        file_digest = hashlib.sha256(reg.encode('utf-8')).hexdigest()
     act_title_and_section = [args.act_title, args.act_section]
 
-    checkpointer = Checkpointer("mypath")
+    if args.checkpoint:
+        checkpointer = Checkpointer(args.checkpoint)
+    else:
+        checkpointer = NullCheckpointer()
+
     #   First, the regulation tree
     reg_tree = checkpointer.checkpoint(
-        "init-tree",
+        "init-tree-" + file_digest,
         lambda: Builder.reg_tree(reg))
     title_part = reg_tree.label_id()
     doc_number = checkpointer.checkpoint(
-        "doc-number",
+        "doc-number-" + file_digest,
         lambda: Builder.determine_doc_number(reg, args.title, title_part))
     if not doc_number:
         raise ValueError("Could not determine document number")
+    checkpointer.suffix = ":".join(
+        ["", title_part, str(args.title), doc_number])
 
     #   Run Builder
     builder = Builder(cfr_title=args.title,
@@ -91,7 +101,7 @@ if __name__ == "__main__":
         for lhs_version, lhs_tree in all_versions.iteritems():
             for rhs_version, rhs_tree in all_versions.iteritems():
                 changes = checkpointer.checkpoint(
-                    "diff-" + lhs_version + "-" + rhs_version,
+                    "-".join(["diff", lhs_version, rhs_version]),
                     lambda: treediff_changes(lhs_tree, rhs_tree))
                 builder.writer.diff(
                     reg_tree.label_id(), lhs_version, rhs_version
