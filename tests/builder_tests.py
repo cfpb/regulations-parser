@@ -1,8 +1,11 @@
+import tempfile
 from unittest import TestCase
 
+from lxml import etree
 from mock import Mock, patch
 
-from regparser.builder import Builder, LayerCacheAggregator
+from regparser.builder import (
+    Builder, Checkpointer, LayerCacheAggregator, NullCheckpointer)
 from regparser.tree.struct import Node
 
 
@@ -21,6 +24,7 @@ class BuilderTests(TestCase):
         b.notices = [aaaa, bbbb, cccc]
         b.eff_notices = {'2012-12-12': [aaaa, bbbb], '2013-01-01': [cccc]}
         b.doc_number = 'aaaa'
+        b.checkpointer = NullCheckpointer()
         tree = Node(label=['1111'])
         version_list = []
         notice_lists = []
@@ -47,6 +51,7 @@ class BuilderTests(TestCase):
         b = Builder()   # Don't need parameters as init's been mocked out
         b.cfr_title, b.cfr_part, b.doc_number = 15, '111', '111-222'
         b.writer = Mock()
+        b.checkpointer = NullCheckpointer()
         write = b.writer.layer.return_value.write
         tree = Node(label=["1234"], children=[
             Node(label=["1234", "1"], children=[
@@ -136,3 +141,59 @@ class LayerCacheAggregatorTests(TestCase):
 
         cache.invalidate(['123-2', '123-1-Interp'])
         self.assertEqual(cache._known_labels, set(['123']))
+
+
+class CheckpointerTests(TestCase):
+    def test_basic_serialization(self):
+        """We should be able to store and retrieve an object. Verify that this
+        is occurring outside of local memory by comparing to the original."""
+        to_store = {"some": "value", 123: 456}
+        cp = Checkpointer(tempfile.mkdtemp())
+        cp.counter = 1
+        cp._serialize("a-tag", to_store)
+        to_store["some"] = "other"
+        result = cp._deserialize("a-tag")
+        self.assertEqual(result, {"some": "value", 123: 456})
+        self.assertEqual(to_store, {"some": "other", 123: 456})
+
+        cp.counter = 2
+        cp._serialize("a-tag", to_store)
+        to_store["some"] = "more"
+        result = cp._deserialize("a-tag")
+        self.assertEqual(result, {"some": "other", 123: 456})
+        self.assertEqual(to_store, {"some": "more", 123: 456})
+        cp.counter = 1
+        result = cp._deserialize("a-tag")
+        self.assertEqual(result, {"some": "value", 123: 456})
+
+    def test_tree_serialization(self):
+        """Trees have embedded XML, which doesn't serialize well"""
+        tree = Node(
+            text="top", label=["111"], title="Reg 111", children=[
+                Node(text="inner", label=["111", "1"],
+                     source_xml=etree.fromstring("""<tag>Hi</tag>"""))
+            ])
+
+        cp = Checkpointer(tempfile.mkdtemp())
+        cp.checkpoint("a-tag", lambda: tree)    # saving
+        cp._reset()
+        loaded = cp.checkpoint("a-tag", None)   # would explode if not loaded
+
+        self.assertEqual(repr(tree), repr(loaded))
+        self.assertEqual(
+            etree.tostring(tree.children[0].source_xml),
+            etree.tostring(loaded.children[0].source_xml))
+
+    def test_dont_load_later_elements(self):
+        """If a checkpoint is executed, we should not load any later
+        checkpoints. This allows a user to delete, say step 5, and effectively
+        rebuild from that checkpoint."""
+        cp = Checkpointer(tempfile.mkdtemp())
+        self.assertEqual(cp.checkpoint("1", lambda: 1), 1)
+        self.assertEqual(cp.checkpoint("2", lambda: 2), 2)
+        self.assertEqual(cp.checkpoint("3", lambda: 3), 3)
+
+        cp._reset()
+        self.assertEqual(cp.checkpoint("1", lambda: -1), 1)
+        self.assertEqual(cp.checkpoint("2", lambda: -2, force=True), -2)
+        self.assertEqual(cp.checkpoint("3", lambda: -3), -3)

@@ -12,7 +12,15 @@ except ImportError:
     pass
 
 from regparser.diff import treediff
-from regparser.builder import Builder, LayerCacheAggregator
+from regparser.builder import Builder, Checkpointer, LayerCacheAggregator
+
+
+def treediff_changes(lhs_tree, rhs_tree):
+    """Used to compute differences between trees. Shorthand method"""
+    comparer = treediff.Compare(lhs_tree, rhs_tree)
+    comparer.compare()
+    return comparer.changes
+
 
 
 logger = logging.getLogger('build_from')
@@ -35,17 +43,23 @@ if __name__ == "__main__":
         reg = f.read()
     act_title_and_section = [args.act_title, args.act_section]
 
+    checkpointer = Checkpointer("mypath")
     #   First, the regulation tree
-    reg_tree = Builder.reg_tree(reg)
+    reg_tree = checkpointer.checkpoint(
+        "init-tree",
+        lambda: Builder.reg_tree(reg))
     title_part = reg_tree.label_id()
-    doc_number = Builder.determine_doc_number(reg, args.title, title_part)
+    doc_number = checkpointer.checkpoint(
+        "doc-number",
+        lambda: Builder.determine_doc_number(reg, args.title, title_part))
     if not doc_number:
         raise ValueError("Could not determine document number")
 
     #   Run Builder
     builder = Builder(cfr_title=args.title,
                       cfr_part=title_part,
-                      doc_number=doc_number)
+                      doc_number=doc_number,
+                      checkpointer=checkpointer)
     builder.write_notices()
 
     #   Always do at least the first reg
@@ -76,8 +90,9 @@ if __name__ == "__main__":
         # now build diffs - include "empty" diffs comparing a version to itself
         for lhs_version, lhs_tree in all_versions.iteritems():
             for rhs_version, rhs_tree in all_versions.iteritems():
-                comparer = treediff.Compare(lhs_tree, rhs_tree)
-                comparer.compare()
+                changes = checkpointer.checkpoint(
+                    "diff-" + lhs_version + "-" + rhs_version,
+                    lambda: treediff_changes(lhs_tree, rhs_tree))
                 builder.writer.diff(
                     reg_tree.label_id(), lhs_version, rhs_version
-                ).write(comparer.changes)
+                ).write(changes)
