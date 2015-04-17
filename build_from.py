@@ -74,8 +74,6 @@ if __name__ == "__main__":
                                          layer_cache, notices)
             layer_cache.replace_using(new_tree)
 
-        from time import time
-        start_time = time()
         # convert to frozen trees
         for doc in all_versions:
             all_versions[doc] = FrozenNode.from_node(all_versions[doc])
@@ -87,4 +85,3 @@ if __name__ == "__main__":
                 builder.writer.diff(
                     reg_tree.label_id(), lhs_version, rhs_version
                 ).write(dict(changes))
-        print(time() - start_time)
