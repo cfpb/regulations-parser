@@ -397,6 +397,18 @@ generating diffs (currently an n**2 operation). Generally, parsing will take
 less than ten minutes, but in the extreme example of reg Z, it currently
 requires several hours.
 
+There are a few methods to speed up this process. Installing `requests-cache`
+will cache API-read calls (such as those made when calling the Federal
+Register). The cache lives in an sqlite database (`fr_cache.sqlite`), which
+can be safely removed without error. The `build_from.py` pipeline can also
+include checkpoints -- that is, saving the state of the process up until some
+point in time. To activate this feature, pass in a directory name to the
+`--checkpoint` flag, e.g.
+
+```bash
+$ python build_from.py CFR-2012-title12-vol8-part1004.xml 12 15 1693 --checkpoint my-checkpoint-dir
+```
+
 ### Parsing Error Example
 
 Let's say you are already in a good steady state, that you can parse the
