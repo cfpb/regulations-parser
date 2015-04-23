@@ -65,18 +65,28 @@ class Builder(object):
                 layer)
 
     def revision_generator(self, reg_tree):
-        relevant_notices = []
+        # relevant_notices = []
         for date in sorted(self.eff_notices.keys()):
-            relevant_notices.extend(
-                n for n in self.eff_notices[date]
-                if 'changes' in n and n['document_number'] != self.doc_number)
-        for notice in relevant_notices:
-            version = notice['document_number']
-            old_tree = reg_tree
-            merged_changes = self.merge_changes(version, notice['changes'])
-            reg_tree = compile_regulation(old_tree, merged_changes)
-            notices = applicable_notices(self.notices, version)
-            yield notice, old_tree, reg_tree, notices
+        #     relevant_notices.extend(
+        #         n for n in self.eff_notices[date]
+        #         if 'changes' in n and n['document_number'] != self.doc_number)
+        # for notice in relevant_notices:
+        #     version = notice['document_number']
+        #     old_tree = reg_tree
+        #     merged_changes = self.merge_changes(version, notice['changes'])
+        #     reg_tree = compile_regulation(old_tree, merged_changes)
+        #     notices = applicable_notices(self.notices, version)
+        #     yield notice, old_tree, reg_tree, notices
+            for notice in self.eff_notices[date]:
+                version = notice['document_number']
+                merged_changes = self.merge_changes(version, notice.get('changes', {}))
+                if (self.doc_number != version and
+                        any(k.startswith(reg_tree.label[0])
+                        for k in merged_changes.keys())):
+                    old_tree = reg_tree
+                    reg_tree = compile_regulation(old_tree, merged_changes)
+                    notices = applicable_notices(self.notices, version)
+                    yield notice, old_tree, reg_tree, notices
 
     def merge_changes(self, document_number, changes):
         patches = content.RegPatches().get(document_number)

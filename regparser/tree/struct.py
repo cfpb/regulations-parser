@@ -1,5 +1,5 @@
 from json import JSONEncoder
-
+import logging
 
 class Node(object):
     APPENDIX = u'appendix'
@@ -86,6 +86,9 @@ def find(root, label):
     response = walk(root, check)
     if response:
         return response[0]
+    else:
+        logging.warning('Failed to locate node with label {}'.format(label))
+        return None
 
 
 def join_text(node):
