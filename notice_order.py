@@ -16,8 +16,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Notice Orderer")
     parser.add_argument('cfr_title', help='CFR_TITLE')
     parser.add_argument('cfr_part', help='CFR_PART')
-    parser.add_argument('--include-notices-without-changes', type=bool,
-                        default=False)
+    parser.add_argument('--include-notices-without-changes', const=True,
+                        default=False, action='store_const',
+                        help=('Include notices which do not change the '
+                              'regulation (default: false)'))
     args = parser.parse_args()
 
     notices_by_date = notices_for_cfr_part(args.cfr_title, args.cfr_part)
