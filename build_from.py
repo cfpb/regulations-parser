@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import codecs
+import hashlib
 import logging
 import argparse
 
@@ -13,7 +14,15 @@ except ImportError:
     pass
 
 from regparser.diff import treediff
-from regparser.builder import Builder, LayerCacheAggregator
+from regparser.builder import (
+    Builder, Checkpointer, LayerCacheAggregator, NullCheckpointer)
+
+
+def treediff_changes(lhs_tree, rhs_tree):
+    """Used to compute differences between trees. Shorthand method"""
+    comparer = treediff.Compare(lhs_tree, rhs_tree)
+    comparer.compare()
+    return comparer.changes
 
 logger = logging.getLogger('build_from')
 logger.setLevel(logging.INFO)
@@ -24,18 +33,35 @@ def parse_regulation(args):
     """ Run the parser on the specified command-line arguments. Broken out into
         separate function to assist in profiling.
     """
+
     with codecs.open(args.filename, 'r', 'utf-8') as f:
         reg = f.read()
-
-    doc_number = args.notice
+        file_digest = hashlib.sha256(reg.encode('utf-8')).hexdigest()
     act_title_and_section = [args.act_title, args.act_section]
 
-    #   First, the regulation tree
-    reg_tree = Builder.reg_tree(reg)
+    if args.checkpoint:
+        checkpointer = Checkpointer(args.checkpoint)
+    else:
+        checkpointer = NullCheckpointer()
 
+    #   First, the regulation tree
+    reg_tree = checkpointer.checkpoint(
+        "init-tree-" + file_digest,
+        lambda: Builder.reg_tree(reg))
+    title_part = reg_tree.label_id()
+    doc_number = checkpointer.checkpoint(
+        "doc-number-" + file_digest,
+        lambda: Builder.determine_doc_number(reg, args.title, title_part))
+    if not doc_number:
+        raise ValueError("Could not determine document number")
+    checkpointer.suffix = ":".join(
+        ["", title_part, str(args.title), doc_number])
+
+    #   Run Builder
     builder = Builder(cfr_title=args.title,
-                      cfr_part=reg_tree.label_id(),
-                      doc_number=doc_number)
+                      cfr_part=title_part,
+                      doc_number=doc_number,
+                      checkpointer=checkpointer)
 
     builder.write_notices()
 
@@ -43,13 +69,14 @@ def parse_regulation(args):
     logger.info("Version %s", doc_number)
     builder.write_regulation(reg_tree)
     layer_cache = LayerCacheAggregator()
+
     builder.gen_and_write_layers(reg_tree, act_title_and_section, layer_cache)
     layer_cache.replace_using(reg_tree)
 
     if args.generate_diffs:
-        generate_diffs(doc_number, reg_tree, act_title_and_section, builder, layer_cache)
+        generate_diffs(doc_number, reg_tree, act_title_and_section, builder, layer_cache, checkpointer)
 
-def generate_diffs(doc_number, reg_tree, act_title_and_section, builder, layer_cache):
+def generate_diffs(doc_number, reg_tree, act_title_and_section, builder, layer_cache, checkpointer):
     """ Generate all the diffs for the given regulation. Broken out into separate function
         to assist with profiling so it's easier to determine which parts of the parser take
         the most time
@@ -72,11 +99,15 @@ def generate_diffs(doc_number, reg_tree, act_title_and_section, builder, layer_c
     # now build diffs - include "empty" diffs comparing a version to itself
     for lhs_version, lhs_tree in all_versions.iteritems():
         for rhs_version, rhs_tree in all_versions.iteritems():
-            comparer = treediff.Compare(lhs_tree, rhs_tree)
-            comparer.compare()
+            changes = checkpointer.checkpoint(
+                "-".join(["diff", lhs_version, rhs_version]),
+                lambda: treediff_changes(lhs_tree, rhs_tree)
+            )
+            # comparer = treediff.Compare(lhs_tree, rhs_tree)
+            # comparer.compare()
             builder.writer.diff(
                 reg_tree.label_id(), lhs_version, rhs_version
-            ).write(comparer.changes)
+            ).write(changes)
 
 if __name__ == "__main__":
 
@@ -88,6 +119,8 @@ if __name__ == "__main__":
     parser.add_argument('act_title', type=int, help='Act title', action='store')
     parser.add_argument('act_section', type=int, help='Act section')
     parser.add_argument('--generate-diffs', type=bool, help='Generate diffs?', required=False, default=True)
+    parser.add_argument('--checkpoint', required=False,
+                        help='Directory to save checkpoint data')
 
     args = parser.parse_args()
     
