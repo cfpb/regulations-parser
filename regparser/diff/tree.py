@@ -36,11 +36,6 @@ def _new_in_rhs(lhs_list, rhs_list):
     return added
 
 
-def _index_by_label_id(nodes):
-    # Replace with dict comprehension when not on 2.6
-    return dict((n.label_id, n) for n in nodes)
-
-
 def _data_for_add(node):
     node_as_dict = {
         'child_labels': tuple(c.label_id for c in node.children),
@@ -72,9 +67,10 @@ def changes_between(lhs, rhs):
     removed_children = _new_in_rhs(rhs.children, lhs.children)
     changes.extend(map(_data_for_delete, removed_children))
     # grandchildren which appear to be deleted, but may just have been moved
-    possibly_moved = _index_by_label_id(
-        grandchild
-        for child in removed_children for grandchild in child.children)
+    possibly_moved = {}
+    for child in removed_children:
+        for grandchild in child.children:
+            possibly_moved[grandchild.label_id] = grandchild
 
     # New children. Determine if they are added or moved
     for added in _new_in_rhs(lhs.children, rhs.children):

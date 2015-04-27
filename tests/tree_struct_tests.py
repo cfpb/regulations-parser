@@ -136,3 +136,37 @@ class DepthTreeTest(TestCase):
                 struct.Node(label=['1', 'b'], children=[1, 2, 3])
             ])
         ])
+
+
+class FrozenNodeTests(TestCase):
+    def test_comparison(self):
+        """Frozen nodes with the same values are considered equal"""
+        args = {'text': 'text', 'children': ['a', 'b'], 'label': ['b', 'c'],
+                'title': 'title', 'tagged_text': 'tagged_text'}
+        left = struct.FrozenNode(**args)
+        right = struct.FrozenNode(**args)
+        self.assertEqual(left, right)
+
+    def test_from_node(self):
+        """Conversion from a normal struct Node should be accurate and
+        recursive"""
+        root = struct.Node(
+            text='rtext', label=['root'], title='ttt',
+            node_type=struct.Node.INTERP, children=[
+                struct.Node('child_text', [], ['root', 'child'])])
+        root.tagged_text = 'rtagged'
+        frozen = struct.FrozenNode.from_node(root)
+        self.assertEqual(frozen.text, 'rtext')
+        self.assertEqual(frozen.label, ('root',))
+        self.assertEqual(frozen.title, 'ttt')
+        self.assertEqual(frozen.node_type, struct.Node.INTERP)
+        self.assertEqual(frozen.tagged_text, 'rtagged')
+        self.assertEqual(len(frozen.children), 1)
+
+        child = frozen.children[0]
+        self.assertEqual(child.text, 'child_text')
+        self.assertEqual(child.label, ('root', 'child'))
+        self.assertEqual(child.title, '')
+        self.assertEqual(child.node_type, struct.Node.REGTEXT)
+        self.assertEqual(child.tagged_text, '')
+        self.assertEqual(child.children, ())
