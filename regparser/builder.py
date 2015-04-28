@@ -31,14 +31,13 @@ class Builder(object):
         self.checkpointer = checkpointer or NullCheckpointer()
         self.writer = api_writer.Client()
 
-        self.notices = self.checkpointer.checkpoint(
+        self.eff_notices = self.checkpointer.checkpoint(
             "notices",
-            lambda: fetch_notices(self.cfr_title, self.cfr_part,
-                                  only_final=True))
-        modify_effective_dates(self.notices)
-        #   Only care about final
-        self.notices = [n for n in self.notices if 'effective_on' in n]
-        self.eff_notices = group_by_eff_date(self.notices)
+            lambda: notices_for_cfr_part(self.cfr_title, self.cfr_part)
+        )
+        self.notices = []
+        for notice_group in self.eff_notices.values():
+            self.notices.extend(notice_group)
 
     def write_notices(self):
         for notice in self.notices:
@@ -180,6 +179,14 @@ class LayerCacheAggregator(object):
             return self._caches[layer_name]
         else:
             return EmptyCache()
+
+
+def notices_for_cfr_part(title, part):
+    """Retrieves all final notices for a title-part pair, orders them, and
+    returns them as a dict[effective_date_str] -> list(notices)"""
+    notices = fetch_notices(title, part, only_final=True)
+    modify_effective_dates(notices)
+    return group_by_eff_date(notices)
 
 
 def _fr_doc_to_doc_number(xml):
