@@ -1,3 +1,4 @@
+import os.path
 import tempfile
 from unittest import TestCase
 
@@ -208,3 +209,20 @@ class CheckpointerTests(TestCase):
         cp._reset()
         # pickle will raise an exception, so we will recompute
         self.assertEqual(-1, cp.checkpoint("1", lambda: -1))
+
+    def test_filename(self):
+        """Verify that an appropriate file name is generated in an appropriate
+        folder"""
+        file_path = tempfile.mkdtemp() + os.path.join('some', 'depth', 'here')
+        cp = Checkpointer(file_path)
+        cp.counter = 25
+        filename = cp._filename('A WeIrD TaG')
+        self.assertTrue(os.path.join('some', 'depth', 'here') in filename)
+        self.assertTrue('25' in filename)
+        self.assertTrue('aweirdtag' in filename)
+
+    def test_dirs_created(self):
+        """If the full path does not exist, it is created"""
+        file_path = tempfile.mkdtemp() + os.path.join('some', 'depth', 'here')
+        Checkpointer(file_path)
+        self.assertTrue(os.path.isdir(file_path))

@@ -244,20 +244,20 @@ class Checkpointer(object):
     compute it when there is no checkpoint). Calling checkpoint increment the
     counter field, which is prefixed to the filename to limit the risk of
     re-ordering collisions."""
-    def __init__(self, path):
+    def __init__(self, file_path):
         self.counter = 0
-        self.path = path
+        self.file_path = file_path
         self.suffix = ""
         self.ignore_checkpoints = False
-        if not os.path.isdir(path):
-            os.makedirs(path)
+        if not os.path.isdir(file_path):
+            os.makedirs(file_path)
 
     def _filename(self, tag):
         """Combine the counter and tag name to create a filename"""
         name = str(self.counter).zfill(6) + ":"
         name += re.sub(r"\s", "", tag.lower())
         name += self.suffix + ".p"
-        return os.path.join(self.path, name)
+        return os.path.join(self.file_path, name)
 
     def _serialize(self, tag, obj):
         """Performs class-specific conversions before writing to a file"""
