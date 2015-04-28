@@ -1,6 +1,7 @@
+import argparse
 import codecs
+import hashlib
 import logging
-import sys
 
 
 try:
@@ -11,7 +12,8 @@ except ImportError:
     # HTTP requests rather than looking it up from the cache
     pass
 
-from regparser.builder import Builder, LayerCacheAggregator
+from regparser.builder import (
+    Builder, Checkpointer, LayerCacheAggregator, NullCheckpointer)
 from regparser.diff.tree import changes_between
 from regparser.tree.struct import FrozenNode
 
@@ -21,47 +23,62 @@ logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
 if __name__ == "__main__":
-    if len(sys.argv) < 5:
-        print("Usage: python build_from.py regulation.xml title "
-              + "notice_doc_# act_title act_section (Generate diffs? "
-              + "True/False)")
-        print("  e.g. python build_from.py rege.txt 12 15 1693 "
-              + "False")
-        exit()
+    parser = argparse.ArgumentParser(description='Regulation parser')
+    parser.add_argument('filename',
+                        help='XML file containing the regulation')
+    parser.add_argument('title', type=int, help='Title number')
+    parser.add_argument('act_title', type=int, help='Act title',
+                        action='store')
+    parser.add_argument('act_section', type=int, help='Act section')
+    parser.add_argument('--generate-diffs', type=bool, help='Generate diffs?',
+                        required=False, default=True)
+    parser.add_argument('--checkpoint', required=False,
+                        help='Directory to save checkpoint data')
 
-    with codecs.open(sys.argv[1], 'r', 'utf-8') as f:
+    args = parser.parse_args()
+    with codecs.open(args.filename, 'r', 'utf-8') as f:
         reg = f.read()
+        file_digest = hashlib.sha256(reg.encode('utf-8')).hexdigest()
+    act_title_and_section = [args.act_title, args.act_section]
+
+    if args.checkpoint:
+        checkpointer = Checkpointer(args.checkpoint)
+    else:
+        checkpointer = NullCheckpointer()
 
     #   First, the regulation tree
-    reg_tree = Builder.reg_tree(reg)
-
-    title = int(sys.argv[2])
+    reg_tree = checkpointer.checkpoint(
+        "init-tree-" + file_digest,
+        lambda: Builder.reg_tree(reg))
     title_part = reg_tree.label_id()
-
-    doc_number = Builder.determine_doc_number(reg, title, title_part)
+    doc_number = checkpointer.checkpoint(
+        "doc-number-" + file_digest,
+        lambda: Builder.determine_doc_number(reg, args.title, title_part))
     if not doc_number:
         raise ValueError("Could not determine document number")
+    checkpointer.suffix = ":".join(
+        ["", title_part, str(args.title), doc_number])
 
     #   Run Builder
-    builder = Builder(cfr_title=title,
+    builder = Builder(cfr_title=args.title,
                       cfr_part=title_part,
-                      doc_number=doc_number)
-
-    #  Didn't include the provided version
-    if not any(n['document_number'] == doc_number for n in builder.notices):
-        print("Could not find notice_doc_#, %s" % doc_number)
-        exit()
-
+                      doc_number=doc_number,
+                      checkpointer=checkpointer)
     builder.write_notices()
 
     #   Always do at least the first reg
     logger.info("Version %s", doc_number)
     builder.write_regulation(reg_tree)
     layer_cache = LayerCacheAggregator()
-    builder.gen_and_write_layers(reg_tree, sys.argv[3:5], layer_cache)
+
+    builder.gen_and_write_layers(reg_tree, act_title_and_section, layer_cache)
     layer_cache.replace_using(reg_tree)
-    if len(sys.argv) < 6 or sys.argv[5].lower() == 'true':
+
+    # this used to assume implicitly that if gen-diffs was not specified it was
+    # True; changed it to explicit check
+    if args.generate_diffs:
         all_versions = {doc_number: reg_tree}
+
         for last_notice, old, new_tree, notices in builder.revision_generator(
                 reg_tree):
             version = last_notice['document_number']
@@ -70,7 +87,7 @@ if __name__ == "__main__":
             builder.doc_number = version
             builder.write_regulation(new_tree)
             layer_cache.invalidate_by_notice(last_notice)
-            builder.gen_and_write_layers(new_tree, sys.argv[3:5],
+            builder.gen_and_write_layers(new_tree, act_title_and_section,
                                          layer_cache, notices)
             layer_cache.replace_using(new_tree)
 
@@ -81,7 +98,9 @@ if __name__ == "__main__":
         # now build diffs - include "empty" diffs comparing a version to itself
         for lhs_version, lhs_tree in all_versions.iteritems():
             for rhs_version, rhs_tree in all_versions.iteritems():
-                changes = changes_between(lhs_tree, rhs_tree)
+                changes = checkpointer.checkpoint(
+                    "-".join(["diff", lhs_version, rhs_version]),
+                    lambda: dict(changes_between(lhs_tree, rhs_tree)))
                 builder.writer.diff(
                     reg_tree.label_id(), lhs_version, rhs_version
-                ).write(dict(changes))
+                ).write(changes)

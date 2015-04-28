@@ -1,4 +1,7 @@
 import copy
+import os
+import pickle
+import re
 
 from lxml import etree
 
@@ -21,13 +24,17 @@ class Builder(object):
     """Methods used to build all versions of a single regulation, their
     layers, etc. It is largely glue code"""
 
-    def __init__(self, cfr_title, cfr_part, doc_number):
+    def __init__(self, cfr_title, cfr_part, doc_number, checkpointer=None):
         self.cfr_title = cfr_title
         self.cfr_part = cfr_part
         self.doc_number = doc_number
+        self.checkpointer = checkpointer or NullCheckpointer()
         self.writer = api_writer.Client()
 
-        self.eff_notices = notices_for_cfr_part(self.cfr_title, self.cfr_part)
+        self.eff_notices = self.checkpointer.checkpoint(
+            "effective-notices",
+            lambda: notices_for_cfr_part(self.cfr_title, self.cfr_part)
+        )
         self.notices = []
         for notice_group in self.eff_notices.values():
             self.notices.extend(notice_group)
@@ -58,9 +65,11 @@ class Builder(object):
                 ('keyterms', key_terms.KeyTerms),
                 ('formatting', formatting.Formatting),
                 ('graphics', graphics.Graphics)):
-            layer = layer_class(
-                reg_tree, self.cfr_title, self.doc_number, notices,
-                act_info).build(cache.cache_for(ident))
+            layer = self.checkpointer.checkpoint(
+                ident + "-" + self.doc_number,
+                lambda: layer_class(
+                    reg_tree, self.cfr_title, self.doc_number, notices,
+                    act_info).build(cache.cache_for(ident)))
             self.writer.layer(ident, self.cfr_part, self.doc_number).write(
                 layer)
 
@@ -74,7 +83,9 @@ class Builder(object):
             version = notice['document_number']
             old_tree = reg_tree
             merged_changes = self.merge_changes(version, notice['changes'])
-            reg_tree = compile_regulation(old_tree, merged_changes)
+            reg_tree = self.checkpointer.checkpoint(
+                "compiled-" + version,
+                lambda: compile_regulation(old_tree, merged_changes))
             notices = applicable_notices(self.notices, version)
             yield notice, old_tree, reg_tree, notices
 
@@ -222,3 +233,81 @@ class EmptyCache(object):
     node, so it should not be cached."""
     def fetch_or_process(self, layer, node):
         return layer.process(node)
+
+
+def _serialize_xml_fields(node):
+    if node.source_xml is not None:
+        node.source_xml = etree.tostring(node.source_xml)
+
+
+def _deserialize_xml_fields(node):
+    if node.source_xml:
+        node.source_xml = etree.fromstring(node.source_xml)
+
+
+class Checkpointer(object):
+    """Save checkpoints during the build pipeline. Generally, a caller will
+    specify, a unique tag (a string) and a fallback function (for how to
+    compute it when there is no checkpoint). Calling checkpoint increment the
+    counter field, which is prefixed to the filename to limit the risk of
+    re-ordering collisions."""
+    def __init__(self, file_path):
+        self.counter = 0
+        self.file_path = file_path
+        self.suffix = ""
+        self.ignore_checkpoints = False
+        if not os.path.isdir(file_path):
+            os.makedirs(file_path)
+
+    def _filename(self, tag):
+        """Combine the counter and tag name to create a filename"""
+        name = str(self.counter).zfill(6) + ":"
+        name += re.sub(r"\s", "", tag.lower())
+        name += self.suffix + ".p"
+        return os.path.join(self.file_path, name)
+
+    def _serialize(self, tag, obj):
+        """Performs class-specific conversions before writing to a file"""
+        if isinstance(obj, struct.Node):
+            obj = copy.deepcopy(obj)
+            struct.walk(obj, _serialize_xml_fields)
+
+        with open(self._filename(tag), 'wb') as to_write:
+            pickle.dump(obj, to_write)
+
+    def _deserialize(self, tag):
+        """Attempts to read the object from disk. Performs class-specific
+        conversions when deserializing"""
+        name = self._filename(tag)
+        if os.path.exists(name):
+            with open(name, 'rb') as to_read:
+                try:
+                    obj = pickle.load(to_read)
+                except Exception:   # something bad happened during unpickling
+                    obj = None
+
+            if isinstance(obj, struct.Node):
+                struct.walk(obj, _deserialize_xml_fields)
+            return obj
+
+    def _reset(self):
+        """Used for testing"""
+        self.counter = 0
+        self.ignore_checkpoints = False
+
+    def checkpoint(self, tag, fn, force=False):
+        """Primary interface for storing an object"""
+        self.counter += 1
+        existing = self._deserialize(tag)
+        if not force and existing is not None and not self.ignore_checkpoints:
+            return existing
+        else:
+            result = fn()
+            self._serialize(tag, result)
+            self.ignore_checkpoints = True
+            return result
+
+
+class NullCheckpointer(object):
+    def checkpoint(self, tag, fn, force=False):
+        return fn()
