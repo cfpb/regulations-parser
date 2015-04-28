@@ -27,12 +27,10 @@ class Builder(object):
         self.doc_number = doc_number
         self.writer = api_writer.Client()
 
-        self.notices = fetch_notices(self.cfr_title, self.cfr_part,
-                                     only_final=True)
-        modify_effective_dates(self.notices)
-        #   Only care about final
-        self.notices = [n for n in self.notices if 'effective_on' in n]
-        self.eff_notices = group_by_eff_date(self.notices)
+        self.eff_notices = notices_for_cfr_part(self.cfr_title, self.cfr_part)
+        self.notices = []
+        for notice_group in self.eff_notices.values():
+            self.notices.extend(notice_group)
 
     def write_notices(self):
         for notice in self.notices:
@@ -165,11 +163,19 @@ class LayerCacheAggregator(object):
         if layer_name in ('external-citations', 'internal-citations',
                           'interpretations', 'paragraph-markers', 'keyterms',
                           'formatting', 'graphics'):
-            if not layer_name in self._caches:
+            if layer_name not in self._caches:
                 self._caches[layer_name] = LayerCache(self)
             return self._caches[layer_name]
         else:
             return EmptyCache()
+
+
+def notices_for_cfr_part(title, part):
+    """Retrieves all final notices for a title-part pair, orders them, and
+    returns them as a dict[effective_date_str] -> list(notices)"""
+    notices = fetch_notices(title, part, only_final=True)
+    modify_effective_dates(notices)
+    return group_by_eff_date(notices)
 
 
 def _fr_doc_to_doc_number(xml):
