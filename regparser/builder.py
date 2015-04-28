@@ -171,6 +171,8 @@ class LayerCacheAggregator(object):
 
 
 def notices_for_cfr_part(title, part):
+    """Retrieves all final notices for a title-part pair, orders them, and
+    returns them as a dict[effective_date_str] -> list(notices)"""
     notices = fetch_notices(title, part, only_final=True)
     modify_effective_dates(notices)
     return group_by_eff_date(notices)
