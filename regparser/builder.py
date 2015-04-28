@@ -32,7 +32,7 @@ class Builder(object):
         self.writer = api_writer.Client()
 
         self.eff_notices = self.checkpointer.checkpoint(
-            "notices",
+            "effective-notices",
             lambda: notices_for_cfr_part(self.cfr_title, self.cfr_part)
         )
         self.notices = []
