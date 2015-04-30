@@ -6,7 +6,8 @@ FR_BASE = "https://www.federalregister.gov"
 API_BASE = FR_BASE + "/api/v1/"
 
 
-def fetch_notice_json(cfr_title, cfr_part, only_final=False):
+def fetch_notice_json(cfr_title, cfr_part, only_final=False,
+                      max_effective_date=None):
     """Search through all articles associated with this part. Right now,
     limited to 1000; could use paging to fix this in the future."""
     params = {
@@ -21,6 +22,8 @@ def fetch_notice_json(cfr_title, cfr_part, only_final=False):
             "regulation_id_numbers", "start_page", "type", "volume"]}
     if only_final:
         params["conditions[type][]"] = 'RULE'
+    if max_effective_date:
+        params["conditions[effective_date][lte]"] = max_effective_date
     response = requests.get(API_BASE + "articles", params=params).json()
     if 'results' in response:
         return response['results']
