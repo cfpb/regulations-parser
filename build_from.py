@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
+
+import argparse
 import codecs
 import hashlib
 import logging
-import argparse
 
 try:
     import requests_cache
@@ -16,7 +17,6 @@ except ImportError:
 from regparser.diff import treediff
 from regparser.builder import (
     Builder, Checkpointer, LayerCacheAggregator, NullCheckpointer)
-
 
 def treediff_changes(lhs_tree, rhs_tree):
     """Used to compute differences between trees. Shorthand method"""
@@ -76,7 +76,9 @@ def parse_regulation(args):
     if args.generate_diffs:
         generate_diffs(doc_number, reg_tree, act_title_and_section, builder, layer_cache, checkpointer)
 
-def generate_diffs(doc_number, reg_tree, act_title_and_section, builder, layer_cache, checkpointer):
+
+def generate_diffs(doc_number, reg_tree, act_title_and_section, builder,
+        layer_cache, checkpointer):
     """ Generate all the diffs for the given regulation. Broken out into separate function
         to assist with profiling so it's easier to determine which parts of the parser take
         the most time
@@ -101,13 +103,11 @@ def generate_diffs(doc_number, reg_tree, act_title_and_section, builder, layer_c
         for rhs_version, rhs_tree in all_versions.iteritems():
             changes = checkpointer.checkpoint(
                 "-".join(["diff", lhs_version, rhs_version]),
-                lambda: treediff_changes(lhs_tree, rhs_tree)
-            )
-            # comparer = treediff.Compare(lhs_tree, rhs_tree)
-            # comparer.compare()
+            lambda: treediff_changes(lhs_tree, rhs_tree))
             builder.writer.diff(
                 reg_tree.label_id(), lhs_version, rhs_version
             ).write(changes)
+
 
 if __name__ == "__main__":
 

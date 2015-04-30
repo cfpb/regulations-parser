@@ -20,12 +20,13 @@ Here's an example, using CFPB's regulation H.
 1. `git clone https://github.com/cfpb/regulations-parser.git`
 1. `cd regulations-parser`
 1. `pip install -r requirements.txt`
-1. `wget http://www.gpo.gov/fdsys/pkg/CFR-2012-title12-vol8/xml/CFR-2012-title12-vol8-part1004.xml`
-1. `python build_from.py CFR-2012-title12-vol8-part1004.xml 12 15 1693`
+1. `wget
+   http://www.gpo.gov/fdsys/pkg/CFR-2012-title12-vol8/xml/CFR-2012-title12-vol8-part1004.xml`
+1. `python build_from.py CFR-2012-title12-vol8-part1004.xml 12 2011-18676 15
+   1693`
 
 At the end, you will have new directories for `regulation`, `layer`,
 `diff`, and `notice` which would mirror the JSON files sent to the API.
-
 
 ## Troubleshooting
 
@@ -34,18 +35,6 @@ If you get the message `wget: command not found`, install `wget` using the follo
 ```shell
 brew install wget
 ```
-
-## Quick Start with Modified Documents
-
-Here's an example using FEC's regulation 110, showing how documents can be
-tweaked to pass the parser.
-
-1. `git clone https://github.com/cfpb/regulations-parser.git`
-1. `cd regulations-parser`
-1. `git clone https://github.com/micahsaul/fec_docs`
-1. `pip install -r requirements.txt`
-1. `echo "LOCAL_XML_PATHS = ['fec_docs']" >> local_settings.py`
-1. `python build_from.py fec_docs/1997CFR/CFR-1997-title11-vol1-part110.xml 11 5 552`
 
 If you review the history of the `fec_docs` repo, you'll see some of the types
 of changes that need to be made.
@@ -149,19 +138,27 @@ regulation E).
 The syntax is 
 
 ```bash
-$ python build_from.py regulation.ext title act_title act_section
+$ python build_from.py regulation.ext title notice_doc_# act_title act_section
 ```
 
-For example, to match regulation H in the quick start above:
+For example, to match the reissuance above:
 ```bash
-$ python build_from.py CFR-2012-title12-vol8-part1004.xml 12 15 1693
+$ python build_from.py 725.xml 12 2013-1725 15 1693
 ```
 
 Here ```12``` is the CFR title number (in our case, for "Banks and
-Banking"), ```15``` is the
+Banking"), ```2013-1725``` is the last notice used to create this version
+(i.e. the last "final rule" which is currently in effect), ```15``` is the
 title of "the Act" and ```1693``` is the relevant section. Wherever the
 phrase "the Act" is used in the regulation, the external link parser will
-treat it as "15 U.S.C. 1693".
+treat it as "15 U.S.C. 1693".  The final rule number is used to pull in
+section-by-section analyses and deduce which notices were used to create
+this version of the regulation. It also helps determine which notices to use
+when building additional versions of the regulation. To find the document
+number, use the [Federal Register](https://www.federalregister.gov/),
+finding the last, effective final rule for your version of the regulation
+and copying the document number from the meta data (currently in a table on
+the right side).
 
 Running the command will generate four folders, ```regulation```,
 ```notice```, ``layer`` and possibly ``diff`` in the ```OUTPUT_DIR```
@@ -415,10 +412,6 @@ point in time. To activate this feature, pass in a directory name to the
 $ python build_from.py CFR-2012-title12-vol8-part1004.xml 12 15 1693 --checkpoint my-checkpoint-dir
 ```
 
-Inspecting the `my-checkpoint-dir`, you will see a list of steps in the
-pipeline. Deleting one of these steps will cause the `build_from` script to
-effectively skip to that point when parsing.
-
 ### Parsing Error Example
 
 Let's say you are already in a good steady state, that you can parse the
@@ -511,13 +504,9 @@ existing docs first.
 
 With the above examples, you should have been able to run the parser and
 generate some output. "But where's the website?" you ask. The parser was
-written to be as generic as possible, but integrating with `regulations-core`
-and `regulations-site` is likely where you'll want to end up. Here, we'll show
-one way to connect these applications up; see the individual repos for more
-configuration detail.
+written to be as generic as possible, but integrating with [regulations-core](https://github.com/cfpb/regulations-core) and [regulations-site](https://github.com/cfpb/regulations-site) is likely where you'll want to end up. Here, we'll show one way to connect these applications up. See the individual repos for more configuration detail.
 
-Let's set up `regulations-core` first. This is an API which will be used to
-both store and query the regulation data.
+Let's set up [regulations-core](https://github.com/cfpb/regulations-core) first. This is an API which will be used to both store and query the regulation data.
 
  1. `git clone https://github.com/cfpb/regulations-core.git`
  1. `cd regulations-core`
@@ -527,19 +516,20 @@ both store and query the regulation data.
  1. `./bin/django runserver 127.0.0.0:8888 &   # Starts the API`
 
 Then, we can configure the parser to write to this API and run it, here using
-the FEC example above
+the regulation H example above
 
  1. `cd /path/to/regulations-parser`
- 1. `echo "API_BASE = 'http://localhost:8888/'" >> local_settings.py`
- 1. `python build_from.py fec_docs/1997CFR/CFR-1997-title11-vol1-part110.xml 11 5 552`
+ 1. `echo "API_BASE = 'http://127.0.0.0:8888/'" >> local_settings.py`
+ 1. `python build_from.py CFR-2012-title12-vol8-part1004.xml 12 2011-18676 15
+   1693`
 
-Next up, we set up `regulations-site` to provide a webapp.
+Next up, we set up [regulations-site](https://github.com/cfpb/regulations-site) to provide a webapp.
 
- 1. `git clone https://github.com/18f/regulations-site.git`
+ 1. `git clone https://github.com/cfpb/regulations-site.git`
  1. `cd regulations-site`
  1. `buildout`
- 1. `echo "API_BASE = 'http://127.0.0.1:8888/'" >>
+ 1. `echo "API_BASE = 'http://127.0.0.0:8888/'" >>
     regulations/settings/local_settings.py`
  1. `./run_server.sh`
 
-Then, navigate to `http://localhost:8000/` in your browser to see the FEC reg.
+Then, navigate to `http://localhost:8000/` in your browser to see the reg.

@@ -85,3 +85,4 @@ regulations.egg-info
 
 # docs output
 docs/_build
+*.p
