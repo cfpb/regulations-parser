@@ -524,13 +524,13 @@ Let's set up [regulations-core](https://github.com/cfpb/regulations-core) first.
  1. `pip install zc.buildout`
  1. `buildout   # pulls in python dependencies`
  1. `./bin/django syncdb --migrate`
- 1. `./bin/django runserver 127.0.0.0:8888 &   # Starts the API`
+ 1. `./bin/django runserver 127.0.0.1:8888 &   # Starts the API`
 
 Then, we can configure the parser to write to this API and run it, here using
 the regulation H example above
 
  1. `cd /path/to/regulations-parser`
- 1. `echo "API_BASE = 'http://127.0.0.0:8888/'" >> local_settings.py`
+ 1. `echo "API_BASE = 'http://127.0.0.1:8888/'" >> local_settings.py`
  1. `python build_from.py CFR-2012-title12-vol8-part1004.xml 12 2011-18676 15
    1693`
 
@@ -539,7 +539,7 @@ Next up, we set up [regulations-site](https://github.com/cfpb/regulations-site) 
  1. `git clone https://github.com/cfpb/regulations-site.git`
  1. `cd regulations-site`
  1. `buildout`
- 1. `echo "API_BASE = 'http://127.0.0.0:8888/'" >>
+ 1. `echo "API_BASE = 'http://127.0.0.1:8888/'" >>
     regulations/settings/local_settings.py`
  1. `./run_server.sh`
 
