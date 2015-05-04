@@ -10,7 +10,7 @@ API, or even a git repository. The parser works hand-in-hand with
 [regulations-core](https://github.com/cfpb/regulations-core), an API for hosting the parsed regulations, and
 [regulation-site](https://github.com/cfpb/regulations-site), a front-end for the data structures generated.
 
-This repository is part of a larger project. To read about it, please see 
+This repository is part of a larger project. To read about it, please see
 [http://cfpb.github.io/eRegulations/](http://cfpb.github.io/eRegulations/).
 
 ## Quick Start
@@ -37,7 +37,7 @@ tweaked to pass the parser.
 1. `cd regulations-parser`
 1. `git clone https://github.com/cfpb/fr-notices.git`
 1. `pip install -r requirements.txt`
-1. `echo "LOCAL_XML_PATHS = ['fr-notices']" >> local_settings.py`
+1. `echo "LOCAL_XML_PATHS = ['fr-notices/']" >> local_settings.py`
 1. `python build_from.py fr-notices/articles/xml/201/131/725.xml 12 2011-31725 15 1693`
 
 If you review the history of the `fr-notices` repo, you'll see some of the types of changes that need to be made.
@@ -104,7 +104,7 @@ If running tests:
 
 Download the source code from GitHub (e.g. `git clone [URL]`)
 
-Make sure the `libxml` libraries are present. To install the libraries using [homebrew](http://brew.sh/), run `brew install libxml2`. 
+Make sure the `libxml` libraries are present. To install the libraries using [homebrew](http://brew.sh/), run `brew install libxml2`.
 On Ubuntu/Debian, install
 it via:
 
@@ -146,7 +146,7 @@ regulation E).
 
 ### Run the parser
 
-The syntax is 
+The syntax is
 
 ```bash
 $ python build_from.py regulation.ext title notice_doc_# act_title act_section
@@ -195,7 +195,7 @@ All of the settings listed in ```settings.py``` can be overridden in a
 * ```CFR_TITLES``` - array of CFR Title names (used in the meta layer); not
   required as those provided are current
 * ```DEFAULT_IMAGE_URL``` - string format used in the graphics layer; not
-  required as the default should be adequate 
+  required as the default should be adequate
 * ```IGNORE_DEFINITIONS_IN``` - a dictionary mapping CFR part numbers to a
   list of terms that should *not* contain definitions. For example, if
   'state' is a defined term, it may be useful to exclude the phrase 'shall
@@ -377,9 +377,9 @@ niceties associated with separating data from presentation.
 At points, however, we need to encode non-plain text concepts into the
 plain-text regulation. These include displaying images, tables, offsetting
 blocks of text, and subscripting. To encode these concepts, we use a
-variation of Markdown. 
+variation of Markdown.
 
-Images become 
+Images become
 
 ```
 ![Appendix A9](ER27DE11.000)
