@@ -22,20 +22,11 @@ logger = logging.getLogger('build_from')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Regulation parser')
-    parser.add_argument('filename',
-                        help='XML file containing the regulation')
-    parser.add_argument('title', type=int, help='Title number')
-    parser.add_argument('act_title', type=int, help='Act title',
-                        action='store')
-    parser.add_argument('act_section', type=int, help='Act section')
-    parser.add_argument('--generate-diffs', type=bool, help='Generate diffs?',
-                        required=False, default=True)
-    parser.add_argument('--checkpoint', required=False,
-                        help='Directory to save checkpoint data')
-
-    args = parser.parse_args()
+# @profile
+def parse_regulation(args):
+    """ Run the parser on the specified command-line arguments. Broken out
+        into separate function to assist in profiling.
+    """
     with codecs.open(args.filename, 'r', 'utf-8') as f:
         reg = f.read()
         file_digest = hashlib.sha256(reg.encode('utf-8')).hexdigest()
@@ -56,7 +47,6 @@ if __name__ == "__main__":
         lambda: Builder.determine_doc_number(reg, args.title, title_part))
     if not doc_number:
         raise ValueError("Could not determine document number")
-    del reg     # never used again
     checkpointer.suffix = ":".join(
         ["", title_part, str(args.title), doc_number])
 
@@ -75,35 +65,59 @@ if __name__ == "__main__":
     builder.gen_and_write_layers(reg_tree, act_title_and_section, layer_cache)
     layer_cache.replace_using(reg_tree)
 
-    # this used to assume implicitly that if gen-diffs was not specified it was
-    # True; changed it to explicit check
     if args.generate_diffs:
-        all_versions = {doc_number: FrozenNode.from_node(reg_tree)}
+        generate_diffs(doc_number, reg_tree, act_title_and_section, builder,
+                       layer_cache, checkpointer)
 
-        for last_notice, old, new_tree, notices in builder.revision_generator(
-                reg_tree):
-            version = last_notice['document_number']
-            logger.info("Version %s", version)
-            all_versions[version] = FrozenNode.from_node(new_tree)
-            builder.doc_number = version
-            builder.write_regulation(new_tree)
-            layer_cache.invalidate_by_notice(last_notice)
-            builder.gen_and_write_layers(new_tree, act_title_and_section,
-                                         layer_cache, notices)
-            layer_cache.replace_using(new_tree)
-            del last_notice, old, new_tree, notices     # free some memory
 
-        # convert to frozen trees
-        label_id = reg_tree.label_id()
-        writer = builder.writer
-        del reg_tree, layer_cache, builder  # free some memory
+def generate_diffs(doc_number, reg_tree, act_title_and_section, builder,
+                   layer_cache, checkpointer):
+    """ Generate all the diffs for the given regulation. Broken out into
+        separate function to assist with profiling so it's easier to determine
+        which parts of the parser take the most time """
+    all_versions = {doc_number: FrozenNode.from_node(reg_tree)}
 
-        # now build diffs - include "empty" diffs comparing a version to itself
-        for lhs_version, lhs_tree in all_versions.iteritems():
-            for rhs_version, rhs_tree in all_versions.iteritems():
-                changes = checkpointer.checkpoint(
-                    "-".join(["diff", lhs_version, rhs_version]),
-                    lambda: dict(changes_between(lhs_tree, rhs_tree)))
-                writer.diff(
-                    label_id, lhs_version, rhs_version
-                ).write(changes)
+    for last_notice, old, new_tree, notices in builder.revision_generator(
+            reg_tree):
+        version = last_notice['document_number']
+        logger.info("Version %s", version)
+        all_versions[version] = FrozenNode.from_node(new_tree)
+        builder.doc_number = version
+        builder.write_regulation(new_tree)
+        layer_cache.invalidate_by_notice(last_notice)
+        builder.gen_and_write_layers(new_tree, act_title_and_section,
+                                     layer_cache, notices)
+        layer_cache.replace_using(new_tree)
+        del last_notice, old, new_tree, notices     # free some memory
+
+    label_id = reg_tree.label_id()
+    writer = builder.writer
+    del reg_tree, layer_cache, builder  # free some memory
+
+    # now build diffs - include "empty" diffs comparing a version to itself
+    for lhs_version, lhs_tree in all_versions.iteritems():
+        for rhs_version, rhs_tree in all_versions.iteritems():
+            changes = checkpointer.checkpoint(
+                "-".join(["diff", lhs_version, rhs_version]),
+                lambda: dict(changes_between(lhs_tree, rhs_tree)))
+            writer.diff(
+                label_id, lhs_version, rhs_version
+            ).write(changes)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Regulation parser')
+    parser.add_argument('filename',
+                        help='XML file containing the regulation')
+    parser.add_argument('title', type=int, help='Title number')
+    parser.add_argument('act_title', type=int, help='Act title',
+                        action='store')
+    parser.add_argument('act_section', type=int, help='Act section')
+    parser.add_argument('--generate-diffs', type=bool, help='Generate diffs?',
+                        required=False, default=True)
+    parser.add_argument('--checkpoint', required=False,
+                        help='Directory to save checkpoint data')
+
+    args = parser.parse_args()
+
+    parse_regulation(args)
