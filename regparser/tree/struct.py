@@ -186,6 +186,7 @@ class FrozenNode(object):
         return self._hash
 
     def _generate_hash(self):
+        """Called during instantiation. Digests all fields"""
         hasher = hashlib.sha256()
         hasher.update(self.text.encode('utf-8'))
         hasher.update(self.tagged_text.encode('utf-8'))
@@ -197,9 +198,13 @@ class FrozenNode(object):
         return hasher.hexdigest()
 
     def __hash__(self):
+        """As the hash property is already distinctive, re-use it"""
         return hash(self.hash)
 
     def __eq__(self, other):
+        """We define equality as having the same fields except for children.
+        Instead of recursively inspecting them, we compare only their hash
+        (this is a Merkle tree)"""
         return (other.__class__ == self.__class__
                 and self.hash == other.hash
                 and self.text == other.text
@@ -212,6 +217,10 @@ class FrozenNode(object):
 
     @staticmethod
     def from_node(node):
+        """Convert a struct.Node (or similar) into a struct.FrozenNode. This
+        also checks if this node has already been instantiated. If so, it
+        returns the instantiated version (i.e. only one of each identical node
+        exists in memory)"""
         children = map(FrozenNode.from_node, node.children)
         fresh = FrozenNode(text=node.text, children=children, label=node.label,
                            title=node.title or '', node_type=node.node_type,

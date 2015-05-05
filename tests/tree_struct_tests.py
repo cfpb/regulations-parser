@@ -199,3 +199,18 @@ class FrozenNodeTests(TestCase):
         frozen2 = struct.FrozenNode.from_node(node2)
         self.assertNotEqual(id(node1), id(node2))
         self.assertEqual(id(frozen1), id(frozen2))
+
+    def test_hash(self):
+        """Different fields lead to different hashes. The same fields lead to
+        the same hash"""
+        args = {'text': 'text', 'children': [struct.FrozenNode(text='child')],
+                'label': ['b', 'c'], 'title': 'title',
+                'tagged_text': 'tagged_text'}
+        same1 = struct.FrozenNode(**args)
+        same2 = struct.FrozenNode(**args)
+        args['text'] = 'new text'
+        diff = struct.FrozenNode(**args)
+        self.assertNotEqual(id(same1), id(same2))
+        self.assertNotEqual(id(same2), id(diff))
+        self.assertEqual(same1.hash, same2.hash)
+        self.assertNotEqual(same1.hash, diff.hash)
