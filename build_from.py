@@ -13,15 +13,10 @@ except ImportError:
     # HTTP requests rather than looking it up from the cache
     pass
 
-from regparser.diff import treediff
 from regparser.builder import (
     Builder, Checkpointer, LayerCacheAggregator, NullCheckpointer)
-
-def treediff_changes(lhs_tree, rhs_tree):
-    """Used to compute differences between trees. Shorthand method"""
-    comparer = treediff.Compare(lhs_tree, rhs_tree)
-    comparer.compare()
-    return comparer.changes
+from regparser.diff.tree import changes_between
+from regparser.tree.struct import FrozenNode
 
 logger = logging.getLogger('build_from')
 logger.setLevel(logging.INFO)
@@ -100,10 +95,11 @@ def generate_diffs(doc_number, reg_tree, act_title_and_section, builder,
         for rhs_version, rhs_tree in all_versions.iteritems():
             changes = checkpointer.checkpoint(
                 "-".join(["diff", lhs_version, rhs_version]),
-                lambda: treediff_changes(lhs_tree, rhs_tree))
+                lambda: dict(changes_between(lhs_tree, rhs_tree)))
             builder.writer.diff(
                 reg_tree.label_id(), lhs_version, rhs_version
             ).write(changes)
+
         
 
 if __name__ == "__main__":
@@ -122,3 +118,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     parse_regulation(args)
+

@@ -15,7 +15,7 @@ class Node(object):
 
         self.text = unicode(text)
 
-        #defensive copy
+        # defensive copy
         self.children = list(children)
 
         self.label = [str(l) for l in label if l != '']
@@ -138,3 +138,68 @@ def treeify(nodes):
         root.children = root.children + treeify(children)
         roots.append(root)
     return roots
+
+
+class FrozenNode(object):
+    """Immutable interface for nodes. No guarantees about internal state."""
+    def __init__(self, text='', children=(), label=(), title='',
+                 node_type=Node.REGTEXT, tagged_text=''):
+        self._text = text or ''
+        self._children = tuple(children)
+        self._label = tuple(label)
+        self._title = title or ''
+        self._node_type = node_type
+        self._tagged_text = tagged_text or ''
+
+    @property
+    def text(self):
+        return self._text
+
+    @property
+    def children(self):
+        return self._children
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def title(self):
+        return self._title
+
+    @property
+    def node_type(self):
+        return self._node_type
+
+    @property
+    def tagged_text(self):
+        return self._tagged_text
+
+    def __repr__(self):
+        if not hasattr(self, '_repr_value'):
+            self._repr_value = (
+                "FrozenNode(text=%s, children=%s, label=%s, title=%s)"
+                % (repr(self.text), repr(self.children), repr(self.label),
+                   repr(self.title)))
+        return self._repr_value
+
+    def __cmp__(self, other):
+        return (other.__class__ == self.__class__
+                and cmp(repr(self), repr(other)))
+
+    def __hash__(self):
+        return hash(repr(self))
+
+    @staticmethod
+    def from_node(node):
+        children = map(FrozenNode.from_node, node.children)
+        return FrozenNode(text=node.text, children=children, label=node.label,
+                          title=node.title or '', node_type=node.node_type,
+                          tagged_text=getattr(node, 'tagged_text', '') or '')
+
+    @property
+    def label_id(self):
+        """Convert label into a string"""
+        if not hasattr(self, '_label_id'):
+            self._label_id = '-'.join(self.label)
+        return self._label_id

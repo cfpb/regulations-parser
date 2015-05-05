@@ -6,10 +6,22 @@ import logging
 import copy
 from collections import defaultdict
 
-from regparser.diff.treediff import node_to_dict
 from regparser.layer.paragraph_markers import marker_of
 from regparser.tree import struct
 from regparser.tree.paragraph import p_levels
+
+
+def node_to_dict(node):
+    """ Convert a node to a dictionary representation. We skip the
+    children, turning them instead into a list of labels instead. """
+    if not hasattr(node, 'child_labels'):
+        node.child_labels = [c.label_id() for c in node.children]
+
+    node_dict = {}
+    for k, v in node.__dict__.items():
+        if k not in ('children', 'source_xml'):
+            node_dict[k] = v
+    return node_dict
 
 
 def bad_label(node):
@@ -60,7 +72,7 @@ def find_candidate(root, label_last, amended_labels):
                              if impossible_label(n, amended_labels)]
         no_children = [n for n in candidates if n.children == []]
 
-        #If we have a single option in any of the categories, return that.
+        # If we have a single option in any of the categories, return that.
         if len(bad_labels) == 1:
             return bad_labels
         elif len(impossible_labels) == 1:
@@ -216,7 +228,7 @@ def flatten_tree(node_list, node):
     for c in node.children:
         flatten_tree(node_list, c)
 
-    #Don't be destructive.
+    # Don't be destructive.
     no_kids = copy.deepcopy(node)
     no_kids.children = []
     node_list.append(no_kids)
