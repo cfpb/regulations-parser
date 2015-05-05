@@ -56,6 +56,7 @@ if __name__ == "__main__":
         lambda: Builder.determine_doc_number(reg, args.title, title_part))
     if not doc_number:
         raise ValueError("Could not determine document number")
+    del reg     # never used again
     checkpointer.suffix = ":".join(
         ["", title_part, str(args.title), doc_number])
 
@@ -77,23 +78,25 @@ if __name__ == "__main__":
     # this used to assume implicitly that if gen-diffs was not specified it was
     # True; changed it to explicit check
     if args.generate_diffs:
-        all_versions = {doc_number: reg_tree}
+        all_versions = {doc_number: FrozenNode.from_node(reg_tree)}
 
         for last_notice, old, new_tree, notices in builder.revision_generator(
                 reg_tree):
             version = last_notice['document_number']
             logger.info("Version %s", version)
-            all_versions[version] = new_tree
+            all_versions[version] = FrozenNode.from_node(new_tree)
             builder.doc_number = version
             builder.write_regulation(new_tree)
             layer_cache.invalidate_by_notice(last_notice)
             builder.gen_and_write_layers(new_tree, act_title_and_section,
                                          layer_cache, notices)
             layer_cache.replace_using(new_tree)
+            del last_notice, old, new_tree, notices     # free some memory
 
         # convert to frozen trees
-        for doc in all_versions:
-            all_versions[doc] = FrozenNode.from_node(all_versions[doc])
+        label_id = reg_tree.label_id()
+        writer = builder.writer
+        del reg_tree, layer_cache, builder  # free some memory
 
         # now build diffs - include "empty" diffs comparing a version to itself
         for lhs_version, lhs_tree in all_versions.iteritems():
@@ -101,6 +104,6 @@ if __name__ == "__main__":
                 changes = checkpointer.checkpoint(
                     "-".join(["diff", lhs_version, rhs_version]),
                     lambda: dict(changes_between(lhs_tree, rhs_tree)))
-                builder.writer.diff(
-                    reg_tree.label_id(), lhs_version, rhs_version
+                writer.diff(
+                    label_id, lhs_version, rhs_version
                 ).write(changes)

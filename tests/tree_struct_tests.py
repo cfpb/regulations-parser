@@ -141,11 +141,28 @@ class DepthTreeTest(TestCase):
 class FrozenNodeTests(TestCase):
     def test_comparison(self):
         """Frozen nodes with the same values are considered equal"""
-        args = {'text': 'text', 'children': ['a', 'b'], 'label': ['b', 'c'],
-                'title': 'title', 'tagged_text': 'tagged_text'}
+        args = {'text': 'text', 'children': [struct.FrozenNode(text='child')],
+                'label': ['b', 'c'], 'title': 'title',
+                'tagged_text': 'tagged_text'}
         left = struct.FrozenNode(**args)
         right = struct.FrozenNode(**args)
+        self.assertNotEqual(id(left), id(right))
         self.assertEqual(left, right)
+
+    def test_in_set(self):
+        """Frozen nodes with the same values are not replaced in a set"""
+        args = {'text': 'text', 'children': [struct.FrozenNode(text='child')],
+                'label': ['b', 'c'], 'title': 'title',
+                'tagged_text': 'tagged_text'}
+        left = struct.FrozenNode(**args)
+        right = struct.FrozenNode(**args)
+        self.assertNotEqual(id(left), id(right))
+        dict_to_set = {left: set([left])}
+        self.assertTrue(right in dict_to_set)
+        self.assertTrue(right in dict_to_set[right])
+        set_node = dict_to_set[right].pop()
+        self.assertEqual(id(set_node), id(left))
+        self.assertNotEqual(id(set_node), id(right))
 
     def test_from_node(self):
         """Conversion from a normal struct Node should be accurate and
@@ -170,3 +187,15 @@ class FrozenNodeTests(TestCase):
         self.assertEqual(child.node_type, struct.Node.REGTEXT)
         self.assertEqual(child.tagged_text, '')
         self.assertEqual(child.children, ())
+
+    def test_from_node_reuse(self):
+        """If the same node is converted twice, from_node will only allocate
+        memory for it once"""
+        args = {'text': 'text', 'children': [], 'label': ['b', 'c'],
+                'title': 'title'}
+        node1 = struct.Node(**args)
+        node2 = struct.Node(**args)
+        frozen1 = struct.FrozenNode.from_node(node1)
+        frozen2 = struct.FrozenNode.from_node(node2)
+        self.assertNotEqual(id(node1), id(node2))
+        self.assertEqual(id(frozen1), id(frozen2))
