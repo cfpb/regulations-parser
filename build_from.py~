@@ -110,7 +110,7 @@ if __name__ == "__main__":
     parser.add_argument('filename',
                         help='XML file containing the regulation')
     parser.add_argument('title', type=int, help='Title number')
-    parser.add_argument('notice', type=str, help='Notice document number')
+    # parser.add_argument('notice', type=str, help='Notice document number')
     parser.add_argument('act_title', type=int, help='Act title',
                         action='store')
     parser.add_argument('act_section', type=int, help='Act section')
