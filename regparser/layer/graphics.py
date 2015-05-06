@@ -1,5 +1,6 @@
 from collections import defaultdict
 import re
+import logging
 
 import requests
 
@@ -13,7 +14,12 @@ class Graphics(Layer):
 
     def check_for_thumb(self, url):
         thumb_url = re.sub(r'(.(png|gif|jpg))$', '.thumb' + '\\1', url)
-        response = requests.head(thumb_url)
+
+        try:
+            response = requests.head(thumb_url)
+        except:
+            logging.warning("Error fetching %s" % thumb_url)
+            return
 
         if response.status_code == requests.codes.not_implemented:
             response = requests.get(thumb_url)
