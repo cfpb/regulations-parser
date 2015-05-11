@@ -207,6 +207,7 @@ class FrozenNode(object):
         (this is a Merkle tree)"""
         return (other.__class__ == self.__class__
                 and self.hash == other.hash
+                # Compare the fields to limit the effect of hash collisions
                 and self.text == other.text
                 and self.title == other.title
                 and self.node_type == other.node_type
