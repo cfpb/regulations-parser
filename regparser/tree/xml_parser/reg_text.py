@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 import re
 
 from lxml import etree
@@ -15,20 +15,30 @@ from regparser.tree.xml_parser import tree_utils
 
 def get_reg_part(reg_doc):
     """
-    The CFR Part number for a regulation is contained within
-    an EAR tag, for a Federal Register notice it's in a REGTEXT tag. Get the
-    part number of the regulation.
+    Depending on source, the CFR part number exists in different places. Fetch
+    it, wherever it is.
     """
 
-    #FR notice
-    reg_text_xml = reg_doc.xpath('//REGTEXT')
-    if reg_text_xml:
-        return reg_text_xml[0].attrib['PART']
+    potential_parts = []
+    potential_parts.extend(
+        # FR notice
+        node.attrib['PART'] for node in reg_doc.xpath('//REGTEXT'))
+    potential_parts.extend(
+        # e-CFR XML, under PART/EAR
+        node.text.replace('Pt.', '').strip()
+        for node in reg_doc.xpath('//PART/EAR')
+        if 'Pt.' in node.text)
+    potential_parts.extend(
+        # e-CFR XML, under FDSYS/HEADING
+        node.text.replace('PART', '').strip()
+        for node in reg_doc.xpath('//FDSYS/HEADING')
+        if 'PART' in node.text)
+    potential_parts.extend(
+        # e-CFR XML, under FDSYS/GRANULENUM
+        node.text.strip() for node in reg_doc.xpath('//FDSYS/GRANULENUM'))
 
-    #e-CFR XML
-    reg_ear = reg_doc.xpath('//PART/EAR')
-    if reg_ear:
-        return reg_ear[0].text.split('Pt.')[1].strip()
+    if potential_parts:
+        return potential_parts[0]
 
 
 def get_title(reg_doc):
@@ -186,7 +196,7 @@ def build_from_section(reg_part, section_xml):
 
     # Use constraint programming to figure out possible depth assignments
     depths = derive_depths(
-        [n.label[0] for n in nodes],
+        [node.label[0] for node in nodes],
         [rules.depth_type_order([mtypes.lower, mtypes.ints, mtypes.roman,
                                  mtypes.upper, mtypes.em_ints,
                                  mtypes.em_roman])])
