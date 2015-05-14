@@ -74,6 +74,21 @@ class Builder(object):
                 layer)
 
     def revision_generator(self, reg_tree):
+        for version, merged_changes in self.changes_in_sequence():
+            old_tree = reg_tree
+            reg_tree = self.checkpointer.checkpoint(
+                "compiled-" + version,
+                lambda: compile_regulation(old_tree, merged_changes))
+            notices = applicable_notices(self.notices, version)
+            first_notice = None
+            for notice in notices:
+                if notice['document_number'] == version:
+                    first_notice = notice
+            yield first_notice, old_tree, reg_tree, notices
+
+    def changes_in_sequence(self):
+        """Generator of version string, changes-object pairs. This can be used
+        to see what changes will be applied going forward."""
         relevant_notices = []
         for date in sorted(self.eff_notices.keys()):
             relevant_notices.extend(
@@ -81,13 +96,7 @@ class Builder(object):
                 if 'changes' in n and n['document_number'] != self.doc_number)
         for notice in relevant_notices:
             version = notice['document_number']
-            old_tree = reg_tree
-            merged_changes = self.merge_changes(version, notice['changes'])
-            reg_tree = self.checkpointer.checkpoint(
-                "compiled-" + version,
-                lambda: compile_regulation(old_tree, merged_changes))
-            notices = applicable_notices(self.notices, version)
-            yield notice, old_tree, reg_tree, notices
+            yield version, self.merge_changes(version, notice['changes'])
 
     def merge_changes(self, document_number, changes):
         patches = content.RegPatches().get(document_number)
