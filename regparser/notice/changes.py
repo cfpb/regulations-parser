@@ -246,7 +246,7 @@ def pretty_change(change):
     node = change.get('node')
     field = change.get('field')
     if change['action'] == Verb.PUT and field:
-        return '%s changed to: %s' % (field.strip('[]'),
+        return '%s changed to: %s' % (field.strip('[]').title(),
                                       node.get('title', node['text']))
     elif change['action'] in (Verb.PUT, Verb.POST):
         verb = 'Modified' if change['action'] == Verb.PUT else 'Added'
@@ -257,7 +257,7 @@ def pretty_change(change):
     elif change['action'] == Verb.DELETE:
         return 'Deleted'
     elif change['action'] == Verb.DESIGNATE:
-        return 'Moved to ' + change['destination']
+        return 'Moved to ' + '-'.join(change['destination'])
     elif change['action'] == Verb.RESERVE:
         return 'Reserved'
     elif change['action'] == 'KEEP':
