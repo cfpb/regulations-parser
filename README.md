@@ -218,6 +218,26 @@ All of the settings listed in ```settings.py``` can be overridden in a
   file will be used instead of retrieving the file, allowing for local
   edits, etc. to help the parser.
 
+## Other Utilities
+
+### Notice Order
+
+When debugging, it can be helpful to know how notices will be grouped and
+sequenced when compiling the regulation. The `notice_order.py` utility tells
+you exactly that information, once it is given a CFR title and part.
+
+```
+$ python notice_order.py 12 1026
+```
+
+By default, this only includes notices which explicitly change the text of the
+regulation. To include all final notices, add this flag:
+
+```
+$ python notice_order.py 12 1005 --include-notices-without-changes
+```
+
+
 ## Building the documentation
 
 For most tweaks, you will simply need to run the Sphinx documentation
