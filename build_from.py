@@ -113,8 +113,12 @@ if __name__ == "__main__":
     parser.add_argument('act_title', type=int, help='Act title',
                         action='store')
     parser.add_argument('act_section', type=int, help='Act section')
-    parser.add_argument('--generate-diffs', type=bool, help='Generate diffs?',
-                        required=False, default=True)
+    diffs = parser.add_mutually_exclusive_group(required=False)
+    diffs.add_argument('--generate-diffs', dest='generate_diffs',
+                       action='store_true', help='Generate diffs')
+    diffs.add_argument('--no-generate-diffs', dest='generate_diffs',
+                       action='store_false', help="Don't generate diffs")
+    diffs.set_defaults(generate_diffs=True)
     parser.add_argument('--checkpoint', required=False,
                         help='Directory to save checkpoint data')
 
