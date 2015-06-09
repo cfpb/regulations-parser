@@ -36,6 +36,7 @@ def get_reg_part(reg_doc):
     potential_parts.extend(
         # e-CFR XML, under FDSYS/GRANULENUM
         node.text.strip() for node in reg_doc.xpath('//FDSYS/GRANULENUM'))
+    potential_parts = [p for p in potential_parts if p.strip()]
 
     if potential_parts:
         return potential_parts[0]
