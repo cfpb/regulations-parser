@@ -1,4 +1,6 @@
+import codecs
 import copy
+import hashlib
 import os
 import pickle
 import re
@@ -323,3 +325,34 @@ class Checkpointer(object):
 class NullCheckpointer(object):
     def checkpoint(self, tag, fn, force=False):
         return fn()
+
+
+def tree_and_builder(filename, title, checkpoint_path=None):
+    """Reads the regulation file and parses it. Returns the resulting tree as
+    well as a Builder object for further manipulation"""
+    if checkpoint_path is None:
+        checkpointer = NullCheckpointer()
+    else:
+        checkpointer = Checkpointer(checkpoint_path)
+
+    reg_text = ''
+    with codecs.open(filename, 'r', 'utf-8') as f:
+        reg_text = f.read()
+    file_digest = hashlib.sha256(reg_text.encode('utf-8')).hexdigest()
+
+    reg_tree = checkpointer.checkpoint("init-tree-" + file_digest,
+                                       lambda: Builder.reg_tree(reg_text))
+    title_part = reg_tree.label_id()
+    doc_number = checkpointer.checkpoint(
+        "doc-number-" + file_digest,
+        lambda: Builder.determine_doc_number(reg_text, title, title_part))
+    if not doc_number:
+        raise ValueError("Could not determine document number")
+
+    checkpointer.suffix = ":".join(["", title_part, str(title), doc_number])
+
+    builder = Builder(cfr_title=title,
+                      cfr_part=title_part,
+                      doc_number=doc_number,
+                      checkpointer=checkpointer)
+    return reg_tree, builder
