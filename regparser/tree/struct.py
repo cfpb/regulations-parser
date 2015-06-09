@@ -1,4 +1,6 @@
+from collections import defaultdict
 from json import JSONEncoder
+import hashlib
 
 
 class Node(object):
@@ -142,6 +144,8 @@ def treeify(nodes):
 
 class FrozenNode(object):
     """Immutable interface for nodes. No guarantees about internal state."""
+    _pool = defaultdict(set)    # collection of all FrozenNodes, keyed by hash
+
     def __init__(self, text='', children=(), label=(), title='',
                  node_type=Node.REGTEXT, tagged_text=''):
         self._text = text or ''
@@ -150,6 +154,8 @@ class FrozenNode(object):
         self._title = title or ''
         self._node_type = node_type
         self._tagged_text = tagged_text or ''
+        self._hash = self._generate_hash()
+        FrozenNode._pool[self.hash].add(self)
 
     @property
     def text(self):
@@ -175,27 +181,54 @@ class FrozenNode(object):
     def tagged_text(self):
         return self._tagged_text
 
-    def __repr__(self):
-        if not hasattr(self, '_repr_value'):
-            self._repr_value = (
-                "FrozenNode(text=%s, children=%s, label=%s, title=%s)"
-                % (repr(self.text), repr(self.children), repr(self.label),
-                   repr(self.title)))
-        return self._repr_value
+    @property
+    def hash(self):
+        return self._hash
 
-    def __cmp__(self, other):
-        return (other.__class__ == self.__class__
-                and cmp(repr(self), repr(other)))
+    def _generate_hash(self):
+        """Called during instantiation. Digests all fields"""
+        hasher = hashlib.sha256()
+        hasher.update(self.text.encode('utf-8'))
+        hasher.update(self.tagged_text.encode('utf-8'))
+        hasher.update(self.title.encode('utf-8'))
+        hasher.update(self.label_id.encode('utf-8'))
+        hasher.update(self.node_type)
+        for child in self.children:
+            hasher.update(child.hash)
+        return hasher.hexdigest()
 
     def __hash__(self):
-        return hash(repr(self))
+        """As the hash property is already distinctive, re-use it"""
+        return hash(self.hash)
+
+    def __eq__(self, other):
+        """We define equality as having the same fields except for children.
+        Instead of recursively inspecting them, we compare only their hash
+        (this is a Merkle tree)"""
+        return (other.__class__ == self.__class__
+                and self.hash == other.hash
+                # Compare the fields to limit the effect of hash collisions
+                and self.text == other.text
+                and self.title == other.title
+                and self.node_type == other.node_type
+                and self.tagged_text == other.tagged_text
+                and self.label_id == other.label_id
+                and [c.hash for c in self.children] ==
+                    [c.hash for c in other.children])
 
     @staticmethod
     def from_node(node):
+        """Convert a struct.Node (or similar) into a struct.FrozenNode. This
+        also checks if this node has already been instantiated. If so, it
+        returns the instantiated version (i.e. only one of each identical node
+        exists in memory)"""
         children = map(FrozenNode.from_node, node.children)
-        return FrozenNode(text=node.text, children=children, label=node.label,
-                          title=node.title or '', node_type=node.node_type,
-                          tagged_text=getattr(node, 'tagged_text', '') or '')
+        fresh = FrozenNode(text=node.text, children=children, label=node.label,
+                           title=node.title or '', node_type=node.node_type,
+                           tagged_text=getattr(node, 'tagged_text', '') or '')
+        for el in FrozenNode._pool[fresh.hash]:
+            if el == fresh:
+                return el   # note we are _not_ returning fresh
 
     @property
     def label_id(self):
