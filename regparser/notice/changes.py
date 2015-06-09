@@ -192,7 +192,7 @@ def create_add_amendment(amendment):
         # Text is stars, but this is not the root. Explicitly try to keep
         # this node
         if text == '* * *':
-            change[label]['action'] = 'KEEP'
+            change[label]['action'] = Verb.KEEP
 
         # If text ends with a colon and is followed by stars, assume we are
         # only modifying the intro text
@@ -260,7 +260,7 @@ def pretty_change(change):
         return 'Moved to ' + '-'.join(change['destination'])
     elif change['action'] == Verb.RESERVE:
         return 'Reserved'
-    elif change['action'] == 'KEEP':
+    elif change['action'] == Verb.KEEP:
         return 'Mentioned but not modified'
     else:
         return change['action']
