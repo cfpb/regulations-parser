@@ -158,6 +158,14 @@ class AppendixProcessor(object):
                         label=[initial_marker(mtext)[0]])
             self.nodes.append(node)
 
+    def paragraph_with_dash(self, text):
+        """ The paragraph fills out with dashes, like Foo_____. """
+        self.paragraph_counter += 1
+        mtext = text + '_____'
+        n = Node(mtext, node_type=Node.APPENDIX,
+                 label=['p' + str(self.paragraph_counter)])
+        self.nodes.append(n)
+
     def paragraph_no_marker(self, text):
         """The paragraph has no (a) or a. etc."""
         self.paragraph_counter += 1
@@ -270,6 +278,8 @@ class AppendixProcessor(object):
             elif initial_marker(text) and child.tag in ('P', 'FP', 'HD'):
                 self.paragraph_with_marker(
                     text, tree_utils.get_node_text_tags_preserved(child))
+            elif child.tag in ('P', 'FP') and child.get('SOURCE') == 'FP-DASH':
+                self.paragraph_with_dash(text)
             elif child.tag in ('P', 'FP'):
                 self.paragraph_no_marker(text)
             elif child.tag == 'GPH':
