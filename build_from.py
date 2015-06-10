@@ -1,6 +1,4 @@
 import argparse
-import codecs
-import hashlib
 import logging
 
 
@@ -12,8 +10,7 @@ except ImportError:
     # HTTP requests rather than looking it up from the cache
     pass
 
-from regparser.builder import (
-    Builder, Checkpointer, LayerCacheAggregator, NullCheckpointer)
+from regparser.builder import LayerCacheAggregator, tree_and_builder
 from regparser.diff.tree import changes_between
 from regparser.tree.struct import FrozenNode
 
@@ -22,43 +19,20 @@ logger = logging.getLogger('build_from')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
+
 # @profile
 def parse_regulation(args):
     """ Run the parser on the specified command-line arguments. Broken out
         into separate function to assist in profiling.
     """
-    with codecs.open(args.filename, 'r', 'utf-8') as f:
-        reg = f.read()
-        file_digest = hashlib.sha256(reg.encode('utf-8')).hexdigest()
     act_title_and_section = [args.act_title, args.act_section]
-
-    if args.checkpoint:
-        checkpointer = Checkpointer(args.checkpoint)
-    else:
-        checkpointer = NullCheckpointer()
-
     #   First, the regulation tree
-    reg_tree = checkpointer.checkpoint(
-        "init-tree-" + file_digest,
-        lambda: Builder.reg_tree(reg))
-    title_part = reg_tree.label_id()
-    doc_number = checkpointer.checkpoint(
-        "doc-number-" + file_digest,
-        lambda: Builder.determine_doc_number(reg, args.title, title_part))
-    if not doc_number:
-        raise ValueError("Could not determine document number")
-    checkpointer.suffix = ":".join(
-        ["", title_part, str(args.title), doc_number])
-
-    #   Run Builder
-    builder = Builder(cfr_title=args.title,
-                      cfr_part=title_part,
-                      doc_number=doc_number,
-                      checkpointer=checkpointer)
+    reg_tree, builder = tree_and_builder(args.filename, args.title,
+                                         args.checkpoint)
     builder.write_notices()
 
     #   Always do at least the first reg
-    logger.info("Version %s", doc_number)
+    logger.info("Version %s", builder.doc_number)
     builder.write_regulation(reg_tree)
     layer_cache = LayerCacheAggregator()
 
@@ -66,15 +40,14 @@ def parse_regulation(args):
     layer_cache.replace_using(reg_tree)
 
     if args.generate_diffs:
-        generate_diffs(doc_number, reg_tree, act_title_and_section, builder,
-                       layer_cache, checkpointer)
+        generate_diffs(reg_tree, act_title_and_section, builder, layer_cache)
 
 
-def generate_diffs(doc_number, reg_tree, act_title_and_section, builder,
-                   layer_cache, checkpointer):
+def generate_diffs(reg_tree, act_title_and_section, builder, layer_cache):
     """ Generate all the diffs for the given regulation. Broken out into
         separate function to assist with profiling so it's easier to determine
         which parts of the parser take the most time """
+    doc_number, checkpointer = builder.doc_number, builder.checkpointer
     all_versions = {doc_number: FrozenNode.from_node(reg_tree)}
 
     for last_notice, old, new_tree, notices in builder.revision_generator(
