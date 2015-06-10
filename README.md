@@ -28,6 +28,20 @@ Here's an example, using CFPB's regulation H.
 At the end, you will have new directories for `regulation`, `layer`,
 `diff`, and `notice` which would mirror the JSON files sent to the API.
 
+## Quick Start with Modified Documents
+
+Here's an example using CFPB's regulation E, showing how documents can be
+tweaked to pass the parser.
+
+1. `git clone https://github.com/cfpb/regulations-parser.git`
+1. `cd regulations-parser`
+1. `git clone https://github.com/cfpb/fr-notices.git`
+1. `pip install -r requirements.txt`
+1. `echo "LOCAL_XML_PATHS = ['fr-notices']" >> local_settings.py`
+1. `python build_from.py fr-notices/articles/xml/201/131/725.xml 12 2011-31725 15 1693`
+
+If you review the history of the `fr-notices` repo, you'll see some of the types of changes that need to be made.
+
 ## Troubleshooting
 
 If you get the message `wget: command not found`, install `wget` using the following (we use [homebrew](http://brew.sh/)):
@@ -397,6 +411,18 @@ generating diffs (currently an n**2 operation). Generally, parsing will take
 less than ten minutes, but in the extreme example of reg Z, it currently
 requires several hours.
 
+There are a few methods to speed up this process. Installing `requests-cache`
+will cache API-read calls (such as those made when calling the Federal
+Register). The cache lives in an sqlite database (`fr_cache.sqlite`), which
+can be safely removed without error. The `build_from.py` pipeline can also
+include checkpoints -- that is, saving the state of the process up until some
+point in time. To activate this feature, pass in a directory name to the
+`--checkpoint` flag, e.g.
+
+```bash
+$ python build_from.py CFR-2012-title12-vol8-part1004.xml 12 15 1693 --checkpoint my-checkpoint-dir
+```
+
 ### Parsing Error Example
 
 Let's say you are already in a good steady state, that you can parse the
@@ -484,3 +510,37 @@ structure. AMDPARs, which contain the list of changes may also need to be
 simplified. If the same type of change needs to be made for multiple
 documents, consider adding a corresponding rule to the parser -- just test
 existing docs first.
+
+### Integration with regulations-core and regulations-site
+
+With the above examples, you should have been able to run the parser and
+generate some output. "But where's the website?" you ask. The parser was
+written to be as generic as possible, but integrating with [regulations-core](https://github.com/cfpb/regulations-core) and [regulations-site](https://github.com/cfpb/regulations-site) is likely where you'll want to end up. Here, we'll show one way to connect these applications up. See the individual repos for more configuration detail.
+
+Let's set up [regulations-core](https://github.com/cfpb/regulations-core) first. This is an API which will be used to both store and query the regulation data.
+
+ 1. `git clone https://github.com/cfpb/regulations-core.git`
+ 1. `cd regulations-core`
+ 1. `pip install zc.buildout`
+ 1. `buildout   # pulls in python dependencies`
+ 1. `./bin/django syncdb --migrate`
+ 1. `./bin/django runserver 127.0.0.0:8888 &   # Starts the API`
+
+Then, we can configure the parser to write to this API and run it, here using
+the regulation H example above
+
+ 1. `cd /path/to/regulations-parser`
+ 1. `echo "API_BASE = 'http://127.0.0.0:8888/'" >> local_settings.py`
+ 1. `python build_from.py CFR-2012-title12-vol8-part1004.xml 12 2011-18676 15
+   1693`
+
+Next up, we set up [regulations-site](https://github.com/cfpb/regulations-site) to provide a webapp.
+
+ 1. `git clone https://github.com/cfpb/regulations-site.git`
+ 1. `cd regulations-site`
+ 1. `buildout`
+ 1. `echo "API_BASE = 'http://127.0.0.0:8888/'" >>
+    regulations/settings/local_settings.py`
+ 1. `./run_server.sh`
+
+Then, navigate to `http://localhost:8000/` in your browser to see the reg.

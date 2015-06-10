@@ -7,3 +7,4 @@ regulations
 regcontent
 
 docs/_build
+*.p

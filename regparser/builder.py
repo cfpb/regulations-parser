@@ -1,7 +1,12 @@
 import copy
+import os
+import pickle
+import re
+
+from lxml import etree
 
 from regparser import api_writer, content
-from regparser.federalregister import fetch_notices
+from regparser.federalregister import fetch_notice_json, fetch_notices
 from regparser.history.notices import (
     applicable as applicable_notices, group_by_eff_date)
 from regparser.history.delays import modify_effective_dates
@@ -11,7 +16,7 @@ from regparser.layer import (
     table_of_contents, terms)
 from regparser.notice.compiler import compile_regulation
 from regparser.tree import struct
-from regparser.tree.build import build_whole_regtree
+# from regparser.tree.build import build_whole_regtree
 from regparser.tree.xml_parser import reg_text
 
 
@@ -19,14 +24,17 @@ class Builder(object):
     """Methods used to build all versions of a single regulation, their
     layers, etc. It is largely glue code"""
 
-    def __init__(self, cfr_title, cfr_part, doc_number):
+    def __init__(self, cfr_title, cfr_part, doc_number, checkpointer=None):
         self.cfr_title = cfr_title
         self.cfr_part = cfr_part
         self.doc_number = doc_number
+        self.checkpointer = checkpointer or NullCheckpointer()
         self.writer = api_writer.Client()
 
-        self.notices = fetch_notices(self.cfr_title, self.cfr_part,
-                                     only_final=True)
+        self.notices = self.checkpointer.checkpoint(
+            "notices",
+            lambda: fetch_notices(self.cfr_title, self.cfr_part,
+                                  only_final=True))
         modify_effective_dates(self.notices)
         #   Only care about final
         self.notices = [n for n in self.notices if 'effective_on' in n]
@@ -58,9 +66,11 @@ class Builder(object):
                 ('keyterms', key_terms.KeyTerms),
                 ('formatting', formatting.Formatting),
                 ('graphics', graphics.Graphics)):
-            layer = layer_class(
-                reg_tree, self.cfr_title, self.doc_number, notices,
-                act_info).build(cache.cache_for(ident))
+            layer = self.checkpointer.checkpoint(
+                ident + "-" + self.doc_number,
+                lambda: layer_class(
+                    reg_tree, self.cfr_title, self.doc_number, notices,
+                    act_info).build(cache.cache_for(ident)))
             self.writer.layer(ident, self.cfr_part, self.doc_number).write(
                 layer)
 
@@ -74,7 +84,9 @@ class Builder(object):
             version = notice['document_number']
             old_tree = reg_tree
             merged_changes = self.merge_changes(version, notice['changes'])
-            reg_tree = compile_regulation(old_tree, merged_changes)
+            reg_tree = self.checkpointer.checkpoint(
+                "compiled-" + version,
+                lambda: compile_regulation(old_tree, merged_changes))
             notices = applicable_notices(self.notices, version)
             yield notice, old_tree, reg_tree, notices
 
@@ -94,7 +106,20 @@ class Builder(object):
         if reg_str[:1] == '<':  # XML
             return reg_text.build_tree(reg_str)
         else:
-            return build_whole_regtree(reg_str)
+            raise ValueError("Building from text input is no longer "
+                             "supported")
+            # return build_whole_regtree(reg_str)
+
+    @staticmethod
+    def determine_doc_number(reg_str, title, title_part):
+        """Instead of requiring the user provide a doc number, we can find it
+        within the xml file"""
+        # @todo: remove the double-conversion
+        reg_xml = etree.fromstring(reg_str)
+        doc_number = _fr_doc_to_doc_number(reg_xml)
+        if not doc_number:
+            doc_number = _fdsys_to_doc_number(reg_xml, title, title_part)
+        return doc_number
 
 
 class LayerCacheAggregator(object):
@@ -150,11 +175,33 @@ class LayerCacheAggregator(object):
         if layer_name in ('external-citations', 'internal-citations',
                           'interpretations', 'paragraph-markers', 'keyterms',
                           'formatting', 'graphics'):
-            if not layer_name in self._caches:
+            if layer_name not in self._caches:
                 self._caches[layer_name] = LayerCache(self)
             return self._caches[layer_name]
         else:
             return EmptyCache()
+
+
+def _fr_doc_to_doc_number(xml):
+    """Pull out a document number from an FR document, i.e. a notice"""
+    frdoc_els = xml.xpath('//FRDOC')
+    if len(frdoc_els) > 0:
+        frdoc_pieces = frdoc_els[0].text.split()
+        if len(frdoc_pieces) > 2 and frdoc_pieces[:2] == ['[FR', 'Doc.']:
+            return frdoc_pieces[2]
+
+
+def _fdsys_to_doc_number(xml, title, title_part):
+    """Pull out a document number from an FDSYS document, i.e. an annual
+    edition of a reg"""
+    original_date_els = xml.xpath('//FDSYS/ORIGINALDATE')
+    if len(original_date_els) > 0:
+        date = original_date_els[0].text
+        #   Grab oldest document number from Federal register API
+        notices = fetch_notice_json(title, title_part, only_final=True,
+                                    max_effective_date=date)
+        if notices:
+            return notices[0]['document_number']
 
 
 class LayerCache(object):
@@ -179,3 +226,81 @@ class EmptyCache(object):
     node, so it should not be cached."""
     def fetch_or_process(self, layer, node):
         return layer.process(node)
+
+
+def _serialize_xml_fields(node):
+    if node.source_xml is not None:
+        node.source_xml = etree.tostring(node.source_xml)
+
+
+def _deserialize_xml_fields(node):
+    if node.source_xml:
+        node.source_xml = etree.fromstring(node.source_xml)
+
+
+class Checkpointer(object):
+    """Save checkpoints during the build pipeline. Generally, a caller will
+    specify, a unique tag (a string) and a fallback function (for how to
+    compute it when there is no checkpoint). Calling checkpoint increment the
+    counter field, which is prefixed to the filename to limit the risk of
+    re-ordering collisions."""
+    def __init__(self, path):
+        self.counter = 0
+        self.path = path
+        self.suffix = ""
+        self.ignore_checkpoints = False
+        if not os.path.isdir(path):
+            os.makedirs(path)
+
+    def _filename(self, tag):
+        """Combine the counter and tag name to create a filename"""
+        name = str(self.counter).zfill(6) + ":"
+        name += re.sub(r"\s", "", tag.lower())
+        name += self.suffix + ".p"
+        return os.path.join(self.path, name)
+
+    def _serialize(self, tag, obj):
+        """Performs class-specific conversions before writing to a file"""
+        if isinstance(obj, struct.Node):
+            obj = copy.deepcopy(obj)
+            struct.walk(obj, _serialize_xml_fields)
+
+        with open(self._filename(tag), 'wb') as to_write:
+            pickle.dump(obj, to_write)
+
+    def _deserialize(self, tag):
+        """Attempts to read the object from disk. Performs class-specific
+        conversions when deserializing"""
+        name = self._filename(tag)
+        if os.path.exists(name):
+            with open(name, 'rb') as to_read:
+                try:
+                    obj = pickle.load(to_read)
+                except Exception:   # something bad happened during unpickling
+                    obj = None
+
+            if isinstance(obj, struct.Node):
+                struct.walk(obj, _deserialize_xml_fields)
+            return obj
+
+    def _reset(self):
+        """Used for testing"""
+        self.counter = 0
+        self.ignore_checkpoints = False
+
+    def checkpoint(self, tag, fn, force=False):
+        """Primary interface for storing an object"""
+        self.counter += 1
+        existing = self._deserialize(tag)
+        if not force and existing is not None and not self.ignore_checkpoints:
+            return existing
+        else:
+            result = fn()
+            self._serialize(tag, result)
+            self.ignore_checkpoints = True
+            return result
+
+
+class NullCheckpointer(object):
+    def checkpoint(self, tag, fn, force=False):
+        return fn()
