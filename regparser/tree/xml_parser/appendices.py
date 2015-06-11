@@ -138,6 +138,14 @@ class AppendixProcessor(object):
 
         self.m_stack.add(self.depth, n)
 
+    def insert_dashes(self, xml_node, text):
+        """ If paragraph has a SOURCE attribute with a value of FP-DASH 
+            it fills out with dashes, like Foo_____. """
+        mtext = text
+        if xml_node.get('SOURCE') == 'FP-DASH':
+            mtext = mtext + '_____'
+        return mtext
+
     def paragraph_with_marker(self, text, tagged_text):
         """The paragraph has a marker, like (a) or a. etc."""
         # To aid in determining collapsed paragraphs, replace any
@@ -157,14 +165,6 @@ class AppendixProcessor(object):
             node = Node(mtext, node_type=Node.APPENDIX,
                         label=[initial_marker(mtext)[0]])
             self.nodes.append(node)
-
-    def paragraph_with_dash(self, text):
-        """ The paragraph fills out with dashes, like Foo_____. """
-        self.paragraph_counter += 1
-        mtext = text + '_____'
-        n = Node(mtext, node_type=Node.APPENDIX,
-                 label=['p' + str(self.paragraph_counter)])
-        self.nodes.append(n)
 
     def paragraph_no_marker(self, text):
         """The paragraph has no (a) or a. etc."""
@@ -276,11 +276,12 @@ class AppendixProcessor(object):
                 self.end_group()
                 self.subheader(child, text)
             elif initial_marker(text) and child.tag in ('P', 'FP', 'HD'):
+                text = self.insert_dashes(child, text)
                 self.paragraph_with_marker(
-                    text, tree_utils.get_node_text_tags_preserved(child))
-            elif child.tag in ('P', 'FP') and child.get('SOURCE') == 'FP-DASH':
-                self.paragraph_with_dash(text)
+                    text,
+                    tree_utils.get_node_text_tags_preserved(child))
             elif child.tag in ('P', 'FP'):
+                text = self.insert_dashes(child, text)
                 self.paragraph_no_marker(text)
             elif child.tag == 'GPH':
                 self.graphic(child)
