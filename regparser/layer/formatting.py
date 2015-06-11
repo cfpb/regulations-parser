@@ -103,7 +103,7 @@ class Formatting(Layer):
                            + r"(?P<lines>([^\n]*\n)+)"
                            + r"```")
     subscript_re = re.compile(r"([a-zA-Z0-9]+)_\{(\w+)\}")
-    dashes_re = re.compile(r"_{5}$")
+    dashes_re = re.compile(r"_{5,}$")
 
     def process(self, node):
         layer_el = []
