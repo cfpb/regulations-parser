@@ -51,6 +51,7 @@ class Verb(Token):
     DELETE = 'DELETE'
     DESIGNATE = 'DESIGNATE'
     RESERVE = 'RESERVE'
+    KEEP = 'KEEP'
 
     def __init__(self, verb, active, and_prefix=False):
         self.verb = verb
