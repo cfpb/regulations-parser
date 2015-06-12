@@ -37,7 +37,7 @@ class RegTextTest(TestCase):
                 <P>bop means baz</P>
             </SECTION>
         """
-        node = build_from_section('8675', etree.fromstring(xml))[0]
+        node = reg_text.build_from_section('8675', etree.fromstring(xml))[0]
         self.assertEqual('', node.text.strip())
         self.assertEqual(1, len(node.children))
         self.assertEqual(['8675', '309'], node.label)
