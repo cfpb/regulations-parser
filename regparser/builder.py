@@ -2,6 +2,7 @@ import copy
 import os
 import pickle
 import re
+import logging
 
 from lxml import etree
 
@@ -15,6 +16,7 @@ from regparser.layer import (
     interpretations, meta, paragraph_markers, section_by_section,
     table_of_contents, terms)
 from regparser.notice.compiler import compile_regulation
+from regparser.notice.build import build_notice
 from regparser.tree import struct
 # from regparser.tree.build import build_whole_regtree
 from regparser.tree.xml_parser import reg_text
@@ -30,15 +32,48 @@ class Builder(object):
         self.doc_number = doc_number
         self.checkpointer = checkpointer or NullCheckpointer()
         self.writer = api_writer.Client()
+        self.notices_json = []
+        #self.notices = self.checkpointer.checkpoint('notice', lambda: fetch_notices(self.cfr_title, self.cfr_part, only_final=True))
+        self.notices = []
+        self.notice_doc_numbers = []
+        #self.eff_notices = group_by_eff_date(self.notices)
+        self.eff_notices = []
 
-        self.notices = self.checkpointer.checkpoint(
-            "notices",
-            lambda: fetch_notices(self.cfr_title, self.cfr_part,
-                                  only_final=True))
+    def fetch_notices_json(self):
+        self.notices_json = fetch_notice_json(self.cfr_title, self.cfr_part, only_final=True)
+        self.notice_doc_numbers = [notice_json['document_number']
+                                   for notice_json in self.notices_json]
+
+    def build_single_notice(self, notice_json, checkpoint=True):
+        print 'building notice {0} from {1}'.format(notice_json['document_number'], notice_json['full_text_xml_url'])
+        if checkpoint:
+            notice = self.checkpointer.checkpoint(
+                'notice-' + notice_json['document_number'],
+                lambda: build_notice(self.cfr_title, self.cfr_part, notice_json)
+            )
+        else:
+            notice = build_notice(self.cfr_title, self.cfr_part, notice_json)
+
+        return notice
+
+    def build_notice_from_doc_number(self, doc_number, checkpoint=True):
+        if doc_number in self.notice_doc_numbers:
+            notice_json = [notice for notice in self.notices_json
+                           if notice['document_number'] == doc_number][0]
+            notice = self.build_single_notice(notice_json, checkpoint)
+            self.notices.extend(notice)
+            self.eff_notices = group_by_eff_date(self.notices)
+            return notice
+
+    def build_notices(self, checkpoint=True):
+        for result in self.notices_json:
+            notice = self.build_single_notice(result, checkpoint)
+            self.notices.extend(notice)
         modify_effective_dates(self.notices)
         #   Only care about final
         self.notices = [n for n in self.notices if 'effective_on' in n]
         self.eff_notices = group_by_eff_date(self.notices)
+
 
     def write_notices(self):
         for notice in self.notices:
@@ -79,6 +114,7 @@ class Builder(object):
         for date in sorted(self.eff_notices.keys()):
             for notice in self.eff_notices[date]:
                 version = notice['document_number']
+                print ('compiling notice {0} effective on {1}'.format(notice['document_number'], date))
                 merged_changes = self.merge_changes(version, notice.get('changes', {}))
                 if (self.doc_number != version and
                         any(k.startswith(reg_tree.label[0])
@@ -291,6 +327,7 @@ class Checkpointer(object):
 
     def checkpoint(self, tag, fn, force=False):
         """Primary interface for storing an object"""
+        print 'checkpointing', tag
         self.counter += 1
         existing = self._deserialize(tag)
         if not force and existing is not None and not self.ignore_checkpoints:

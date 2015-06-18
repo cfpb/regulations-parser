@@ -18,7 +18,7 @@ class Node(object):
         #defensive copy
         self.children = list(children)
 
-        self.label = [str(l) for l in label if l != '']
+        self.label = [unicode(l) for l in label if l != '']
         title = unicode(title or '')
         self.title = title or None
         self.node_type = node_type

@@ -63,6 +63,8 @@ def parse_regulation(args):
                       doc_number=doc_number,
                       checkpointer=checkpointer)
 
+    builder.fetch_notices_json()
+    builder.build_notices()
     builder.write_notices()
 
     #   Always do at least the first reg
@@ -108,6 +110,49 @@ def generate_diffs(doc_number, reg_tree, act_title_and_section, builder,
                 reg_tree.label_id(), lhs_version, rhs_version
             ).write(changes)
 
+def build_by_notice(filename, title, doc_number, act_title, act_section, notice_doc_numbers, checkpoint=None):
+
+    with codecs.open(filename, 'r', 'utf-8') as f:
+        reg = f.read()
+        file_digest = hashlib.sha256(reg.encode('utf-8')).hexdigest()
+
+    if checkpoint:
+        checkpointer = Checkpointer(checkpoint)
+    else:
+        checkpointer = NullCheckpointer()
+
+    # build the initial tree
+    reg_tree = checkpointer.checkpoint(
+        "init-tree-" + file_digest,
+        lambda: Builder.reg_tree(reg))
+
+    title_part = reg_tree.label_id()
+
+    checkpointer.suffix = ":".join(
+        ["", title_part, str(args.title), doc_number])
+
+    # create the builder
+    builder = Builder(cfr_title=title,
+                      cfr_part=title_part,
+                      doc_number=doc_number,
+                      checkpointer=checkpointer)
+
+    builder.fetch_notices_json()
+
+    for notice in notice_doc_numbers:
+        builder.build_notice_from_doc_number(notice)
+
+    builder.write_regulation(reg_tree)
+    layer_cache = LayerCacheAggregator()
+
+    act_title_and_section = [act_title, act_section]
+
+    builder.gen_and_write_layers(reg_tree, act_title_and_section, layer_cache)
+    layer_cache.replace_using(reg_tree)
+
+    if args.generate_diffs:
+        generate_diffs(doc_number, reg_tree, act_title_and_section, builder, layer_cache, checkpointer)
+
 
 if __name__ == "__main__":
 
@@ -122,6 +167,13 @@ if __name__ == "__main__":
     parser.add_argument('--checkpoint', required=False,
                         help='Directory to save checkpoint data')
 
+    parser.add_argument('--operation', action='store')
+    parser.add_argument('--notices-to-apply', nargs='*', action='store')
+
     args = parser.parse_args()
-    
-    parse_regulation(args)
+
+    if args.operation == 'build_by_notice':
+        build_by_notice(args.filename, args.title, args.notice, args.act_title,
+                        args.act_section, args.notices_to_apply, args.checkpoint)
+    else:
+        parse_regulation(args)
