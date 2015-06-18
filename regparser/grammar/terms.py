@@ -1,7 +1,7 @@
 #vim: set encoding=utf-8
 from pyparsing import (
     LineStart, Literal, OneOrMore, Optional, Regex, SkipTo, srange, Suppress,
-    Word, ZeroOrMore)
+    Word, ZeroOrMore, NotAny)
 
 from regparser.grammar import atomic, unified
 from regparser.grammar.utils import DocLiteral, keep_pos, Marker
@@ -16,6 +16,7 @@ smart_quotes = (
 
 e_tag = (
     Suppress(Regex(r"<E[^>]*>"))
+    + NotAny(Marker("this") + Marker("term")) 
     + OneOrMore(
         Word(srange("[a-zA-Z-]"))
     ).setParseAction(keep_pos).setResultsName("term")
