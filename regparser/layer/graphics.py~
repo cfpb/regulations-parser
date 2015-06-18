@@ -3,6 +3,7 @@ import re
 import logging
 
 import requests
+import httplib
 
 from regparser import content
 from regparser.layer.layer import Layer

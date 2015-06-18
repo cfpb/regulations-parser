@@ -10,7 +10,7 @@ API, or even a git repository. The parser works hand-in-hand with
 [regulations-core](https://github.com/cfpb/regulations-core), an API for hosting the parsed regulations, and
 [regulation-site](https://github.com/cfpb/regulations-site), a front-end for the data structures generated.
 
-This repository is part of a larger project. To read about it, please see 
+This repository is part of a larger project. To read about it, please see
 [http://cfpb.github.io/eRegulations/](http://cfpb.github.io/eRegulations/).
 
 ## Quick Start
@@ -93,7 +93,7 @@ If running tests:
 
 Download the source code from GitHub (e.g. `git clone [URL]`)
 
-Make sure the `libxml` libraries are present. To install the libraries using [homebrew](http://brew.sh/), run `brew install libxml2`. 
+Make sure the `libxml` libraries are present. To install the libraries using [homebrew](http://brew.sh/), run `brew install libxml2`.
 On Ubuntu/Debian, install
 it via:
 
@@ -135,7 +135,7 @@ regulation E).
 
 ### Run the parser
 
-The syntax is 
+The syntax is
 
 ```bash
 $ python build_from.py regulation.ext title notice_doc_# act_title act_section
@@ -184,7 +184,7 @@ All of the settings listed in ```settings.py``` can be overridden in a
 * ```CFR_TITLES``` - array of CFR Title names (used in the meta layer); not
   required as those provided are current
 * ```DEFAULT_IMAGE_URL``` - string format used in the graphics layer; not
-  required as the default should be adequate 
+  required as the default should be adequate
 * ```IGNORE_DEFINITIONS_IN``` - a dictionary mapping CFR part numbers to a
   list of terms that should *not* contain definitions. For example, if
   'state' is a defined term, it may be useful to exclude the phrase 'shall
@@ -206,6 +206,26 @@ All of the settings listed in ```settings.py``` can be overridden in a
   Federal Register. If a notice is present in one of the local paths, that
   file will be used instead of retrieving the file, allowing for local
   edits, etc. to help the parser.
+
+## Other Utilities
+
+### Notice Order
+
+When debugging, it can be helpful to know how notices will be grouped and
+sequenced when compiling the regulation. The `notice_order.py` utility tells
+you exactly that information, once it is given a CFR title and part.
+
+```
+$ python notice_order.py 12 1026
+```
+
+By default, this only includes notices which explicitly change the text of the
+regulation. To include all final notices, add this flag:
+
+```
+$ python notice_order.py 12 1005 --include-notices-without-changes
+```
+
 
 ## Building the documentation
 
@@ -366,9 +386,9 @@ niceties associated with separating data from presentation.
 At points, however, we need to encode non-plain text concepts into the
 plain-text regulation. These include displaying images, tables, offsetting
 blocks of text, and subscripting. To encode these concepts, we use a
-variation of Markdown. 
+variation of Markdown.
 
-Images become 
+Images become
 
 ```
 ![Appendix A9](ER27DE11.000)
@@ -513,13 +533,13 @@ Let's set up [regulations-core](https://github.com/cfpb/regulations-core) first.
  1. `pip install zc.buildout`
  1. `buildout   # pulls in python dependencies`
  1. `./bin/django syncdb --migrate`
- 1. `./bin/django runserver 127.0.0.0:8888 &   # Starts the API`
+ 1. `./bin/django runserver 127.0.0.1:8888 &   # Starts the API`
 
 Then, we can configure the parser to write to this API and run it, here using
 the regulation H example above
 
  1. `cd /path/to/regulations-parser`
- 1. `echo "API_BASE = 'http://127.0.0.0:8888/'" >> local_settings.py`
+ 1. `echo "API_BASE = 'http://127.0.0.1:8888/'" >> local_settings.py`
  1. `python build_from.py CFR-2012-title12-vol8-part1004.xml 12 2011-18676 15
    1693`
 
@@ -528,7 +548,7 @@ Next up, we set up [regulations-site](https://github.com/cfpb/regulations-site) 
  1. `git clone https://github.com/cfpb/regulations-site.git`
  1. `cd regulations-site`
  1. `buildout`
- 1. `echo "API_BASE = 'http://127.0.0.0:8888/'" >>
+ 1. `echo "API_BASE = 'http://127.0.0.1:8888/'" >>
     regulations/settings/local_settings.py`
  1. `./run_server.sh`
 
