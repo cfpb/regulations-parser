@@ -16,7 +16,6 @@ smart_quotes = (
 
 e_tag = (
     Suppress(Regex(r"<E[^>]*>"))
-    + NotAny(Marker("this") + Marker("term")) 
     + OneOrMore(
         Word(srange("[a-zA-Z-]"))
     ).setParseAction(keep_pos).setResultsName("term")
