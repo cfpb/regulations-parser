@@ -1,4 +1,6 @@
+import codecs
 import copy
+import hashlib
 import os
 import pickle
 import re
@@ -74,6 +76,24 @@ class Builder(object):
                 layer)
 
     def revision_generator(self, reg_tree):
+        """Given an initial regulation tree, this will emit (and checkpoint)
+        new versions of the tree, along with the notice that caused the
+        change. This is a generator, so processing only occurs as needed"""
+        for version, merged_changes in self.changes_in_sequence():
+            old_tree = reg_tree
+            reg_tree = self.checkpointer.checkpoint(
+                "compiled-" + version,
+                lambda: compile_regulation(old_tree, merged_changes))
+            notices = applicable_notices(self.notices, version)
+            first_notice = None
+            for notice in notices:
+                if notice['document_number'] == version:
+                    first_notice = notice
+            yield first_notice, old_tree, reg_tree, notices
+
+    def changes_in_sequence(self):
+        """Generator of version string, changes-object pairs. This can be used
+        to see what changes will be applied going forward."""
         relevant_notices = []
         for date in sorted(self.eff_notices.keys()):
             relevant_notices.extend(
@@ -81,13 +101,7 @@ class Builder(object):
                 if 'changes' in n and n['document_number'] != self.doc_number)
         for notice in relevant_notices:
             version = notice['document_number']
-            old_tree = reg_tree
-            merged_changes = self.merge_changes(version, notice['changes'])
-            reg_tree = self.checkpointer.checkpoint(
-                "compiled-" + version,
-                lambda: compile_regulation(old_tree, merged_changes))
-            notices = applicable_notices(self.notices, version)
-            yield notice, old_tree, reg_tree, notices
+            yield version, self.merge_changes(version, notice['changes'])
 
     def merge_changes(self, document_number, changes):
         patches = content.RegPatches().get(document_number)
@@ -311,3 +325,34 @@ class Checkpointer(object):
 class NullCheckpointer(object):
     def checkpoint(self, tag, fn, force=False):
         return fn()
+
+
+def tree_and_builder(filename, title, checkpoint_path=None):
+    """Reads the regulation file and parses it. Returns the resulting tree as
+    well as a Builder object for further manipulation"""
+    if checkpoint_path is None:
+        checkpointer = NullCheckpointer()
+    else:
+        checkpointer = Checkpointer(checkpoint_path)
+
+    reg_text = ''
+    with codecs.open(filename, 'r', 'utf-8') as f:
+        reg_text = f.read()
+    file_digest = hashlib.sha256(reg_text.encode('utf-8')).hexdigest()
+
+    reg_tree = checkpointer.checkpoint("init-tree-" + file_digest,
+                                       lambda: Builder.reg_tree(reg_text))
+    title_part = reg_tree.label_id()
+    doc_number = checkpointer.checkpoint(
+        "doc-number-" + file_digest,
+        lambda: Builder.determine_doc_number(reg_text, title, title_part))
+    if not doc_number:
+        raise ValueError("Could not determine document number")
+
+    checkpointer.suffix = ":".join(["", title_part, str(title), doc_number])
+
+    builder = Builder(cfr_title=title,
+                      cfr_part=title_part,
+                      doc_number=doc_number,
+                      checkpointer=checkpointer)
+    return reg_tree, builder

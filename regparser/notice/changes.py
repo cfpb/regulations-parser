@@ -6,6 +6,7 @@ import logging
 import copy
 from collections import defaultdict
 
+from regparser.grammar.tokens import Verb
 from regparser.layer.paragraph_markers import marker_of
 from regparser.tree import struct
 from regparser.tree.paragraph import p_levels
@@ -191,7 +192,7 @@ def create_add_amendment(amendment):
         # Text is stars, but this is not the root. Explicitly try to keep
         # this node
         if text == '* * *':
-            change[label]['action'] = 'KEEP'
+            change[label]['action'] = Verb.KEEP
 
         # If text ends with a colon and is followed by stars, assume we are
         # only modifying the intro text
@@ -238,6 +239,31 @@ def remove_intro(l):
     """ Remove the marker that indicates this is a change to introductory
     text. """
     return l.replace('[text]', '')
+
+
+def pretty_change(change):
+    """Pretty print output for a change"""
+    node = change.get('node')
+    field = change.get('field')
+    if change['action'] == Verb.PUT and field:
+        return '%s changed to: %s' % (field.strip('[]').title(),
+                                      node.get('title', node['text']))
+    elif change['action'] in (Verb.PUT, Verb.POST):
+        verb = 'Modified' if change['action'] == Verb.PUT else 'Added'
+        if node.get('title'):
+            return verb + ' (title: %s): %s' % (node['title'], node['text'])
+        else:
+            return verb + ": " + node['text']
+    elif change['action'] == Verb.DELETE:
+        return 'Deleted'
+    elif change['action'] == Verb.DESIGNATE:
+        return 'Moved to ' + '-'.join(change['destination'])
+    elif change['action'] == Verb.RESERVE:
+        return 'Reserved'
+    elif change['action'] == Verb.KEEP:
+        return 'Mentioned but not modified'
+    else:
+        return change['action']
 
 
 class NoticeChanges(object):
