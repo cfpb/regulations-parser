@@ -1,7 +1,9 @@
 # vim: set encoding=utf-8
 """Some common combinations"""
+import string
+
 from pyparsing import Empty, FollowedBy, LineEnd, Literal, OneOrMore, Optional
-from pyparsing import Suppress, SkipTo, ZeroOrMore
+from pyparsing import Suppress, SkipTo, Word, ZeroOrMore
 
 from regparser.grammar import atomic
 from regparser.grammar.utils import keep_pos, Marker
@@ -78,6 +80,15 @@ section_of_appendix_to_this_part = (
     + Literal("of the appendix to this part").setResultsName("appendix").setParseAction(lambda: 'A')
 )
 
+appendix_par_of_part = (
+    atomic.paragraph_marker.copy().setParseAction(keep_pos).setResultsName(
+        "marker")
+    + (Word(string.ascii_uppercase) | Word(string.digits))
+    + Optional(any_a) + Optional(any_a)
+    + Suppress(".")
+    + Marker("of") + Marker("part")
+    + atomic.upper_roman_a)
+
 appendix_with_part = (
     atomic.appendix_marker.copy().setParseAction(keep_pos).setResultsName(
         "marker")
@@ -103,16 +114,21 @@ marker_subpart_title = (
     atomic.subpart_marker.copy().setParseAction(keep_pos).setResultsName(
         "marker")
     + atomic.subpart
-    + Suppress(Literal(u"—"))
-    + SkipTo(LineEnd()).setResultsName("subpart_title")
+    + ((Suppress(Literal(u"—"))
+        + SkipTo(LineEnd()).setResultsName("subpart_title"))
+       | (Literal("[Reserved]").setResultsName("subpart_title")))
 )
 
 marker_comment = (
     atomic.comment_marker.copy().setParseAction(keep_pos).setResultsName(
         "marker")
-    + (section_comment | section_paragraph | mps_paragraph)
+    + (section_comment
+        | section_paragraph
+        | mps_paragraph
+        | (part_section + Optional(depth1_p) + depth1_c))
     + Optional(depth1_c)
 )
+
 
 _inner_non_comment = (
     any_depth_p

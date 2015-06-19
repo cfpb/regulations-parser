@@ -7,7 +7,7 @@ import copy
 import itertools
 import logging
 
-from regparser.tree.struct import Node, find
+from regparser.tree.struct import Node, find, walk
 from regparser.tree.xml_parser import interpretations
 from regparser.tree.xml_parser import tree_utils
 from regparser.utils import roman_nums
@@ -78,12 +78,14 @@ def make_root_sortable(label, node_type):
     need to be sorted correctly. This returns a tuple to help
     sort these first level nodes. """
 
-    if node_type == Node.SUBPART or node_type == Node.EMPTYPART:
+    if node_type == Node.EMPTYPART:
         return (0, label[-1])
-    elif node_type == Node.APPENDIX:
+    elif node_type == Node.SUBPART:
         return (1, label[-1])
+    elif node_type == Node.APPENDIX:
+        return (2, label[-1])
     elif node_type == Node.INTERP:
-        return (2,)
+        return (3,)
 
 
 def replace_first_sentence(text, replacement):
@@ -207,7 +209,10 @@ class RegulationTree(object):
         """ Delete node from it's parent, effectively removing it from the
         tree. """
 
-        parent = self.get_parent(node)
+        if len(node.label) == 2 and node.node_type == Node.REGTEXT:
+            parent = self.get_section_parent(node)
+        else:
+            parent = self.get_parent(node)
         other_children = [c for c in parent.children if c.label != node.label]
         parent.children = other_children
 
@@ -234,11 +239,12 @@ class RegulationTree(object):
     def move(self, origin, destination):
         """ Move a node from one part in the tree to another. """
         origin = find(self.tree, origin)
-        self.delete_from_parent(origin)
+        if origin is not None:
+            self.delete_from_parent(origin)
 
-        origin = overwrite_marker(origin, destination[-1])
-        origin.label = destination
-        self.add_node(origin)
+            origin = overwrite_marker(origin, destination[-1])
+            origin.label = destination
+            self.add_node(origin)
 
     def get_section_parent(self, node):
         """ If we're trying to get the parent of an existing section, it
@@ -257,6 +263,10 @@ class RegulationTree(object):
             parent = self.get_section_parent(node)
         else:
             parent = self.get_parent(node)
+
+        if parent is None:
+            logging.warning('No existing parent for {0}'.format(node.label_id()))
+            parent = self.create_empty_node(get_parent_label(node))
 
         prev_idx = [idx for idx, c in enumerate(parent.children)
                     if c.label == node.label]
@@ -311,6 +321,7 @@ class RegulationTree(object):
     def add_node(self, node):
         """ Add an entirely new node to the regulation tree. """
         existing = find(self.tree, node.label_id())
+
         if existing and is_reserved_node(existing):
             logging.warning('Replacing reserved node: %s' % node.label_id())
             return self.replace_node_and_subtree(node)
@@ -333,8 +344,8 @@ class RegulationTree(object):
                 print '%s %s' % (existing.text, node.label)
                 print '----'
 
-            if ((node.node_type == Node.APPENDIX and len(node.label) == 2)
-                    or node.node_type == Node.SUBPART):
+            if ((node.node_type in (Node.APPENDIX, Node.INTERP)
+                 and len(node.label) == 2) or node.node_type == Node.SUBPART):
                 return self.add_to_root(node)
             else:
                 parent = self.get_parent(node)
@@ -356,8 +367,14 @@ class RegulationTree(object):
     def add_section(self, node, subpart_label):
         """ Add a new section to a subpart. """
 
-        subpart = find(self.tree, '-'.join(subpart_label))
-        subpart.children = self.add_child(subpart.children, node)
+        existing = find(self.tree, node.label_id())
+        if existing and is_reserved_node(existing):
+            logging.warning('Replacing reserved node: {0}'.format(node.label_id()))
+            self.replace_node_and_subtree(node)
+        else:
+            subpart = find(self.tree, '-'.join(subpart_label))
+            subpart.children = self.add_child(subpart.children, node)
+
 
     def replace_node_text(self, label, change):
         """ Replace just a node's text. """
@@ -519,6 +536,11 @@ def _needs_delay(reg, change):
 def compile_regulation(previous_tree, notice_changes):
     """ Given a last full regulation tree, and the set of changes from the
     next final notice, construct the next full regulation tree. """
+    label = previous_tree.label[0]
+    if (label in notice_changes and len(notice_changes) == 1
+            and 'field' not in notice_changes[label][0]):
+        return notice_changes[label][0]['node']
+
     reg = RegulationTree(previous_tree)
     labels = sort_labels(notice_changes.keys())
 

@@ -49,10 +49,6 @@ def is_appendix_header(node):
             or (node.tag == 'HD' and node.attrib['SOURCE'] == 'HED'))
 
 
-_first_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*\(' + lvl[0] + '\)')
-                  for lvl in p_levels]
-
-
 class AppendixProcessor(object):
     """Processing the appendix requires a lot of state to be carried in
     between xml nodes. Use a class to wrap that state so we can
@@ -70,7 +66,11 @@ class AppendixProcessor(object):
             if self.appendix_letter:
                 logging.warning("Found two appendix headers: %s and %s",
                                 self.appendix_letter, text)
-            self.appendix_letter = headers.parseString(text).appendix
+            parsed_header = headers.parseString(text)
+            if parsed_header.appendix_section:
+                self.appendix_letter = parsed_header.appendix + '-' + parsed_header.appendix_section
+            else:
+                self.appendix_letter = parsed_header.appendix
         return self.appendix_letter
 
     def hed(self, part, text):
@@ -121,6 +121,7 @@ class AppendixProcessor(object):
         source = xml_node.attrib.get('SOURCE')
 
         pair = title_label_pair(text, self.appendix_letter)
+        # print pair
 
         #   Use the depth indicated in the title
         if pair:
@@ -148,13 +149,13 @@ class AppendixProcessor(object):
         node_for_keyterms.label = [initial_marker(text)[0]]
         keyterm = KeyTerms.get_keyterm(node_for_keyterms)
         if keyterm:
-            mtext = text.replace(keyterm, '.'*len(keyterm))
+            mtext = text.replace(keyterm, ';'*len(keyterm))
         else:
             mtext = text
 
         for mtext in split_paragraph_text(mtext):
             if keyterm:     # still need the original text
-                mtext = mtext.replace('.'*len(keyterm), keyterm)
+                mtext = mtext.replace(';'*len(keyterm), keyterm)
             node = Node(mtext, node_type=Node.APPENDIX,
                         label=[initial_marker(mtext)[0]])
             self.nodes.append(node)
@@ -206,7 +207,11 @@ class AppendixProcessor(object):
                     current_idx = typ.index(node.label[-1])
                     if current_idx == prev_idx + 1:
                         return depth
-        return self.depth + 1
+        # Paragraphs under the main heading should not be level 2
+        if len(self.m_stack.lineage()) == 1:
+            return self.depth
+        else:
+            return self.depth + 1
 
     def end_group(self):
         """We've hit a header (or the end of the appendix), so take the
@@ -218,7 +223,8 @@ class AppendixProcessor(object):
                        AppendixProcessor.filler_regex.match(n.label[-1])]
             if markers:
                 results = derive_depths(markers)
-                # currently no heuristics applied
+                if not results:
+                    logging.warning('Could not derive depth from {}'.format(markers))
                 depths = list(reversed(
                     [a.depth for a in results[0].assignment]))
             else:
@@ -241,6 +247,9 @@ class AppendixProcessor(object):
             self.nodes = []
 
     def process(self, appendix, part):
+        #TODO: currently this fails the appendix parser test
+        #TODO: there should be a flag to check what sort of appendix we have
+        #TODO: if we have an appendix with headings like "A-1" or not
         self.m_stack = tree_utils.NodeStack()
 
         self.paragraph_count = 0
@@ -261,6 +270,7 @@ class AppendixProcessor(object):
 
         for child in appendix.getchildren():
             text = tree_utils.get_node_text(child, add_spaces=True).strip()
+            # print text
             if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
                     or child.tag == 'RESERVED'):
                 self.end_group()
@@ -290,13 +300,22 @@ class AppendixProcessor(object):
             return self.m_stack.m_stack[0][0][1]
 
 
+_first_paren_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*(\(' + lvl[0] + '\))')
+                        for lvl in p_levels]
+_first_period_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*(' + lvl[0] + '\.)')
+
+                         for lvl in p_levels]
+
 def split_paragraph_text(text):
     """Split text into a root node and its children (if the text contains
     collapsed markers"""
     marker_positions = []
-    for marker in _first_markers:
-        #   text.index('(') to skip over the periods, spaces, etc.
-        marker_positions.extend(text.index('(', m.start())
+    if text.lstrip()[:1] == '(':
+        marker_set = _first_paren_markers
+    else:
+        marker_set = _first_period_markers
+    for marker in marker_set:
+        marker_positions.extend(m.end() - len(m.group(1))
                                 for m in marker.finditer(text))
     #   Remove any citations
     citations = internal_citations(text, require_marker=True)

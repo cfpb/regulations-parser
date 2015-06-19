@@ -1,10 +1,12 @@
 #vim: set encoding=utf-8
+from copy import deepcopy
 import itertools
 import logging
 import re
 
 from regparser.citations import Label, remove_citation_overlaps
 from regparser.layer.key_terms import KeyTerms
+from regparser.notice.util import spaces_then_remove
 from regparser.tree.depth import heuristics, rules, markers as mtypes
 from regparser.tree.depth.derive import derive_depths
 from regparser.tree.interpretation import merge_labels, text_to_labels
@@ -171,6 +173,8 @@ def process_inner_children(inner_stack, xml_node):
                     inner_stack.push_last((3 + par.depth, node))
                 else:
                     inner_stack.add(3 + par.depth, node)
+    elif nodes:
+        logging.warning('Could not derive depth (interp):\n {}'.format([n.label[0] for n in nodes]))
 
 
 def missing_levels(last_label, label):
@@ -247,6 +251,7 @@ def parse_from_xml(root, xml_nodes):
 def build_supplement_tree(reg_part, node):
     """ Build the tree for the supplement section. """
     title = get_app_title(node)
+    node = spaces_then_remove(deepcopy(node), 'PRTPAGE')
     root = Node(
         node_type=Node.INTERP,
         label=[reg_part, Node.INTERP_MARK],

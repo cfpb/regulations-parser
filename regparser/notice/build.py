@@ -5,6 +5,7 @@ from urlparse import urlparse
 
 from lxml import etree
 import requests
+import logging
 
 from regparser.notice.address import fetch_addresses
 from regparser.notice.build_appendix import parse_appendix_changes
@@ -24,6 +25,7 @@ import settings
 
 def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     """Given JSON from the federal register, create our notice structure"""
+    print ('building notice, title {0}, part {1}, notice {2}'.format(cfr_title, cfr_part, fr_notice['document_number']))
     cfr_parts = set(str(ref['part']) for ref in fr_notice['cfr_references'])
     cfr_parts.add(cfr_part)
     notice = {'cfr_title': cfr_title, 'cfr_parts': list(cfr_parts)}
@@ -114,6 +116,7 @@ def _check_local_version_list(url):
     notice_dir_suffix, file_name = os.path.split(path)
     for xml_path in settings.LOCAL_XML_PATHS:
         if os.path.isfile(xml_path + path):
+            print 'using ', xml_path + path
             return [xml_path + path]
         else:
             notice_directory = xml_path + notice_dir_suffix
@@ -122,6 +125,7 @@ def _check_local_version_list(url):
                 prefix = file_name.split('.')[0]
                 relevant_notices = [os.path.join(notice_directory, n)
                                     for n in notices if n.startswith(prefix)]
+                print 'using ', relevant_notices
                 return relevant_notices
     return []
 
@@ -167,7 +171,8 @@ def create_xmlless_changes(amended_labels, notice_changes):
                 print 'NOT HANDLED: %s' % amendment['action']
 
 
-def create_xml_changes(amended_labels, section, notice_changes):
+def create_xml_changes(amended_labels, section, notice_changes,
+                       subpart_label=None):
     """For PUT/POST, match the amendments to the section nodes that got
     parsed, and actually create the notice changes. """
 
@@ -180,6 +185,9 @@ def create_xml_changes(amended_labels, section, notice_changes):
     for label, amendments in amend_map.iteritems():
         for amendment in amendments:
             if amendment['action'] in ('POST', 'PUT'):
+                if (subpart_label and amendment['action'] == 'POST'
+                    and len(label.split('-')) == 2):
+                    amendment['extras'] = {'subpart': subpart_label}
                 if 'field' in amendment:
                     nodes = changes.create_field_amendment(label, amendment)
                 else:
@@ -289,46 +297,64 @@ def process_amendments(notice, notice_xml):
             als, context = parse_amdpar(par, context)
             amended_labels.extend(als)
 
-        labels_by_part = defaultdict(list)
-        for al in amended_labels:
-            if isinstance(al, DesignateAmendment):
-                subpart_changes = process_designate_subpart(al)
-                if subpart_changes:
-                    notice_changes.update(subpart_changes)
-                designate_labels.append(al)
-            elif new_subpart_added(al):
-                notice_changes.update(process_new_subpart(notice, al, par))
-                designate_labels.append(al)
-            else:
-                other_labels.append(al)
-                labels_by_part[al.label[0]].append(al)
+            labels_by_part = defaultdict(list)
+            for al in amended_labels:
+                if isinstance(al, DesignateAmendment):
+                    print 'designate amendment'
+                    subpart_changes = process_designate_subpart(al)
+                    if subpart_changes:
+                        notice_changes.update(subpart_changes)
+                    designate_labels.append(al)
+                elif new_subpart_added(al):
+                    print 'new subpart added'
+                    notice_changes.update(process_new_subpart(notice, al, par))
+                    designate_labels.append(al)
+                else:
+                    other_labels.append(al)
+                    labels_by_part[al.label[0]].append(al)
 
-        create_xmlless_changes(other_labels, notice_changes)
+            create_xmlless_changes(other_labels, notice_changes)
 
-        for cfr_part, rel_labels in labels_by_part.iteritems():
-            section_xml = find_section(par)
-            if section_xml is not None:
-                for section in reg_text.build_from_section(cfr_part,
-                                                           section_xml):
-                    create_xml_changes(rel_labels, section, notice_changes)
+            for cfr_part, rel_labels in labels_by_part.iteritems():
+                section_xml = find_section(par)
+                if section_xml is not None:
+                    subparts = aXp.parent.xpath('.//SUBPART/HD')
+                    if subparts:
+                        subpart_label = [cfr_part, 'Subpart',
+                                         subparts[0].text[8:9]]
+                    else:
+                        subpart_label = None
 
-            for appendix in parse_appendix_changes(rel_labels, cfr_part,
-                                                   aXp.parent):
-                create_xml_changes(rel_labels, appendix, notice_changes)
+                    for section in reg_text.build_from_section(cfr_part,
+                                                               section_xml):
+                        create_xml_changes(rel_labels, section, notice_changes,
+                                           subpart_label)
 
-            interp = parse_interp_changes(rel_labels, cfr_part, aXp.parent)
-            if interp:
-                create_xml_changes(rel_labels, interp, notice_changes)
+                for appendix in parse_appendix_changes(rel_labels, cfr_part,
+                                                       aXp.parent):
+                    create_xml_changes(rel_labels, appendix, notice_changes)
 
-        amends.extend(designate_labels)
-        amends.extend(other_labels)
+                interp = parse_interp_changes(rel_labels, cfr_part, aXp.parent)
+                if interp:
+                    create_xml_changes(rel_labels, interp, notice_changes)
 
-        if other_labels:    # Carry cfr_part through amendments
-            default_cfr_part = other_labels[-1].label[0]
+            print par.text.encode('utf-8'), other_labels, designate_labels
+            amends.extend(designate_labels)
+            amends.extend(other_labels)
+
+            if other_labels:    # Carry cfr_part through amendments
+                default_cfr_part = other_labels[-1].label[0]
 
     if amends:
         notice['amendments'] = amends
         notice['changes'] = notice_changes.changes
+    elif notice['document_number'] in settings.REISSUANCES:
+        notice['changes'] = {
+            default_cfr_part: [{
+                'action': 'PUT',
+                'node': reg_text.build_tree(notice_xml)
+            }]
+        }
 
 
 def process_sxs(notice, notice_xml):

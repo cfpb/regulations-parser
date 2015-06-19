@@ -6,7 +6,8 @@ import string
 from regparser.utils import roman_nums
 
 
-lower = tuple(string.ascii_lowercase)
+lower = tuple(string.ascii_lowercase) + ('aa', 'bb', 'cc', 'dd', 'ee', 'ff',
+                                         'gg', 'hh')
 upper = tuple(string.ascii_uppercase)
 ints = tuple(str(i) for i in range(1, 51))
 roman = tuple(itertools.islice(roman_nums(), 0, 50))
