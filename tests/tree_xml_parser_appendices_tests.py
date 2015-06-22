@@ -85,6 +85,19 @@ class AppendicesTest(TestCase):
         self.assertEqual('A-3 Some header here', a3.title)
         self.assertEqual('A-4 Another header', a4.title)
 
+    def test_process_appendix_fp_dash(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix A to Part 1111—Awesome</HD>
+            <FP SOURCE="FP-DASH">FP-DASH filled out with dashes</FP>
+        </APPENDIX>"""
+        appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
+        self.assertEqual(1, len(appendix.children))
+        fp_dash = appendix.children[0]
+
+        self.assertEqual('FP-DASH filled out with dashes_____', fp_dash.text.strip())
+
     def test_process_appendix_header_depth(self):
         xml = u"""
         <APPENDIX>

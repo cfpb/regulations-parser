@@ -140,6 +140,14 @@ class AppendixProcessor(object):
 
         self.m_stack.add(self.depth, n)
 
+    def insert_dashes(self, xml_node, text):
+        """ If paragraph has a SOURCE attribute with a value of FP-DASH 
+            it fills out with dashes, like Foo_____. """
+        mtext = text
+        if xml_node.get('SOURCE') == 'FP-DASH':
+            mtext = mtext + '_____'
+        return mtext
+
     def paragraph_with_marker(self, text, tagged_text):
         """The paragraph has a marker, like (a) or a. etc."""
         # To aid in determining collapsed paragraphs, replace any
@@ -279,9 +287,12 @@ class AppendixProcessor(object):
                 self.end_group()
                 self.subheader(child, text)
             elif initial_marker(text) and child.tag in ('P', 'FP', 'HD'):
+                text = self.insert_dashes(child, text)
                 self.paragraph_with_marker(
-                    text, tree_utils.get_node_text_tags_preserved(child))
+                    text,
+                    tree_utils.get_node_text_tags_preserved(child))
             elif child.tag in ('P', 'FP'):
+                text = self.insert_dashes(child, text)
                 self.paragraph_no_marker(text)
             elif child.tag == 'GPH':
                 self.graphic(child)
