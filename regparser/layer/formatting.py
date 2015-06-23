@@ -103,6 +103,7 @@ class Formatting(Layer):
                            + r"(?P<lines>([^\n]*\n)+)"
                            + r"```")
     subscript_re = re.compile(r"([a-zA-Z0-9]+)_\{(\w+)\}")
+    dashes_re = re.compile(r"_{5,}$")
 
     def process(self, node):
         layer_el = []
@@ -116,6 +117,7 @@ class Formatting(Layer):
                 layer_el.append({'text': table_xml_to_plaintext(table),
                                  'locations': [0],
                                  'table_data': table_xml_to_data(table)})
+
         for match in Formatting.fenced_re.finditer(node.text):
             layer_el.append({
                 'text': node.text[match.start():match.end()],
@@ -123,6 +125,7 @@ class Formatting(Layer):
                 'fence_data': {
                     'type': match.group('type'),
                     'lines': filter(bool, match.group('lines').split("\n"))}})
+
         subscripts = {}
         for match in Formatting.subscript_re.finditer(node.text):
             key = (match.group(1), match.group(2))
@@ -134,5 +137,15 @@ class Formatting(Layer):
                 'locations': list(range(count)),
                 'subscript_data': {'variable': variable,
                                    'subscript': subscript}})
+
+        for match in Formatting.dashes_re.finditer(node.text):
+            layer_el.append({
+                'text': node.text,
+                'locations': [0],
+                'dash_data': {
+                    'text': node.text[:match.start()],
+                },
+            })
+        
         if layer_el:
             return layer_el
