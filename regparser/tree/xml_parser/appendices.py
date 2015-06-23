@@ -367,7 +367,7 @@ def title_label_pair(text, appendix_letter, reg_part):
                             pair[0], appendix_letter)
             pair = None
 
-    return None
+    return pair
 
 def initial_marker(text):
     parser = (grammar.paren_upper | grammar.paren_lower | grammar.paren_digit
