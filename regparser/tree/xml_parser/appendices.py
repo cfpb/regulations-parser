@@ -20,6 +20,7 @@ from regparser.tree.xml_parser import tree_utils
 from regparser.tree.xml_parser.interpretations import build_supplement_tree
 from regparser.tree.xml_parser.interpretations import get_app_title
 
+from local_settings import APPENDIX_IGNORE_SUBHEADER_LABEL
 
 def remove_toc(appendix, letter):
     """The TOC at the top of certain appendices gives us trouble since it
@@ -94,7 +95,7 @@ class AppendixProcessor(object):
             lvl, parent = pair
             return (not parent.title
                     or not title_label_pair(parent.title,
-                                            self.appendix_letter))
+                                self.appendix_letter, self.part))
 
         #   Check if this SOURCE level matches a previous
         for lvl, parent in takewhile(not_known_depth_header,
@@ -106,7 +107,8 @@ class AppendixProcessor(object):
         #   Second pass, search for any header; place self one lower
         for lvl, parent in self.m_stack.lineage_with_level():
             if parent.title:
-                pair = title_label_pair(parent.title, self.appendix_letter)
+                pair = title_label_pair(parent.title,
+                        self.appendix_letter, self.part)
                 if pair:
                     return pair[1]
                 else:
@@ -120,7 +122,7 @@ class AppendixProcessor(object):
         without a specific label (we give them the h + # id)"""
         source = xml_node.attrib.get('SOURCE')
 
-        pair = title_label_pair(text, self.appendix_letter)
+        pair = title_label_pair(text, self.appendix_letter, self.part)
 
         #   Use the depth indicated in the title
         if pair:
@@ -250,6 +252,7 @@ class AppendixProcessor(object):
     def process(self, appendix, part):
         self.m_stack = tree_utils.NodeStack()
 
+        self.part = part
         self.paragraph_count = 0
         self.header_count = 0
         self.depth = None
@@ -263,8 +266,9 @@ class AppendixProcessor(object):
         def is_subhead(tag, text):
             initial = initial_marker(text)
             return ((tag == 'HD' and (not initial or '.' in initial[1]))
-                    or (tag in ('P', 'FP')
-                        and title_label_pair(text, self.appendix_letter)))
+                    or (tag in ('P', 'FP') 
+                        and title_label_pair(text, self.appendix_letter,
+                            self.part)))
 
         for child in appendix.getchildren():
             text = tree_utils.get_node_text(child, add_spaces=True).strip()
@@ -341,20 +345,29 @@ def parsed_title(text, appendix_letter):
         return match
 
 
-def title_label_pair(text, appendix_letter):
+def title_label_pair(text, appendix_letter, reg_part):
     """Return the label + depth as indicated by a title"""
+    pair = None
     match = parsed_title(text, appendix_letter)
     if match:
         #   May need to include the parenthesized letter(s)
         has_parens = (match.paren_upper or match.paren_lower
                       or match.paren_digit or match.markerless_upper)
         if has_parens:
-            return (''.join(match), 2)
+            pair =(''.join(match), 2)
         elif match.a1:
-            return (match.a1, 2)
+            pair = (match.a1, 2)
         elif match.aI:
-            return (match.aI, 2)
+            pair = (match.aI, 2)
 
+        if pair is not None and \
+                reg_part in APPENDIX_IGNORE_SUBHEADER_LABEL and \
+                pair[0] in APPENDIX_IGNORE_SUBHEADER_LABEL[reg_part][appendix_letter]:
+            logging.warning("Ignoring subheader label %s of appendix %s",
+                            pair[0], appendix_letter)
+            pair = None
+
+    return None
 
 def initial_marker(text):
     parser = (grammar.paren_upper | grammar.paren_lower | grammar.paren_digit
