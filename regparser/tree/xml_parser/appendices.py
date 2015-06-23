@@ -20,7 +20,7 @@ from regparser.tree.xml_parser import tree_utils
 from regparser.tree.xml_parser.interpretations import build_supplement_tree
 from regparser.tree.xml_parser.interpretations import get_app_title
 
-from local_settings import APPENDIX_IGNORE_SUBHEADER_LABEL
+from settings import APPENDIX_IGNORE_SUBHEADER_LABEL
 
 def remove_toc(appendix, letter):
     """The TOC at the top of certain appendices gives us trouble since it
