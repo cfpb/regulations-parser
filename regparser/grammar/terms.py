@@ -29,6 +29,7 @@ xml_term_parser = (
     + ZeroOrMore(
         (atomic.conj_phrases + e_tag).setResultsName(
             "tail", listAllMatches=True))
+    + Suppress(ZeroOrMore(Regex(r",[a-zA-Z ]+,")))
     + ((Marker("mean") | Marker("means"))
        | (Marker("refers") + ZeroOrMore(Marker("only")) + Marker("to"))
        | ((Marker("has") | Marker("have")) + Marker("the") + Marker("same")
