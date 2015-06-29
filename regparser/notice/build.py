@@ -59,11 +59,9 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
             fr_notice['full_text_xml_url'])
 
         if len(local_notices) > 0:
-            print "using local notices for %s" % local_notices
             logging.info("using local notices for %s", local_notices)
             return process_local_notices(local_notices, notice, cfr_part)
         else:
-            print "fetching notice %s" % fr_notice['full_text_xml_url']
             logging.info("fetching notice %s", fr_notice['full_text_xml_url'])
             notice_str = requests.get(fr_notice['full_text_xml_url']).content
             return [process_notice(notice, notice_str)]
@@ -359,7 +357,6 @@ def fetch_cfr_parts(notice_xml):
         may not be included in each date. """
     cfr_elm = notice_xml.xpath('//CFR')[0]
     results = notice_cfr_p.parseString(cfr_elm.text)
-    print "notice applies to", list(results)
     return list(results)
 
 def process_xml(notice, notice_xml):

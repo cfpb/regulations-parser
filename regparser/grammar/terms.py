@@ -30,6 +30,7 @@ xml_term_parser = (
         (atomic.conj_phrases + e_tag).setResultsName(
             "tail", listAllMatches=True))
     + ((Marker("mean") | Marker("means"))
+       | (Marker("refers") + ZeroOrMore(Marker("only")) + Marker("to"))
        | ((Marker("has") | Marker("have")) + Marker("the") + Marker("same")
           + Marker("meaning") + Marker("as")))
 )
