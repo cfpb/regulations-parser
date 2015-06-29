@@ -3,6 +3,8 @@ from collections import defaultdict
 import os
 from urlparse import urlparse
 
+import logging 
+
 from lxml import etree
 import requests
 
@@ -19,6 +21,8 @@ from regparser.notice.util import spaces_then_remove, swap_emphasis_tags
 from regparser.notice import changes
 from regparser.tree import struct
 from regparser.tree.xml_parser import reg_text
+from regparser.grammar.unified import notice_cfr_p
+
 import settings
 
 
@@ -49,13 +53,18 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     for key in ('dates', 'end_page', 'start_page', 'type'):
         notice['meta'][key] = fr_notice[key]
 
+    logging.info("need to fetch notice %s?", fr_notice['full_text_xml_url'])
     if fr_notice['full_text_xml_url'] and do_process_xml:
         local_notices = _check_local_version_list(
             fr_notice['full_text_xml_url'])
 
         if len(local_notices) > 0:
-            return process_local_notices(local_notices, notice)
+            print "using local notices for %s" % local_notices
+            logging.info("using local notices for %s", local_notices)
+            return process_local_notices(local_notices, notice, cfr_part)
         else:
+            print "fetching notice %s" % fr_notice['full_text_xml_url']
+            logging.info("fetching notice %s", fr_notice['full_text_xml_url'])
             notice_str = requests.get(fr_notice['full_text_xml_url']).content
             return [process_notice(notice, notice_str)]
     return [notice]
@@ -68,7 +77,7 @@ def split_doc_num(doc_num, effective_date):
     return '%s_%s' % (doc_num, effective_date)
 
 
-def process_local_notices(local_notices, partial_notice):
+def process_local_notices(local_notices, partial_notice, cfr_part):
     """ If we have any local notices, process them. Note that this takes into
     account split notices (a single notice split into two because of different
     effective dates"""
@@ -76,12 +85,15 @@ def process_local_notices(local_notices, partial_notice):
     notices = []
 
     if len(local_notices) > 1:
-        #If the notice is split, pick up the effective date from the XML
+        # If the notice is split, pick up the effective date and the
+        # CFR parts from the XML
         partial_notice['effective_on'] = None
+        partial_notice['cfr_parts'] = None
 
     for local_notice_file in local_notices:
         with open(local_notice_file, 'r') as f:
             notice = process_notice(partial_notice, f.read())
+            import pdb; pdb.set_trace()
             notices.append(notice)
 
     notices = set_document_numbers(notices)
@@ -341,6 +353,16 @@ def process_sxs(notice, notice_xml):
     notice['section_by_section'] = sxs
 
 
+def fetch_cfr_parts(notice_xml):
+    """ Sometimes we need to read the CFR part numbers from the notice
+        XML itself. This would need to happen when we've broken up a
+        multiple-effective-date notice that has multiple CFR parts that
+        may not be included in each date. """
+    cfr_elm = notice_xml.xpath('//CFR')[0]
+    results = notice_cfr_p.parseString(cfr_elm.text)
+    print "notice applies to", list(results)
+    return list(results)
+
 def process_xml(notice, notice_xml):
     """Pull out relevant fields from the xml and add them to the notice"""
 
@@ -356,6 +378,10 @@ def process_xml(notice, notice_xml):
         dates = fetch_dates(notice_xml)
         if dates and 'effective' in dates:
             notice['effective_on'] = dates['effective'][0]
+
+    if not notice.get('cfr_parts'):
+        cfr_parts = fetch_cfr_parts(notice_xml)
+        notice['cfr_parts'] = cfr_parts
 
     process_sxs(notice, notice_xml)
     process_amendments(notice, notice_xml)
