@@ -93,7 +93,6 @@ def process_local_notices(local_notices, partial_notice, cfr_part):
     for local_notice_file in local_notices:
         with open(local_notice_file, 'r') as f:
             notice = process_notice(partial_notice, f.read())
-            import pdb; pdb.set_trace()
             notices.append(notice)
 
     notices = set_document_numbers(notices)
