@@ -2,14 +2,14 @@
 """Atomic components; probably shouldn't use these directly"""
 import string
 
-from pyparsing import CaselessLiteral, Optional, Regex, Suppress, Word
+from pyparsing import CaselessLiteral, Optional, Regex, Suppress, Word, OneOrMore
 
 from regparser.grammar.utils import Marker, SuffixMarker, WordBoundaries
 
 
 lower_p = (
     Suppress("(")
-    + Word(string.ascii_lowercase, max=1).setResultsName("p1")
+    + Word(string.ascii_lowercase, max=2).setResultsName("p1")
     + Suppress(")"))
 digit_p = (
     Suppress("(")
