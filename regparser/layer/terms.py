@@ -209,6 +209,14 @@ class Terms(Layer):
             else:
                 included_defs.append(Ref(term, n.label_id(), pos))
 
+        cfr_part = node.label[0]
+        if settings.INCLUDE_DEFINITIONS_IN.get(cfr_part):
+            for included_term in settings.INCLUDE_DEFINITIONS_IN[cfr_part]:
+                if included_term in node.text:
+                    pos_start = node.text.index(included_term)
+                    add_match(node, included_term.lower(), 
+                            (pos_start, pos_start + len(included_term)))
+
         if stack and self.has_parent_definitions_indicator(stack):
             for match, _, _ in grammar.smart_quotes.scanString(node.text):
                 term = match.term.tokens[0].lower().strip(',.;')
@@ -283,6 +291,10 @@ class Terms(Layer):
         exclusions = self.per_regulation_ignores(
             exclusions, node.label, node.text)
 
+        inclusions = self.included_offsets(node.label_id(), node.text)
+        inclusions = self.per_regulation_includes(
+                inclusions, node.label, node.text)
+
         matches = self.calculate_offsets(node.text, term_list, exclusions)
         for term, ref, offsets in matches:
             layer_el.append({
@@ -314,12 +326,34 @@ class Terms(Layer):
                 re.finditer(r'\b' + re.escape(ignore_term) + r'\b', text))
         return exclusions
 
-    def calculate_offsets(self, text, applicable_terms, exclusions=[]):
+    def per_regulation_includes(self, inclusions, label, text):
+        cfr_part = label[0]
+        if settings.INCLUDE_DEFINITIONS_IN.get(cfr_part):
+            for include_term in settings.INCLUDE_DEFINITIONS_IN[cfr_part]:
+                inclusions.extend(
+                    (match.start(), match.end()) for match in
+                    re.finditer(r'\b' + re.escape(include_term) + r'\b', text))
+        return inclusions
+
+    def included_offsets(self, label, text):
+        """ We explicitly include certain chunks of text (for example,
+            words that the parser doesn't necessarily pick up as being
+            defined) that should be part of a defined term """
+        inclusions = []
+        for include_term in settings.INCLUDE_DEFINITIONS_IN['ALL']:
+            inclusions.extend(
+                (match.start(), match.end()) for match in
+                re.finditer(r'\b' + re.escape(include_term) + r'\b', text))
+        return inclusions
+
+    def calculate_offsets(self, text, applicable_terms, exclusions=[],
+            inclusions=[]):
         """Search for defined terms in this text, with a preference for all
         larger (i.e. containing) terms."""
 
         # don't modify the original
         exclusions = list(exclusions)
+        inclusions = list(inclusions)
 
         # add plurals to applicable terms
         pluralized = [(pluralize(t[0]), t[1]) for t in applicable_terms]

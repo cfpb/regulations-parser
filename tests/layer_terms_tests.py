@@ -124,7 +124,7 @@ class LayerTermTest(TestCase):
                     u'(v) <E T="03">Lawyers</E>, in relation to coders, means something very different',
                     Ref(u'lawyers', '', (4, 11))),
                 (u'(c) Regulation (1) The term means: ',
-                    u'(c) <E T="03">Regulation</E> (1) The term means:',
+                    u'(c) <E T="03">Regulation</E> (1) The term means: ',
                     Ref(u'regulation', '', (4, 14))),
             ]
 
@@ -193,7 +193,6 @@ class LayerTermTest(TestCase):
             defs, exc = t.node_definitions(node, stack)
             self.assertEqual([ref], defs)
             self.assertEqual([], exc)
-
 
     def test_node_defintions_act(self):
         t = Terms(None)
