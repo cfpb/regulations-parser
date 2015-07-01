@@ -53,16 +53,15 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     for key in ('dates', 'end_page', 'start_page', 'type'):
         notice['meta'][key] = fr_notice[key]
 
-    logging.info("need to fetch notice %s?", fr_notice['full_text_xml_url'])
     if fr_notice['full_text_xml_url'] and do_process_xml:
         local_notices = _check_local_version_list(
             fr_notice['full_text_xml_url'])
 
         if len(local_notices) > 0:
-            logging.info("using local notices for %s", local_notices)
+            logging.warning("using local xml for %s", fr_notice['full_text_xml_url'])
             return process_local_notices(local_notices, notice, cfr_part)
         else:
-            logging.info("fetching notice %s", fr_notice['full_text_xml_url'])
+            logging.warning("fetching notice %s", fr_notice['full_text_xml_url'])
             notice_str = requests.get(fr_notice['full_text_xml_url']).content
             return [process_notice(notice, notice_str)]
     return [notice]
