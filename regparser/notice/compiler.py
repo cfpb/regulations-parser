@@ -524,7 +524,7 @@ def compile_regulation(previous_tree, notice_changes):
     labels = sort_labels(notice_changes.keys())
 
     reg_part = previous_tree.label[0]
-    labels = filter(lambda l: l.startswith(reg_part), labels)
+    labels = filter(lambda l: l.split('-')[0] == reg_part, labels)
 
     next_pass = [(label, change)
                  for label in labels

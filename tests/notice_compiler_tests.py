@@ -639,11 +639,15 @@ class CompilerTests(TestCase):
         self.assertEqual(added_node.text, '2a1 text')
 
     def test_compile_reg_move_wrong_reg(self):
+        """Changes applied to other regulations shouldn't affect the
+        regulation we care about, even if that has the same textual prefix"""
         root = self.tree_with_paragraphs()
-        notice_changes = {'202-2-a': [{'action': 'MOVE',
-                                       'destination': ['202', '2', 'b']}]}
+        notice_changes = {'2055-2-a': [{'action': 'MOVE',
+                                       'destination': ['2055', '2', 'b']}]}
         reg = compiler.compile_regulation(root, notice_changes)
         self.assertEqual(find(reg, '205-2-a').text, 'n2a')
+        self.assertEqual(find(reg, '205-2-b').text, 'n2b')
+        self.assertEqual(find(reg, '2055-2-b'), None)
 
     def test_compile_add_to_subpart(self):
         root = self.tree_with_subparts()
