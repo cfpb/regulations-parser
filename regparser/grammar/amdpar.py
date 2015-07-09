@@ -3,7 +3,7 @@ import logging
 import string
 
 from pyparsing import CaselessLiteral, FollowedBy, OneOrMore, Optional
-from pyparsing import Suppress, Word, LineEnd
+from pyparsing import Suppress, Word, LineEnd, ZeroOrMore
 
 from regparser.grammar import atomic, tokens, unified
 from regparser.grammar.utils import Marker, WordBoundaries
@@ -383,6 +383,36 @@ multiple_paragraphs = (
         m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6]))
 
 
+
+def tokenize_override_ps(match):
+    """ Create token.Paragraphs for the given override match """
+    # Part, Section or Appendix, p1, p2, p3, p4, p5, p6
+    match_list = list(match)
+    par_list = [match.part, None, None, None, None, None, None, None]
+
+    if match.section:
+        par_list[1] = match.section
+    elif match.appendix:
+        par_list[1] = "Appendix:" + match.appendix
+
+    # Set paragraph depths
+    for p in match_list[2:]:
+        par_list[match_list.index(p)] = p
+
+    par = tokens.Paragraph(par_list)
+    return [par]
+
+override_label = (
+    Suppress("[")
+    + Marker("label") + Suppress(":")
+    + atomic.part
+    + Suppress("-")
+    + (atomic.section | atomic.appendix)
+    + ZeroOrMore(Suppress("-") + Word(string.ascii_lowercase + string.digits))
+    + Suppress("]")
+    ).setParseAction(tokenize_override_ps)
+    
+
 #   grammar which captures all of these possibilities
 token_patterns = (
     put_active | put_passive | post_active | post_passive
@@ -413,6 +443,9 @@ token_patterns = (
     | section
     #   Must come after intro_text_of
     | intro_text
+
+    # Finally allow for an explicit override label
+    | override_label
 
     | paragraph_context
     | and_token
