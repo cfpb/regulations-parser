@@ -87,6 +87,13 @@ REGPATCHES_SOURCES = [
 # versions of their XML
 LOCAL_XML_PATHS = []
 
+
+# Sometimes appendices provide examples or model forms that include
+# labels that we would otherwise recognize as structural to the appendix
+# text itself. This specifies those labels to ignore by regulation
+# number, appendix, and label.
+APPENDIX_IGNORE_SUBHEADER_LABEL = {}
+
 try:
     from local_settings import *
 except ImportError:
