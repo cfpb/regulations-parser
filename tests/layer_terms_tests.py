@@ -123,9 +123,7 @@ class LayerTermTest(TestCase):
 
         xml_no_defs = [
             (u'(d) Term1 or term2 means stuff',
-             u'(d) <E T="03">Term1</E> or <E T="03">term2></E> means stuff'),
-            (u'This term means should not match',
-             u'<E T="03">This term</E> means should not match')]
+             u'(d) <E T="03">Term1</E> or <E T="03">term2></E> means stuff'),]
 
         scope_term_defs = [
             ('For purposes of this section, the term blue means the color',

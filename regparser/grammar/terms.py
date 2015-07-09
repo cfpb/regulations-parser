@@ -1,7 +1,7 @@
 #vim: set encoding=utf-8
 from pyparsing import (
     LineStart, Literal, OneOrMore, Optional, Regex, SkipTo, srange, Suppress,
-    Word, ZeroOrMore)
+    Word, ZeroOrMore, NotAny)
 
 from regparser.grammar import atomic, unified
 from regparser.grammar.utils import DocLiteral, keep_pos, Marker
@@ -24,7 +24,7 @@ e_tag = (
 
 xml_term_parser = (
     LineStart()
-    + Suppress(unified.any_depth_p)
+    + Optional(Suppress(unified.any_depth_p))
     + e_tag.setResultsName("head")
     + ZeroOrMore(
         (atomic.conj_phrases + e_tag).setResultsName(
