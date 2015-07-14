@@ -209,7 +209,11 @@ class Terms(Layer):
             else:
                 included_defs.append(Ref(term, n.label_id(), pos))
 
-        cfr_part = node.label[0]
+        try:
+            cfr_part = node.label[0]
+        except IndexError:
+            cfr_part = None
+
         if settings.INCLUDE_DEFINITIONS_IN.get(cfr_part):
             for included_term in settings.INCLUDE_DEFINITIONS_IN[cfr_part]:
                 if included_term in node.text:
