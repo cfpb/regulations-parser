@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from unittest import TestCase
 from regparser.notice import changes
 from regparser.tree.struct import Node, find
@@ -226,6 +226,47 @@ class ChangesTests(TestCase):
 
         node = Node('', label=['205', '35', 'c', '1', 'i'])
         self.assertFalse(changes.impossible_label(node, amended_labels))
+
+    def test_pretty_changes(self):
+        """Verify the output for a variety of "changes" """
+        self.assertEqual(
+            changes.pretty_change({'action': 'DELETE'}), 'Deleted')
+        self.assertEqual(
+            changes.pretty_change({'action': 'RESERVE'}), 'Reserved')
+        self.assertEqual(
+            changes.pretty_change({'action': 'KEEP'}),
+            'Mentioned but not modified')
+        self.assertEqual(
+            changes.pretty_change({'action': 'DESIGNATE',
+                                   'destination': ['123', '43', 'a', '2']}),
+            'Moved to 123-43-a-2')
+
+        node = {'text': 'Some Text'}
+        change = {'action': 'PUT', 'node': node}
+        self.assertEqual(
+            changes.pretty_change(change), 'Modified: Some Text')
+
+        change['action'] = 'POST'
+        self.assertEqual(
+            changes.pretty_change(change), 'Added: Some Text')
+
+        node['title'] = 'A Title'
+        self.assertEqual(
+            changes.pretty_change(change), 'Added (title: A Title): Some Text')
+
+        change['action'] = 'PUT'
+        self.assertEqual(
+            changes.pretty_change(change),
+            'Modified (title: A Title): Some Text')
+
+        change['field'] = '[title]'
+        self.assertEqual(
+            changes.pretty_change(change), 'Title changed to: A Title')
+
+        del node['title']
+        change['field'] = '[a field]'
+        self.assertEqual(
+            changes.pretty_change(change), 'A Field changed to: Some Text')
 
 
 class NoticeChangesTests(TestCase):

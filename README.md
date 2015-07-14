@@ -237,6 +237,21 @@ regulation. To include all final notices, add this flag:
 $ python notice_order.py 12 1005 --include-notices-without-changes
 ```
 
+### Watch Node
+
+Tracing how a specific node changes over the life of a regulation can help
+track down why the parser is failing (or exploding). The `watch_node.py`
+utility does exactly that, stepping through the initial tree and all
+subsequent notices. Whenever a node is changed (created, modified, deleted,
+etc.) this utility will log some output.
+
+```
+$ python watch_node.py 1005-16-c path/to/regulation.xml 12
+```
+
+The first parameter is the label of the node you want to watch, the second is
+the initial regulation XML file and the final parameter is the CFR title.
+
 
 ## Building the documentation
 
