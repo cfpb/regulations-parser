@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from unittest import TestCase
 
 from regparser.grammar.unified import *
@@ -13,3 +14,12 @@ class GrammarCommonTests(TestCase):
         self.assertEqual('ii', result.p3)
         self.assertEqual('A', result.p4)
         self.assertEqual('2', result.p5)
+
+    def test_marker_comment(self):
+        texts = [u'comment § 1004.3-4-i',
+                 u'comment 1004.3-4-i',
+                 u'comment 3-4-i',]
+        for t in texts:
+            result = marker_comment.parseString(t)
+            self.assertEqual("3", result.section)
+            self.assertEqual("4", result.c1)
