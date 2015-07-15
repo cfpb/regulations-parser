@@ -3,7 +3,12 @@ from collections import defaultdict
 from itertools import chain
 import re
 
-from inflection import pluralize
+import inflection 
+try:
+    del inflection.PLURALS[inflection.PLURALS.index(('(?i)(p)erson$', '\\1eople'))]
+except ValueError:
+    pass
+
 
 from regparser.citations import internal_citations, Label
 from regparser.grammar import terms as grammar
@@ -360,7 +365,7 @@ class Terms(Layer):
         inclusions = list(inclusions)
 
         # add plurals to applicable terms
-        pluralized = [(pluralize(t[0]), t[1]) for t in applicable_terms]
+        pluralized = [(inflection.pluralize(t[0]), t[1]) for t in applicable_terms]
         applicable_terms += pluralized
 
         #   longer terms first
