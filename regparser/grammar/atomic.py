@@ -2,7 +2,7 @@
 """Atomic components; probably shouldn't use these directly"""
 import string
 
-from pyparsing import CaselessLiteral, Optional, Regex, Suppress, Word, OneOrMore
+from pyparsing import CaselessLiteral, Optional, Regex, Suppress, Word
 
 from regparser.grammar.utils import Marker, SuffixMarker, WordBoundaries
 
