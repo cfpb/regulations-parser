@@ -215,8 +215,8 @@ class Terms(Layer):
             cfr_part = None
 
         if settings.INCLUDE_DEFINITIONS_IN.get(cfr_part):
-            for included_term in settings.INCLUDE_DEFINITIONS_IN[cfr_part]:
-                if included_term in node.text:
+            for included_term, context in settings.INCLUDE_DEFINITIONS_IN[cfr_part]:
+                if context in node.text and included_term in node.text:
                     pos_start = node.text.index(included_term)
                     add_match(node, included_term.lower(), 
                             (pos_start, pos_start + len(included_term)))
@@ -333,7 +333,7 @@ class Terms(Layer):
     def per_regulation_includes(self, inclusions, label, text):
         cfr_part = label[0]
         if settings.INCLUDE_DEFINITIONS_IN.get(cfr_part):
-            for include_term in settings.INCLUDE_DEFINITIONS_IN[cfr_part]:
+            for included_term, context in settings.INCLUDE_DEFINITIONS_IN['ALL']:
                 inclusions.extend(
                     (match.start(), match.end()) for match in
                     re.finditer(r'\b' + re.escape(include_term) + r'\b', text))
@@ -344,7 +344,7 @@ class Terms(Layer):
             words that the parser doesn't necessarily pick up as being
             defined) that should be part of a defined term """
         inclusions = []
-        for include_term in settings.INCLUDE_DEFINITIONS_IN['ALL']:
+        for included_term, context in settings.INCLUDE_DEFINITIONS_IN['ALL']:
             inclusions.extend(
                 (match.start(), match.end()) for match in
                 re.finditer(r'\b' + re.escape(include_term) + r'\b', text))
