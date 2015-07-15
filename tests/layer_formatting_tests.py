@@ -125,7 +125,6 @@ class LayerFormattingTests(TestCase):
         result = formatting.Formatting(None).process(node)
         self.assertEqual(1, len(result))
         result = result[0]
-        print result
 
         self.assertEqual(result['text'], "This is an fp-dash_____")
         self.assertEqual(result['locations'], [0])
