@@ -383,7 +383,6 @@ multiple_paragraphs = (
         m.p1, m.p2, m.p3, m.p4, m.plaintext_p5, m.plaintext_p6]))
 
 
-
 def tokenize_override_ps(match):
     """ Create token.Paragraphs for the given override match """
     # Part, Section or Appendix, p1, p2, p3, p4, p5, p6
@@ -401,6 +400,7 @@ def tokenize_override_ps(match):
 
     par = tokens.Paragraph(par_list)
     return [par]
+
 
 override_label = (
     Suppress("[")
