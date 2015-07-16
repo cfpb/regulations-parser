@@ -17,12 +17,6 @@ class GrammarAtomicTests(TestCase):
             self.assertEqual(p1, result.p1)
 
         for text in ['(ii)', '(iv)', '(vi)']:
-            try:
-                result = lower_p.parseString(text)
-            except ParseException:
-                pass
-            except e:
-                self.fail("Unexpected error:", e)
-            else:
-                self.fail("Didn't raise ParseException")
+            with self.assertRaises(ParseException):
+                lower_p.parseString(text)
 

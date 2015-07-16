@@ -32,7 +32,6 @@ class GrammarTermsTests(TestCase):
         text = u'(v) <E T="03">Negative factor or value</E>, in relation to the age of elderly applicants, means utilizing a factor, value, or weight'
         result = [match for match, _, _ in xml_term_parser.scanString(text)]
         match = result[0]
-        print match
         self.assertEqual(len(result), 1)
         self.assertEqual(match.term[0], 'Negative')
         self.assertEqual(match.term[1], 'factor')
