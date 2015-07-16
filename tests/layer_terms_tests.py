@@ -123,9 +123,6 @@ class LayerTermTest(TestCase):
                 (u'(v) Lawyers, in relation to coders, means something very different',
                     u'(v) <E T="03">Lawyers</E>, in relation to coders, means something very different',
                     Ref(u'lawyers', '', (4, 11))),
-                (u'(c) Regulation (1) The term means: ',
-                    u'(c) <E T="03">Regulation</E> (1) The term means: ',
-                    Ref(u'regulation', '', (4, 14))),
             ]
 
         xml_no_defs = [
