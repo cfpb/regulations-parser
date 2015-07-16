@@ -26,7 +26,6 @@ xml_term_parser = (
     LineStart()
     + Optional(Suppress(unified.any_depth_p))
     + e_tag.setResultsName("head")
-    + Suppress(ZeroOrMore(unified.any_depth_p))
     + ZeroOrMore(
         (atomic.conj_phrases + e_tag).setResultsName(
             "tail", listAllMatches=True))
