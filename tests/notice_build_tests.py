@@ -796,3 +796,17 @@ class NoticeBuildTest(TestCase):
         em = pars[0].getchildren()[0]
         self.assertEqual(em.text, "Paragraph 22(a)(5)")
         self.assertEqual(em.tail, " Content")
+
+    def test_fetch_cfr_parts(self):
+        notice_xml = etree.fromstring(u"""
+            <RULE>
+                <PREAMB>
+                    <CFR>12 CFR Parts 1002, 1024, and 1026</CFR>
+                </PREAMB>
+            </RULE>
+          """)
+
+        result = build.fetch_cfr_parts(notice_xml)
+        self.assertEqual(result, ['1002', '1024', '1026'])
+
+
