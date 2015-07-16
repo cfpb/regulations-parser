@@ -59,7 +59,7 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
 
         if len(local_notices) > 0:
             logging.warning("using local xml for %s", fr_notice['full_text_xml_url'])
-            return process_local_notices(local_notices, notice, cfr_part)
+            return process_local_notices(local_notices, notice)
         else:
             logging.warning("fetching notice %s", fr_notice['full_text_xml_url'])
             notice_str = requests.get(fr_notice['full_text_xml_url']).content
@@ -74,7 +74,7 @@ def split_doc_num(doc_num, effective_date):
     return '%s_%s' % (doc_num, effective_date)
 
 
-def process_local_notices(local_notices, partial_notice, cfr_part):
+def process_local_notices(local_notices, partial_notice):
     """ If we have any local notices, process them. Note that this takes into
     account split notices (a single notice split into two because of different
     effective dates"""
