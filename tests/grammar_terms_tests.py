@@ -28,3 +28,14 @@ class GrammarTermsTests(TestCase):
         result = [match for match, _, _ in xml_term_parser.scanString(text)]
         self.assertEqual(len(result), 0)
 
+    def test_comma_clauses(self):
+        text = u'(v) <E T="03">Negative factor or value</E>, in relation to the age of elderly applicants, means utilizing a factor, value, or weight'
+        result = [match for match, _, _ in xml_term_parser.scanString(text)]
+        match = result[0]
+        print match
+        self.assertEqual(len(result), 1)
+        self.assertEqual(match.term[0], 'Negative')
+        self.assertEqual(match.term[1], 'factor')
+        self.assertEqual(match.term[2], 'or')
+        self.assertEqual(match.term[3], 'value')
+
