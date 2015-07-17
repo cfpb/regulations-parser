@@ -327,9 +327,10 @@ class NullCheckpointer(object):
         return fn()
 
 
-def tree_and_builder(filename, title, checkpoint_path=None):
+def tree_and_builder(filename, title, checkpoint_path=None, doc_number=None):
     """Reads the regulation file and parses it. Returns the resulting tree as
-    well as a Builder object for further manipulation"""
+    well as a Builder object for further manipulation. Looks up the doc_number
+    if it's not provided"""
     if checkpoint_path is None:
         checkpointer = NullCheckpointer()
     else:
@@ -343,9 +344,10 @@ def tree_and_builder(filename, title, checkpoint_path=None):
     reg_tree = checkpointer.checkpoint("init-tree-" + file_digest,
                                        lambda: Builder.reg_tree(reg_text))
     title_part = reg_tree.label_id()
-    doc_number = checkpointer.checkpoint(
-        "doc-number-" + file_digest,
-        lambda: Builder.determine_doc_number(reg_text, title, title_part))
+    if doc_number is None:
+        doc_number = checkpointer.checkpoint(
+            "doc-number-" + file_digest,
+            lambda: Builder.determine_doc_number(reg_text, title, title_part))
     if not doc_number:
         raise ValueError("Could not determine document number")
 

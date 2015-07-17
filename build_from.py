@@ -28,7 +28,7 @@ def parse_regulation(args):
     act_title_and_section = [args.act_title, args.act_section]
     #   First, the regulation tree
     reg_tree, builder = tree_and_builder(args.filename, args.title,
-                                         args.checkpoint)
+                                         args.checkpoint_dir, args.doc_number)
     builder.write_notices()
 
     #   Always do at least the first reg
@@ -92,8 +92,12 @@ if __name__ == "__main__":
     diffs.add_argument('--no-generate-diffs', dest='generate_diffs',
                        action='store_false', help="Don't generate diffs")
     diffs.set_defaults(generate_diffs=True)
-    parser.add_argument('--checkpoint', required=False,
+    parser.add_argument('--checkpoint', dest='checkpoint_dir', required=False,
                         help='Directory to save checkpoint data')
+    parser.add_argument(
+        '--version-identifier', dest='doc_number', required=False,
+        help=('Do not try to derive the version information. (Only use if '
+              "your regulation is older than federalregister.gov's records)"))
 
     args = parser.parse_args()
     parse_regulation(args)

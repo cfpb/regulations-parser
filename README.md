@@ -144,32 +144,23 @@ reissuance of the whole regulation (e.g. CFPB
 regulation E).
 
 
-### Run the parser
+### Run the parser (`build_from`)
 
 The syntax is
 
 ```bash
-$ python build_from.py regulation.ext title notice_doc_# act_title act_section
+$ python build_from.py regulation.xml title act_title act_section
 ```
 
 For example, to match the reissuance above:
 ```bash
-$ python build_from.py 725.xml 12 2013-1725 15 1693
+$ python build_from.py 725.xml 12 15 1693
 ```
 
-Here ```12``` is the CFR title number (in our case, for "Banks and
-Banking"), ```2013-1725``` is the last notice used to create this version
-(i.e. the last "final rule" which is currently in effect), ```15``` is the
-title of "the Act" and ```1693``` is the relevant section. Wherever the
-phrase "the Act" is used in the regulation, the external link parser will
-treat it as "15 U.S.C. 1693".  The final rule number is used to pull in
-section-by-section analyses and deduce which notices were used to create
-this version of the regulation. It also helps determine which notices to use
-when building additional versions of the regulation. To find the document
-number, use the [Federal Register](https://www.federalregister.gov/),
-finding the last, effective final rule for your version of the regulation
-and copying the document number from the meta data (currently in a table on
-the right side).
+Here ```12``` is the CFR title number (in our case, for "Banks and Banking"),
+```15``` is the title of "the Act" and ```1693``` is the relevant section.
+Wherever the phrase "the Act" is used in the regulation, the external link
+parser will treat it as "15 U.S.C. 1693".
 
 Running the command will generate four folders, ```regulation```,
 ```notice```, ``layer`` and possibly ``diff`` in the ```OUTPUT_DIR```
@@ -177,6 +168,19 @@ Running the command will generate four folders, ```regulation```,
 
 If you'd like to write the data to an api instead (most likely, one running
 regulations-core), you can set the ```API_BASE``` setting (described below).
+
+There are also some advanced flags which can be set when running the parser
+
+* `--no-generate-diffs` Avoids the default behavior of generating additional
+  versions of the regulation based on federal register rules. If this flag is
+  set, the parser will produce a single tree and set of layers
+* `--checkpoint CHECKPOINT_DIR` Defines a directory to store checkpoint
+  information. It's always safe to not provide this, though you may improve
+  performance when you do. See [Runtime](#runtime), below.
+* `--version-identifier DOC_NUMBER` If you are trying to parse a version of
+  the regulation issued before federalregister.gov has records (~2000), you
+  may need to explicitly provide a version number. This will just be an
+  identifier for the version; you may use "1997-annual", for example.
 
 ### Settings
 
