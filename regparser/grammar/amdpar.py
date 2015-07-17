@@ -1,4 +1,5 @@
 # vim: set encoding=utf-8
+# @todo: this file is becoming too large; refactor
 import logging
 import string
 
@@ -228,6 +229,7 @@ section_single_par = (
         m.part, None, m.section, m.p1, m.p2, m.p3, m.p4, m.plaintext_p5,
         m.plaintext_p6],
         field=(tokens.Paragraph.TEXT_FIELD if m[-1] == 'text' else None)))
+# Matches "paragraph (a)(1)(i) of § 12.44"
 single_par_section = (
     Optional(atomic.paragraph_marker)
     + unified.depth1_p
