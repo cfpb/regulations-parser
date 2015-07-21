@@ -87,6 +87,9 @@ REGPATCHES_SOURCES = [
 # versions of their XML
 LOCAL_XML_PATHS = []
 
+# which notices are complete reissuances
+REISSUANCES = ['2013-01737', '2012-14047', '2012-14061', '2012-14062']
+
 try:
     from local_settings import *
 except ImportError:
