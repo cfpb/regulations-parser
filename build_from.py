@@ -97,7 +97,8 @@ if __name__ == "__main__":
     parser.add_argument(
         '--version-identifier', dest='doc_number', required=False,
         help=('Do not try to derive the version information. (Only use if '
-              "your regulation is older than federalregister.gov's records)"))
+              'the regulation has no electronic final rules on '
+              'federalregister.gov, i.e. has not changed since before ~2000)'))
 
     args = parser.parse_args()
     parse_regulation(args)
