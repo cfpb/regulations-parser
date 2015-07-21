@@ -35,6 +35,7 @@ section_comment = atomic.section + depth1_c
 section_paragraph = atomic.section + depth1_p
 
 mps_paragraph = marker_part_section + Optional(depth1_p)
+ps_paragraph = part_section + Optional(depth1_p)
 part_section_paragraph = (
     atomic.part + Suppress(".") + atomic.section + depth1_p)
 
@@ -122,10 +123,7 @@ marker_subpart_title = (
 marker_comment = (
     atomic.comment_marker.copy().setParseAction(keep_pos).setResultsName(
         "marker")
-    + (section_comment
-        | section_paragraph
-        | mps_paragraph
-        | (part_section + Optional(depth1_p) + depth1_c))
+    + (section_comment | section_paragraph | ps_paragraph | mps_paragraph)
     + Optional(depth1_c)
 )
 

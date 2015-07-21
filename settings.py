@@ -90,6 +90,13 @@ LOCAL_XML_PATHS = []
 # which notices are complete reissuances
 REISSUANCES = ['2013-01737', '2012-14047', '2012-14061', '2012-14062']
 
+
+# Sometimes appendices provide examples or model forms that include
+# labels that we would otherwise recognize as structural to the appendix
+# text itself. This specifies those labels to ignore by regulation
+# number, appendix, and label.
+APPENDIX_IGNORE_SUBHEADER_LABEL = {}
+
 try:
     from local_settings import *
 except ImportError:

@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+#:vim: set encoding=utf-8
 from copy import deepcopy
 import itertools
 import logging
@@ -233,7 +233,7 @@ def parse_from_xml(root, xml_nodes):
     parsing. root is the root interpretation node (e.g. a Node with label
     '1005-Interp'). xml_nodes contains all XML nodes which will be relevant
     to the interpretations"""
-    
+
     supplement_nodes = [root]
 
     last_label = root.label

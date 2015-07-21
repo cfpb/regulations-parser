@@ -7,6 +7,7 @@ import copy
 import itertools
 import logging
 
+from regparser.grammar.tokens import Verb
 from regparser.tree.struct import Node, find, walk
 from regparser.tree.xml_parser import interpretations
 from regparser.tree.xml_parser import tree_utils
@@ -410,7 +411,7 @@ class RegulationTree(object):
     def create_new_subpart(self, subpart_label):
         """ Create a whole new subpart. """
 
-        #XXX Subparts need titles. We'll need to pull this up from parsing.
+        # XXX Subparts need titles. We'll need to pull this up from parsing.
         subpart_node = Node('', [], subpart_label, None, Node.SUBPART)
         self.add_to_root(subpart_node)
         return subpart_node
@@ -470,7 +471,7 @@ def sort_labels(labels):
     """ Deal with higher up elements first. """
     sorted_labels = sorted(labels, key=lambda x: len(x))
 
-    #The length of a Subpart label doesn't indicate it's level in the tree
+    # The length of a Subpart label doesn't indicate it's level in the tree
     subparts = [l for l in sorted_labels if 'Subpart' in l]
     non_subparts = [l for l in sorted_labels if 'Subpart' not in l]
 
@@ -552,8 +553,8 @@ def compile_regulation(previous_tree, notice_changes):
                  for change in notice_changes[label]]
     pass_len = len(next_pass) + 1
 
-    reg.keep(l for l, change in next_pass if change['action'] == 'KEEP')
-    next_pass = [pair for pair in next_pass if pair[1]['action'] != 'KEEP']
+    reg.keep(l for l, change in next_pass if change['action'] == Verb.KEEP)
+    next_pass = [pair for pair in next_pass if pair[1]['action'] != Verb.KEEP]
 
     #   Monotonically decreasing length - guarantees we'll end
     while pass_len > len(next_pass):
