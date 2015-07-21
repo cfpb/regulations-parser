@@ -338,7 +338,6 @@ def process_amendments(notice, notice_xml):
                 if interp:
                     create_xml_changes(rel_labels, interp, notice_changes)
 
-            print par.text.encode('utf-8'), other_labels, designate_labels
             amends.extend(designate_labels)
             amends.extend(other_labels)
 

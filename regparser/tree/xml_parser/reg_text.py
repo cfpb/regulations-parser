@@ -231,7 +231,6 @@ def build_from_section(reg_part, section_xml):
                                      mtypes.upper, mtypes.em_ints,
                                      mtypes.em_roman])])
 
-
     if not manual_hierarchy_flag and depths:
         # Find the assignment which violates the least of our heuristics
         depths = heuristics.prefer_multiple_children(depths, 0.5)
@@ -260,9 +259,11 @@ def build_from_section(reg_part, section_xml):
                     m_stack.push_last((1 + depth, node))
                 else:
                     m_stack.add(1 + depth, node)
+        else:
+            logging.error('Manual hierarchy length does not match node list length!')
 
     elif nodes and not manual_hierarchy_flag:
-        logging.warning('Could not determine depth:\n{}'.format([n.label[0] for n in nodes]))
+        logging.warning('Could not determine depth when parsing {0}:\n{1}'.format(section_no_without_marker, [n.label[0] for n in nodes]))
 
 
     nodes = []
