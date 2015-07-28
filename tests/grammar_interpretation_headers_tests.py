@@ -16,8 +16,6 @@ class GrammarInterpretationHeadersTest(TestCase):
         self.assertEqual('11', match.section)
 
     def test_newline(self):
-        for m,s,e in parser.scanString("\nSection 100.22"):
-            print m, s, e
         starts = [start for _,start,_ in 
             parser.scanString("\nSection 100.22")]
         self.assertEqual(1, starts[0])
