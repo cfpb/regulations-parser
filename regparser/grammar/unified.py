@@ -195,7 +195,7 @@ multiple_cfr_p = (
 notice_cfr_p = (
     Suppress(atomic.title)
     + Suppress("CFR")
-    + Suppress(atomic.part_marker | atomic.parts_marker)
+    + Optional(Suppress(atomic.part_marker | atomic.parts_marker))
     + OneOrMore(
         atomic.part
         + Optional(Suppress(','))
