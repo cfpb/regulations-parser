@@ -28,6 +28,20 @@ Here's an example, using CFPB's regulation H.
 At the end, you will have new directories for `regulation`, `layer`,
 `diff`, and `notice` which would mirror the JSON files sent to the API.
 
+## Quick Start with Modified Documents
+
+Here's an example using CFPB's regulation E, showing how documents can be
+tweaked to pass the parser.
+
+1. `git clone https://github.com/cfpb/regulations-parser.git`
+1. `cd regulations-parser`
+1. `git clone https://github.com/cfpb/fr-notices.git`
+1. `pip install -r requirements.txt`
+1. `echo "LOCAL_XML_PATHS = ['fr-notices/']" >> local_settings.py`
+1. `python build_from.py fr-notices/articles/xml/201/131/725.xml 12 2011-31725 15 1693`
+
+If you review the history of the `fr-notices` repo, you'll see some of the types of changes that need to be made.
+
 ## Troubleshooting
 
 If you get the message `wget: command not found`, install `wget` using the following (we use [homebrew](http://brew.sh/)):
