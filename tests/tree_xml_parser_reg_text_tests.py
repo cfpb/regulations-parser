@@ -405,3 +405,18 @@ class RegTextTest(TestCase):
                 <P>(xi) More</P>
             </ROOT>""")
         self.assertEqual('xi', reg_text.next_marker(xml.getchildren()[0], []))
+
+    def test_build_from_section_double_alpha(self):
+        # Ensure we match a hierarchy like (x), (y), (z), (aa), (bb)…
+        xml = u"""
+            <SECTION>
+                <SECTNO>§ 8675.309</SECTNO>
+                <SUBJECT>Definitions.</SUBJECT>
+                <P>(aa) This is what things mean:</P>
+            </SECTION>
+        """
+        node = reg_text.build_from_section('8675', etree.fromstring(xml))[0]
+        child = node.children[0]
+        self.assertEqual('(aa) This is what things mean:', child.text.strip())
+        self.assertEqual(['8675', '309', 'aa'], child.label)
+        

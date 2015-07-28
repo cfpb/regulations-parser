@@ -191,3 +191,14 @@ multiple_cfr_p = (
            + atomic.section
            + Optional(depth1_p)).setParseAction(keep_pos).setResultsName(
                "tail", listAllMatches=True)))
+
+notice_cfr_p = (
+    Suppress(atomic.title)
+    + Suppress("CFR")
+    + Optional(Suppress(atomic.part_marker | atomic.parts_marker))
+    + OneOrMore(
+        atomic.part
+        + Optional(Suppress(','))
+        + Optional(Suppress('and'))
+    )
+)

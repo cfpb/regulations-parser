@@ -201,6 +201,12 @@ All of the settings listed in ```settings.py``` can be overridden in a
   'state' is a defined term, it may be useful to exclude the phrase 'shall
   state'. Terms associated with the constant, `ALL`, will be ignored in all
   CFR parts parsed.
+* ```INCLUDE_DEFINITIONS_IN``` - a dictionary mapping CFR part numbers to a
+  list of tuples containing (term, context) for terms that *are
+  definitely definitions*. For example, a term that is succeeded by 
+  subparagraphs that define it rather than phraseology like "is defined as". 
+  Terms associated with the constant, `ALL`, will  be included in all CFR 
+  parts parsed.
 * ```OVERRIDES_SOURCES``` - a list of python modules (represented via
   string) which should be consulted when determining image urls. Useful if
   the Federal Register versions aren't pretty. Defaults to a `regcontent`
