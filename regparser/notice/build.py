@@ -29,7 +29,7 @@ import settings
 
 def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     """Given JSON from the federal register, create our notice structure"""
-    print ('building notice, title {0}, part {1}, notice {2}'.format(cfr_title, cfr_part, fr_notice['document_number']))
+    logging.info('building notice, title {0}, part {1}, notice {2}'.format(cfr_title, cfr_part, fr_notice['document_number']))
     cfr_parts = set(str(ref['part']) for ref in fr_notice['cfr_references'])
     cfr_parts.add(cfr_part)
     notice = {'cfr_title': cfr_title, 'cfr_parts': list(cfr_parts)}
@@ -124,7 +124,6 @@ def _check_local_version_list(url):
     notice_dir_suffix, file_name = os.path.split(path)
     for xml_path in settings.LOCAL_XML_PATHS:
         if os.path.isfile(xml_path + path):
-            print 'using ', xml_path + path
             return [xml_path + path]
         else:
             notice_directory = xml_path + notice_dir_suffix
@@ -133,7 +132,6 @@ def _check_local_version_list(url):
                 prefix = file_name.split('.')[0]
                 relevant_notices = [os.path.join(notice_directory, n)
                                     for n in notices if n.startswith(prefix)]
-                print 'using ', relevant_notices
                 return relevant_notices
     return []
 
@@ -176,7 +174,7 @@ def create_xmlless_changes(amended_labels, notice_changes):
                 change['destination'] = destination
                 notice_changes.update({label: change})
             elif amendment['action'] not in ('POST', 'PUT', 'RESERVE'):
-                print 'NOT HANDLED: %s' % amendment['action']
+                logging.info('NOT HANDLED: %s' % amendment['action'])
 
 
 def create_xml_changes(amended_labels, section, notice_changes,
@@ -206,7 +204,7 @@ def create_xml_changes(amended_labels, section, notice_changes,
                 change = changes.create_reserve_amendment(amendment)
                 notice_changes.update(change)
             elif amendment['action'] not in ('DELETE', 'MOVE'):
-                print 'NOT HANDLED: %s' % amendment['action']
+                logging.info('NOT HANDLED: %s' % amendment['action'])
 
 
 class AmdparByParent(object):
@@ -308,13 +306,11 @@ def process_amendments(notice, notice_xml):
             labels_by_part = defaultdict(list)
             for al in amended_labels:
                 if isinstance(al, DesignateAmendment):
-                    print 'designate amendment'
                     subpart_changes = process_designate_subpart(al)
                     if subpart_changes:
                         notice_changes.update(subpart_changes)
                     designate_labels.append(al)
                 elif new_subpart_added(al):
-                    print 'new subpart added'
                     notice_changes.update(process_new_subpart(notice, al, par))
                     designate_labels.append(al)
                 else:

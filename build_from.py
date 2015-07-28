@@ -14,7 +14,7 @@ except ImportError:
     # HTTP requests rather than looking it up from the cache
     pass
 
-from regparser.builder import LayerCacheAggregator, tree_and_builder, Checkpointer, NullCheckpointer
+from regparser.builder import LayerCacheAggregator, tree_and_builder, Checkpointer, NullCheckpointer, Builder
 from regparser.diff.tree import changes_between
 from regparser.tree.struct import FrozenNode
 
