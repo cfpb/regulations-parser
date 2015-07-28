@@ -47,7 +47,7 @@ class Builder(object):
                                    for notice_json in self.notices_json]
 
     def build_single_notice(self, notice_json, checkpoint=True):
-        print 'building notice {0} from {1}'.format(notice_json['document_number'], notice_json['full_text_xml_url'])
+        logging.info('building notice {0} from {1}'.format(notice_json['document_number'], notice_json['full_text_xml_url']))
         if checkpoint:
             notice = self.checkpointer.checkpoint(
                 'notice-' + notice_json['document_number'],
@@ -355,7 +355,6 @@ class Checkpointer(object):
 
     def checkpoint(self, tag, fn, force=False):
         """Primary interface for storing an object"""
-        print 'checkpointing', tag
         self.counter += 1
         existing = self._deserialize(tag)
         if not force and existing is not None and not self.ignore_checkpoints:
