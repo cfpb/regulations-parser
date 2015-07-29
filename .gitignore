@@ -5,6 +5,9 @@ local_settings.py
 
 regulations
 regcontent
+fr-notices
+regulations-stub
+regulations-configs
 
 docs/_build
 *.p
