@@ -207,7 +207,10 @@ class Terms(Layer):
         excluded_defs = []
 
         def add_match(n, term, pos):
-            included_defs.append(Ref(term, n.label_id(), pos))
+            if (self.is_exclusion(term, n)):
+                excluded_defs.append(Ref(term, n.label_id(), pos))
+            else:
+                included_defs.append(Ref(term, n.label_id(), pos))
 
         try:
             cfr_part = node.label[0]
