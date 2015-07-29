@@ -3,7 +3,7 @@ from collections import defaultdict
 from itertools import chain
 import re
 
-import inflection 
+import inflection
 try:
     del inflection.PLURALS[inflection.PLURALS.index(('(?i)(p)erson$', '\\1eople'))]
 except ValueError:
@@ -202,17 +202,12 @@ class Terms(Layer):
         return False
 
     def node_definitions(self, node, stack=None):
-        """Find defined terms in this node's text. 'Act' is a special case,
-        as it is also defined as an external citation."""
+        """Find defined terms in this node's text."""
         included_defs = []
         excluded_defs = []
 
         def add_match(n, term, pos):
-            if ((term == 'act' and list(uscode.scanString(n.text)))
-                    or self.is_exclusion(term, n)):
-                excluded_defs.append(Ref(term, n.label_id(), pos))
-            else:
-                included_defs.append(Ref(term, n.label_id(), pos))
+            included_defs.append(Ref(term, n.label_id(), pos))
 
         try:
             cfr_part = node.label[0]
@@ -223,7 +218,7 @@ class Terms(Layer):
             for included_term, context in settings.INCLUDE_DEFINITIONS_IN[cfr_part]:
                 if context in node.text and included_term in node.text:
                     pos_start = node.text.index(included_term)
-                    add_match(node, included_term.lower(), 
+                    add_match(node, included_term.lower(),
                             (pos_start, pos_start + len(included_term)))
 
         if stack and self.has_parent_definitions_indicator(stack):
