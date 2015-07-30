@@ -50,7 +50,7 @@ If you get the message `wget: command not found`, install `wget` using the follo
 brew install wget
 ```
 
-If you review the history of the `fec_docs` repo, you'll see some of the types
+If you review the history of the `fr-notices` repo, you'll see some of the types
 of changes that need to be made.
 
 ## Features
