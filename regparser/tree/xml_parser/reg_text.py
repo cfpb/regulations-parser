@@ -11,7 +11,7 @@ from regparser.tree.paragraph import p_level_of
 from regparser.tree.xml_parser.appendices import build_non_reg_text
 from regparser.tree import reg_text
 from regparser.tree.xml_parser import tree_utils
-from local_settings import PARAGRAPH_HIERARCHY
+from settings import PARAGRAPH_HIERARCHY
 
 
 def get_reg_part(reg_doc):
@@ -192,8 +192,8 @@ def build_from_section(reg_part, section_xml):
     # Collect paragraph markers and section text (intro text for the
     # section)
     i = 0
-    for ch in filter(lambda ch: ch.tag in ('P', 'STARS'),
-                     section_xml.getchildren()):
+    children = [ch for ch in section_xml.getchildren() if ch.tag in ['P', 'STARS']]
+    for ch in children:
         text = tree_utils.get_node_text(ch, add_spaces=True)
         tagged_text = tree_utils.get_node_text_tags_preserved(ch)
         markers_list = get_markers(tagged_text.strip())
@@ -204,8 +204,12 @@ def build_from_section(reg_part, section_xml):
             # is this a bunch of definitions that don't have numbers next to them?
             if len(nodes) > 0:
                 if (subject_text.find('Definitions.') > -1 or nodes[-1].text.find('For the purposes of this section')):
+                    #TODO: create a grammar for definitions
                     if text.find('means') > -1:
                         def_marker = text.split('means')[0].strip().split()
+                        def_marker = ''.join([word[0].upper() + word[1:] for word in def_marker])
+                    elif text.find('shall have the same meaning') > -1:
+                        def_marker = text.split('shall')[0].strip().split()
                         def_marker = ''.join([word[0].upper() + word[1:] for word in def_marker])
                     else:
                         def_marker = 'def{0}'.format(i)
@@ -217,8 +221,14 @@ def build_from_section(reg_part, section_xml):
                 else:
                     section_texts.append((text, tagged_text))
             else:
-                # this is the only node around
-                section_texts.append((text, tagged_text))
+                if len(children) > 1:
+                    n = Node(text, label=[section_no_without_marker.split('.')[1]], source_xml=ch)
+                    n.tagged_text = tagged_text
+                    i += 1
+                    nodes.append(n)
+                else:
+                    # this is the only node around
+                    section_texts.append((text, tagged_text))
 
         else:
             for m, node_text in get_markers_and_text(ch, markers_list):
@@ -271,7 +281,8 @@ def build_from_section(reg_part, section_xml):
                 else:
                     m_stack.add(1 + depth, node)
         else:
-            logging.error('Manual hierarchy length does not match node list length!')
+            logging.error('Manual hierarchy length does not match node list length!'
+                          ' ({0} nodes but {1} provided)'.format(len(nodes), len(depths)))
 
     elif nodes and not manual_hierarchy_flag:
         logging.warning('Could not determine depth when parsing {0}:\n{1}'.format(section_no_without_marker, [n.label[0] for n in nodes]))

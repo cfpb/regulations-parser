@@ -13,7 +13,7 @@ from regparser.tree.interpretation import merge_labels, text_to_labels
 from regparser.tree.struct import Node, treeify
 from regparser.tree.xml_parser import tree_utils
 
-from local_settings import PARAGRAPH_HIERARCHY
+from settings import PARAGRAPH_HIERARCHY
 
 
 _marker_regex = re.compile(
