@@ -76,12 +76,11 @@ docs/make.bat
 regulations-core/
 style.css.map
 
-# Buildout cruft
-.installed.cfg
-bin
-develop-eggs
-eggs
-regulations.egg-info
+regulations
+regcontent
+fr-notices
+regulations-stub
+regulations-configs
 
 # docs output
 docs/_build

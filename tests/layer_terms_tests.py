@@ -193,10 +193,6 @@ class LayerTermTest(TestCase):
         t = Terms(None)
         stack = ParentStack()
         stack.add(0, Node('Definitions', label=['9999']))
-        node = Node(u'“Act” means some reference to 99 U.S.C. 1234')
-        included, excluded = t.node_definitions(node, stack)
-        self.assertEqual([], included)
-        self.assertEqual(1, len(excluded))
 
         node = Node(u'“Act” means something else entirely')
         included, excluded = t.node_definitions(node, stack)
