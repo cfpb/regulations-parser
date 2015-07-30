@@ -224,6 +224,12 @@ All of the settings listed in ```settings.py``` can be overridden in a
   file will be used instead of retrieving the file, allowing for local
   edits, etc. to help the parser.
 
+Settings can also be loaded from a module or package called `regconfig`
+if it exists. See
+[regulations-configs](http://github.com/cfpb/regulations-configs) for an
+example of an external package that holds regulation-specific
+configuration.
+
 ## Other Utilities
 
 ### Notice Order
