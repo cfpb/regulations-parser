@@ -77,7 +77,7 @@ appendix_with_section = (
 # "the" appendix implies there's only one, so it better be appendix A
 section_of_appendix_to_this_part = (
     atomic.section_marker
-    + atomic.upper_roman_a.setResultsName("appendix_section")
+    + atomic.upper_roman_a.copy().setResultsName("appendix_section")
     + Literal("of the appendix to this part").setResultsName("appendix").setParseAction(lambda: 'A')
 )
 

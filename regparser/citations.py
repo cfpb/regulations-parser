@@ -214,7 +214,7 @@ def internal_citations(text, initial_label=None,
             full_start = start
             if match.marker is not '':
                 start = match.marker.pos[1]
-            label = filter(lambda l: 1 != '.', list(match)[1:])
+            label = filter(lambda l: l != '.', list(match)[1:])
             if match.appendix:
                 extra = dict(zip(['p1', 'p2', 'p3'], label[2:]))
                 citations.append(ParagraphCitation(

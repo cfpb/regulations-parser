@@ -119,7 +119,6 @@ class Builder(object):
                 layer)
 
     def revision_generator(self, reg_tree):
-
         """Given an initial regulation tree, this will emit (and checkpoint)
         new versions of the tree, along with the notice that caused the
         change. This is a generator, so processing only occurs as needed"""
