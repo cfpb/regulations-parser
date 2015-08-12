@@ -156,6 +156,6 @@ if __name__ == "__main__":
     if args.operation == 'build_by_notice':
         build_by_notice(args.filename, args.title, args.act_title,
                         args.act_section, args.notices_to_apply,
-                        args.checkpoint, args.last_notice)
+                        args.last_notice, args.checkpoint)
     else:
         parse_regulation(args)
