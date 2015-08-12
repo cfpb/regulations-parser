@@ -147,7 +147,7 @@ if __name__ == "__main__":
     parser.add_argument('--checkpoint', required=False,
                         help='Directory to save checkpoint data')
 
-    parser.add_argument('--notice', type=str, help='the last notice to be used')
+    parser.add_argument('--last-notice', type=str, help='the last notice to be used')
     parser.add_argument('--operation', action='store')
     parser.add_argument('--notices-to-apply', nargs='*', action='store')
 
@@ -156,6 +156,6 @@ if __name__ == "__main__":
     if args.operation == 'build_by_notice':
         build_by_notice(args.filename, args.title, args.act_title,
                         args.act_section, args.notices_to_apply,
-                        args.checkpoint, args.notice)
+                        args.last_notice, args.checkpoint)
     else:
         parse_regulation(args)
