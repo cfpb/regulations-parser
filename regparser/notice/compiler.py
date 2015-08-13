@@ -36,7 +36,7 @@ def get_parent_label(node):
 def make_label_sortable(label, roman=False):
     """ Make labels sortable, but converting them as appropriate.
     Also, appendices have labels that look like 30(a), we make those
-    appropriately sortable. """
+        appropriately sortable. """
 
     if label.isdigit():
         return (int(label),)
@@ -538,6 +538,7 @@ def compile_regulation(previous_tree, notice_changes):
     """ Given a last full regulation tree, and the set of changes from the
     next final notice, construct the next full regulation tree. """
     label = previous_tree.label[0]
+
     if (label in notice_changes and len(notice_changes) == 1
             and 'field' not in notice_changes[label][0]):
         return notice_changes[label][0]['node']
