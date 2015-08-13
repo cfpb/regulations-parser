@@ -17,15 +17,19 @@ class RegTextTest(TestCase):
                 <P>(a) something something</P>
             </SECTION>
         """
+        #from nose.tools import set_trace; set_trace();
         node = reg_text.build_from_section('8675', etree.fromstring(xml))[0]
-        self.assertEqual('Some content about this section.', node.text.strip())
-        self.assertEqual(1, len(node.children))
+        self.assertEqual(2, len(node.children))
         self.assertEqual(['8675', '309'], node.label)
 
-        child = node.children[0]
-        self.assertEqual('(a) something something', child.text.strip())
-        self.assertEqual([], child.children)
-        self.assertEqual(['8675', '309', 'a'], child.label)
+        child1 = node.children[0]
+        child2 = node.children[1]
+
+        self.assertEqual('Some content about this section.', child1.text.strip())
+        self.assertEqual('(a) something something', child2.text.strip())
+        self.assertEqual([], child1.children)
+        self.assertEqual([], child2.children)
+        self.assertEqual(['8675', '309', 'a'], child2.label)
 
     def test_build_from_section_unnumbered_defs(self):
         xml = u"""
@@ -39,18 +43,23 @@ class RegTextTest(TestCase):
         """
         node = reg_text.build_from_section('8675', etree.fromstring(xml))[0]
         self.assertEqual('', node.text.strip())
-        self.assertEqual(1, len(node.children))
+        self.assertEqual(3, len(node.children))
         self.assertEqual(['8675', '309'], node.label)
 
         child = node.children[0]
         self.assertEqual('(a) This is what things mean:', child.text.strip())
-        self.assertEqual(2, len(child.children))
+        self.assertEqual(0, len(child.children))
         self.assertEqual(['8675', '309', 'a'], child.label)
 
-        grandchild = child.children[0]
-        self.assertEqual('foo means bar', grandchild.text.strip())
-        self.assertEqual([], grandchild.children)
-        self.assertEqual(['8675', '309', 'Foo'], grandchild.label)
+        child = node.children[1]
+        self.assertEqual('foo means bar', child.text.strip())
+        self.assertEqual(0, len(child.children))
+        self.assertEqual(['8675', '309', 'Foo'], child.label)
+
+        child = node.children[2]
+        self.assertEqual('bop means baz', child.text.strip())
+        self.assertEqual(0, len(child.children))
+        self.assertEqual(['8675', '309', 'Bop'], child.label)
 
 
     def test_build_from_section_collapsed_level(self):
