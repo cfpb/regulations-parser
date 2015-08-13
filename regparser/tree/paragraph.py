@@ -1,7 +1,6 @@
 import itertools
 import re
 import string
-import sys
 
 from regparser.tree import struct
 from regparser.search import segments

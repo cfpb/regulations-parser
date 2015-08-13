@@ -249,9 +249,11 @@ class InterpretationsTest(TestCase):
         self.assertEqual(['737', '13', 'Interp'], s13.label)
         self.assertEqual(['737', 'G', 'Interp'], g.label)
 
-        self.assertEqual(len(h1.children), 1)
-        self.assertEqual('1. Some content. (a) Badly named\n\n'
-                         + '(b) Badly named', h1.children[0].text.strip())
+        self.assertEqual(len(h1.children), 2)
+        self.assertEqual('1. Some content. (a) Badly named',
+                         h1.children[0].text.strip())
+        self.assertEqual('(b) Badly named',
+                         h1.children[1].text.strip())
         self.assertEqual(len(h1.children[0].children), 0)
 
         self.assertEqual(1, len(s13.children))
@@ -337,10 +339,12 @@ class InterpretationsTest(TestCase):
         while stack.size() > 1:
             stack.unwind()
         i1 = stack.m_stack[0][0][1]
+        i2 = stack.m_stack[0][1][1]
         self.assertEqual(1, len(i1.children))
         i1i = i1.children[0]
         self.assertEqual(0, len(i1i.children))
-        self.assertEqual(i1i.text.strip(), "i. iii\n\nHowdy Howdy")
+        self.assertEqual(i1i.text.strip(), "i. iii")
+        self.assertEqual(i2.text.strip(), "Howdy Howdy")
 
     def test_process_inner_child_has_citation(self):
         xml = """

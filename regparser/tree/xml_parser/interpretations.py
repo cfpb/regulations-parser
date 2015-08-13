@@ -1,15 +1,19 @@
-#vim: set encoding=utf-8
+#:vim: set encoding=utf-8
+from copy import deepcopy
 import itertools
 import logging
 import re
 
 from regparser.citations import Label, remove_citation_overlaps
 from regparser.layer.key_terms import KeyTerms
+from regparser.notice.util import spaces_then_remove
 from regparser.tree.depth import heuristics, rules, markers as mtypes
 from regparser.tree.depth.derive import derive_depths
 from regparser.tree.interpretation import merge_labels, text_to_labels
 from regparser.tree.struct import Node, treeify
 from regparser.tree.xml_parser import tree_utils
+
+from settings import PARAGRAPH_HIERARCHY
 
 
 _marker_regex = re.compile(
@@ -17,6 +21,7 @@ _marker_regex = re.compile(
     + '([0-9]+)'               # digits
     + '|([ivxlcdm]+)'          # roman
     + '|([A-Z]+)'              # upper
+    + '|([a-be-hjkn-uw-z]+)'   # lower
     + '|(<E[^>]*>[0-9]+)'      # emphasized digit
     + r')\s*\..*', re.DOTALL)  # followed by a period and then anything
 
@@ -102,24 +107,36 @@ def is_title(xml_node):
 def process_inner_children(inner_stack, xml_node):
     """Process the following nodes as children of this interpretation. This
     is very similar to reg_text.py:build_from_section()"""
+    # manual hierarchy should work here too
+    manual_hierarchy_flag = False
+    try:
+        part_and_section = re.search('[0-9]+\.[0-9]+', xml_node.text).group(0)
+        part, section = part_and_section.split('.')
+        part_and_section += '-Interp'
+
+
+        if part in PARAGRAPH_HIERARCHY and part_and_section in PARAGRAPH_HIERARCHY[part]:
+            manual_hierarchy_flag = True
+    except Exception:
+        pass
+
     children = itertools.takewhile(
         lambda x: not is_title(x), xml_node.itersiblings())
     nodes = []
-    for xml_node in filter(lambda c: c.tag in ('P', 'STARS'), children):
+    for i, xml_node in enumerate(filter(lambda c: c.tag in ('P', 'STARS'), children)):
         node_text = tree_utils.get_node_text(xml_node, add_spaces=True)
         text_with_tags = tree_utils.get_node_text_tags_preserved(xml_node)
         first_marker = get_first_interp_marker(text_with_tags)
         if xml_node.tag == 'STARS':
             nodes.append(Node(label=[mtypes.STARS_TAG]))
         elif not first_marker and nodes:
-            logging.warning("Couldn't determine interp marker. Appending to "
-                            "previous paragraph: %s", node_text)
-            previous = nodes[-1]
-            previous.text += "\n\n" + node_text
-            if hasattr(previous, 'tagged_text'):
-                previous.tagged_text += "\n\n" + text_with_tags
-            else:
-                previous.tagged_text = text_with_tags
+            logging.warning("Couldn't determine interp marker. "
+                            "Appending node and hoping that manual hierarchy is specified")
+
+            n = Node(node_text, label=[str(i)], node_type=Node.INTERP)
+            n.tagged_text = text_with_tags
+            nodes.append(n)
+
         else:
             collapsed = collapsed_markers_matches(node_text, text_with_tags)
 
@@ -151,13 +168,16 @@ def process_inner_children(inner_stack, xml_node):
         nodes = nodes[:-1]
 
     # Use constraint programming to figure out possible depth assignments
-    depths = derive_depths(
-        [n.label[0] for n in nodes],
-        [rules.depth_type_order([(mtypes.ints, mtypes.em_ints),
-                                 (mtypes.roman, mtypes.upper),
-                                 mtypes.upper, mtypes.em_ints,
-                                 mtypes.em_roman])])
-    if depths:
+    # use manual hierarchy if it's specified
+    if not manual_hierarchy_flag:
+        depths = derive_depths(
+            [n.label[0] for n in nodes],
+            [rules.depth_type_order([(mtypes.ints, mtypes.em_ints),
+                                     (mtypes.roman, mtypes.upper),
+                                     mtypes.upper, mtypes.em_ints,
+                                     mtypes.em_roman])])
+
+    if not manual_hierarchy_flag and depths:
         # Find the assignment which violates the least of our heuristics
         depths = heuristics.prefer_multiple_children(depths, 0.5)
         depths = sorted(depths, key=lambda d: d.weight, reverse=True)
@@ -171,6 +191,33 @@ def process_inner_children(inner_stack, xml_node):
                     inner_stack.push_last((3 + par.depth, node))
                 else:
                     inner_stack.add(3 + par.depth, node)
+    elif nodes and manual_hierarchy_flag:
+        logging.warning('Using manual depth hierarchy.')
+        depths = PARAGRAPH_HIERARCHY[part][part_and_section]
+        if len(nodes) == len(depths):
+            for node, depth in zip(nodes, depths):
+                last = inner_stack.peek()
+                node.label = [l.replace('<E T="03">', '').replace('</E>', '')
+                                  for l in node.label]
+                if len(last) == 0:
+                    inner_stack.push_last((3 + depth, node))
+                else:
+                    inner_stack.add(3 + depth, node)
+        else:
+            logging.error('Manual hierarchy length does not match node list length!')
+
+    elif nodes and not manual_hierarchy_flag:
+        logging.warning('Could not derive depth (interp):\n {}'.format([n.label[0] for n in nodes]))
+        # just add nodes in sequential order then
+        for node in nodes:
+            last = inner_stack.peek()
+            node.label = [l.replace('<E T="03">', '').replace('</E>', '')
+                                  for l in node.label]
+            if len(last) == 0:
+                inner_stack.push_last((3, node))
+            else:
+                inner_stack.add(3, node)
+
 
 
 def missing_levels(last_label, label):
@@ -196,6 +243,7 @@ def parse_from_xml(root, xml_nodes):
     parsing. root is the root interpretation node (e.g. a Node with label
     '1005-Interp'). xml_nodes contains all XML nodes which will be relevant
     to the interpretations"""
+
     supplement_nodes = [root]
 
     last_label = root.label
@@ -247,10 +295,13 @@ def parse_from_xml(root, xml_nodes):
 def build_supplement_tree(reg_part, node):
     """ Build the tree for the supplement section. """
     title = get_app_title(node)
+    node = spaces_then_remove(deepcopy(node), 'PRTPAGE')
     root = Node(
         node_type=Node.INTERP,
         label=[reg_part, Node.INTERP_MARK],
         title=title)
+
+    print root
 
     return parse_from_xml(root, node.getchildren())
 

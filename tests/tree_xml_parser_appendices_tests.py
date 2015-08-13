@@ -121,6 +121,7 @@ class AppendicesTest(TestCase):
         self.assertEqual('2. More content', a2.text.strip())
 
     def test_process_appendix_header_is_paragraph(self):
+        #TODO: fix appendix parser to comply with this test
         xml = u"""
         <APPENDIX>
             <EAR>Pt. 1111, App. A</EAR>

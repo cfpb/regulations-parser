@@ -6,21 +6,29 @@ def prepost_pend_spaces(el):
     them. Account for this by adding spaces around the el where needed."""
     not_append_space = """@#$(-'" \t\n"""
     not_prepend_space = """%):?!,. \t\n"""
-    space_added = False
 
+    non_empty = el.text or el.getchildren()
     parent = el.getparent()
     prev = el.getprevious()
-    if prev is not None:
-        if prev.tail and prev.tail[-1] not in not_append_space:
-            prev.tail = prev.tail + ' '
-            space_added = True
-    elif parent.text and parent.text[-1] not in not_append_space:
-        parent.text = parent.text + ' '
-        space_added = True
 
-    if (el.tail and el.tail[0] not in not_prepend_space
-       and (el.text or el.getchildren() or not space_added)):
-        el.tail = ' ' + el.tail
+    prev_text = (prev is not None and prev.tail) or parent.text
+    if non_empty:
+        if (prev is not None and prev.tail
+                and prev.tail[-1] not in not_append_space):
+            prev.tail = prev.tail + ' '
+        elif (prev is None and parent.text
+                and parent.text[-1] not in not_append_space):
+            parent.text = parent.text + ' '
+
+        if el.tail and el.tail[0] not in not_prepend_space:
+            el.tail = ' ' + el.tail
+
+    elif (prev_text and prev_text[-1] not in not_append_space
+            and el.tail and el.tail[0] not in not_prepend_space):
+        if prev is not None and prev.tail:
+            prev.tail = prev.tail + ' '
+        else:
+            parent.text = parent.text + ' '
 
 
 def swap_emphasis_tags(el):

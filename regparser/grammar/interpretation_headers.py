@@ -28,7 +28,7 @@ marker_par = (
 
 appendix = (
     atomic.appendix_marker.copy().leaveWhitespace()
-    + atomic.appendix
+    + (unified.appendix_with_section | atomic.appendix )
     + SkipTo(LineEnd())
 )
 

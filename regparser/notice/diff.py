@@ -97,8 +97,6 @@ def find_diffs(xml_tree, cfr_part):
                 if node_is_empty(node):
                     for c in node.children:
                         per_node(c)
-                else:
-                    print node.label, node.text
             per_node(node)
 
 

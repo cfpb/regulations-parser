@@ -7,6 +7,7 @@ from pyparsing import Literal, Optional, Regex, Suppress
 
 from regparser.citations import remove_citation_overlaps
 from regparser.grammar.unified import any_depth_p
+from regparser.tree.depth import markers as mtypes
 from regparser.tree.paragraph import p_levels
 from regparser.tree.priority_stack import PriorityStack
 
@@ -87,16 +88,16 @@ def get_paragraph_markers(text):
     """ From a body of text that contains paragraph markers, extract the
     initial markers. """
 
-    for citation, start, end in any_depth_p.scanString(text):
-        if start == 0:
-            markers = [citation.p1, citation.p2, citation.p3, citation.p4,
-                       citation.p5, citation.p6]
-            if markers[4]:
-                markers[4] = '<E T="03">' + markers[4] + '</E>'
-            if markers[5]:
-                markers[5] = '<E T="03">' + markers[5] + '</E>'
-            return list(filter(bool, markers))
-    return []
+    markers = []
+    text = text.lstrip()
+    for mtype in (mtypes.lower, mtypes.ints, mtypes.roman, mtypes.upper,
+                    mtypes.em_ints, mtypes.em_roman):
+        for marker in mtype:
+            if text.startswith('(' + marker + ')'):
+                markers.append(marker)
+                text = text[2 + len(marker):].lstrip()
+                break
+    return markers
 
 
 def _should_add_space(prev_text, next_text):
