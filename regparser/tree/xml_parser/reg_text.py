@@ -151,6 +151,9 @@ def get_markers_and_text(node, markers_list):
         node_text_list = zip(node_texts, tagged_texts)
     elif markers_list:
         node_text_list = [(node_text, text_with_tags)]
+    else:
+        node_text_list = [('', '')]
+
     return zip(markers_list, node_text_list)
 
 
@@ -222,7 +225,8 @@ def build_from_section(reg_part, section_xml):
                     section_texts.append((text, tagged_text))
             else:
                 if len(children) > 1:
-                    n = Node(text, label=[section_no_without_marker.split('.')[1]], source_xml=ch)
+                    def_marker = 'def{0}'.format(i)
+                    n = Node(text, [], [def_marker], source_xml=ch)
                     n.tagged_text = tagged_text
                     i += 1
                     nodes.append(n)
@@ -244,6 +248,7 @@ def build_from_section(reg_part, section_xml):
         nodes = nodes[:-1]
 
     m_stack = tree_utils.NodeStack()
+
     # Use constraint programming to figure out possible depth assignments
     if not manual_hierarchy_flag:
         depths = derive_depths(
@@ -286,7 +291,14 @@ def build_from_section(reg_part, section_xml):
 
     elif nodes and not manual_hierarchy_flag:
         logging.warning('Could not determine depth when parsing {0}:\n{1}'.format(section_no_without_marker, [n.label[0] for n in nodes]))
-
+        for node in nodes:
+            last = m_stack.peek()
+            node.label = [l.replace('<E T="03">', '').replace('</E>', '')
+                                  for l in node.label]
+            if len(last) == 0:
+                m_stack.push_last((3, node))
+            else:
+                m_stack.add(3, node)
 
     nodes = []
     section_nums = []
