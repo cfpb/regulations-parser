@@ -83,7 +83,8 @@ def generate_diffs(reg_tree, act_title_and_section, builder, layer_cache):
                 label_id, lhs_version, rhs_version
             ).write(changes)
 
-def build_by_notice(filename, title, doc_number, act_title, act_section, notice_doc_numbers, checkpoint=None):
+def build_by_notice(filename, title, act_title, act_section,
+        notice_doc_numbers, doc_number=None, checkpoint=None):
 
     with codecs.open(filename, 'r', 'utf-8') as f:
         reg = f.read()
@@ -100,6 +101,9 @@ def build_by_notice(filename, title, doc_number, act_title, act_section, notice_
         lambda: Builder.reg_tree(reg))
 
     title_part = reg_tree.label_id()
+    
+    if doc_number is None:
+        doc_number = Builder.determine_doc_number(reg, title, title_part)
 
     checkpointer.suffix = ":".join(
         ["", title_part, str(args.title), doc_number])
@@ -124,7 +128,7 @@ def build_by_notice(filename, title, doc_number, act_title, act_section, notice_
     layer_cache.replace_using(reg_tree)
 
     if args.generate_diffs:
-        generate_diffs(doc_number, reg_tree, act_title_and_section, builder, layer_cache, checkpointer)
+        generate_diffs(reg_tree, act_title_and_section, builder, layer_cache)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Regulation parser')
@@ -143,13 +147,15 @@ if __name__ == "__main__":
     parser.add_argument('--checkpoint', required=False,
                         help='Directory to save checkpoint data')
 
+    parser.add_argument('--last-notice', type=str, help='the last notice to be used')
     parser.add_argument('--operation', action='store')
     parser.add_argument('--notices-to-apply', nargs='*', action='store')
 
     args = parser.parse_args()
 
     if args.operation == 'build_by_notice':
-        build_by_notice(args.filename, args.title, args.notice, args.act_title,
-                        args.act_section, args.notices_to_apply, args.checkpoint)
+        build_by_notice(args.filename, args.title, args.act_title,
+                        args.act_section, args.notices_to_apply,
+                        args.last_notice, args.checkpoint)
     else:
         parse_regulation(args)
