@@ -21,6 +21,7 @@ _marker_regex = re.compile(
     + '([0-9]+)'               # digits
     + '|([ivxlcdm]+)'          # roman
     + '|([A-Z]+)'              # upper
+    + '|([a-be-hjkn-uw-z]+)'   # lower
     + '|(<E[^>]*>[0-9]+)'      # emphasized digit
     + r')\s*\..*', re.DOTALL)  # followed by a period and then anything
 
@@ -129,7 +130,7 @@ def process_inner_children(inner_stack, xml_node):
         if xml_node.tag == 'STARS':
             nodes.append(Node(label=[mtypes.STARS_TAG]))
         elif not first_marker and nodes:
-            logging.warning("Couldn't determine interp marker."
+            logging.warning("Couldn't determine interp marker. "
                             "Appending node and hoping that manual hierarchy is specified")
 
             n = Node(node_text, label=[str(i)], node_type=Node.INTERP)
@@ -207,6 +208,15 @@ def process_inner_children(inner_stack, xml_node):
 
     elif nodes and not manual_hierarchy_flag:
         logging.warning('Could not derive depth (interp):\n {}'.format([n.label[0] for n in nodes]))
+        # just add nodes in sequential order then
+        for node in nodes:
+            last = inner_stack.peek()
+            node.label = [l.replace('<E T="03">', '').replace('</E>', '')
+                                  for l in node.label]
+            if len(last) == 0:
+                inner_stack.push_last((3, node))
+            else:
+                inner_stack.add(3, node)
 
 
 
@@ -290,6 +300,8 @@ def build_supplement_tree(reg_part, node):
         node_type=Node.INTERP,
         label=[reg_part, Node.INTERP_MARK],
         title=title)
+
+    print root
 
     return parse_from_xml(root, node.getchildren())
 
