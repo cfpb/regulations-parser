@@ -60,8 +60,7 @@ part = Word(string.digits).setResultsName("part")
 
 section = Word(string.digits).setResultsName("section")
 
-# Should match Appendices like A, AB, BC-1, D1, etc
-appendix = Regex(r"[A-Z]+-?[0-9]*\b").setResultsName("appendix")
+appendix = Regex(r"[A-Z]+[0-9]*\b").setResultsName("appendix")
 appendix_digit = Word(string.digits).setResultsName("appendix_digit")
 
 subpart = Word(string.ascii_uppercase).setResultsName("subpart")

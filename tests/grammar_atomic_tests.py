@@ -20,10 +20,3 @@ class GrammarAtomicTests(TestCase):
             with self.assertRaises(ParseException):
                 lower_p.parseString(text)
 
-    def test_appendix(self):
-        for text, a in [('A', 'A'),
-                ('AB', 'AB'),
-                ('BC-1', 'BC-1'),
-                ('D1', 'D1')]:
-            result = appendix.parseString(text)
-            self.assertEqual(a, result.appendix)
