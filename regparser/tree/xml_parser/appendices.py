@@ -68,10 +68,8 @@ class AppendixProcessor(object):
                 logging.warning("Found two appendix headers: %s and %s",
                                 self.appendix_letter, text)
             parsed_header = headers.parseString(text)
-            if parsed_header.appendix_section:
-                self.appendix_letter = parsed_header.appendix + '-' + parsed_header.appendix_section
-            else:
-                self.appendix_letter = parsed_header.appendix
+            self.appendix_letter = parsed_header.appendix
+
         return self.appendix_letter
 
     def hed(self, part, text):
@@ -256,9 +254,6 @@ class AppendixProcessor(object):
             self.nodes = []
 
     def process(self, appendix, part):
-        #TODO: currently this fails the appendix parser test
-        #TODO: there should be a flag to check what sort of appendix we have
-        #TODO: if we have an appendix with headings like "A-1" or not
         self.m_stack = tree_utils.NodeStack()
 
         self.part = part
@@ -281,7 +276,6 @@ class AppendixProcessor(object):
 
         for child in appendix.getchildren():
             text = tree_utils.get_node_text(child, add_spaces=True).strip()
-            # print text
             if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
                     or child.tag == 'RESERVED'):
                 self.end_group()
