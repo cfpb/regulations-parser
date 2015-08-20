@@ -198,6 +198,7 @@ def internal_citations(text, initial_label=None,
 
     single_citations(grammar.marker_appendix.scanString(text), False)
     single_citations(grammar.appendix_with_section.scanString(text), False)
+    single_citations(grammar.section_of_appendix_to_this_part.scanString(text), False)
     single_citations(grammar.marker_paragraph.scanString(text), False)
     single_citations(grammar.mps_paragraph.scanString(text), False)
     single_citations(grammar.m_section_paragraph.scanString(text), False)
@@ -208,17 +209,24 @@ def internal_citations(text, initial_label=None,
         multiple_citations(
             grammar.multiple_section_paragraphs.scanString(text), False)
 
-    # Some appendix citations are... complex
-    for match, start, end in grammar.appendix_with_part.scanString(text):
-        full_start = start
-        if match.marker is not '':
-            start = match.marker.pos[1]
-        label = filter(lambda l: l != '.', list(match)[3:])
-        label = dict(zip(['p1', 'p2', 'p3'], label))
-        citations.append(ParagraphCitation(
-            start, end, initial_label.copy(
-                appendix=match.appendix, appendix_section=match.a1,
-                **label), full_start=full_start))
+    for gram in (grammar.appendix_with_part, grammar.appendix_par_of_part):
+        for match, start, end in gram.scanString(text):
+            full_start = start
+            if match.marker is not '':
+                start = match.marker.pos[1]
+            label = filter(lambda l: l != '.', list(match)[1:])
+            if match.appendix:
+                extra = dict(zip(['p1', 'p2', 'p3'], label[2:]))
+                citations.append(ParagraphCitation(
+                    start, end, initial_label.copy(
+                        appendix=match.appendix, appendix_section=match.a1,
+                        **extra), full_start=full_start))
+            else:
+                extra = dict(zip(['p1', 'p2', 'p3'], label[:-1]))
+                citations.append(ParagraphCitation(
+                    start, end,
+                    initial_label.copy(appendix_section=match.a1, **extra),
+                    full_start=full_start))
 
     # Internal citations can sometimes be in the form XX CFR YY.ZZ
     for match, start, end in grammar.internal_cfr_p.scanString(text):

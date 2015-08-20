@@ -1,5 +1,7 @@
 from collections import defaultdict
 from json import JSONEncoder
+
+import logging
 import hashlib
 
 
@@ -20,7 +22,7 @@ class Node(object):
         # defensive copy
         self.children = list(children)
 
-        self.label = [str(l) for l in label if l != '']
+        self.label = [unicode(l) for l in label if l != '']
         title = unicode(title or '')
         self.title = title or None
         self.node_type = node_type
@@ -87,6 +89,9 @@ def find(root, label):
     response = walk(root, check)
     if response:
         return response[0]
+    else:
+        logging.warning('Failed to locate node with label {}'.format(label))
+        return None
 
 
 def join_text(node):

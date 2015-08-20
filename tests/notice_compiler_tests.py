@@ -48,16 +48,20 @@ class CompilerTests(TestCase):
 
     def test_make_root_sortable(self):
         self.assertEqual(
-            compiler.make_root_sortable(['205', 'B'], Node.APPENDIX),
-            (1, 'B'))
+            compiler.make_root_sortable(['205', 'B'], Node.EMPTYPART),
+            (0, 'B'))
 
         self.assertEqual(
             compiler.make_root_sortable(['205', 'Subpart', 'J'], Node.SUBPART),
-            (0, 'J'))
+            (1, 'J'))
+
+        self.assertEqual(
+            compiler.make_root_sortable(['205', 'B'], Node.APPENDIX),
+            (2, 'B'))
 
         self.assertEqual(
             compiler.make_root_sortable(['205', 'Interp'], Node.INTERP),
-            (2, ))
+            (3, ))
 
     def test_add_child(self):
         n1 = Node('n1', label=['205', '1'])
@@ -881,6 +885,7 @@ class CompilerTests(TestCase):
 
     def test_compile_regulation_delete_move(self):
         prev_tree = self.tree_with_paragraphs()
+        print prev_tree.label[0]
         changes = {
             '205-2-a': [
                 {'action': 'MOVE', 'destination': ['205', '2', 'b']},
@@ -896,7 +901,16 @@ class CompilerTests(TestCase):
             def __getitem__(self, key):
                 return changes[key]
 
+            def __contains__(self, key):
+                if key in changes:
+                    return True
+                else:
+                    return False
+
         new_tree = compiler.compile_regulation(prev_tree, SortedKeysDict())
+
+        print new_tree
+
         s1, s2, s4 = new_tree.children
         self.assertEqual(2, len(s2.children))
         s2a, s2b = s2.children

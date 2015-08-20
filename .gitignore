@@ -1,7 +1,80 @@
-*.swp
-*.pyc
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
 
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# Grunt.js #
+############
+node_modules/
+oldphantomjs/
+.grunt/
+
+# Minified assets #
+###############
+*.min.js
+
+# Floobits #
+###############
+.floo
+.flooignore
+.sublime-project
+
+# Custom #
+##########
+*.py[co]
+eregsip/
+*.swp
 local_settings.py
+dev_local_settings.py
+config.json
+src/
+_SpecRunner.html
+head/public/fonts
+regulations/static/regulations/docs/*
+regulations/static/regulations/js/source/require.config.js
+regulations/static/regulations/js/source/lib/
+regulations/static/regulations/js/tests/browser/test.config.js
+regulations/static/regulations/js/unittests/coverage/
+regulations/static/regulations/js/built/*
+regulations/static/regulations/js/built/regulations.js
+docs/Makefile
+docs/make.bat
+regulations-core/
+style.css.map
 
 regulations
 regcontent
@@ -9,5 +82,6 @@ fr-notices
 regulations-stub
 regulations-configs
 
+# docs output
 docs/_build
 *.p

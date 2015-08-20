@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
+
 import argparse
 import logging
+import hashlib
+import codecs
 
 try:
     import requests_cache
@@ -11,7 +14,7 @@ except ImportError:
     # HTTP requests rather than looking it up from the cache
     pass
 
-from regparser.builder import LayerCacheAggregator, tree_and_builder
+from regparser.builder import LayerCacheAggregator, tree_and_builder, Checkpointer, NullCheckpointer, Builder
 from regparser.diff.tree import changes_between
 from regparser.tree.struct import FrozenNode
 
@@ -25,10 +28,13 @@ def parse_regulation(args):
     """ Run the parser on the specified command-line arguments. Broken out
         into separate function to assist in profiling.
     """
+
     act_title_and_section = [args.act_title, args.act_section]
     #   First, the regulation tree
+
     reg_tree, builder = tree_and_builder(args.filename, args.title,
                                          args.checkpoint_dir, args.doc_number)
+
     builder.write_notices()
 
     #   Always do at least the first reg
@@ -72,11 +78,57 @@ def generate_diffs(reg_tree, act_title_and_section, builder, layer_cache):
         for rhs_version, rhs_tree in all_versions.iteritems():
             changes = checkpointer.checkpoint(
                 "-".join(["diff", lhs_version, rhs_version]),
-                lambda: dict(changes_between(lhs_tree, rhs_tree)))
+            lambda: dict(changes_between(lhs_tree, rhs_tree)))
             writer.diff(
                 label_id, lhs_version, rhs_version
             ).write(changes)
 
+def build_by_notice(filename, title, act_title, act_section,
+        notice_doc_numbers, doc_number=None, checkpoint=None):
+
+    with codecs.open(filename, 'r', 'utf-8') as f:
+        reg = f.read()
+        file_digest = hashlib.sha256(reg.encode('utf-8')).hexdigest()
+
+    if checkpoint:
+        checkpointer = Checkpointer(checkpoint)
+    else:
+        checkpointer = NullCheckpointer()
+
+    # build the initial tree
+    reg_tree = checkpointer.checkpoint(
+        "init-tree-" + file_digest,
+        lambda: Builder.reg_tree(reg))
+
+    title_part = reg_tree.label_id()
+    
+    if doc_number is None:
+        doc_number = Builder.determine_doc_number(reg, title, title_part)
+
+    checkpointer.suffix = ":".join(
+        ["", title_part, str(args.title), doc_number])
+
+    # create the builder
+    builder = Builder(cfr_title=title,
+                      cfr_part=title_part,
+                      doc_number=doc_number,
+                      checkpointer=checkpointer)
+
+    builder.fetch_notices_json()
+
+    for notice in notice_doc_numbers:
+        builder.build_notice_from_doc_number(notice)
+
+    builder.write_regulation(reg_tree)
+    layer_cache = LayerCacheAggregator()
+
+    act_title_and_section = [act_title, act_section]
+
+    builder.gen_and_write_layers(reg_tree, act_title_and_section, layer_cache)
+    layer_cache.replace_using(reg_tree)
+
+    if args.generate_diffs:
+        generate_diffs(reg_tree, act_title_and_section, builder, layer_cache)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Regulation parser')
@@ -100,5 +152,15 @@ if __name__ == "__main__":
               'the regulation has no electronic final rules on '
               'federalregister.gov, i.e. has not changed since before ~2000)'))
 
+    parser.add_argument('--last-notice', type=str, help='the last notice to be used')
+    parser.add_argument('--operation', action='store')
+    parser.add_argument('--notices-to-apply', nargs='*', action='store')
+
     args = parser.parse_args()
-    parse_regulation(args)
+
+    if args.operation == 'build_by_notice':
+        build_by_notice(args.filename, args.title, args.act_title,
+                        args.act_section, args.notices_to_apply,
+                        args.last_notice, args.checkpoint)
+    else:
+        parse_regulation(args)
