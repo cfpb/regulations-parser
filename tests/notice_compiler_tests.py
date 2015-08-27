@@ -881,7 +881,6 @@ class CompilerTests(TestCase):
 
     def test_compile_regulation_delete_move(self):
         prev_tree = self.tree_with_paragraphs()
-        print prev_tree.label[0]
         changes = {
             '205-2-a': [
                 {'action': 'MOVE', 'destination': ['205', '2', 'b']},
@@ -904,8 +903,6 @@ class CompilerTests(TestCase):
                     return False
 
         new_tree = compiler.compile_regulation(prev_tree, SortedKeysDict())
-
-        print new_tree
 
         s1, s2, s4 = new_tree.children
         self.assertEqual(2, len(s2.children))
