@@ -163,19 +163,19 @@ class AppendixProcessor(object):
         for mtext in split_paragraph_text(mtext):
             if keyterm:     # still need the original text
                 mtext = mtext.replace(';'*len(keyterm), keyterm)
-            label_candidate = [initial_marker(mtext)[0]]
-            existing_node = None
-            for node in self.nodes:
-                if node.label == label_candidate:
-                    existing_node = node
-            if existing_node:
-                self.paragraph_counter += 1
-                node = Node(mtext, node_type=Node.APPENDIX,
-                            label=['dup{}'.format(self.paragraph_counter),
-                                   initial_marker(mtext)[0]])
-            else:
-                node = Node(mtext, node_type=Node.APPENDIX,
-                            label=[initial_marker(mtext)[0]])
+            # label_candidate = [initial_marker(mtext)[0]]
+            # existing_node = None
+            # for node in self.nodes:
+            #     if node.label == label_candidate:
+            #         existing_node = node
+            # if existing_node:
+            #     self.paragraph_counter += 1
+            #     node = Node(mtext, node_type=Node.APPENDIX,
+            #                 label=['dup{}'.format(self.paragraph_counter),
+            #                        initial_marker(mtext)[0]])
+            # else:
+            node = Node(mtext, node_type=Node.APPENDIX,
+                        label=[initial_marker(mtext)[0]])
             self.nodes.append(node)
 
     def paragraph_no_marker(self, text):
