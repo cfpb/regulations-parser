@@ -345,7 +345,8 @@ def process_appendix(appendix, part):
 
 
 def parsed_title(text, appendix_letter):
-    digit_str_parser = (Marker(appendix_letter)
+    digit_str_parser = (Optional(Suppress("Appendix"))
+                        + Marker(appendix_letter)
                         + Suppress('-')
                         + grammar.a1.copy().leaveWhitespace()
                         + Optional(grammar.markerless_upper)

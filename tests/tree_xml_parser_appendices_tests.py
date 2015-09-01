@@ -384,6 +384,9 @@ class AppendicesTest(TestCase):
         title = u'Part III—Construction Period'
         self.assertEqual(('III', 2), appendices.title_label_pair(title, 'A', '1000'))
 
+        title = u'Appendix DC-3(A) to Part 1000'
+        self.assertEqual(('3(A)', 2), appendices.title_label_pair(title, 'DC', '1000'))
+
     def test_title_label_pair_parens(self):
         title = u'G-13(A)—Has No parent'
         self.assertEqual(('13(A)', 2), appendices.title_label_pair(title, 'G', '1000'))
@@ -660,3 +663,8 @@ class AppendixProcessorTest(TestCase):
         a = appendix.children[0]
         self.assertEqual(['1111', 'AA1', 'a'], a.label)
 
+    def test_parsed_title(self):
+
+
+        match = parsed_title(text, appendix_letter)
+    
