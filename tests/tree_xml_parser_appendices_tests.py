@@ -663,8 +663,3 @@ class AppendixProcessorTest(TestCase):
         a = appendix.children[0]
         self.assertEqual(['1111', 'AA1', 'a'], a.label)
 
-    def test_parsed_title(self):
-
-
-        match = parsed_title(text, appendix_letter)
-    
