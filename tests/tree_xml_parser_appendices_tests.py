@@ -645,3 +645,18 @@ class AppendixProcessorTest(TestCase):
         self.assertEqual(0, len(a2.children))
         self.assertEqual(['1111', 'A', 'a', 'p1'], amarkerless.label)
         self.assertEqual(0, len(amarkerless.children))
+
+    def test_appendix_letter_dash(self):
+        xml = u"""
+        <APPENDIX>
+            <EAR>Pt. 1111, App. A</EAR>
+            <HD SOURCE="HED">Appendix AA-1 to Part 1111—Awesome</HD>
+            <P>(a) aaaaaa</P>
+        </APPENDIX>
+        """
+        appendix = self.ap.process(etree.fromstring(xml), 1111)
+        self.assertEqual(['1111', 'AA1'], appendix.label)
+
+        a = appendix.children[0]
+        self.assertEqual(['1111', 'AA1', 'a'], a.label)
+

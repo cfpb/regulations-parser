@@ -301,8 +301,6 @@ def build_supplement_tree(reg_part, node):
         label=[reg_part, Node.INTERP_MARK],
         title=title)
 
-    print root
-
     return parse_from_xml(root, node.getchildren())
 
 

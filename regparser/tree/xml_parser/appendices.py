@@ -15,7 +15,7 @@ from regparser.layer.key_terms import KeyTerms
 from regparser.tree.depth import markers
 from regparser.tree.depth.derive import derive_depths
 from regparser.tree.paragraph import p_levels
-from regparser.tree.struct import Node
+from regparser.tree.struct import Node, find
 from regparser.tree.xml_parser import tree_utils
 from regparser.tree.xml_parser.interpretations import build_supplement_tree
 from regparser.tree.xml_parser.interpretations import get_app_title
@@ -68,10 +68,8 @@ class AppendixProcessor(object):
                 logging.warning("Found two appendix headers: %s and %s",
                                 self.appendix_letter, text)
             parsed_header = headers.parseString(text)
-            if parsed_header.appendix_section:
-                self.appendix_letter = parsed_header.appendix + '-' + parsed_header.appendix_section
-            else:
-                self.appendix_letter = parsed_header.appendix
+            self.appendix_letter = parsed_header.appendix
+
         return self.appendix_letter
 
     def hed(self, part, text):
@@ -165,6 +163,17 @@ class AppendixProcessor(object):
         for mtext in split_paragraph_text(mtext):
             if keyterm:     # still need the original text
                 mtext = mtext.replace(';'*len(keyterm), keyterm)
+            # label_candidate = [initial_marker(mtext)[0]]
+            # existing_node = None
+            # for node in self.nodes:
+            #     if node.label == label_candidate:
+            #         existing_node = node
+            # if existing_node:
+            #     self.paragraph_counter += 1
+            #     node = Node(mtext, node_type=Node.APPENDIX,
+            #                 label=['dup{}'.format(self.paragraph_counter),
+            #                        initial_marker(mtext)[0]])
+            # else:
             node = Node(mtext, node_type=Node.APPENDIX,
                         label=[initial_marker(mtext)[0]])
             self.nodes.append(node)
@@ -232,18 +241,21 @@ class AppendixProcessor(object):
                        AppendixProcessor.filler_regex.match(n.label[-1])]
             if markers:
                 results = derive_depths(markers)
-                if not results:
+                if not results or results == []:
                     logging.warning('Could not derive depth from {}'.format(markers))
-                depths = list(reversed(
-                    [a.depth for a in results[0].assignment]))
+                    depths = []
+                else:
+                    depths = list(reversed(
+                        [a.depth for a in results[0].assignment]))
             else:
                 depths = []
             depth_zero = None   # relative for beginning of marker depth
             self.depth += 1
             while nodes:
                 node = nodes.pop()
-                if AppendixProcessor.filler_regex.match(node.label[-1]):
-                    # Not a marker paragraph
+                if AppendixProcessor.filler_regex.match(node.label[-1]) or depths == []:
+                    # Not a marker paragraph, or a marker paragraph that isn't actually
+                    # part of a hierarchy (e.g. Appendix C to 1024, notice 2013-28210)
                     self.m_stack.add(self.depth, node)
                 else:
                     depth = depths.pop()
@@ -256,9 +268,6 @@ class AppendixProcessor(object):
             self.nodes = []
 
     def process(self, appendix, part):
-        #TODO: currently this fails the appendix parser test
-        #TODO: there should be a flag to check what sort of appendix we have
-        #TODO: if we have an appendix with headings like "A-1" or not
         self.m_stack = tree_utils.NodeStack()
 
         self.part = part
@@ -281,7 +290,6 @@ class AppendixProcessor(object):
 
         for child in appendix.getchildren():
             text = tree_utils.get_node_text(child, add_spaces=True).strip()
-            # print text
             if ((child.tag == 'HD' and child.attrib['SOURCE'] == 'HED')
                     or child.tag == 'RESERVED'):
                 self.end_group()
