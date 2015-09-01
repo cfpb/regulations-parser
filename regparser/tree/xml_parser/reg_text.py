@@ -277,7 +277,12 @@ def build_from_section(reg_part, section_xml):
         logging.warning('Using manual depth hierarchy.')
         depths = PARAGRAPH_HIERARCHY[reg_part][section_no_without_marker]
         if len(nodes) == len(depths):
-            for node, depth in zip(nodes, depths):
+            for node, spec in zip(nodes, depths):
+                if isinstance(spec, int):
+                    depth = spec
+                elif isinstance(spec, tuple):
+                    depth, marker = spec
+                    node.marker = marker
                 last = m_stack.peek()
                 node.label = [l.replace('<E T="03">', '').replace('</E>', '')
                                   for l in node.label]
