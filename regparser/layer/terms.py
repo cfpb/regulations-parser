@@ -265,6 +265,8 @@ class Terms(Layer):
         """Search for the first instance of `needle` in the `haystack`
         excluding any overlaps from `exclusions`. Implicitly returns None if
         it can't be found"""
+        #TODO: This cannot under any circumstances return None because it's being
+        #TODO: used in an addition upstack.
         start = 0
         while start >= 0:
             start = haystack.find(needle, start)

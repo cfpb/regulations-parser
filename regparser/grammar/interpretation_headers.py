@@ -1,6 +1,6 @@
 import string
 
-from pyparsing import LineEnd, LineStart, SkipTo
+from pyparsing import LineEnd, LineStart, SkipTo, Regex
 
 from regparser.grammar import atomic, unified
 
@@ -25,10 +25,16 @@ marker_par = (
     + unified.depth1_p
 )
 
-
+# This matches an appendix name in an appendix header. Here we'll match
+# something with a dash in the appendix name (i.e. AA-1) but we'll
+# remove the dash. The effect of this is that, for label purposes only,
+# the appendix becomes known as 'AA1', and therefore we don't have weird
+# label collisions with a node labeled '1' underneath the appendix.
 appendix = (
     atomic.appendix_marker.copy().leaveWhitespace()
-    + atomic.appendix
+    + Regex(r"[A-Z]+-?[0-9]*\b").setResultsName("appendix").setParseAction(
+                    lambda r: r[0].replace('-', '')
+                ).setResultsName("appendix")
     + SkipTo(LineEnd())
 )
 

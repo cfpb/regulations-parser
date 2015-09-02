@@ -45,6 +45,7 @@ def process_with_headers(cfr_part, parent_xml):
 
     # Skip over everything until 'Supplement I' in a header
     seen_header = False
+    root_title = None
     xml_nodes = []
     contains_supp = lambda n: 'supplement i' in (n.text.lower() or '')
     for child in parent_xml:
@@ -63,11 +64,15 @@ def process_with_headers(cfr_part, parent_xml):
             xml_nodes.append(child)
         else:
             if child.tag == 'HD' and contains_supp(child):
+                root_title = child.text
                 seen_header = True
             for hd in filter(contains_supp, child.xpath(".//HD")):
                 seen_header = True
 
-    root = Node(label=[cfr_part, Node.INTERP_MARK], node_type=Node.INTERP)
+    if root_title:
+        root = Node(label=[cfr_part, Node.INTERP_MARK], node_type=Node.INTERP, title=root_title)
+    else:
+        root = Node(label=[cfr_part, Node.INTERP_MARK], node_type=Node.INTERP)
     root = interpretations.parse_from_xml(root, xml_nodes)
     if not root.children:
         return None

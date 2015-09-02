@@ -1,3 +1,4 @@
+#vim: set encoding=utf-8
 from unittest import TestCase
 
 from regparser.grammar.interpretation_headers import *
@@ -29,5 +30,12 @@ class GrammarInterpretationHeadersTest(TestCase):
         self.assertEqual('b', match.p1)
 
     def test_appendix(self):
-        match = parser.parseString("Appendix M - More Info")
-        self.assertEqual('M', match.appendix)
+        for text, a in [
+                ('Appendix BC-1 — More Info', 'BC1'),
+
+                ('Appendix A — More Info', 'A'),
+                ('Appendix AB — More Info', 'AB'),
+                ('Appendix D1 — More Info', 'D1')]:
+            result = parser.parseString(text)
+            self.assertEqual(a, result.appendix)
+        

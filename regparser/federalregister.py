@@ -24,6 +24,7 @@ def fetch_notice_json(cfr_title, cfr_part, only_final=False,
         params["conditions[type][]"] = 'RULE'
     if max_effective_date:
         params["conditions[effective_date][lte]"] = max_effective_date
+
     response = requests.get(API_BASE + "articles", params=params).json()
     if 'results' in response:
         return response['results']

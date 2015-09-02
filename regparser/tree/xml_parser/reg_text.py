@@ -2,7 +2,7 @@
 import re
 
 from lxml import etree
-
+import logging
 from regparser import content
 from regparser.tree.depth import heuristics, rules, markers as mtypes
 from regparser.tree.depth.derive import derive_depths
@@ -11,6 +11,7 @@ from regparser.tree.paragraph import p_level_of
 from regparser.tree.xml_parser.appendices import build_non_reg_text
 from regparser.tree import reg_text
 from regparser.tree.xml_parser import tree_utils
+from settings import PARAGRAPH_HIERARCHY
 
 
 def get_reg_part(reg_doc):
@@ -64,7 +65,10 @@ def preprocess_xml(xml):
 
 
 def build_tree(reg_xml):
-    doc = etree.fromstring(reg_xml)
+    if isinstance(reg_xml, str) or isinstance(reg_xml, unicode):
+        doc = etree.fromstring(reg_xml)
+    else:
+        doc = reg_xml
     preprocess_xml(doc)
 
     reg_part = get_reg_part(doc)
@@ -94,7 +98,7 @@ def build_tree(reg_xml):
 
 
 def get_subpart_title(subpart_xml):
-    hds = subpart_xml.xpath('./HD')
+    hds = subpart_xml.xpath('./HD|./RESERVED')
     return [hd.text for hd in hds][0]
 
 
@@ -147,6 +151,9 @@ def get_markers_and_text(node, markers_list):
         node_text_list = zip(node_texts, tagged_texts)
     elif markers_list:
         node_text_list = [(node_text, text_with_tags)]
+    else:
+        node_text_list = [('', '')]
+
     return zip(markers_list, node_text_list)
 
 
@@ -174,16 +181,22 @@ def build_from_section(reg_part, section_xml):
     nodes = []
 
     section_no = section_xml.xpath('SECTNO')[0].text
+    section_no_without_marker = re.search('[0-9]+\.[0-9]+', section_no).group(0)
     subject_xml = section_xml.xpath('SUBJECT')
     if not subject_xml:
         subject_xml = section_xml.xpath('RESERVED')
     subject_text = subject_xml[0].text
 
+    manual_hierarchy_flag = False
+    if reg_part in PARAGRAPH_HIERARCHY and section_no_without_marker in PARAGRAPH_HIERARCHY[reg_part]:
+        manual_hierarchy_flag = True
+
+
     # Collect paragraph markers and section text (intro text for the
     # section)
     i = 0
-    for ch in filter(lambda ch: ch.tag in ('P', 'STARS'),
-                     section_xml.getchildren()):
+    children = [ch for ch in section_xml.getchildren() if ch.tag in ['P', 'STARS']]
+    for ch in children:
         text = tree_utils.get_node_text(ch, add_spaces=True)
         tagged_text = tree_utils.get_node_text_tags_preserved(ch)
         markers_list = get_markers(tagged_text.strip())
@@ -192,18 +205,35 @@ def build_from_section(reg_part, section_xml):
             nodes.append(Node(label=[mtypes.STARS_TAG]))
         elif not markers_list:
             # is this a bunch of definitions that don't have numbers next to them?
-            if subject_text.find('Definitions.') > -1 and len(nodes) > 0:
-                if text.find('means') > -1:
-                    def_marker = text.split('means')[0].strip().split()
-                    def_marker = ''.join([word[0].upper() + word[1:] for word in def_marker])
+            if len(nodes) > 0:
+                if (subject_text.find('Definitions.') > -1 or nodes[-1].text.find('For the purposes of this section')):
+                    #TODO: create a grammar for definitions
+                    if text.find('means') > -1:
+                        def_marker = text.split('means')[0].strip().split()
+                        def_marker = ''.join([word[0].upper() + word[1:] for word in def_marker])
+                    elif text.find('shall have the same meaning') > -1:
+                        def_marker = text.split('shall')[0].strip().split()
+                        def_marker = ''.join([word[0].upper() + word[1:] for word in def_marker])
+                    else:
+                        def_marker = 'def{0}'.format(i)
+                        i += 1
+                    n = Node(text, label=[def_marker], source_xml=ch)
+                    n.tagged_text = tagged_text
+                    #nodes[-1].children.append(n)
+                    nodes.append(n)
                 else:
-                    def_marker = 'def{0}'.format(i)
-                    i += 1
-                n = Node(text, label=[def_marker], source_xml=ch)
-                n.tagged_text = tagged_text
-                nodes[-1].children.append(n)
+                    section_texts.append((text, tagged_text))
             else:
-                section_texts.append((text, tagged_text))
+                if len(children) > 1:
+                    def_marker = 'def{0}'.format(i)
+                    n = Node(text, [], [def_marker], source_xml=ch)
+                    n.tagged_text = tagged_text
+                    i += 1
+                    nodes.append(n)
+                else:
+                    # this is the only node around
+                    section_texts.append((text, tagged_text))
+
         else:
             for m, node_text in get_markers_and_text(ch, markers_list):
                 n = Node(node_text[0], [], [m], source_xml=ch)
@@ -217,18 +247,22 @@ def build_from_section(reg_part, section_xml):
     while nodes and nodes[-1].label[0] in mtypes.stars:
         nodes = nodes[:-1]
 
-    # Use constraint programming to figure out possible depth assignments
-    depths = derive_depths(
-        [node.label[0] for node in nodes],
-        [rules.depth_type_order([mtypes.lower, mtypes.ints, mtypes.roman,
-                                 mtypes.upper, mtypes.em_ints,
-                                 mtypes.em_roman])])
     m_stack = tree_utils.NodeStack()
-    if depths:
+
+    # Use constraint programming to figure out possible depth assignments
+    if not manual_hierarchy_flag:
+        depths = derive_depths(
+            [n.label[0] for n in nodes],
+            [rules.depth_type_order([mtypes.lower, mtypes.ints, mtypes.roman,
+                                     mtypes.upper, mtypes.em_ints,
+                                     mtypes.em_roman])])
+
+    if not manual_hierarchy_flag and depths:
         # Find the assignment which violates the least of our heuristics
         depths = heuristics.prefer_multiple_children(depths, 0.5)
         depths = sorted(depths, key=lambda d: d.weight, reverse=True)
         depths = depths[0]
+
         for node, par in zip(nodes, depths):
             if par.typ != mtypes.stars:
                 last = m_stack.peek()
@@ -239,7 +273,37 @@ def build_from_section(reg_part, section_xml):
                 else:
                     m_stack.add(1 + par.depth, node)
 
+    elif nodes and manual_hierarchy_flag:
+        logging.warning('Using manual depth hierarchy.')
+        depths = PARAGRAPH_HIERARCHY[reg_part][section_no_without_marker]
+        if len(nodes) == len(depths):
+            for node, spec in zip(nodes, depths):
+                if isinstance(spec, int):
+                    depth = spec
+                elif isinstance(spec, tuple):
+                    depth, marker = spec
+                    node.marker = marker
+                last = m_stack.peek()
+                node.label = [l.replace('<E T="03">', '').replace('</E>', '')
+                                  for l in node.label]
+                if len(last) == 0:
+                    m_stack.push_last((1 + depth, node))
+                else:
+                    m_stack.add(1 + depth, node)
+        else:
+            logging.error('Manual hierarchy length does not match node list length!'
+                          ' ({0} nodes but {1} provided)'.format(len(nodes), len(depths)))
 
+    elif nodes and not manual_hierarchy_flag:
+        logging.warning('Could not determine depth when parsing {0}:\n{1}'.format(section_no_without_marker, [n.label[0] for n in nodes]))
+        for node in nodes:
+            last = m_stack.peek()
+            node.label = [l.replace('<E T="03">', '').replace('</E>', '')
+                                  for l in node.label]
+            if len(last) == 0:
+                m_stack.push_last((3, node))
+            else:
+                m_stack.add(3, node)
 
     nodes = []
     section_nums = []

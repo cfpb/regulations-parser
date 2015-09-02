@@ -15,7 +15,7 @@ from regparser.layer.key_terms import KeyTerms
 from regparser.tree.depth import markers
 from regparser.tree.depth.derive import derive_depths
 from regparser.tree.paragraph import p_levels
-from regparser.tree.struct import Node
+from regparser.tree.struct import Node, find
 from regparser.tree.xml_parser import tree_utils
 from regparser.tree.xml_parser.interpretations import build_supplement_tree
 from regparser.tree.xml_parser.interpretations import get_app_title
@@ -50,10 +50,6 @@ def is_appendix_header(node):
             or (node.tag == 'HD' and node.attrib['SOURCE'] == 'HED'))
 
 
-_first_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*\(' + lvl[0] + '\)')
-                  for lvl in p_levels]
-
-
 class AppendixProcessor(object):
     """Processing the appendix requires a lot of state to be carried in
     between xml nodes. Use a class to wrap that state so we can
@@ -71,7 +67,9 @@ class AppendixProcessor(object):
             if self.appendix_letter:
                 logging.warning("Found two appendix headers: %s and %s",
                                 self.appendix_letter, text)
-            self.appendix_letter = headers.parseString(text).appendix
+            parsed_header = headers.parseString(text)
+            self.appendix_letter = parsed_header.appendix
+
         return self.appendix_letter
 
     def hed(self, part, text):
@@ -133,6 +131,7 @@ class AppendixProcessor(object):
         #   Look through parents to determine which level this should be
         else:
             self.header_count += 1
+
             n = Node(node_type=Node.APPENDIX, title=text,
                      label=['h' + str(self.header_count)],
                      source_xml=xml_node)
@@ -157,13 +156,24 @@ class AppendixProcessor(object):
         node_for_keyterms.label = [initial_marker(text)[0]]
         keyterm = KeyTerms.get_keyterm(node_for_keyterms)
         if keyterm:
-            mtext = text.replace(keyterm, '.'*len(keyterm))
+            mtext = text.replace(keyterm, ';'*len(keyterm))
         else:
             mtext = text
 
         for mtext in split_paragraph_text(mtext):
             if keyterm:     # still need the original text
-                mtext = mtext.replace('.'*len(keyterm), keyterm)
+                mtext = mtext.replace(';'*len(keyterm), keyterm)
+            # label_candidate = [initial_marker(mtext)[0]]
+            # existing_node = None
+            # for node in self.nodes:
+            #     if node.label == label_candidate:
+            #         existing_node = node
+            # if existing_node:
+            #     self.paragraph_counter += 1
+            #     node = Node(mtext, node_type=Node.APPENDIX,
+            #                 label=['dup{}'.format(self.paragraph_counter),
+            #                        initial_marker(mtext)[0]])
+            # else:
             node = Node(mtext, node_type=Node.APPENDIX,
                         label=[initial_marker(mtext)[0]])
             self.nodes.append(node)
@@ -215,7 +225,11 @@ class AppendixProcessor(object):
                     current_idx = typ.index(node.label[-1])
                     if current_idx == prev_idx + 1:
                         return depth
-        return self.depth + 1
+        # Paragraphs under the main heading should not be level 2
+        if len(self.m_stack.lineage()) == 1:
+            return self.depth
+        else:
+            return self.depth + 1
 
     def end_group(self):
         """We've hit a header (or the end of the appendix), so take the
@@ -227,17 +241,21 @@ class AppendixProcessor(object):
                        AppendixProcessor.filler_regex.match(n.label[-1])]
             if markers:
                 results = derive_depths(markers)
-                # currently no heuristics applied
-                depths = list(reversed(
-                    [a.depth for a in results[0].assignment]))
+                if not results or results == []:
+                    logging.warning('Could not derive depth from {}'.format(markers))
+                    depths = []
+                else:
+                    depths = list(reversed(
+                        [a.depth for a in results[0].assignment]))
             else:
                 depths = []
             depth_zero = None   # relative for beginning of marker depth
             self.depth += 1
             while nodes:
                 node = nodes.pop()
-                if AppendixProcessor.filler_regex.match(node.label[-1]):
-                    # Not a marker paragraph
+                if AppendixProcessor.filler_regex.match(node.label[-1]) or depths == []:
+                    # Not a marker paragraph, or a marker paragraph that isn't actually
+                    # part of a hierarchy (e.g. Appendix C to 1024, notice 2013-28210)
                     self.m_stack.add(self.depth, node)
                 else:
                     depth = depths.pop()
@@ -304,13 +322,22 @@ class AppendixProcessor(object):
             return self.m_stack.m_stack[0][0][1]
 
 
+_first_paren_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*(\(' + lvl[0] + '\))')
+                        for lvl in p_levels]
+_first_period_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*(' + lvl[0] + '\.)')
+
+                         for lvl in p_levels]
+
 def split_paragraph_text(text):
     """Split text into a root node and its children (if the text contains
     collapsed markers"""
     marker_positions = []
-    for marker in _first_markers:
-        #   text.index('(') to skip over the periods, spaces, etc.
-        marker_positions.extend(text.index('(', m.start())
+    if text.lstrip()[:1] == '(':
+        marker_set = _first_paren_markers
+    else:
+        marker_set = _first_period_markers
+    for marker in marker_set:
+        marker_positions.extend(m.end() - len(m.group(1))
                                 for m in marker.finditer(text))
     #   Remove any citations
     citations = internal_citations(text, require_marker=True)
@@ -339,7 +366,7 @@ def parsed_title(text, appendix_letter):
                         + Optional(grammar.paren_upper | grammar.paren_lower)
                         + Optional(grammar.paren_digit))
     part_roman_parser = Marker("part") + grammar.aI
-    parser = LineStart() + (digit_str_parser | part_roman_parser)
+    parser = LineStart() + (digit_str_parser | part_roman_parser | grammar.roman_upper)
 
     for match, _, _ in parser.scanString(text):
         return match
@@ -360,6 +387,7 @@ def title_label_pair(text, appendix_letter, reg_part):
         elif match.aI:
             pair = (match.aI, 2)
 
+
         if pair is not None and \
                 reg_part in APPENDIX_IGNORE_SUBHEADER_LABEL and \
                 pair[0] in APPENDIX_IGNORE_SUBHEADER_LABEL[reg_part][appendix_letter]:
@@ -372,7 +400,7 @@ def title_label_pair(text, appendix_letter, reg_part):
 def initial_marker(text):
     parser = (grammar.paren_upper | grammar.paren_lower | grammar.paren_digit
               | grammar.period_upper | grammar.period_digit
-              | grammar.period_lower)
+              | grammar.period_lower | grammar.roman_upper)
     for match, start, end in parser.scanString(text):
         if start != 0:
             continue
