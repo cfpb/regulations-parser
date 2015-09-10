@@ -120,24 +120,26 @@ class AppendixProcessor(object):
         without a specific label (we give them the h + # id)"""
         source = xml_node.attrib.get('SOURCE')
 
-        pair = title_label_pair(text, self.appendix_letter, self.part)
+        if source != 'IGNORE':
 
-        #   Use the depth indicated in the title
-        if pair:
-            label, title_depth = pair
-            self.depth = title_depth - 1
-            n = Node(node_type=Node.APPENDIX, label=[label],
-                     title=text)
-        #   Look through parents to determine which level this should be
-        else:
-            self.header_count += 1
+            pair = title_label_pair(text, self.appendix_letter, self.part)
 
-            n = Node(node_type=Node.APPENDIX, title=text,
-                     label=['h' + str(self.header_count)],
-                     source_xml=xml_node)
-            self.depth = self.depth_from_ancestry(source)
+            #   Use the depth indicated in the title
+            if pair:
+                label, title_depth = pair
+                self.depth = title_depth - 1
+                n = Node(node_type=Node.APPENDIX, label=[label],
+                         title=text)
+            #   Look through parents to determine which level this should be
+            else:
+                self.header_count += 1
 
-        self.m_stack.add(self.depth, n)
+                n = Node(node_type=Node.APPENDIX, title=text,
+                         label=['h' + str(self.header_count)],
+                         source_xml=xml_node)
+                self.depth = self.depth_from_ancestry(source)
+
+            self.m_stack.add(self.depth, n)
 
     def insert_dashes(self, xml_node, text):
         """ If paragraph has a SOURCE attribute with a value of FP-DASH 
@@ -146,6 +148,22 @@ class AppendixProcessor(object):
         if xml_node.get('SOURCE') == 'FP-DASH':
             mtext = mtext + '_____'
         return mtext
+
+    def process_sequence(self, root):
+
+        # import pdb
+        # pdb.set_trace()
+
+        for child in root.getchildren():
+            text = tree_utils.get_node_text(child, add_spaces=True).strip()
+            text = self.insert_dashes(child, text)
+            self.paragraph_with_marker(text, tree_utils.get_node_text_tags_preserved(child))
+
+        old_depth = self.depth
+        self.depth += 1
+        self.end_group()
+        self.depth = old_depth
+
 
     def paragraph_with_marker(self, text, tagged_text):
         """The paragraph has a marker, like (a) or a. etc."""
@@ -163,19 +181,15 @@ class AppendixProcessor(object):
         for mtext in split_paragraph_text(mtext):
             if keyterm:     # still need the original text
                 mtext = mtext.replace(';'*len(keyterm), keyterm)
-            # label_candidate = [initial_marker(mtext)[0]]
-            # existing_node = None
-            # for node in self.nodes:
-            #     if node.label == label_candidate:
-            #         existing_node = node
-            # if existing_node:
-            #     self.paragraph_counter += 1
-            #     node = Node(mtext, node_type=Node.APPENDIX,
-            #                 label=['dup{}'.format(self.paragraph_counter),
-            #                        initial_marker(mtext)[0]])
-            # else:
             node = Node(mtext, node_type=Node.APPENDIX,
-                        label=[initial_marker(mtext)[0]])
+                                label=[initial_marker(mtext)[0]])
+            # if len(self.nodes) > 1:
+            #     prev_node = self.nodes[-1]
+            #     prev_node_text = prev_node.text
+            #     prev_node_label = prev_node.label[-1]
+            #     if prev_node_text.strip().endswith(':'):
+            #         node = Node(mtext, node_type=Node.APPENDIX,
+            #                     label=[prev_node_label, initial_marker(mtext)[0]])
             self.nodes.append(node)
 
     def paragraph_no_marker(self, text):
@@ -302,6 +316,12 @@ class AppendixProcessor(object):
                 self.paragraph_with_marker(
                     text,
                     tree_utils.get_node_text_tags_preserved(child))
+            elif child.tag == 'SEQUENCE':
+                old_depth = self.depth
+                self.end_group()
+                self.depth = old_depth
+                # import pdb; pdb.set_trace();
+                self.process_sequence(child)
             elif child.tag in ('P', 'FP'):
                 text = self.insert_dashes(child, text)
                 self.paragraph_no_marker(text)
