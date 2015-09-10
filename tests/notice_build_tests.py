@@ -245,7 +245,7 @@ class NoticeBuildTest(TestCase):
 
         changes = notice['changes']['105-1-b'][0]
         self.assertEqual(changes['action'], 'PUT')
-        self.assertTrue(changes['node']['text'].startswith(
+        self.assertTrue(changes['node'].text.startswith(
             u'(b) This part carries out.'))
 
     def test_process_amendments_multiple_in_same_parent(self):
@@ -272,11 +272,11 @@ class NoticeBuildTest(TestCase):
 
         changes = notice['changes']['105-1-b'][0]
         self.assertEqual(changes['action'], 'PUT')
-        self.assertEqual(changes['node']['text'].strip(),
+        self.assertEqual(changes['node'].text.strip(),
                          u'(b) This part carries out.')
         changes = notice['changes']['105-1-c'][0]
         self.assertEqual(changes['action'], 'PUT')
-        self.assertTrue(changes['node']['text'].strip(),
+        self.assertTrue(changes['node'].text.strip(),
                         u'(c) More stuff')
 
     def test_process_amendments_restart_new_section(self):
@@ -386,7 +386,7 @@ class NoticeBuildTest(TestCase):
             self.assertEqual(n['action'], 'POST')
 
         self.assertEqual(
-            subpart_changes['105-Subpart-B']['node']['node_type'], 'subpart')
+            subpart_changes['105-Subpart-B']['node'].node_type, 'subpart')
 
     def test_process_amendments_subpart(self):
         xml = self.new_subpart_xml()
@@ -537,7 +537,7 @@ class NoticeBuildTest(TestCase):
 
         reserve = notice_changes.changes['200-2-a'][0]
         self.assertEqual(reserve['action'], 'RESERVE')
-        self.assertEqual(reserve['node']['text'], u'[Reserved]')
+        self.assertEqual(reserve['node'].text, u'[Reserved]')
 
     def test_create_xml_changes_stars(self):
         labels_amended = [Amendment('PUT', '200-2-a')]

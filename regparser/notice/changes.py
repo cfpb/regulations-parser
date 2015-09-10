@@ -147,7 +147,7 @@ def match_labels_and_changes(amendments, section_node):
 def format_node(node, amendment):
     """ Format a node into a dict, and add in amendment information. """
     node_as_dict = {
-        'node': node_to_dict(node),
+        'node': node,
         'action': amendment['action'],
     }
 

@@ -224,7 +224,7 @@ def build_from_section(reg_part, section_xml):
                 else:
                     section_texts.append((text, tagged_text))
             else:
-                if len(children) > 1:
+                if len(children) > 1 and children.index(ch) != 0:
                     def_marker = 'def{0}'.format(i)
                     n = Node(text, [], [def_marker], source_xml=ch)
                     n.tagged_text = tagged_text

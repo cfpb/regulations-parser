@@ -120,26 +120,25 @@ class AppendixProcessor(object):
         without a specific label (we give them the h + # id)"""
         source = xml_node.attrib.get('SOURCE')
 
-        if source != 'IGNORE':
 
-            pair = title_label_pair(text, self.appendix_letter, self.part)
+        pair = title_label_pair(text, self.appendix_letter, self.part)
 
-            #   Use the depth indicated in the title
-            if pair:
-                label, title_depth = pair
-                self.depth = title_depth - 1
-                n = Node(node_type=Node.APPENDIX, label=[label],
-                         title=text)
-            #   Look through parents to determine which level this should be
-            else:
-                self.header_count += 1
+        #   Use the depth indicated in the title
+        if pair:
+            label, title_depth = pair
+            self.depth = title_depth - 1
+            n = Node(node_type=Node.APPENDIX, label=[label],
+                     title=text, source_xml=xml_node)
+        #   Look through parents to determine which level this should be
+        else:
+            self.header_count += 1
 
-                n = Node(node_type=Node.APPENDIX, title=text,
-                         label=['h' + str(self.header_count)],
-                         source_xml=xml_node)
-                self.depth = self.depth_from_ancestry(source)
+            n = Node(node_type=Node.APPENDIX, title=text,
+                     label=['h' + str(self.header_count)],
+                     source_xml=xml_node)
+            self.depth = self.depth_from_ancestry(source)
 
-            self.m_stack.add(self.depth, n)
+        self.m_stack.add(self.depth, n)
 
     def insert_dashes(self, xml_node, text):
         """ If paragraph has a SOURCE attribute with a value of FP-DASH 
@@ -379,7 +378,8 @@ def process_appendix(appendix, part):
 
 
 def parsed_title(text, appendix_letter):
-    digit_str_parser = (Marker(appendix_letter)
+    digit_str_parser = (Optional(Suppress("Appendix"))
+                        + Marker(appendix_letter)
                         + Suppress('-')
                         + grammar.a1.copy().leaveWhitespace()
                         + Optional(grammar.markerless_upper)
@@ -407,7 +407,6 @@ def title_label_pair(text, appendix_letter, reg_part):
         elif match.aI:
             pair = (match.aI, 2)
 
-
         if pair is not None and \
                 reg_part in APPENDIX_IGNORE_SUBHEADER_LABEL and \
                 pair[0] in APPENDIX_IGNORE_SUBHEADER_LABEL[reg_part][appendix_letter]:
@@ -427,6 +426,7 @@ def initial_marker(text):
         marker = (match.paren_upper or match.paren_lower or match.paren_digit
                   or match.period_upper or match.period_lower
                   or match.period_digit)
+
         if len(marker) < 3 or all(char in 'ivxlcdm' for char in marker):
             return marker, text[:end]
 
