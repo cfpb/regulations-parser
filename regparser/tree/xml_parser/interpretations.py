@@ -15,33 +15,51 @@ from regparser.tree.xml_parser import tree_utils
 
 from settings import PARAGRAPH_HIERARCHY
 
+# digits
+# roman
+# upper
+# lower
+# emphasized digit
+_marker = r'(' \
+    + '([0-9]+)' \
+    + '|([ivxlcdm]+)' \
+    + '|([A-Z]+)' \
+    + '|([a-be-hjkn-uw-z]+)' \
+    + '|(<E[^>]*>[0-9]+)' \
+    + ')'
 
-_marker_regex = re.compile(
-    r'^\s*('                   # line start
-    + '([0-9]+)'               # digits
-    + '|([ivxlcdm]+)'          # roman
-    + '|([A-Z]+)'              # upper
-    + '|([a-be-hjkn-uw-z]+)'   # lower
-    + '|(<E[^>]*>[0-9]+)'      # emphasized digit
-    + r')\s*\..*', re.DOTALL)  # followed by a period and then anything
+
+_marker_period_regex = re.compile(
+    r'^\s*'                   # line start
+    + _marker
+    + r'\s*\..*', re.DOTALL)  # followed by a period and then anything
+
+
+_marker_parenthetical_regex = re.compile(
+    r'^\s*\('                   # line start followed by a (
+    + _marker
+    + r'\)\s*', re.DOTALL)  # followed by a closing ) and then anything
 
 
 _marker_stars_regex = re.compile(
-    r'^\s*('                   # line start
-    + '([0-9]+)'               # digits
-    + '|([ivxlcdm]+)'          # roman
-    + '|([A-Z]+)'              # upper
-    + '|(<E[^>]*>[0-9]+)'      # emphasized digit
-    + r')\s+\* \* \*\s*$', re.DOTALL)  # followed by stars
+    r'^\s*'                   # line start
+    + _marker
+    + r'\s+\* \* \*\s*$', re.DOTALL)  # followed by stars
 
 
 def get_first_interp_marker(text):
-    match = _marker_regex.match(text)
+    match = _marker_period_regex.match(text)
     if match:
         marker = text[:text.find('.')].strip()      # up to dot
         if '<' in marker:
             marker += '</E>'
         return marker
+
+    match = _marker_parenthetical_regex.match(text)
+    if match:
+        # Within the parenthesis only
+        return text[text.find('(')+1:text.find(')')].strip()
+
     match = _marker_stars_regex.match(text)
     if match:
         return text[:text.find('*')].strip()        # up to star

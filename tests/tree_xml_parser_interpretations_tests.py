@@ -26,11 +26,6 @@ class InterpretationsTest(TestCase):
         marker = interpretations.get_first_interp_marker(text)
         self.assertEqual(marker, '<E T="03">1</E>')
 
-    def test_interpretation_markers_none(self):
-        text = '(iv) Kiwis and Mangos'
-        marker = interpretations.get_first_interp_marker(text)
-        self.assertEqual(marker, None)
-
     def test_interpretation_markers_stars_no_period(self):
         for marker in ('4 ', 'iv  ', 'A\t'):
             text = marker + '* * *'
@@ -41,6 +36,12 @@ class InterpretationsTest(TestCase):
             found_marker = interpretations.get_first_interp_marker(text)
             self.assertEqual(None, found_marker)
 
+    def test_interpretation_markers_parenthesis(self):
+        text = u'(b) Some text here.'
+        found_marker = interpretations.get_first_interp_marker(text)
+        print found_marker
+        self.assertEqual("b", found_marker)
+        
     def test_build_supplement_tree(self):
         """Integration test"""
         xml = """<APPENDIX>
