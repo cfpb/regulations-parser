@@ -191,7 +191,7 @@ def process_inner_children(inner_stack, xml_node):
         depths = derive_depths(
             [n.label[0] for n in nodes],
             [rules.depth_type_order([(mtypes.ints, mtypes.em_ints),
-                                     (mtypes.roman, mtypes.upper),
+                                     (mtypes.lower, mtypes.roman, mtypes.upper),
                                      mtypes.upper, mtypes.em_ints,
                                      mtypes.em_roman])])
 
