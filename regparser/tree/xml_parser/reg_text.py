@@ -203,7 +203,7 @@ def build_from_section(reg_part, section_xml):
 
         if ch.tag == 'STARS':
             nodes.append(Node(label=[mtypes.STARS_TAG]))
-        elif not markers_list:
+        elif not markers_list and manual_hierarchy_flag:
             # is this a bunch of definitions that don't have numbers next to them?
             if len(nodes) > 0:
                 if (subject_text.find('Definitions.') > -1 or nodes[-1].text.find('For the purposes of this section')):
@@ -224,7 +224,7 @@ def build_from_section(reg_part, section_xml):
                 else:
                     section_texts.append((text, tagged_text))
             else:
-                if len(children) > 1 and children.index(ch) != 0:
+                if len(children) > 1:
                     def_marker = 'def{0}'.format(i)
                     n = Node(text, [], [def_marker], source_xml=ch)
                     n.tagged_text = tagged_text
@@ -234,6 +234,9 @@ def build_from_section(reg_part, section_xml):
                     # this is the only node around
                     section_texts.append((text, tagged_text))
 
+        elif not markers_list and not manual_hierarchy_flag:
+            # No manual heirarchy specified, append to the section.
+            section_texts.append((text, tagged_text))
         else:
             for m, node_text in get_markers_and_text(ch, markers_list):
                 n = Node(node_text[0], [], [m], source_xml=ch)

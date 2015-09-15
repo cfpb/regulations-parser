@@ -147,14 +147,25 @@ def process_inner_children(inner_stack, xml_node):
         first_marker = get_first_interp_marker(text_with_tags)
         if xml_node.tag == 'STARS':
             nodes.append(Node(label=[mtypes.STARS_TAG]))
-        elif not first_marker and nodes:
+        elif not first_marker and nodes and manual_hierarchy_flag:
             logging.warning("Couldn't determine interp marker. "
-                            "Appending node and hoping that manual hierarchy is specified")
+                            "Manual hierarchy is specified")
 
             n = Node(node_text, label=[str(i)], node_type=Node.INTERP)
             n.tagged_text = text_with_tags
             nodes.append(n)
 
+        elif not first_marker and nodes and not manual_hierarchy_flag:
+            logging.warning("Couldn't determine interp marker. Appending to "
+                            "previous paragraph: %s", node_text)
+                    
+            previous = nodes[-1]
+            previous.text += "\n\n" + node_text
+            if hasattr(previous, 'tagged_text'):
+                previous.tagged_text += "\n\n" + text_with_tags
+            else:
+                previous.tagged_text = text_with_tags
+            
         else:
             collapsed = collapsed_markers_matches(node_text, text_with_tags)
 
