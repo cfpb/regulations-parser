@@ -386,7 +386,7 @@ def title_label_pair(text, appendix_letter, reg_part):
             pair = (match.a1, 2)
         elif match.aI:
             pair = (match.aI, 2)
-        elif match.roman_upper:
+        elif match.roman_upper and reg_part in text:
             pair = (match.roman_upper, 2)
 
         if pair is not None and \
