@@ -140,7 +140,7 @@ class AppendixProcessor(object):
         self.m_stack.add(self.depth, n)
 
     def insert_dashes(self, xml_node, text):
-        """ If paragraph has a SOURCE attribute with a value of FP-DASH 
+        """ If paragraph has a SOURCE attribute with a value of FP-DASH
             it fills out with dashes, like Foo_____. """
         mtext = text
         if xml_node.get('SOURCE') == 'FP-DASH':
@@ -284,7 +284,7 @@ class AppendixProcessor(object):
         def is_subhead(tag, text):
             initial = initial_marker(text)
             return ((tag == 'HD' and (not initial or '.' in initial[1]))
-                    or (tag in ('P', 'FP') 
+                    or (tag in ('P', 'FP')
                         and title_label_pair(text, self.appendix_letter,
                             self.part)))
 
@@ -386,7 +386,8 @@ def title_label_pair(text, appendix_letter, reg_part):
             pair = (match.a1, 2)
         elif match.aI:
             pair = (match.aI, 2)
-
+        elif match.roman_upper:
+            pair = (match.roman_upper, 2)
 
         if pair is not None and \
                 reg_part in APPENDIX_IGNORE_SUBHEADER_LABEL and \
