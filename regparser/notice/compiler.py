@@ -7,6 +7,8 @@ import copy
 import itertools
 import logging
 
+from lxml import etree
+
 from regparser.grammar.tokens import Verb
 from regparser.tree.struct import Node, find, walk
 from regparser.tree.xml_parser import interpretations
@@ -495,6 +497,14 @@ def one_change(reg, label, change):
     single change to the tree."""
     field_list = ['[text]', '[title]', '[heading]']
     replace_subtree = 'field' not in change
+
+    # Conver the change's node's source_xml to Element in place if needed
+    if 'node' in change:
+        try:
+            change['node'].source_xml = etree.fromstring(
+                    change['node'].source_xml)
+        except ValueError:
+            pass
 
     if change['action'] == 'PUT' and replace_subtree:
         node = change['node']
