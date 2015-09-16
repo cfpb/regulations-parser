@@ -18,26 +18,24 @@ class RegTextTest(TestCase):
         """
         #from nose.tools import set_trace; set_trace();
         node = reg_text.build_from_section('8675', etree.fromstring(xml))[0]
-        self.assertEqual(2, len(node.children))
+        self.assertEqual(1, len(node.children))
         self.assertEqual(['8675', '309'], node.label)
 
         child1 = node.children[0]
-        child2 = node.children[1]
 
-        self.assertEqual('Some content about this section.', child1.text.strip())
-        self.assertEqual('(a) something something', child2.text.strip())
+        self.assertEqual('Some content about this section.', node.text.strip())
+        self.assertEqual('(a) something something', child1.text.strip())
         self.assertEqual([], child1.children)
-        self.assertEqual([], child2.children)
-        self.assertEqual(['8675', '309', 'a'], child2.label)
+        self.assertEqual(['8675', '309', 'a'], child1.label)
 
     def test_build_from_section_unnumbered_defs(self):
         xml = u"""
             <SECTION>
                 <SECTNO>§ 8675.309</SECTNO>
                 <SUBJECT>Definitions.</SUBJECT>
-                <P>(a) This is what things mean:</P>
-                <P>foo means bar</P>
-                <P>bop means baz</P>
+                <P depth="1">(a) This is what things mean:</P>
+                <P depth="1">foo means bar</P>
+                <P depth="1">bop means baz</P>
             </SECTION>
         """
         node = reg_text.build_from_section('8675', etree.fromstring(xml))[0]
@@ -59,7 +57,6 @@ class RegTextTest(TestCase):
         self.assertEqual('bop means baz', child.text.strip())
         self.assertEqual(0, len(child.children))
         self.assertEqual(['8675', '309', 'Bop'], child.label)
-
 
     def test_build_from_section_collapsed_level(self):
         xml = u"""

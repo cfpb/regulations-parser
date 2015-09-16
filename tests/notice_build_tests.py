@@ -379,7 +379,7 @@ class NoticeBuildTest(TestCase):
         notice = {'cfr_parts': ['105']}
         subpart_changes = build.process_new_subpart(notice, amended_label, par)
 
-        new_nodes_added = ['105-Subpart-B', '105-30', '105-30-def0', '105-30-a']
+        new_nodes_added = ['105-Subpart-B', '105-30', '105-30-a']
         self.assertEqual(new_nodes_added, subpart_changes.keys())
 
         for l, n in subpart_changes.items():

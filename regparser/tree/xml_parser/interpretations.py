@@ -126,15 +126,14 @@ def process_inner_children(inner_stack, xml_node):
     """Process the following nodes as children of this interpretation. This
     is very similar to reg_text.py:build_from_section()"""
     # manual hierarchy should work here too
-    manual_hierarchy_flag = False
+    manual_hierarchy = []
     try:
         part_and_section = re.search('[0-9]+\.[0-9]+', xml_node.text).group(0)
         part, section = part_and_section.split('.')
         part_and_section += '-Interp'
 
-
         if part in PARAGRAPH_HIERARCHY and part_and_section in PARAGRAPH_HIERARCHY[part]:
-            manual_hierarchy_flag = True
+            manual_hierarchy = PARAGRAPH_HIERARCHY[part][part_and_section]
     except Exception:
         pass
 
@@ -145,9 +144,19 @@ def process_inner_children(inner_stack, xml_node):
         node_text = tree_utils.get_node_text(xml_node, add_spaces=True)
         text_with_tags = tree_utils.get_node_text_tags_preserved(xml_node)
         first_marker = get_first_interp_marker(text_with_tags)
+        
+        # If the node has a 'DEPTH' attribute, we're in manual
+        # hierarchy mode, just constructed from the XML instead of
+        # specified in configuration.
+        # This presumes that every child in the section has DEPTH
+        # specified, if not, things will break in and around 
+        # derive_depths below.
+        if xml_node.get("depth") is not None:
+            manual_hierarchy.append(int(xml_node.get("depth")))
+        
         if xml_node.tag == 'STARS':
             nodes.append(Node(label=[mtypes.STARS_TAG]))
-        elif not first_marker and nodes and manual_hierarchy_flag:
+        elif not first_marker and nodes and manual_hierarchy:
             logging.warning("Couldn't determine interp marker. "
                             "Manual hierarchy is specified")
 
@@ -155,7 +164,7 @@ def process_inner_children(inner_stack, xml_node):
             n.tagged_text = text_with_tags
             nodes.append(n)
 
-        elif not first_marker and nodes and not manual_hierarchy_flag:
+        elif not first_marker and nodes and not manual_hierarchy:
             logging.warning("Couldn't determine interp marker. Appending to "
                             "previous paragraph: %s", node_text)
                     
@@ -198,7 +207,7 @@ def process_inner_children(inner_stack, xml_node):
 
     # Use constraint programming to figure out possible depth assignments
     # use manual hierarchy if it's specified
-    if not manual_hierarchy_flag:
+    if not manual_hierarchy:
         depths = derive_depths(
             [n.label[0] for n in nodes],
             [rules.depth_type_order([(mtypes.ints, mtypes.em_ints),
@@ -206,7 +215,7 @@ def process_inner_children(inner_stack, xml_node):
                                      mtypes.upper, mtypes.em_ints,
                                      mtypes.em_roman])])
 
-    if not manual_hierarchy_flag and depths:
+    if not manual_hierarchy and depths:
         # Find the assignment which violates the least of our heuristics
         depths = heuristics.prefer_multiple_children(depths, 0.5)
         depths = sorted(depths, key=lambda d: d.weight, reverse=True)
@@ -220,9 +229,9 @@ def process_inner_children(inner_stack, xml_node):
                     inner_stack.push_last((3 + par.depth, node))
                 else:
                     inner_stack.add(3 + par.depth, node)
-    elif nodes and manual_hierarchy_flag:
+    elif nodes and manual_hierarchy:
         logging.warning('Using manual depth hierarchy.')
-        depths = PARAGRAPH_HIERARCHY[part][part_and_section]
+        depths = manual_hierarchy
         if len(nodes) == len(depths):
             for node, depth in zip(nodes, depths):
                 last = inner_stack.peek()
@@ -235,7 +244,7 @@ def process_inner_children(inner_stack, xml_node):
         else:
             logging.error('Manual hierarchy length does not match node list length!')
 
-    elif nodes and not manual_hierarchy_flag:
+    elif nodes and not manual_hierarchy:
         logging.warning('Could not derive depth (interp):\n {}'.format([n.label[0] for n in nodes]))
         # just add nodes in sequential order then
         for node in nodes:
