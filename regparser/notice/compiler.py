@@ -498,7 +498,7 @@ def one_change(reg, label, change):
     field_list = ['[text]', '[title]', '[heading]']
     replace_subtree = 'field' not in change
 
-    # Conver the change's node's source_xml to Element in place if needed
+    # Convert the change's node's source_xml to Element in place if needed
     if 'node' in change:
         try:
             change['node'].source_xml = etree.fromstring(

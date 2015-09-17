@@ -28,12 +28,23 @@ import settings
 
 
 def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
-    """Given JSON from the federal register, create our notice structure"""
+    """ Given JSON from the federal register, create our notice structure """
     logging.info('building notice, title {0}, part {1}, notice {2}'.format(cfr_title, cfr_part, fr_notice['document_number']))
     cfr_parts = set(str(ref['part']) for ref in fr_notice['cfr_references'])
     cfr_parts.add(cfr_part)
+
     notice = {'cfr_title': cfr_title, 'cfr_parts': list(cfr_parts)}
-    #   Copy over most fields
+    notice_number = fr_notice['document_number']
+
+    # Check for configured overrides of the FR JSON for this notice
+    if cfr_part in settings.FR_NOTICE_OVERRIDES and \
+            notice_number in settings.FR_NOTICE_OVERRIDES[cfr_part]:
+        logging.warning("overriding FR for {}".format(notice_number))
+        notice_overrides = settings.FR_NOTICE_OVERRIDES[cfr_part][notice_number]
+        for k, v in notice_overrides.iteritems():
+            fr_notice[k] = v
+
+    # Copy over most fields
     for field in ['abstract', 'action', 'agency_names', 'comments_close_on',
                   'document_number', 'publication_date',
                   'regulation_id_numbers']:

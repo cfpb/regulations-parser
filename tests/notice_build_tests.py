@@ -67,6 +67,59 @@ class NoticeBuildTest(TestCase):
             'regulation_id_numbers': ['a231a-232q'],
         }])
 
+    def test_build_notice_override_fr(self):
+        """ Test that the FR_NOTICE_OVERRIDES setting can override the
+        'dates' value from build_notice """
+        fr = {
+            'abstract': 'sum sum sum',
+            'action': 'actact',
+            'agency_names': ['Agency 1', 'Agency 2'],
+            'cfr_references': [{'title': 12, 'part': 9191},
+                               {'title': 12, 'part': 9292}],
+            'citation': 'citation citation',
+            'comments_close_on': None,
+            'dates': 'date info',
+            'document_number': '7878-111',
+            'effective_on': '1956-09-09',
+            'end_page': 9999,
+            'full_text_xml_url': None,
+            'html_url': 'some url',
+            'publication_date': '1955-12-10',
+            'regulation_id_numbers': ['a231a-232q'],
+            'start_page': 8888,
+            'type': 'Rule',
+            'volume': 66,
+        }
+
+        # Set our override value
+        build.settings.FR_NOTICE_OVERRIDES['9292'] = {
+            '7878-111': {
+                'dates': 'new date info',
+            },
+        }
+        
+        self.assertEqual(build.build_notice('5', '9292', fr), [{
+            'abstract': 'sum sum sum',
+            'action': 'actact',
+            'agency_names': ['Agency 1', 'Agency 2'],
+            'cfr_parts': ['9191', '9292'],
+            'cfr_title': '5',
+            'document_number': '7878-111',
+            'effective_on': '1956-09-09',
+            'fr_citation': 'citation citation',
+            'fr_url': 'some url',
+            'fr_volume': 66,
+            'initial_effective_on': '1956-09-09',
+            'meta': {
+                'dates': 'new date info',
+                'end_page': 9999,
+                'start_page': 8888,
+                'type': 'Rule'
+            },
+            'publication_date': '1955-12-10',
+            'regulation_id_numbers': ['a231a-232q'],
+        }])
+
     def test_process_xml(self):
         """Integration test for xml processing"""
         xml = """
