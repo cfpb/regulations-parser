@@ -26,11 +26,6 @@ class InterpretationsTest(TestCase):
         marker = interpretations.get_first_interp_marker(text)
         self.assertEqual(marker, '<E T="03">1</E>')
 
-    def test_interpretation_markers_none(self):
-        text = '(iv) Kiwis and Mangos'
-        marker = interpretations.get_first_interp_marker(text)
-        self.assertEqual(marker, None)
-
     def test_interpretation_markers_stars_no_period(self):
         for marker in ('4 ', 'iv  ', 'A\t'):
             text = marker + '* * *'
@@ -41,6 +36,11 @@ class InterpretationsTest(TestCase):
             found_marker = interpretations.get_first_interp_marker(text)
             self.assertEqual(None, found_marker)
 
+    def test_interpretation_markers_parenthesis(self):
+        text = u'(b) Some text here.'
+        found_marker = interpretations.get_first_interp_marker(text)
+        self.assertEqual("b", found_marker)
+        
     def test_build_supplement_tree(self):
         """Integration test"""
         xml = """<APPENDIX>
@@ -339,13 +339,32 @@ class InterpretationsTest(TestCase):
         while stack.size() > 1:
             stack.unwind()
         i1 = stack.m_stack[0][0][1]
+        self.assertEqual(1, len(i1.children))
+        i1i = i1.children[0]
+        self.assertEqual(0, len(i1i.children))
+        self.assertEqual(i1i.text.strip(), "i. iii\n\nHowdy Howdy")
+
+    def test_process_inner_child_depth_spec(self):
+        xml = """
+            <ROOT>
+                <HD>Title</HD>
+                <P depth="1">1. 111</P>
+                <P depth="2">i. iii</P>
+                <P depth="1">Howdy Howdy</P>
+            </ROOT>"""
+        node = etree.fromstring(xml).xpath('//HD')[0]
+        stack = tree_utils.NodeStack()
+        interpretations.process_inner_children(stack, node)
+        while stack.size() > 1:
+            stack.unwind()
+        i1 = stack.m_stack[0][0][1]
         i2 = stack.m_stack[0][1][1]
         self.assertEqual(1, len(i1.children))
         i1i = i1.children[0]
         self.assertEqual(0, len(i1i.children))
         self.assertEqual(i1i.text.strip(), "i. iii")
         self.assertEqual(i2.text.strip(), "Howdy Howdy")
-
+        
     def test_process_inner_child_has_citation(self):
         xml = """
         <ROOT>

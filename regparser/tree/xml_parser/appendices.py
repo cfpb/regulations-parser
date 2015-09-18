@@ -127,7 +127,7 @@ class AppendixProcessor(object):
             label, title_depth = pair
             self.depth = title_depth - 1
             n = Node(node_type=Node.APPENDIX, label=[label],
-                     title=text)
+                     title=text, source_xml=xml_node)
         #   Look through parents to determine which level this should be
         else:
             self.header_count += 1
@@ -359,7 +359,8 @@ def process_appendix(appendix, part):
 
 
 def parsed_title(text, appendix_letter):
-    digit_str_parser = (Marker(appendix_letter)
+    digit_str_parser = (Optional(Suppress("Appendix"))
+                        + Marker(appendix_letter)
                         + Suppress('-')
                         + grammar.a1.copy().leaveWhitespace()
                         + Optional(grammar.markerless_upper)
@@ -408,6 +409,7 @@ def initial_marker(text):
         marker = (match.paren_upper or match.paren_lower or match.paren_digit
                   or match.period_upper or match.period_lower
                   or match.period_digit)
+
         if len(marker) < 3 or all(char in 'ivxlcdm' for char in marker):
             return marker, text[:end]
 

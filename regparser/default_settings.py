@@ -105,3 +105,8 @@ PARAGRAPH_HIERARCHY = {'ALL':[]}
 
 # which notices are complete reissuances
 REISSUANCES = ['2013-01737', '2012-14047', '2012-14061', '2012-14062']
+
+# It may be necessary to override the 'effective_on', 'dates', etc that
+# are fetched from the Federal Register initially, before the XML is
+# parsed. This is done per-notice.
+FR_NOTICE_OVERRIDES = {}

@@ -406,7 +406,7 @@ class CompilerTests(TestCase):
     def test_replace_node_text(self):
         root = self.tree_with_paragraphs()
 
-        change = {'node': {'text': 'new text'}}
+        change = {'node': Node(text='new text')}
         reg_tree = compiler.RegulationTree(root)
 
         reg_tree.replace_node_text('205-2-a', change)
@@ -416,7 +416,7 @@ class CompilerTests(TestCase):
     def test_replace_node_title(self):
         root = self.tree_with_paragraphs()
 
-        change = {'node': {'title': 'new title'}}
+        change = {'node': Node(title='new title')}
         reg_tree = compiler.RegulationTree(root)
 
         reg_tree.replace_node_title('205-2-a', change)
@@ -429,7 +429,7 @@ class CompilerTests(TestCase):
         n2a.text = 'Previous keyterm. Remainder.'
         reg_tree = compiler.RegulationTree(root)
 
-        change = {'node': {'text': 'Replaced.'}}
+        change = {'node': Node(text='Replaced.')}
         reg_tree.replace_node_heading('205-2-a', change)
 
         changed_node = find(reg_tree.tree, '205-2-a')
@@ -541,17 +541,17 @@ class CompilerTests(TestCase):
 
         change2a = {
             'action': 'PUT',
-            'node': {
-                'text': 'new text',
-                'label': ['205', '2', 'a'],
-                'node_type': 'regtext'}}
+            'node': Node(
+                text='new text',
+                label=['205', '2', 'a'],
+                node_type=Node.REGTEXT)}
 
         change2a1 = {
             'action': 'PUT',
-            'node': {
-                'text': '2a1 text',
-                'label': ['205', '2', 'a', '1'],
-                'node_type': 'regtext'}}
+            'node': Node(
+                text='2a1 text',
+                label=['205', '2', 'a', '1'],
+                node_type=Node.REGTEXT)}
 
         notice_changes = {
             '205-2-a-1': [change2a1],
@@ -571,10 +571,10 @@ class CompilerTests(TestCase):
         change2a = {
             'action': 'PUT',
             'field': '[text]',
-            'node': {
-                'text': 'new text',
-                'label': ['205', '2', 'a'],
-                'node_type': 'regtext'}}
+            'node': Node(
+                text='new text',
+                label=['205', '2', 'a'],
+                node_type=Node.REGTEXT)}
 
         notice_changes = {'205-2-a': [change2a]}
         reg = compiler.compile_regulation(root, notice_changes)
@@ -585,11 +585,11 @@ class CompilerTests(TestCase):
     def test_compile_reg_keep_root(self):
         root = self.tree_with_paragraphs()
         change2 = {'action': 'KEEP',
-                   'node': {'text': '* * *', 'label': ['205', '2'],
-                            'node_type': 'regtext'}}
+                   'node': Node(text='* * *', label=['205', '2'],
+                            node_type=Node.REGTEXT)}
         change2a = {'action': 'PUT',
-                    'node': {'text': '(a) A Test', 'label': ['205', '2', 'a'],
-                             'node_type': 'regtext'}}
+                    'node': Node(text='(a) A Test', label=['205', '2', 'a'],
+                             node_type=Node.REGTEXT)}
 
         notice_changes = {'205-2': [change2], '205-2-a': [change2a]}
         reg = compiler.compile_regulation(root, notice_changes)
@@ -607,14 +607,14 @@ class CompilerTests(TestCase):
     def test_compile_reg_keep_child(self):
         root = self.tree_with_paragraphs()
         change2 = {'action': 'PUT',
-                   'node': {'text': 'n2n2', 'label': ['205', '2'],
-                            'node_type': 'regtext'}}
+                   'node': Node(text='n2n2', label=['205', '2'],
+                            node_type=Node.REGTEXT)}
         change2a = {'action': 'KEEP',
-                    'node': {'text': '(a) * * *', 'label': ['205', '2', 'a'],
-                             'node_type': 'regtext'}}
+                    'node': Node(text='(a) * * *', label=['205', '2', 'a'],
+                             node_type=Node.REGTEXT)}
         change2b = {'action': 'PUT',
-                    'node': {'text': '(b) A Test', 'label': ['205', '2', 'b'],
-                             'node_type': 'regtext'}}
+                    'node': Node(text='(b) A Test', label=['205', '2', 'b'],
+                             node_type=Node.REGTEXT)}
 
         notice_changes = {'205-2': [change2], '205-2-a': [change2a],
                           '205-2-b': [change2b]}
@@ -631,10 +631,10 @@ class CompilerTests(TestCase):
         root = self.tree_with_paragraphs()
         change2a1 = {
             'action': 'POST',
-            'node': {
-                'text': '2a1 text',
-                'label': ['205', '2', 'a', '1'],
-                'node_type': 'regtext'}}
+            'node': Node(
+                text='2a1 text',
+                label=['205', '2', 'a', '1'],
+                node_type=Node.REGTEXT)}
 
         notice_changes = {'205-2-a-1': [change2a1]}
         reg = compiler.compile_regulation(root, notice_changes)
@@ -655,10 +655,10 @@ class CompilerTests(TestCase):
         change = {
             'action': 'POST',
             'subpart': ['205', 'Subpart', 'B'],
-            'node': {
-                'text': '2 text',
-                'label': ['205', '2'],
-                'node_type': 'regtext'}}
+            'node': Node(
+                text='2 text',
+                label=['205', '2'],
+                node_type=Node.REGTEXT)}
 
         notice_changes = {'205-2': [change]}
         reg = compiler.compile_regulation(root, notice_changes)
@@ -671,10 +671,10 @@ class CompilerTests(TestCase):
         change = {
             'action': 'POST',
             'subpart': ['205', 'Subpart', 'B'],
-            'node': {
-                'text': '2 text',
-                'label': ['205', '2'],
-                'node_type': 'regtext'}}
+            'node': Node(
+                text='2 text',
+                label=['205', '2'],
+                node_type=Node.REGTEXT)}
 
         notice_changes = {'205-2': [change]}
         reg = compiler.compile_regulation(root, notice_changes)
@@ -884,9 +884,9 @@ class CompilerTests(TestCase):
         changes = {
             '205-2-a': [
                 {'action': 'MOVE', 'destination': ['205', '2', 'b']},
-                {'action': 'POST', 'node': {'text': 'aaa',
-                                            'label': ['205', '2', 'a'],
-                                            'node_type': Node.REGTEXT}}],
+                {'action': 'POST', 'node': Node(text='aaa',
+                                            label=['205', '2', 'a'],
+                                            node_type=Node.REGTEXT)}],
             '205-2-b': [{'action': 'DELETE'}]}
 
         class SortedKeysDict(object):
