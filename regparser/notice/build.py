@@ -37,10 +37,9 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     notice_number = fr_notice['document_number']
 
     # Check for configured overrides of the FR JSON for this notice
-    if cfr_part in settings.FR_NOTICE_OVERRIDES and \
-            notice_number in settings.FR_NOTICE_OVERRIDES[cfr_part]:
+    if notice_number in settings.FR_NOTICE_OVERRIDES:
         logging.warning("overriding FR for {}".format(notice_number))
-        notice_overrides = settings.FR_NOTICE_OVERRIDES[cfr_part][notice_number]
+        notice_overrides = settings.FR_NOTICE_OVERRIDES[notice_number]
         for k, v in notice_overrides.iteritems():
             fr_notice[k] = v
 

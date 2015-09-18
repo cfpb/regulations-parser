@@ -92,10 +92,8 @@ class NoticeBuildTest(TestCase):
         }
 
         # Set our override value
-        build.settings.FR_NOTICE_OVERRIDES['9292'] = {
-            '7878-111': {
-                'dates': 'new date info',
-            },
+        build.settings.FR_NOTICE_OVERRIDES['7878-111'] = {
+            'dates': 'new date info',
         }
         
         self.assertEqual(build.build_notice('5', '9292', fr), [{
