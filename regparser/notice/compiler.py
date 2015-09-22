@@ -7,6 +7,8 @@ import copy
 import itertools
 import logging
 
+from lxml import etree
+
 from regparser.grammar.tokens import Verb
 from regparser.tree.struct import Node, find, walk
 from regparser.tree.xml_parser import interpretations
@@ -342,8 +344,8 @@ class RegulationTree(object):
             if existing:
                 logging.warning(
                     'Adding a node that already exists: %s' % node.label_id())
-                print '%s %s' % (existing.text, node.label)
-                print '----'
+                # print '%s %s' % (existing.text, node.label)
+                # print '----'
 
             if ((node.node_type in (Node.APPENDIX, Node.INTERP)
                  and len(node.label) == 2) or node.node_type == Node.SUBPART):
@@ -381,23 +383,23 @@ class RegulationTree(object):
         """ Replace just a node's text. """
 
         node = find(self.tree, label)
-        node.text = change['node']['text']
+        node.text = change['node'].text
 
     def replace_node_title(self, label, change):
         """ Replace just a node's title. """
 
         node = find(self.tree, label)
-        node.title = change['node']['title']
+        node.title = change['node'].title
 
     def replace_node_heading(self, label, change):
         """ A node's heading is it's keyterm. We handle this here, but not
         well, I think. """
         node = find(self.tree, label)
-        node.text = replace_first_sentence(node.text, change['node']['text'])
+        node.text = replace_first_sentence(node.text, change['node'].text)
 
-        if hasattr(node, 'tagged_text') and 'tagged_text' in change['node']:
+        if hasattr(node, 'tagged_text') and change['node'].tagged_text is not None:
             node.tagged_text = replace_first_sentence(
-                node.tagged_text, change['node']['tagged_text'])
+                node.tagged_text, change['node'].tagged_text)
 
     def get_subparts(self):
         """ Get all the subparts and empty parts in the tree.  """
@@ -496,13 +498,21 @@ def one_change(reg, label, change):
     field_list = ['[text]', '[title]', '[heading]']
     replace_subtree = 'field' not in change
 
+    # Convert the change's node's source_xml to Element in place if needed
+    if 'node' in change:
+        try:
+            change['node'].source_xml = etree.fromstring(
+                    change['node'].source_xml)
+        except ValueError:
+            pass
+
     if change['action'] == 'PUT' and replace_subtree:
-        node = dict_to_node(change['node'])
+        node = change['node']
         reg.replace_node_and_subtree(node)
     elif change['action'] == 'PUT' and change['field'] in field_list:
         replace_node_field(reg, label, change)
     elif change['action'] == 'POST':
-        node = dict_to_node(change['node'])
+        node = change['node']
         if 'subpart' in change and len(node.label) == 2:
             reg.add_section(node, change['subpart'])
         else:
@@ -515,7 +525,7 @@ def one_change(reg, label, change):
     elif change['action'] == 'DELETE':
         reg.delete(label)
     elif change['action'] == 'RESERVE':
-        node = dict_to_node(change['node'])
+        node = change['node']
         reg.reserve(label, node)
     else:
         print "%s: %s" % (change['action'], label)
@@ -529,7 +539,7 @@ def _needs_delay(reg, change):
     if action == 'MOVE':
         return reg.contains(change['destination'])
     if action == 'POST':
-        existing = reg.find_node(change['node']['label'])
+        existing = reg.find_node(change['node'].label)
         return existing and not is_reserved_node(existing)
     return False
 

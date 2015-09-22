@@ -134,7 +134,7 @@ class AppendicesTest(TestCase):
             <HD SOURCE="HD3">I. Remains Header</HD>
             <P>1. Content tent</P>
         </APPENDIX>"""
-        appendix = appendices.process_appendix(etree.fromstring(xml), 1111)
+        appendix = appendices.process_appendix(etree.fromstring(xml), '1111')
         self.assertEqual(1, len(appendix.children))
         a1 = appendix.children[0]
 
@@ -384,6 +384,9 @@ class AppendicesTest(TestCase):
         title = u'Part III—Construction Period'
         self.assertEqual(('III', 2), appendices.title_label_pair(title, 'A', '1000'))
 
+        title = u'Appendix DC-3(A) to Part 1000'
+        self.assertEqual(('3(A)', 2), appendices.title_label_pair(title, 'DC', '1000'))
+
     def test_title_label_pair_parens(self):
         title = u'G-13(A)—Has No parent'
         self.assertEqual(('13(A)', 2), appendices.title_label_pair(title, 'G', '1000'))
@@ -398,6 +401,9 @@ class AppendicesTest(TestCase):
         title = u'G-13And Some Smashed Text'
         self.assertEqual(('13', 2), appendices.title_label_pair(title, 'G', '1000'))
 
+    def test_title_label_pair_roman(self):
+        title = u'IX. Sample Page for Statement of Record —1010.102(e)'
+        self.assertEqual(('IX', 2), appendices.title_label_pair(title, 'A', '1010'))
 
 class AppendixProcessorTest(TestCase):
     def setUp(self):
@@ -659,4 +665,3 @@ class AppendixProcessorTest(TestCase):
 
         a = appendix.children[0]
         self.assertEqual(['1111', 'AA1', 'a'], a.label)
-

@@ -67,6 +67,57 @@ class NoticeBuildTest(TestCase):
             'regulation_id_numbers': ['a231a-232q'],
         }])
 
+    def test_build_notice_override_fr(self):
+        """ Test that the FR_NOTICE_OVERRIDES setting can override the
+        'dates' value from build_notice """
+        fr = {
+            'abstract': 'sum sum sum',
+            'action': 'actact',
+            'agency_names': ['Agency 1', 'Agency 2'],
+            'cfr_references': [{'title': 12, 'part': 9191},
+                               {'title': 12, 'part': 9292}],
+            'citation': 'citation citation',
+            'comments_close_on': None,
+            'dates': 'date info',
+            'document_number': '7878-111',
+            'effective_on': '1956-09-09',
+            'end_page': 9999,
+            'full_text_xml_url': None,
+            'html_url': 'some url',
+            'publication_date': '1955-12-10',
+            'regulation_id_numbers': ['a231a-232q'],
+            'start_page': 8888,
+            'type': 'Rule',
+            'volume': 66,
+        }
+
+        # Set our override value
+        build.settings.FR_NOTICE_OVERRIDES['7878-111'] = {
+            'dates': 'new date info',
+        }
+        
+        self.assertEqual(build.build_notice('5', '9292', fr), [{
+            'abstract': 'sum sum sum',
+            'action': 'actact',
+            'agency_names': ['Agency 1', 'Agency 2'],
+            'cfr_parts': ['9191', '9292'],
+            'cfr_title': '5',
+            'document_number': '7878-111',
+            'effective_on': '1956-09-09',
+            'fr_citation': 'citation citation',
+            'fr_url': 'some url',
+            'fr_volume': 66,
+            'initial_effective_on': '1956-09-09',
+            'meta': {
+                'dates': 'new date info',
+                'end_page': 9999,
+                'start_page': 8888,
+                'type': 'Rule'
+            },
+            'publication_date': '1955-12-10',
+            'regulation_id_numbers': ['a231a-232q'],
+        }])
+
     def test_process_xml(self):
         """Integration test for xml processing"""
         xml = """
@@ -245,7 +296,7 @@ class NoticeBuildTest(TestCase):
 
         changes = notice['changes']['105-1-b'][0]
         self.assertEqual(changes['action'], 'PUT')
-        self.assertTrue(changes['node']['text'].startswith(
+        self.assertTrue(changes['node'].text.startswith(
             u'(b) This part carries out.'))
 
     def test_process_amendments_multiple_in_same_parent(self):
@@ -272,11 +323,11 @@ class NoticeBuildTest(TestCase):
 
         changes = notice['changes']['105-1-b'][0]
         self.assertEqual(changes['action'], 'PUT')
-        self.assertEqual(changes['node']['text'].strip(),
+        self.assertEqual(changes['node'].text.strip(),
                          u'(b) This part carries out.')
         changes = notice['changes']['105-1-c'][0]
         self.assertEqual(changes['action'], 'PUT')
-        self.assertTrue(changes['node']['text'].strip(),
+        self.assertTrue(changes['node'].text.strip(),
                         u'(c) More stuff')
 
     def test_process_amendments_restart_new_section(self):
@@ -379,14 +430,14 @@ class NoticeBuildTest(TestCase):
         notice = {'cfr_parts': ['105']}
         subpart_changes = build.process_new_subpart(notice, amended_label, par)
 
-        new_nodes_added = ['105-Subpart-B', '105-30', '105-30-def0', '105-30-a']
+        new_nodes_added = ['105-Subpart-B', '105-30', '105-30-a']
         self.assertEqual(new_nodes_added, subpart_changes.keys())
 
         for l, n in subpart_changes.items():
             self.assertEqual(n['action'], 'POST')
 
         self.assertEqual(
-            subpart_changes['105-Subpart-B']['node']['node_type'], 'subpart')
+            subpart_changes['105-Subpart-B']['node'].node_type, 'subpart')
 
     def test_process_amendments_subpart(self):
         xml = self.new_subpart_xml()
@@ -537,7 +588,7 @@ class NoticeBuildTest(TestCase):
 
         reserve = notice_changes.changes['200-2-a'][0]
         self.assertEqual(reserve['action'], 'RESERVE')
-        self.assertEqual(reserve['node']['text'], u'[Reserved]')
+        self.assertEqual(reserve['node'].text, u'[Reserved]')
 
     def test_create_xml_changes_stars(self):
         labels_amended = [Amendment('PUT', '200-2-a')]

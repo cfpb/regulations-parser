@@ -127,7 +127,7 @@ class AppendixProcessor(object):
             label, title_depth = pair
             self.depth = title_depth - 1
             n = Node(node_type=Node.APPENDIX, label=[label],
-                     title=text)
+                     title=text, source_xml=xml_node)
         #   Look through parents to determine which level this should be
         else:
             self.header_count += 1
@@ -140,7 +140,7 @@ class AppendixProcessor(object):
         self.m_stack.add(self.depth, n)
 
     def insert_dashes(self, xml_node, text):
-        """ If paragraph has a SOURCE attribute with a value of FP-DASH 
+        """ If paragraph has a SOURCE attribute with a value of FP-DASH
             it fills out with dashes, like Foo_____. """
         mtext = text
         if xml_node.get('SOURCE') == 'FP-DASH':
@@ -284,7 +284,7 @@ class AppendixProcessor(object):
         def is_subhead(tag, text):
             initial = initial_marker(text)
             return ((tag == 'HD' and (not initial or '.' in initial[1]))
-                    or (tag in ('P', 'FP') 
+                    or (tag in ('P', 'FP')
                         and title_label_pair(text, self.appendix_letter,
                             self.part)))
 
@@ -359,7 +359,8 @@ def process_appendix(appendix, part):
 
 
 def parsed_title(text, appendix_letter):
-    digit_str_parser = (Marker(appendix_letter)
+    digit_str_parser = (Optional(Suppress("Appendix"))
+                        + Marker(appendix_letter)
                         + Suppress('-')
                         + grammar.a1.copy().leaveWhitespace()
                         + Optional(grammar.markerless_upper)
@@ -386,7 +387,8 @@ def title_label_pair(text, appendix_letter, reg_part):
             pair = (match.a1, 2)
         elif match.aI:
             pair = (match.aI, 2)
-
+        elif match.roman_upper and reg_part in text:
+            pair = (match.roman_upper, 2)
 
         if pair is not None and \
                 reg_part in APPENDIX_IGNORE_SUBHEADER_LABEL and \
@@ -407,6 +409,7 @@ def initial_marker(text):
         marker = (match.paren_upper or match.paren_lower or match.paren_digit
                   or match.period_upper or match.period_lower
                   or match.period_digit)
+
         if len(marker) < 3 or all(char in 'ivxlcdm' for char in marker):
             return marker, text[:end]
 

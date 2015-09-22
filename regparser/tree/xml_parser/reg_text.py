@@ -187,10 +187,9 @@ def build_from_section(reg_part, section_xml):
         subject_xml = section_xml.xpath('RESERVED')
     subject_text = subject_xml[0].text
 
-    manual_hierarchy_flag = False
+    manual_hierarchy = []
     if reg_part in PARAGRAPH_HIERARCHY and section_no_without_marker in PARAGRAPH_HIERARCHY[reg_part]:
-        manual_hierarchy_flag = True
-
+        manual_hierarchy = PARAGRAPH_HIERARCHY[reg_part][section_no_without_marker]
 
     # Collect paragraph markers and section text (intro text for the
     # section)
@@ -201,19 +200,31 @@ def build_from_section(reg_part, section_xml):
         tagged_text = tree_utils.get_node_text_tags_preserved(ch)
         markers_list = get_markers(tagged_text.strip())
 
+        # If the child has a 'DEPTH' attribute, we're in manual
+        # hierarchy mode, just constructed from the XML instead of
+        # specified in configuration.
+        # This presumes that every child in the section has DEPTH
+        # specified, if not, things will break in and around 
+        # derive_depths below.
+        if ch.get("depth") is not None:
+            manual_hierarchy.append(int(ch.get("depth")))
+
         if ch.tag == 'STARS':
             nodes.append(Node(label=[mtypes.STARS_TAG]))
-        elif not markers_list:
+        elif not markers_list and manual_hierarchy:
             # is this a bunch of definitions that don't have numbers next to them?
             if len(nodes) > 0:
-                if (subject_text.find('Definitions.') > -1 or nodes[-1].text.find('For the purposes of this section')):
+                if (subject_text.find('Definitions.') > -1 or \
+                        nodes[-1].text.find('For the purposes of this section')):
                     #TODO: create a grammar for definitions
                     if text.find('means') > -1:
                         def_marker = text.split('means')[0].strip().split()
-                        def_marker = ''.join([word[0].upper() + word[1:] for word in def_marker])
+                        def_marker = ''.join([word[0].upper() + word[1:] 
+                            for word in def_marker])
                     elif text.find('shall have the same meaning') > -1:
                         def_marker = text.split('shall')[0].strip().split()
-                        def_marker = ''.join([word[0].upper() + word[1:] for word in def_marker])
+                        def_marker = ''.join([word[0].upper() + word[1:] 
+                            for word in def_marker])
                     else:
                         def_marker = 'def{0}'.format(i)
                         i += 1
@@ -234,6 +245,9 @@ def build_from_section(reg_part, section_xml):
                     # this is the only node around
                     section_texts.append((text, tagged_text))
 
+        elif not markers_list and not manual_hierarchy:
+            # No manual heirarchy specified, append to the section.
+            section_texts.append((text, tagged_text))
         else:
             for m, node_text in get_markers_and_text(ch, markers_list):
                 n = Node(node_text[0], [], [m], source_xml=ch)
@@ -250,14 +264,14 @@ def build_from_section(reg_part, section_xml):
     m_stack = tree_utils.NodeStack()
 
     # Use constraint programming to figure out possible depth assignments
-    if not manual_hierarchy_flag:
+    if not manual_hierarchy:
         depths = derive_depths(
             [n.label[0] for n in nodes],
             [rules.depth_type_order([mtypes.lower, mtypes.ints, mtypes.roman,
                                      mtypes.upper, mtypes.em_ints,
                                      mtypes.em_roman])])
 
-    if not manual_hierarchy_flag and depths:
+    if not manual_hierarchy and depths:
         # Find the assignment which violates the least of our heuristics
         depths = heuristics.prefer_multiple_children(depths, 0.5)
         depths = sorted(depths, key=lambda d: d.weight, reverse=True)
@@ -273,9 +287,9 @@ def build_from_section(reg_part, section_xml):
                 else:
                     m_stack.add(1 + par.depth, node)
 
-    elif nodes and manual_hierarchy_flag:
+    elif nodes and manual_hierarchy:
         logging.warning('Using manual depth hierarchy.')
-        depths = PARAGRAPH_HIERARCHY[reg_part][section_no_without_marker]
+        depths = manual_hierarchy
         if len(nodes) == len(depths):
             for node, spec in zip(nodes, depths):
                 if isinstance(spec, int):
@@ -294,7 +308,7 @@ def build_from_section(reg_part, section_xml):
             logging.error('Manual hierarchy length does not match node list length!'
                           ' ({0} nodes but {1} provided)'.format(len(nodes), len(depths)))
 
-    elif nodes and not manual_hierarchy_flag:
+    elif nodes and not manual_hierarchy:
         logging.warning('Could not determine depth when parsing {0}:\n{1}'.format(section_no_without_marker, [n.label[0] for n in nodes]))
         for node in nodes:
             last = m_stack.peek()
