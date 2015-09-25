@@ -130,6 +130,29 @@ def build_by_notice(filename, title, act_title, act_section,
     if args.generate_diffs:
         generate_diffs(reg_tree, act_title_and_section, builder, layer_cache)
 
+
+def generate_xml(filename, title, act_title, act_section, notice_doc_numbers,
+                 doc_number=None, checkpoint=None):
+
+    act_title_and_section = [act_title, act_section]
+    #   First, the regulation tree
+
+    print filename, title, act_title_and_section
+
+    reg_tree, builder = tree_and_builder(filename, title,
+                                         checkpoint, writer_type='XML')
+    layer_cache = LayerCacheAggregator()
+    layers = builder.generate_layers(reg_tree, act_title_and_section, layer_cache)
+
+    # builder.write_notices()
+
+    #   Always do at least the first reg
+    logger.info("Version %s", builder.doc_number)
+    builder.write_regulation(reg_tree, output_type='xml', layers=layers)
+
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Regulation parser')
     parser.add_argument('filename',
@@ -157,5 +180,12 @@ if __name__ == "__main__":
         build_by_notice(args.filename, args.title, args.act_title,
                         args.act_section, args.notices_to_apply,
                         args.last_notice, args.checkpoint)
+
+    elif args.operation == 'generate_xml':
+
+        generate_xml(args.filename, args.title, args.act_title,
+                     args.act_section, args.notices_to_apply,
+                     args.last_notice, args.checkpoint)
+
     else:
         parse_regulation(args)

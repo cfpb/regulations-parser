@@ -32,7 +32,7 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     logging.info('building notice, title {0}, part {1}, notice {2}'.format(cfr_title, cfr_part, fr_notice['document_number']))
     cfr_parts = set(str(ref['part']) for ref in fr_notice['cfr_references'])
     cfr_parts.add(cfr_part)
-    notice = {'cfr_title': cfr_title, 'cfr_parts': list(cfr_parts)}
+    notice = {'cfr_title': cfr_title, 'cfr_parts': list(cfr_parts), 'cfr_part': cfr_part}
     #   Copy over most fields
     for field in ['abstract', 'action', 'agency_names', 'comments_close_on',
                   'document_number', 'publication_date',
@@ -294,7 +294,7 @@ def process_amendments(notice, notice_xml):
         else:
             amdpars_by_parent.append(AmdparByParent(parent, par))
 
-    default_cfr_part = notice['cfr_parts'][0]
+    default_cfr_part = notice['cfr_part']
     for aXp in amdpars_by_parent:
         amended_labels = []
         designate_labels, other_labels = [], []
@@ -320,6 +320,11 @@ def process_amendments(notice, notice_xml):
             create_xmlless_changes(other_labels, notice_changes)
 
             for cfr_part, rel_labels in labels_by_part.iteritems():
+            # labels_for_part = {part: labels
+            #                    for part, labels in labels_by_part.iteritems()
+            #                    if part == default_cfr_part}
+            #
+            # for cfr_part, rel_labels in labels_for_part.iteritems():
                 section_xml = find_section(par)
                 if section_xml is not None:
                     subparts = aXp.parent.xpath('.//SUBPART/HD')

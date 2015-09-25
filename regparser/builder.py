@@ -28,12 +28,12 @@ class Builder(object):
     """Methods used to build all versions of a single regulation, their
     layers, etc. It is largely glue code"""
 
-    def __init__(self, cfr_title, cfr_part, doc_number, checkpointer=None):
+    def __init__(self, cfr_title, cfr_part, doc_number, checkpointer=None, writer_type=None):
         self.cfr_title = cfr_title
         self.cfr_part = cfr_part
         self.doc_number = doc_number
         self.checkpointer = checkpointer or NullCheckpointer()
-        self.writer = api_writer.Client()
+        self.writer = api_writer.Client(writer_type=writer_type)
         self.notices_json = []
         #self.notices = self.checkpointer.checkpoint('notice', lambda: fetch_notices(self.cfr_title, self.cfr_part, only_final=True))
         self.notices = []
@@ -90,10 +90,14 @@ class Builder(object):
             del notice['meta']
             self.writer.notice(notice['document_number']).write(notice)
 
-    def write_regulation(self, reg_tree):
-        self.writer.regulation(self.cfr_part, self.doc_number).write(reg_tree)
+    def write_regulation(self, reg_tree, output_type='json', layers=None):
+        if output_type == 'json':
+            self.writer.regulation(self.cfr_part, self.doc_number).write(reg_tree)
+        elif output_type == 'xml':
+            self.writer.reg_xml(self.cfr_part, self.doc_number, layers=layers).write(reg_tree)
 
-    def gen_and_write_layers(self, reg_tree, act_info, cache, notices=None):
+    def generate_layers(self, reg_tree, act_info, cache, notices=None):
+        layers = {}
         if notices is None:
             notices = applicable_notices(self.notices, self.doc_number)
         for ident, layer_class in (
@@ -115,8 +119,19 @@ class Builder(object):
                 lambda: layer_class(
                     reg_tree, self.cfr_title, self.doc_number, notices,
                     act_info).build(cache.cache_for(ident)))
-            self.writer.layer(ident, self.cfr_part, self.doc_number).write(
-                layer)
+            layers[ident] = layer
+
+        return layers
+
+    def write_layers(self, layers):
+
+        for ident, layer in layers.items():
+            self.writer.layer(ident, self.cfr_part, self.doc_number).write(layer)
+
+    def gen_and_write_layers(self, reg_tree, act_info, cache, notices=None):
+
+        layers = self.generate_layers(reg_tree, act_info, cache, notices)
+        self.write_layers(layers)
 
     def revision_generator(self, reg_tree):
         """Given an initial regulation tree, this will emit (and checkpoint)
@@ -370,7 +385,7 @@ class NullCheckpointer(object):
         return fn()
 
 
-def tree_and_builder(filename, title, checkpoint_path=None):
+def tree_and_builder(filename, title, checkpoint_path=None, writer_type=None):
     """Reads the regulation file and parses it. Returns the resulting tree as
     well as a Builder object for further manipulation"""
     if checkpoint_path is None:
@@ -397,7 +412,8 @@ def tree_and_builder(filename, title, checkpoint_path=None):
     builder = Builder(cfr_title=title,
                       cfr_part=title_part,
                       doc_number=doc_number,
-                      checkpointer=checkpointer)
+                      checkpointer=checkpointer,
+                      writer_type=writer_type)
     builder.fetch_notices_json()
     builder.build_notices()
 
