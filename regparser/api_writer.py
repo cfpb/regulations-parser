@@ -213,54 +213,113 @@ class XMLWriteContent:
     def apply_formatting():
         pass
 
+    def fdsys(self, reg_number, date='2012-01-01', orig_date='2012-01-01'):
+        meta = self.layers['meta'][reg_number][0]
+        elem = Element('fdsys')
+        cfr_title_num = SubElement(elem, 'cfrTitleNum')
+        cfr_title_num.text = str(meta['cfr_title_number'])
+        cfr_title_text = SubElement(elem, 'cfrTitleText')
+        cfr_title_text.text = meta['cfr_title_text']
+        volume = SubElement(elem, 'volume')
+        volume.text = '8'
+        # we don't know the date right now so just hard code it for the moment
+        # TODO: propagate date up to here from the build_from caller
+        date_elem = SubElement(elem, 'date')
+        date_elem.text = meta['effective_date']
+        orig_date_elem = SubElement(elem, 'originalDate')
+        orig_date_elem.text = orig_date
+        title_elem = SubElement(elem, 'title')
+        title_elem.text = meta['statutory_name']
+
+        return elem
+
+    def preamble(self, reg_number):
+        meta = self.layers['meta'][reg_number][0]
+        elem = Element('preamble')
+        agency = SubElement(elem, 'agency')
+        agency.text = 'Bureau of Consumer Financial Protection'
+        cfr = SubElement(elem, 'cfr')
+        title = SubElement(cfr, 'title')
+        title.text = str(meta['cfr_title_number'])
+        section = SubElement(cfr, 'section')
+        section.text = reg_number
+        eff_date = SubElement(elem, 'effectiveDate')
+        eff_date.text = meta['effective_date']
+
+        return elem
+
+
+    @staticmethod
+    def toc_to_xml(toc):
+        toc_elem = Element('tableOfContents')
+        for item in toc:
+            index = item['index']
+            title = item['title']
+            target = '-'.join(index)
+            if index[-1].isdigit():
+                toc_section = SubElement(toc_elem, 'tocSecEntry', target=target)
+                toc_secnum = SubElement(toc_section, 'sectionNum')
+                toc_secnum.text = str(index[-1])
+                toc_secsubj = SubElement(toc_section, 'sectionSubject')
+                toc_secsubj.text = title
+            else:
+                toc_appentry = SubElement(toc_elem, 'tocAppEntry', target=target)
+                toc_appletter = SubElement(toc_appentry, 'appendixLetter')
+                toc_appsubj = SubElement(toc_appentry, 'appendixSubject')
+                toc_appletter.text = index[-1]
+                toc_appsubj.text = title
+        return toc_elem
+
     def to_xml(self, root):
         if root.label[-1] == 'Subpart':
             elem = Element('subpart')
             if root.node_type != "emptypart":
                 sub_elem = SubElement(elem, 'title')
                 sub_elem.text = root.title
+            toc = XMLWriteContent.toc_to_xml(self.layers['toc'][root.label_id()])
+            elem.append(toc)
             content = SubElement(elem, 'content')
             for child in root.children:
                 sub_elem = self.to_xml(child)
                 content.append(sub_elem)
         elif root.label[-1].isdigit() and len(root.label) == 2:
-            elem = Element('section', sectionNum=root.label[-1])
+            elem = Element('section', sectionNum=root.label[-1], label=root.label_id())
             subject = SubElement(elem, 'subject')
             subject.text = root.title
             if root.text.strip() != '' and len(root.children) == 0:
                 paragraph = SubElement(elem, 'paragraph', marker=str(root.label[-1]), label=root.label_id())
                 par_content = SubElement(paragraph, 'content')
                 par_content.text = root.text
-            for child in root.children:
-                sub_elem = self.to_xml(child)
-                elem.append(sub_elem)
         elif len(root.label) == 1:
             reg_string = '<regulation xmlns="eregs" ' \
                          'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' \
                          'xsi:schemaLocation="eregs ../../eregs.xsd"></regulation>'
-            reg = fromstring(reg_string)
-            elem = SubElement(reg, 'part', partNumber=root.label_id())
-            fdsys = SubElement(elem, 'fdsys')
-            preamble = SubElement(elem, 'preamble')
+            elem = fromstring(reg_string)
+            title = root.title
+            fdsys = self.fdsys(root.label_id())
+            elem.append(fdsys)
+            preamble = self.preamble(root.label_id())
+            elem.append(preamble)
+            part_num = root.label_id()
+            part = SubElement(elem, 'part', partNumber=part_num)
+            toc = XMLWriteContent.toc_to_xml(self.layers['toc'][part_num])
+            part.append(toc)
+            content = SubElement(part, 'content')
             for child in root.children:
                 sub_elem = self.to_xml(child)
-                elem.append(sub_elem)
+                content.append(sub_elem)
         elif root.node_type == 'appendix' and len(root.label) == 2:
-            elem = Element('appendix')
+            elem = Element('appendix', label=root.label_id(), appendixLetter=root.label[-1])
             title = SubElement(elem, 'appendixTitle')
-            toc = SubElement(elem, 'tableOfContents')
             title.text = root.title
-            for child in root.children:
-                sub_elem = self.to_xml(child)
-                elem.append(sub_elem)
+            toc = XMLWriteContent.toc_to_xml(self.layers['toc'][root.label_id()])
+            elem.append(toc)
         elif root.node_type == 'appendix' and len(root.label) == 3:
-            elem = Element('appendixSection', appendixSecNum=str(self.appendix_sections))
+            elem = Element('appendixSection', appendixSecNum=str(self.appendix_sections),
+                           label=root.label_id())
             subject = SubElement(elem, 'subject')
             subject.text = root.title
             self.appendix_sections += 1
-            for child in root.children:
-                sub_elem = self.to_xml(child)
-                elem.append(sub_elem)
         else:
             elem = Element('paragraph', label=root.label_id(), marker=root.label[-1])
             title = SubElement(elem, 'title')
@@ -269,6 +328,9 @@ class XMLWriteContent:
             text = self.apply_layers(root)
             content = fromstring('<content>' + text + '</content>')
             elem.append(content)
+
+        if len(root.label) > 1 and root.label[-1] != 'Subpart':
+            # the part is a special case
             for child in root.children:
                 sub_elem = self.to_xml(child)
                 elem.append(sub_elem)
