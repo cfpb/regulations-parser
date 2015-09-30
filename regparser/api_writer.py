@@ -14,6 +14,8 @@ from regparser.notice.encoder import AmendmentEncoder
 from regparser.tree.xml_parser.reg_text import get_markers
 from lxml.etree import tostring, fromstring
 
+from utils import set_of_random_letters, interpolate_string
+
 import settings
 
 
@@ -134,6 +136,7 @@ class XMLWriteContent:
     def __init__(self, path, layers=None):
         self.path = path
         self.layers = layers
+        self.layers['definitions'] = self.extract_definitions()
         self.appendix_sections = 1 # need to track these manually
 
         path_parts = self.path.split('/')
@@ -153,56 +156,100 @@ class XMLWriteContent:
         with open(self.full_path, 'w') as f:
             f.write(xml_string)
 
+    def extract_definitions(self):
+
+        defs = self.layers['terms']['referenced']
+        references = {}
+        for _, defn in defs.items():
+            ref_node_label = defn['reference']
+            ref_offsets = defn['position']
+            term = defn['term']
+            defn_dict = {'offset': ref_offsets,
+                         'term': term}
+            references[ref_node_label] = defn_dict
+
+        return references
 
     @staticmethod
     def apply_terms(text, replacements):
 
-        repl_hashes = {}
+        replacement_texts = []
+        replacement_offsets = []
         for repl in replacements:
             repl_text = repl['ref']
-            ref_length = len(repl_text.split(':')[0])
-            repl_hash = hashlib.sha512(repl_text).hexdigest()
             offsets = repl['offsets']
+            replacement_offsets.extend(offsets)
             for offset in offsets:
-                offset_length = offset[1] - offset[0]
-                hash_value = repl_hash[:offset_length-2]
-                hash_mark = '{' + hash_value + '}'
-                replacement_text = text[offset[0]:offset[1]]
-                text = text[:offset[0]] + hash_mark + text[offset[1]:]
+                replacement = text[offset[0]:offset[1]]
                 repl_target = repl_text.split(':')[1]
-                replacement_text = '<ref target="{}">'.format(repl_target) + replacement_text + '</ref>'
-                repl_hashes[hash_value] = replacement_text
+                replacement = '<ref target="{}">'.format(repl_target) + replacement + '</ref>'
+                replacement_texts.append(replacement)
 
-        return text, repl_hashes
+        return replacement_offsets, replacement_texts
 
     @staticmethod
     def apply_paragraph_markers(text, replacements):
 
-        repl_hashes = {}
+        replacement_texts = []
+        replacement_offsets = []
         for i, repl in enumerate(replacements):
             marker_text = repl['text']
             marker_length = len(marker_text)
-            if marker_length == 2:
-                text = text.replace(marker_text, '{}')
-            elif marker_length == 3:
-                text = text.replace(marker_text, '{' + chr(i + 97) + '}')
-                repl_hashes[chr(i + 97)] = ''
-            elif marker_length > 3:
-                hash_len = marker_length - 2
-                hash_value = ''
-                for j in range(hash_len):
-                    hash_value += chr(i + 97)
-                repl_marker = '{' + hash_value + '}'
-                text = text.replace(marker_text, repl_marker)
-                repl_hashes[hash_value] = ''
+            marker_locations = repl['locations']
+            for loc in marker_locations:
+                offset = [loc, loc + marker_length]
+                replacement_offsets.append(offset)
+                replacement_texts.append('')
 
-        return text, repl_hashes
-
-
+        return replacement_offsets, replacement_texts
 
     @staticmethod
     def apply_internal_citations(text, replacements):
-        pass
+
+        replacement_texts = []
+        replacement_offsets = []
+        for repl in replacements:
+            citation = repl['citation']
+            offsets = repl['offsets']
+            citation_target = '-'.join(citation)
+            for offset in offsets:
+                ref_text = text[offset[0]:offset[1]]
+                replacement_text = '<ref target="{}" reftype="internal">'.format(citation_target) + ref_text + '</ref>'
+                replacement_offsets.append(offset)
+                replacement_texts.append(replacement_text)
+
+        return replacement_offsets, replacement_texts
+
+    @staticmethod
+    def apply_external_citations(text, replacements):
+
+        replacement_texts = []
+        replacement_offsets = []
+        for repl in replacements:
+            citation = repl['citation']
+            citation_type = repl['citation_type']
+            offsets = repl['offsets']
+            for offset in offsets:
+                ref_text = text[offset[0]:offset[1]]
+                # we need to form a URL for the external citation based on the citation type
+                # I don't know how to do that yet so the target is just a placeholder
+                target_url = '{}:{}'.format(citation_type, '-'.join(citation))
+                replacement_text = '<ref target="{}" reftype="external">'.format(target_url) + ref_text + '</ref>'
+                replacement_texts.append(replacement_text)
+                replacement_offsets.append(offset)
+
+        return replacement_offsets, replacement_texts
+
+    @staticmethod
+    def apply_definitions(text, replacement):
+
+        offset = replacement['offset']
+        term = replacement['term']
+        hash_value = hashlib.sha1(term).hexdigest()
+        replacement_text = text[offset[0]:offset[1]]
+        replacement_text = '<def term="{}" id="{}">'.format(term, hash_value) + replacement_text + '</def>'
+
+        return [offset], [replacement_text]
 
 
     @staticmethod
@@ -222,8 +269,6 @@ class XMLWriteContent:
         cfr_title_text.text = meta['cfr_title_text']
         volume = SubElement(elem, 'volume')
         volume.text = '8'
-        # we don't know the date right now so just hard code it for the moment
-        # TODO: propagate date up to here from the build_from caller
         date_elem = SubElement(elem, 'date')
         date_elem.text = meta['effective_date']
         orig_date_elem = SubElement(elem, 'originalDate')
@@ -287,9 +332,10 @@ class XMLWriteContent:
             subject = SubElement(elem, 'subject')
             subject.text = root.title
             if root.text.strip() != '' and len(root.children) == 0:
-                paragraph = SubElement(elem, 'paragraph', marker=str(root.label[-1]), label=root.label_id())
+                label = root.label_id() + '-a'
+                paragraph = SubElement(elem, 'paragraph', marker='', label=label)
                 par_content = SubElement(paragraph, 'content')
-                par_content.text = root.text
+                par_content.text = root.text.strip()
         elif len(root.label) == 1:
             reg_string = '<regulation xmlns="eregs" ' \
                          'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' \
@@ -338,21 +384,33 @@ class XMLWriteContent:
 
     def apply_layers(self, node):
         text = node.text
+        replacement_hashes = {}
+        all_offsets = []
+        all_replacements = []
         for ident, layer in self.layers.items():
-            # print ident, node.label_id()
             if node.label_id() in layer:
                 replacements = layer[node.label_id()]
                 if ident == 'terms':
-                    # import pdb; pdb.set_trace()
-                    text, repl_hashes = XMLWriteContent.apply_terms(text, replacements)
-                    text = text.format(**repl_hashes).strip()
+                    offsets, repls = XMLWriteContent.apply_terms(text, replacements)
                 elif ident == 'paragraph-markers':
-                    # import pdb; pdb.set_trace()
-                    text, repl_hashes = XMLWriteContent.apply_paragraph_markers(text, replacements)
-                    text = text.replace('{}', '').strip()
-                    if repl_hashes != {}:
-                        # print text, repl_hashes
-                        text = text.format(**repl_hashes).strip()
+                    offsets, repls = XMLWriteContent.apply_paragraph_markers(text, replacements)
+                elif ident == 'internal-citations':
+                    offsets, repls = XMLWriteContent.apply_internal_citations(text, replacements)
+                elif ident == 'definitions':
+                    offsets, repls = XMLWriteContent.apply_definitions(text, replacements)
+                elif ident == 'external-citations':
+                    offsets, repls = XMLWriteContent.apply_external_citations(text, replacements)
+
+                all_offsets.extend(offsets)
+                all_replacements.extend(repls)
+
+        if len(all_offsets) > 0 and len(all_replacements) > 0:
+
+            offsets_and_repls = zip(all_offsets, all_replacements)
+            offsets_and_repls = sorted(offsets_and_repls, key=lambda x: x[0][0])
+            all_offsets, all_replacements = zip(*offsets_and_repls)
+
+            text = interpolate_string(text, all_offsets, all_replacements).strip()
 
         return text
 

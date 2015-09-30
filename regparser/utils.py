@@ -1,3 +1,5 @@
+from random import choice
+
 def roman_nums():
     """Generator for roman numerals."""
     mapping = [
@@ -31,3 +33,36 @@ def title_body(text):
 def flatten(list_of_lists):
     """List[List[X]] -> List[X]"""
     return sum(list_of_lists, [])
+
+letters = [chr(i) for i in range(97, 97 + 26)]
+
+
+def random_letters(length):
+
+    result = ''
+    for i in range(length):
+        result += choice(letters)
+    return result
+
+
+def set_of_random_letters(num_items, length):
+
+    result = set()
+    while len(result) < num_items:
+        candidate = random_letters(length)
+        result.add(candidate)
+
+    return result
+
+
+def interpolate_string(text, offsets, values):
+    result = ''
+    current_pos = 0
+    for i, offset in enumerate(offsets):
+        start = offset[0]
+        end = offset[1]
+        fragment = text[current_pos:start]
+        current_pos = end
+        result += fragment + values[i]
+    result += text[current_pos:]
+    return result
