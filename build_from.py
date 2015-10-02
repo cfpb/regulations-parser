@@ -149,8 +149,20 @@ def generate_xml(filename, title, act_title, act_section, notice_doc_numbers,
     #   Always do at least the first reg
     logger.info("Version %s", builder.doc_number)
     builder.write_regulation(reg_tree, output_type='xml', layers=layers)
+    all_versions = {doc_number: FrozenNode.from_node(reg_tree)}
 
-
+    for last_notice, old, new_tree, notices in builder.revision_generator(
+            reg_tree):
+        version = last_notice['document_number']
+        logger.info("Version %s", version)
+        all_versions[version] = FrozenNode.from_node(new_tree)
+        builder.doc_number = version
+        layers = builder.generate_layers(new_tree, act_title_and_section,
+                                         layer_cache, notices)
+        builder.write_regulation(new_tree, output_type='xml', layers=layers)
+        layer_cache.invalidate_by_notice(last_notice)
+        layer_cache.replace_using(new_tree)
+        del last_notice, old, new_tree, notices     # free some memory
 
 
 if __name__ == "__main__":

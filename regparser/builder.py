@@ -84,11 +84,16 @@ class Builder(object):
         for notice_group in self.eff_notices.values():
             self.notices.extend(notice_group)
 
-    def write_notices(self):
-        for notice in self.notices:
-            #  No need to carry this around
-            del notice['meta']
-            self.writer.notice(notice['document_number']).write(notice)
+    def write_notices(self, output_type='json'):
+        if output_type == 'json':
+            for notice in self.notices:
+                #  No need to carry this around
+                del notice['meta']
+                self.writer.notice(notice['document_number']).write(notice)
+        elif output_type == 'xml':
+            for notice in self.notices:
+                del notice['meta']
+                self.writer.notice(notice['document_number']).write_notice(notice)
 
     def write_regulation(self, reg_tree, output_type='json', layers=None):
         if output_type == 'json':

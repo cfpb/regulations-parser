@@ -139,6 +139,8 @@ class XMLWriteContent:
         self.layers['definitions'] = self.extract_definitions()
         self.appendix_sections = 1 # need to track these manually
 
+        self.caps = [chr(i) for i in range(65, 65 + 26)]
+
         path_parts = self.path.split('/')
         dir_path = settings.OUTPUT_DIR + os.path.join(*path_parts[:-1])
 
@@ -149,12 +151,18 @@ class XMLWriteContent:
         self.full_path = full_path
 
     def write(self, tree):
-        xml_head = '<?xml version="1.0" encoding="UTF-8"?>\n'
-        xml_tree = self.to_xml(tree)
-        xml_string = xml_head + tostring(xml_tree, pretty_print=True)
+        if isinstance(tree, Node):
+            print 'writing XML'
+            xml_head = '<?xml version="1.0" encoding="UTF-8"?>\n'
+            xml_tree = self.to_xml(tree)
+            xml_string = xml_head + tostring(xml_tree, pretty_print=True)
 
-        with open(self.full_path, 'w') as f:
-            f.write(xml_string)
+            with open(self.full_path, 'w') as f:
+                f.write(xml_string)
+
+    def write_notice(self, notice):
+
+        pass
 
     def extract_definitions(self):
 
@@ -226,7 +234,7 @@ class XMLWriteContent:
         replacement_texts = []
         replacement_offsets = []
         for repl in replacements:
-            citation = repl['citation']
+            citation = map(str, repl['citation'])
             citation_type = repl['citation_type']
             offsets = repl['offsets']
             for offset in offsets:
@@ -315,12 +323,21 @@ class XMLWriteContent:
                 toc_appsubj.text = title
         return toc_elem
 
+    @staticmethod
+    def is_interp_appendix(node):
+        caps = [chr(i) for i in range(65, 65 + 26)]
+        if node.node_type == 'interp' and \
+            node.label[1] in caps:
+            pass
+
     def to_xml(self, root):
-        if root.label[-1] == 'Subpart':
+        process_content = False
+
+        if 'Subpart' in root.label:
             elem = Element('subpart')
             if root.node_type != "emptypart":
-                sub_elem = SubElement(elem, 'title')
-                sub_elem.text = root.title
+                title = SubElement(elem, 'title')
+                title.text = root.title
             toc = XMLWriteContent.toc_to_xml(self.layers['toc'][root.label_id()])
             elem.append(toc)
             content = SubElement(elem, 'content')
@@ -332,10 +349,12 @@ class XMLWriteContent:
             subject = SubElement(elem, 'subject')
             subject.text = root.title
             if root.text.strip() != '' and len(root.children) == 0:
-                label = root.label_id() + '-a'
+                label = root.label_id() + '-p1'
                 paragraph = SubElement(elem, 'paragraph', marker='', label=label)
                 par_content = SubElement(paragraph, 'content')
                 par_content.text = root.text.strip()
+            elif '[Reserved]' in root.title:
+                reserved = SubElement(elem, 'reserved')
         elif len(root.label) == 1:
             reg_string = '<regulation xmlns="eregs" ' \
                          'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' \
@@ -355,27 +374,76 @@ class XMLWriteContent:
                 sub_elem = self.to_xml(child)
                 content.append(sub_elem)
         elif root.node_type == 'appendix' and len(root.label) == 2:
+            # reset the section counter
+            self.appendix_sections = 1
             elem = Element('appendix', label=root.label_id(), appendixLetter=root.label[-1])
             title = SubElement(elem, 'appendixTitle')
             title.text = root.title
-            toc = XMLWriteContent.toc_to_xml(self.layers['toc'][root.label_id()])
-            elem.append(toc)
+            if root.label_id() in self.layers['toc']:
+                toc = XMLWriteContent.toc_to_xml(self.layers['toc'][root.label_id()])
+                elem.append(toc)
+            if '[Reserved]' in root.title:
+                reserved = SubElement(elem, 'reserved')
         elif root.node_type == 'appendix' and len(root.label) == 3:
             elem = Element('appendixSection', appendixSecNum=str(self.appendix_sections),
                            label=root.label_id())
             subject = SubElement(elem, 'subject')
             subject.text = root.title
             self.appendix_sections += 1
+            if root.text.strip() != '' and len(root.children) == 0:
+                label = root.label_id() + '-p1'
+                paragraph = SubElement(elem, 'paragraph', marker='', label=label)
+                par_content = SubElement(paragraph, 'content')
+                par_content.text = root.text.strip()
+        elif root.node_type == 'interp' and len(root.label) == 2:
+            elem = Element('interpretations', label=root.label_id())
+            title = SubElement(elem, 'title')
+            title.text = root.title
+        elif root.node_type == 'interp'and root.label[1] in self.caps and len(root.label) <= 3:
+            # import pdb; pdb.set_trace()
+            elem = Element('interpAppendix', appendixLetter=root.label[1], label=root.label_id())
+            title = SubElement(elem, 'title')
+            title.text = root.title
+        elif root.node_type == 'interp' and len(root.label) == 3 and \
+                (root.label[1].isdigit() or root.label[1] == 'Interp'):
+            if root.label[1].isdigit():
+                elem = Element('interpSection', sectionNum=str(root.label[1]), label=root.label_id())
+            else:
+                elem = Element('interpSection', label=root.label_id())
+            title = SubElement(elem, 'title')
+            title.text = root.title
+            if '[Reserved]' in root.title:
+                reserved = SubElement(elem, 'reserved')
+        elif root.node_type == 'interp' and len(root.label) >= 3 and root.label[-1] == 'Interp'\
+                and root.label[1] in self.caps:
+            # this is the case for hyphenated appendices like MS-1 in reg X
+            elem = Element('interpAppSection', appendixLetter=root.label[1], label=root.label_id())
+            title = SubElement(elem, 'title')
+            title.text = root.title
+        elif root.node_type == 'interp': # and \
+                #((len(root.label) > 3 and root.label[-1] != 'Interp') or \
+                # (len(root.label) == 3 and root.label[1] == 'Interp')):
+            # fall-through for all other interp nodes, which should be paragraphs
+            target = [item for item in root.label if item != 'Interp']
+            target = '-'.join(target)
+            label = root.label_id()
+            elem = Element('interpParagraph', label=label, target=target)
+            if root.title:
+                title = SubElement(elem, 'title')
+                title.text = root.title
+            text = self.apply_layers(root)
+            content = fromstring('<content>' + text + '</content>')
+            elem.append(content)
         else:
             elem = Element('paragraph', label=root.label_id(), marker=root.label[-1])
-            title = SubElement(elem, 'title')
             if root.title:
+                title = SubElement(elem, 'title')
                 title.text = root.title
             text = self.apply_layers(root)
             content = fromstring('<content>' + text + '</content>')
             elem.append(content)
 
-        if len(root.label) > 1 and root.label[-1] != 'Subpart':
+        if len(root.label) > 1 and ('Subpart' not in root.label):
             # the part is a special case
             for child in root.children:
                 sub_elem = self.to_xml(child)
@@ -387,8 +455,11 @@ class XMLWriteContent:
         replacement_hashes = {}
         all_offsets = []
         all_replacements = []
+        # import pdb; pdb.set_trace()
         for ident, layer in self.layers.items():
+            # print node.label_id()
             if node.label_id() in layer:
+                # print 'applying layers'
                 replacements = layer[node.label_id()]
                 if ident == 'terms':
                     offsets, repls = XMLWriteContent.apply_terms(text, replacements)
@@ -400,6 +471,9 @@ class XMLWriteContent:
                     offsets, repls = XMLWriteContent.apply_definitions(text, replacements)
                 elif ident == 'external-citations':
                     offsets, repls = XMLWriteContent.apply_external_citations(text, replacements)
+                else:
+                    offsets = []
+                    repls = []
 
                 all_offsets.extend(offsets)
                 all_replacements.extend(repls)
@@ -439,6 +513,9 @@ class Client:
 
     def reg_xml(self, label, doc_number, layers=None):
         return self.writer_class("regulation/{}/{}.xml".format(label, doc_number), layers=layers)
+
+    def notice_xml(self, doc_number):
+        return self.writer_class("notice/{}.xml".format(doc_number))
 
     def regulation(self, label, doc_number):
         return self.writer_class("regulation/%s/%s" % (label, doc_number))
