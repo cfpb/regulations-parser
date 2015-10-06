@@ -56,13 +56,13 @@ def set_of_random_letters(num_items, length):
 
 
 def interpolate_string(text, offsets, values):
-    result = ''
+    result = ''.encode('utf-8')
     current_pos = 0
     for i, offset in enumerate(offsets):
         start = offset[0]
         end = offset[1]
-        fragment = text[current_pos:start]
+        fragment = text[current_pos:start].encode('utf-8')
         current_pos = end
-        result += fragment + values[i]
-    result += text[current_pos:]
+        result = (result.decode('utf-8') + fragment.decode('utf-8') + values[i].decode('utf-8')).encode('utf-8')
+    result = (result.encode('utf-8') + text[current_pos:].encode('utf-8')).decode('utf-8')
     return result

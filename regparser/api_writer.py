@@ -190,7 +190,9 @@ class XMLWriteContent:
             for offset in offsets:
                 replacement = text[offset[0]:offset[1]]
                 repl_target = repl_text.split(':')[1]
-                replacement = '<ref target="{}">'.format(repl_target) + replacement + '</ref>'
+                a = repl_target.encode('utf-8')
+                b = replacement.encode('utf-8')
+                replacement = '<ref target="{}">'.format(a) + b + '</ref>'
                 replacement_texts.append(replacement)
 
         return replacement_offsets, replacement_texts
@@ -222,7 +224,8 @@ class XMLWriteContent:
             citation_target = '-'.join(citation)
             for offset in offsets:
                 ref_text = text[offset[0]:offset[1]]
-                replacement_text = '<ref target="{}" reftype="internal">'.format(citation_target) + ref_text + '</ref>'
+                replacement_text = '<ref target="{}" reftype="internal">'.format(citation_target) + \
+                                   ref_text.encode('utf-8') + '</ref>'
                 replacement_offsets.append(offset)
                 replacement_texts.append(replacement_text)
 
@@ -242,7 +245,8 @@ class XMLWriteContent:
                 # we need to form a URL for the external citation based on the citation type
                 # I don't know how to do that yet so the target is just a placeholder
                 target_url = '{}:{}'.format(citation_type, '-'.join(citation))
-                replacement_text = '<ref target="{}" reftype="external">'.format(target_url) + ref_text + '</ref>'
+                replacement_text = '<ref target="{}" reftype="external">'.format(target_url) + \
+                                   ref_text.encode('utf-8') + '</ref>'
                 replacement_texts.append(replacement_text)
                 replacement_offsets.append(offset)
 
@@ -255,7 +259,8 @@ class XMLWriteContent:
         term = replacement['term']
         hash_value = hashlib.sha1(term).hexdigest()
         replacement_text = text[offset[0]:offset[1]]
-        replacement_text = '<def term="{}" id="{}">'.format(term, hash_value) + replacement_text + '</def>'
+        replacement_text = '<def term="{}" id="{}">'.format(term, hash_value) + \
+                           replacement_text.encode('utf-8') + '</def>'
 
         return [offset], [replacement_text]
 
