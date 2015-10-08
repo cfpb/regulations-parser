@@ -15,7 +15,7 @@ class Node(object):
     INTERP_MARK = 'Interp'
 
     def __init__(self, text='', children=[], label=[], title=None,
-                 node_type=REGTEXT, source_xml=None):
+                 node_type=REGTEXT, source_xml=None, tagged_text=''):
 
         self.text = unicode(text)
 
@@ -28,6 +28,7 @@ class Node(object):
         self.node_type = node_type
         self.source_xml = source_xml
         self.marker = None
+        self.tagged_text = tagged_text
 
     def __repr__(self):
         return (("Node( text = %s, children = %s, label = %s, title = %s, "
