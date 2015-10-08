@@ -33,7 +33,7 @@ def parse_regulation(args):
     #   First, the regulation tree
 
     reg_tree, builder = tree_and_builder(args.filename, args.title,
-                                         args.checkpoint)
+                                         args.checkpoint_dir, args.doc_number)
 
     builder.write_notices()
 
@@ -144,8 +144,13 @@ if __name__ == "__main__":
     diffs.add_argument('--no-generate-diffs', dest='generate_diffs',
                        action='store_false', help="Don't generate diffs")
     diffs.set_defaults(generate_diffs=True)
-    parser.add_argument('--checkpoint', required=False,
+    parser.add_argument('--checkpoint', dest='checkpoint_dir', required=False,
                         help='Directory to save checkpoint data')
+    parser.add_argument(
+        '--version-identifier', dest='doc_number', required=False,
+        help=('Do not try to derive the version information. (Only use if '
+              'the regulation has no electronic final rules on '
+              'federalregister.gov, i.e. has not changed since before ~2000)'))
 
     parser.add_argument('--last-notice', type=str, help='the last notice to be used')
     parser.add_argument('--operation', action='store')
