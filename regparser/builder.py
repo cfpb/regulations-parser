@@ -35,23 +35,24 @@ class Builder(object):
         self.checkpointer = checkpointer or NullCheckpointer()
         self.writer = api_writer.Client()
         self.notices_json = []
-        #self.notices = self.checkpointer.checkpoint('notice', lambda: fetch_notices(self.cfr_title, self.cfr_part, only_final=True))
         self.notices = []
         self.notice_doc_numbers = []
-        #self.eff_notices = group_by_eff_date(self.notices)
         self.eff_notices = []
 
     def fetch_notices_json(self):
-        self.notices_json = fetch_notice_json(self.cfr_title, self.cfr_part, only_final=True)
+        self.notices_json = fetch_notice_json(self.cfr_title, self.cfr_part,
+                                              only_final=True)
         self.notice_doc_numbers = [notice_json['document_number']
                                    for notice_json in self.notices_json]
 
     def build_single_notice(self, notice_json, checkpoint=True):
-        logging.info('building notice {0} from {1}'.format(notice_json['document_number'], notice_json['full_text_xml_url']))
+        logging.info('building notice {0} from {1}'.format(
+            notice_json['document_number'], notice_json['full_text_xml_url']))
         if checkpoint:
             notice = self.checkpointer.checkpoint(
                 'notice-' + notice_json['document_number'],
-                lambda: build_notice(self.cfr_title, self.cfr_part, notice_json)
+                lambda: build_notice(self.cfr_title, self.cfr_part,
+                                     notice_json)
             )
         else:
             notice = build_notice(self.cfr_title, self.cfr_part, notice_json)

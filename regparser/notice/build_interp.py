@@ -70,7 +70,8 @@ def process_with_headers(cfr_part, parent_xml):
                 seen_header = True
 
     if root_title:
-        root = Node(label=[cfr_part, Node.INTERP_MARK], node_type=Node.INTERP, title=root_title)
+        root = Node(label=[cfr_part, Node.INTERP_MARK], node_type=Node.INTERP,
+                    title=root_title)
     else:
         root = Node(label=[cfr_part, Node.INTERP_MARK], node_type=Node.INTERP)
     root = interpretations.parse_from_xml(root, xml_nodes)

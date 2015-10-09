@@ -586,10 +586,10 @@ class CompilerTests(TestCase):
         root = self.tree_with_paragraphs()
         change2 = {'action': 'KEEP',
                    'node': Node(text='* * *', label=['205', '2'],
-                            node_type=Node.REGTEXT)}
+                                node_type=Node.REGTEXT)}
         change2a = {'action': 'PUT',
                     'node': Node(text='(a) A Test', label=['205', '2', 'a'],
-                             node_type=Node.REGTEXT)}
+                                 node_type=Node.REGTEXT)}
 
         notice_changes = {'205-2': [change2], '205-2-a': [change2a]}
         reg = compiler.compile_regulation(root, notice_changes)
@@ -608,13 +608,13 @@ class CompilerTests(TestCase):
         root = self.tree_with_paragraphs()
         change2 = {'action': 'PUT',
                    'node': Node(text='n2n2', label=['205', '2'],
-                            node_type=Node.REGTEXT)}
+                                node_type=Node.REGTEXT)}
         change2a = {'action': 'KEEP',
                     'node': Node(text='(a) * * *', label=['205', '2', 'a'],
-                             node_type=Node.REGTEXT)}
+                                 node_type=Node.REGTEXT)}
         change2b = {'action': 'PUT',
                     'node': Node(text='(b) A Test', label=['205', '2', 'b'],
-                             node_type=Node.REGTEXT)}
+                                 node_type=Node.REGTEXT)}
 
         notice_changes = {'205-2': [change2], '205-2-a': [change2a],
                           '205-2-b': [change2b]}
@@ -889,8 +889,8 @@ class CompilerTests(TestCase):
             '205-2-a': [
                 {'action': 'MOVE', 'destination': ['205', '2', 'b']},
                 {'action': 'POST', 'node': Node(text='aaa',
-                                            label=['205', '2', 'a'],
-                                            node_type=Node.REGTEXT)}],
+                                                label=['205', '2', 'a'],
+                                                node_type=Node.REGTEXT)}],
             '205-2-b': [{'action': 'DELETE'}]}
 
         class SortedKeysDict(object):

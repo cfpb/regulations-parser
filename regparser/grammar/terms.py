@@ -1,7 +1,7 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from pyparsing import (
     LineStart, Literal, OneOrMore, Optional, Regex, SkipTo, srange, Suppress,
-    Word, ZeroOrMore, NotAny)
+    Word, ZeroOrMore)
 
 from regparser.grammar import atomic, unified
 from regparser.grammar.utils import DocLiteral, keep_pos, Marker

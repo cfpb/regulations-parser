@@ -121,7 +121,7 @@ class AppendicesTest(TestCase):
         self.assertEqual('2. More content', a2.text.strip())
 
     def test_process_appendix_header_is_paragraph(self):
-        #TODO: fix appendix parser to comply with this test
+        # TODO: fix appendix parser to comply with this test
         xml = u"""
         <APPENDIX>
             <EAR>Pt. 1111, App. A</EAR>
@@ -387,7 +387,8 @@ class AppendicesTest(TestCase):
                          appendices.title_label_pair(title, 'A', '1000'))
 
         title = u'Appendix DC-3(A) to Part 1000'
-        self.assertEqual(('3(A)', 2), appendices.title_label_pair(title, 'DC', '1000'))
+        self.assertEqual(('3(A)', 2),
+                         appendices.title_label_pair(title, 'DC', '1000'))
 
     def test_title_label_pair_parens(self):
         title = u'G-13(A)—Has No parent'
@@ -408,7 +409,9 @@ class AppendicesTest(TestCase):
 
     def test_title_label_pair_roman(self):
         title = u'IX. Sample Page for Statement of Record —1010.102(e)'
-        self.assertEqual(('IX', 2), appendices.title_label_pair(title, 'A', '1010'))
+        self.assertEqual(('IX', 2),
+                         appendices.title_label_pair(title, 'A', '1010'))
+
 
 class AppendixProcessorTest(TestCase):
     def setUp(self):

@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 import logging
 from itertools import takewhile
 import re
@@ -15,12 +15,13 @@ from regparser.layer.key_terms import KeyTerms
 from regparser.tree.depth import markers
 from regparser.tree.depth.derive import derive_depths
 from regparser.tree.paragraph import p_levels
-from regparser.tree.struct import Node, find
+from regparser.tree.struct import Node
 from regparser.tree.xml_parser import tree_utils
 from regparser.tree.xml_parser.interpretations import build_supplement_tree
 from regparser.tree.xml_parser.interpretations import get_app_title
 
 from settings import APPENDIX_IGNORE_SUBHEADER_LABEL
+
 
 def remove_toc(appendix, letter):
     """The TOC at the top of certain appendices gives us trouble since it
@@ -93,7 +94,7 @@ class AppendixProcessor(object):
             lvl, parent = pair
             return (not parent.title
                     or not title_label_pair(parent.title,
-                                self.appendix_letter, self.part))
+                                            self.appendix_letter, self.part))
 
         #   Check if this SOURCE level matches a previous
         for lvl, parent in takewhile(not_known_depth_header,
@@ -106,7 +107,7 @@ class AppendixProcessor(object):
         for lvl, parent in self.m_stack.lineage_with_level():
             if parent.title:
                 pair = title_label_pair(parent.title,
-                        self.appendix_letter, self.part)
+                                        self.appendix_letter, self.part)
                 if pair:
                     return pair[1]
                 else:
@@ -242,7 +243,8 @@ class AppendixProcessor(object):
             if markers:
                 results = derive_depths(markers)
                 if not results or results == []:
-                    logging.warning('Could not derive depth from {}'.format(markers))
+                    logging.warning(
+                        'Could not derive depth from {}'.format(markers))
                     depths = []
                 else:
                     depths = list(reversed(
@@ -253,9 +255,11 @@ class AppendixProcessor(object):
             self.depth += 1
             while nodes:
                 node = nodes.pop()
-                if AppendixProcessor.filler_regex.match(node.label[-1]) or depths == []:
-                    # Not a marker paragraph, or a marker paragraph that isn't actually
-                    # part of a hierarchy (e.g. Appendix C to 1024, notice 2013-28210)
+                if (AppendixProcessor.filler_regex.match(node.label[-1])
+                        or depths == []):
+                    # Not a marker paragraph, or a marker paragraph that isn't
+                    # actually part of a hierarchy (e.g. Appendix C to 1024,
+                    # notice 2013-28210)
                     self.m_stack.add(self.depth, node)
                 else:
                     depth = depths.pop()
@@ -286,7 +290,7 @@ class AppendixProcessor(object):
             return ((tag == 'HD' and (not initial or '.' in initial[1]))
                     or (tag in ('P', 'FP')
                         and title_label_pair(text, self.appendix_letter,
-                            self.part)))
+                                             self.part)))
 
         for child in appendix.getchildren():
             text = tree_utils.get_node_text(child, add_spaces=True).strip()
@@ -328,6 +332,7 @@ _first_period_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*(' + lvl[0] + '\.)')
 
                          for lvl in p_levels]
 
+
 def split_paragraph_text(text):
     """Split text into a root node and its children (if the text contains
     collapsed markers"""
@@ -367,7 +372,9 @@ def parsed_title(text, appendix_letter):
                         + Optional(grammar.paren_upper | grammar.paren_lower)
                         + Optional(grammar.paren_digit))
     part_roman_parser = Marker("part") + grammar.aI
-    parser = LineStart() + (digit_str_parser | part_roman_parser | grammar.roman_upper)
+    parser = LineStart() + (digit_str_parser
+                            | part_roman_parser
+                            | grammar.roman_upper)
 
     for match, _, _ in parser.scanString(text):
         return match
@@ -382,7 +389,7 @@ def title_label_pair(text, appendix_letter, reg_part):
         has_parens = (match.paren_upper or match.paren_lower
                       or match.paren_digit or match.markerless_upper)
         if has_parens:
-            pair =(''.join(match), 2)
+            pair = (''.join(match), 2)
         elif match.a1:
             pair = (match.a1, 2)
         elif match.aI:
@@ -392,12 +399,14 @@ def title_label_pair(text, appendix_letter, reg_part):
 
         if pair is not None and \
                 reg_part in APPENDIX_IGNORE_SUBHEADER_LABEL and \
-                pair[0] in APPENDIX_IGNORE_SUBHEADER_LABEL[reg_part][appendix_letter]:
+                pair[0] in APPENDIX_IGNORE_SUBHEADER_LABEL[reg_part][
+                    appendix_letter]:
             logging.warning("Ignoring subheader label %s of appendix %s",
                             pair[0], appendix_letter)
             pair = None
 
     return pair
+
 
 def initial_marker(text):
     parser = (grammar.paren_upper | grammar.paren_lower | grammar.paren_digit

@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 import os
 import shutil
 import tempfile
@@ -95,7 +95,7 @@ class NoticeBuildTest(TestCase):
         build.settings.FR_NOTICE_OVERRIDES['7878-111'] = {
             'dates': 'new date info',
         }
-        
+
         self.assertEqual(build.build_notice('5', '9292', fr), [{
             'abstract': 'sum sum sum',
             'action': 'actact',
@@ -139,7 +139,8 @@ class NoticeBuildTest(TestCase):
                 <P>Following Content</P>
             </SUPLINF>
         </ROOT>"""
-        notice = {'cfr_parts': ['9292'], 'meta': {'start_page': 100}, 'document_number': '1999-12345'}
+        notice = {'cfr_parts': ['9292'], 'meta': {'start_page': 100},
+                  'document_number': '1999-12345'}
         self.assertEqual(build.process_xml(notice, etree.fromstring(xml)), {
             'cfr_parts': ['9292'],
             'footnotes': {},
@@ -173,7 +174,7 @@ class NoticeBuildTest(TestCase):
             </SUPLINF>
         </ROOT>"""
         notice = {'cfr_parts': ['9292'], 'meta': {'start_page': 210},
-                  'document_number': '1999-12345',}
+                  'document_number': '1999-12345'}
         self.assertEqual(build.process_xml(notice, etree.fromstring(xml)), {
             'cfr_parts': ['9292'],
             'footnotes': {},
@@ -199,12 +200,13 @@ class NoticeBuildTest(TestCase):
         xml = etree.fromstring(xml)
 
         notice = {'cfr_parts': ['902'], 'meta': {'start_page': 10},
-                  'document_number': '1999-12345', 'effective_on': '2002-02-02'}
+                  'document_number': '1999-12345',
+                  'effective_on': '2002-02-02'}
         notice = build.process_xml(notice, xml)
         self.assertEqual('2002-02-02', notice['effective_on'])
 
         notice = {'cfr_parts': ['902'], 'meta': {'start_page': 10},
-                  'document_number': '1999-12345',}
+                  'document_number': '1999-12345'}
         notice = build.process_xml(notice, xml)
         # Uses the date found in the XML
         self.assertEqual('2002-01-01', notice['effective_on'])
@@ -863,5 +865,3 @@ class NoticeBuildTest(TestCase):
 
         result = build.fetch_cfr_parts(notice_xml)
         self.assertEqual(result, ['1002', '1024', '1026'])
-
-

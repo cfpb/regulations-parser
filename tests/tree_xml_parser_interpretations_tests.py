@@ -39,7 +39,7 @@ class InterpretationsTest(TestCase):
         text = u'(b) Some text here.'
         found_marker = interpretations.get_first_interp_marker(text)
         self.assertEqual("b", found_marker)
-        
+
     def test_build_supplement_tree(self):
         """Integration test"""
         xml = """<APPENDIX>
@@ -363,7 +363,7 @@ class InterpretationsTest(TestCase):
         self.assertEqual(0, len(i1i.children))
         self.assertEqual(i1i.text.strip(), "i. iii")
         self.assertEqual(i2.text.strip(), "Howdy Howdy")
-        
+
     def test_process_inner_child_has_citation(self):
         xml = """
         <ROOT>
