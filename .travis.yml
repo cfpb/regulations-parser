@@ -6,6 +6,8 @@ install:
     - pip install -r requirements.txt --use-mirrors
     - pip install -r requirements_test.txt --use-mirrors
     - pip install coveralls
-script: "nosetests --with-cov --cov-report term-missing --cov regparser tests/*.py"
+script:
+    - nosetests --with-cov --cov-report term-missing --cov regparser tests/*.py
+    - flake8 .
 after_success:
     coveralls
