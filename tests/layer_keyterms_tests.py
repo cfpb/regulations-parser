@@ -33,7 +33,9 @@ class LayerKeyTermTest(TestCase):
         node = Node(
             "(1) Act means the Truth in Lending Act (15 U.S.C. 1601 et seq.).",
             label=['1026', '2', 'a', '1'])
-        node.tagged_text = """(1) <E T="03">Act</E> means the Truth in Lending Act (15 U.S.C. 1601 <E T="03">et seq.</E>)."""
+        node.tagged_text = (
+            '(1) <E T="03">Act</E> means the Truth in Lending Act (15 U.S.C. '
+            '1601 <E T="03">et seq.</E>).')
         kt = KeyTerms(None)
         results = kt.process(node)
         self.assertEqual(results, None)

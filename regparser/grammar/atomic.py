@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 """Atomic components; probably shouldn't use these directly"""
 import string
 

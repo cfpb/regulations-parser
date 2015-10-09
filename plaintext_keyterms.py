@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 import re
 
 from pyparsing import Literal
@@ -14,8 +14,8 @@ def generate_key_terms_layer(xml_based_reg_json):
     layer_generator = key_terms.KeyTerms(xml_based_reg_json)
     return layer_generator.build()
 
-#We're not going to use our heuristic to determine key terms for paragraphs
-#this has already properly been done for.
+# We're not going to use our heuristic to determine key terms for paragraphs
+# this has already properly been done for.
 xml_based_reg = api_stub.get_regulation_as_json('/tmp/xtree.json')
 real_key_terms_layer = generate_key_terms_layer(xml_based_reg)
 
@@ -76,7 +76,7 @@ def generate_keyterm(node):
                 not first_sentence.startswith('![')):
             num_words = len(words)
 
-            #key terms are short
+            # key terms are short
             if num_words <= 15:
                 layer_element = {
                     "key_term": first_sentence,
@@ -85,7 +85,7 @@ def generate_keyterm(node):
                 layer[label_id] = [layer_element]
 
 if __name__ == "__main__":
-    #Use the plain text based JSON for the regulation.
+    # Use the plain text based JSON for the regulation.
     tree = api_stub.get_regulation_as_json(
         '/vagrant/data/stub-server/regulation/1005/2013-10604-eregs')
     struct.walk(tree, generate_keyterm)

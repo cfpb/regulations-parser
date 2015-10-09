@@ -1,12 +1,12 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from copy import deepcopy
 
 from lxml import etree
 
 from regparser.notice.diff import DesignateAmendment
 from regparser.notice.util import spaces_then_remove
-from regparser.tree.struct import Node, treeify
-from regparser.tree.xml_parser import interpretations, tree_utils
+from regparser.tree.struct import Node
+from regparser.tree.xml_parser import interpretations
 
 
 def _is_interp_amend(al):

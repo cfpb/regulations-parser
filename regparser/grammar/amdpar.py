@@ -428,7 +428,7 @@ override_label = (
     + ZeroOrMore(Suppress("-") + Word(string.ascii_lowercase + string.digits))
     + Suppress("]")
     ).setParseAction(tokenize_override_ps)
-    
+
 
 #   grammar which captures all of these possibilities
 token_patterns = (

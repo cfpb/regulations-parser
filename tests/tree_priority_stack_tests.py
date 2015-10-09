@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from unittest import TestCase
 
 from regparser.tree.priority_stack import PriorityStack

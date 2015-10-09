@@ -1,4 +1,3 @@
-import re
 from regparser.search import find_start
 
 

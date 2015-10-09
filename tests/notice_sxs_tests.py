@@ -1,6 +1,6 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from lxml import etree
-from regparser.notice.sxs import *
+from regparser.notice import sxs
 from unittest import TestCase
 
 
@@ -18,11 +18,11 @@ class NoticeSxsTests(TestCase):
         </ROOT>"""
         xml = etree.fromstring(xml)
         for l in range(0, 6):
-            self.assertEqual(332, find_page(xml, l, 332))
+            self.assertEqual(332, sxs.find_page(xml, l, 332))
         for l in range(6, 10):
-            self.assertEqual(333, find_page(xml, l, 332))
+            self.assertEqual(333, sxs.find_page(xml, l, 332))
         for l in range(10, 15):
-            self.assertEqual(334, find_page(xml, l, 332))
+            self.assertEqual(334, sxs.find_page(xml, l, 332))
 
     def test_find_section_by_section(self):
         sxs_xml = """
@@ -44,12 +44,11 @@ class NoticeSxsTests(TestCase):
             </SUPLINF>
         </ROOT>""" % sxs_xml
 
-        sxs = etree.fromstring("<ROOT>" + sxs_xml + "</ROOT>")
         #   Must use text field since the nodes are not directly comparable
         sxs_texts = ['Sub Section', 'Content', 'Sub sub section',
                      'This is in an extract', 'Sub Sub Content']
 
-        computed = find_section_by_section(etree.fromstring(full_xml))
+        computed = sxs.find_section_by_section(etree.fromstring(full_xml))
         self.assertEqual(sxs_texts, map(lambda el: el.text, computed))
 
     def test_find_section_by_section_intro_text(self):
@@ -72,7 +71,7 @@ class NoticeSxsTests(TestCase):
         </ROOT>""" % sxs_xml
 
         sxs_texts = ['Section 8675.309 Stuff', 'Content']
-        computed = find_section_by_section(etree.fromstring(full_xml))
+        computed = sxs.find_section_by_section(etree.fromstring(full_xml))
         self.assertEqual(sxs_texts, map(lambda el: el.text, computed))
 
     def test_find_section_by_section_not_present(self):
@@ -86,7 +85,7 @@ class NoticeSxsTests(TestCase):
                 <FTNT>Foot Note</FTNT>
             </SUPLINF>
         </ROOT>"""
-        self.assertEqual([], find_section_by_section(etree.fromstring(
+        self.assertEqual([], sxs.find_section_by_section(etree.fromstring(
             full_xml)))
 
     def test_build_section_by_section(self):
@@ -103,8 +102,8 @@ class NoticeSxsTests(TestCase):
             <P>Content 5</P>
             <FP>Content 6</FP>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 83, '100')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 83, '100')
         self.assertEqual(2, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section Header',
@@ -148,8 +147,8 @@ class NoticeSxsTests(TestCase):
             <FTNT>Content A</FTNT>
             <P>Content 2</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 21, '100')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 21, '100')
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section Header',
@@ -171,8 +170,8 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="HD3">3(q)(4) More Info</HD>
             <P>Content 2</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 2323, '99')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 2323, '99')
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section 99.3 Info',
@@ -199,8 +198,8 @@ class NoticeSxsTests(TestCase):
             <P>Content <SU>99</SU><FTREF />2</P>
             <P>Content <E T="03">Emph</E></P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 939, '99')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 939, '99')
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section 99.3 Info',
@@ -224,8 +223,8 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="HD3">Subheader, Really</HD>
             <P>Content 2</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 765, '99')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 765, '99')
         self.assertEqual(1, len(structures))
         self.assertEqual(structures[0], {
             'title': 'Section 99.3 Something Here',
@@ -257,8 +256,8 @@ class NoticeSxsTests(TestCase):
             <P>Non emph,<E T="03">emph</E>then more.</P>
             <P>This one has an <E T="03">emph</E> with spaces.</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 23, '876')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 23, '876')
         paragraphs = structures[0]['paragraphs']
         self.assertEqual(paragraphs, [
             'This sentence has <em data-original="E-03">emphasis</em>!',
@@ -274,8 +273,8 @@ class NoticeSxsTests(TestCase):
             <P>Are rather complicated</P>
             <FTNT><P><SU>5</SU>Footnote contents</P></FTNT>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 23, '876')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 23, '876')
         sometimes_txt = 'Sometimes <em data-original="E-03">citations</em>'
         self.assertEqual(structures[0]['paragraphs'], [
             sometimes_txt, 'Are rather complicated'
@@ -291,8 +290,8 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="H2">Comments 22(a)-5, 22(a)-6, and 22(b)</HD>
             <P>Content</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 23, '876')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 23, '876')
         self.assertEqual(len(structures), 1)
         self.assertEqual(structures[0]['labels'],
                          ['876-22-a-Interp-5', '876-22-a-Interp-6',
@@ -306,8 +305,8 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="H3">SO DOES THIS! 23(c) continued</HD>
             <P>Content 2</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 23, '876')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 23, '876')
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
         self.assertEqual(struct1['labels'], ['876-23-c'])
@@ -325,8 +324,8 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="H2">SO DOES THIS! 23(c) continued</HD>
             <P>Content 2</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 23, '876')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 23, '876')
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
         self.assertEqual(struct1['labels'], ['876-23-c'])
@@ -344,8 +343,8 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="H2">Appendix B</HD>
             <P>Content 2</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 23, '876')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 23, '876')
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
         self.assertEqual(struct1['labels'], ['876-A', '876-B'])
@@ -363,8 +362,8 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="H2">Off handed comment about 23(c)</HD>
             <P>Content 2</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 23, '876')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 23, '876')
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
         self.assertEqual(struct1['labels'], ['876-23-c-3'])
@@ -382,8 +381,8 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="H3">Off handed comment about 23(c)</HD>
             <P>Content 2</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 23, '876')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 23, '876')
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
         self.assertEqual(struct1['labels'], ['876-23-c-3'])
@@ -400,8 +399,8 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="H3">Off handed comment about section 1111.23</HD>
             <P>Content 2</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 22, '1111')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 22, '1111')
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
         self.assertEqual(struct1['labels'], ['1111-23-c'])
@@ -419,8 +418,8 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="H2">This one's about 24(c)</HD>
             <P>Content 2</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 23, '876')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 23, '876')
         self.assertEqual(len(structures), 2)
         struct1, struct2 = structures
         self.assertEqual(struct1['labels'], ['1111-23-c-3'])
@@ -439,8 +438,8 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="H3">Off handed comment about 23(c)</HD>
             <P>Content 2</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 23, '876')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 23, '876')
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
         self.assertEqual(struct1['labels'], ['876-23-c-3'])
@@ -460,8 +459,8 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="H3">References 31(b)(1)</HD>
             <P>Content 3</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        structures = build_section_by_section(sxs, 23, '876')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        structures = sxs.build_section_by_section(sxs_lst, 23, '876')
         self.assertEqual(len(structures), 1)
         struct1 = structures[0]
         self.assertEqual(struct1['labels'], ['876-31-a', '876-31-b'])
@@ -490,8 +489,9 @@ class NoticeSxsTests(TestCase):
             <HD SOURCE="HD3">Next Section</HD>
             <P>Content 5</P>
         </ROOT>"""
-        sxs = list(etree.fromstring(xml).xpath("/ROOT/*"))
-        title, text_els, sub_sects, remaining = split_into_ttsr(sxs, '1111')
+        sxs_lst = list(etree.fromstring(xml).xpath("/ROOT/*"))
+        title, text_els, sub_sects, remaining = sxs.split_into_ttsr(sxs_lst,
+                                                                    '1111')
         self.assertEqual("Section Header", title.text)
         self.assertEqual(2, len(text_els))
         self.assertEqual("Content 1", text_els[0].text)
@@ -508,62 +508,70 @@ class NoticeSxsTests(TestCase):
     def test_add_spaces_to_title(self):
         """Account for wonky titles without proper spacing"""
         self.assertEqual('Section 101.23 Some Title',
-                         add_spaces_to_title('Section 101.23 Some Title'))
+                         sxs.add_spaces_to_title('Section 101.23 Some Title'))
         self.assertEqual('Section 101.23 Some Title',
-                         add_spaces_to_title('Section 101.23Some Title'))
+                         sxs.add_spaces_to_title('Section 101.23Some Title'))
         self.assertEqual('Section 101.23:Some Title',
-                         add_spaces_to_title('Section 101.23:Some Title'))
+                         sxs.add_spaces_to_title('Section 101.23:Some Title'))
         self.assertEqual('Appendix A-Some Title',
-                         add_spaces_to_title('Appendix A-Some Title'))
-        self.assertEqual('Comment 29(b)(1)-1 Some Title',
-                         add_spaces_to_title('Comment 29(b)(1)-1Some Title'))
+                         sxs.add_spaces_to_title('Appendix A-Some Title'))
+        self.assertEqual(
+            'Comment 29(b)(1)-1 Some Title',
+            sxs.add_spaces_to_title('Comment 29(b)(1)-1Some Title'))
 
     def test_parse_into_labels(self):
         self.assertEqual(["101-22"],
-                         parse_into_labels("Section 101.22Stuff", "101"))
+                         sxs.parse_into_labels("Section 101.22Stuff", "101"))
         self.assertEqual(["101-22-d"],
-                         parse_into_labels("22(d) Content", "101"))
+                         sxs.parse_into_labels("22(d) Content", "101"))
         self.assertEqual(["101-22-d-5"],
-                         parse_into_labels("22(d)(5) Content", "101"))
+                         sxs.parse_into_labels("22(d)(5) Content", "101"))
         self.assertEqual(["101-22-d-5-x"],
-                         parse_into_labels("22(d)(5)(x) Content", "101"))
-        self.assertEqual(["101-22-d-5-x"],
-                         parse_into_labels(u"§ 101.22(d)(5)(x) Content",
-                                           "101"))
-        self.assertEqual(["101-22-d-5-x-Q"],
-                         parse_into_labels("22(d)(5)(x)(Q) Content", "101"))
+                         sxs.parse_into_labels("22(d)(5)(x) Content", "101"))
+        self.assertEqual(
+            ["101-22-d-5-x"],
+            sxs.parse_into_labels(u"§ 101.22(d)(5)(x) Content", "101"))
+        self.assertEqual(
+            ["101-22-d-5-x-Q"],
+            sxs.parse_into_labels("22(d)(5)(x)(Q) Content", "101"))
         self.assertEqual(["101-A"],
-                         parse_into_labels("Appendix A Heading", "101"))
-        self.assertEqual(["101-21-c-Interp-1"],
-                         parse_into_labels("Comment 21(c)-1 Heading", "101"))
+                         sxs.parse_into_labels("Appendix A Heading", "101"))
+        self.assertEqual(
+            ["101-21-c-Interp-1"],
+            sxs.parse_into_labels("Comment 21(c)-1 Heading", "101"))
         text = u'Official Interpretations of § 101.33(c)(2)'
         self.assertEqual(['101-33-c-2-Interp'],
-                         parse_into_labels(text, '101'))
+                         sxs.parse_into_labels(text, '101'))
         text = 'Comments 33(a)-8 and 33(a)-9'
         self.assertEqual(['101-33-a-Interp-8', '101-33-a-Interp-9'],
-                         parse_into_labels(text, '101'))
+                         sxs.parse_into_labels(text, '101'))
 
-        self.assertEqual([],
-                         parse_into_labels("Application of this rule", "101"))
+        self.assertEqual(
+            [],
+            sxs.parse_into_labels("Application of this rule", "101"))
         text = 'Section 1111.39Content content 1111.39(d) Exeptions'
         self.assertEqual(['1111-39', '1111-39-d'],
-                         parse_into_labels(text, '101'))
+                         sxs.parse_into_labels(text, '101'))
 
         text = "Appendix H—Closed-End Model Forms and Clauses-7(i)"
-        self.assertEqual(['101-H'], parse_into_labels(text, '101'))
+        self.assertEqual(['101-H'], sxs.parse_into_labels(text, '101'))
 
     def test_is_child_of(self):
         parent = """<HD SOURCE="H2">Section 22.1</HD>"""
         parent = etree.fromstring(parent)
 
         child = """<P>Something</P>"""
-        self.assertTrue(is_child_of(etree.fromstring(child), parent, '1111'))
+        self.assertTrue(
+            sxs.is_child_of(etree.fromstring(child), parent, '1111'))
 
         child = """<HD SOURCE="H3">Something</HD>"""
-        self.assertTrue(is_child_of(etree.fromstring(child), parent, '1111'))
+        self.assertTrue(
+            sxs.is_child_of(etree.fromstring(child), parent, '1111'))
 
         child = """<HD SOURCE="H1">Section 22.2</HD>"""
-        self.assertFalse(is_child_of(etree.fromstring(child), parent, '1111'))
+        self.assertFalse(
+            sxs.is_child_of(etree.fromstring(child), parent, '1111'))
 
         child = """<HD SOURCE="H2">Header without Citation</HD>"""
-        self.assertTrue(is_child_of(etree.fromstring(child), parent, '1111'))
+        self.assertTrue(
+            sxs.is_child_of(etree.fromstring(child), parent, '1111'))

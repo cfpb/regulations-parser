@@ -1,8 +1,8 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from unittest import TestCase
 
+from regparser.tree import build
 from regparser.tree.struct import Node, NodeEncoder
-from regparser.tree.build import *
 
 
 class TreeBuildTest(TestCase):
@@ -12,7 +12,7 @@ class TreeBuildTest(TestCase):
         text += "This has 201.44 in it. But also 203.33\n"
         text += "But then, 201.33 returns."
 
-        self.assertEqual(202, find_cfr_part(text))
+        self.assertEqual(202, build.find_cfr_part(text))
 
     def test_build_whole_regtree(self):
         """Integration test for the plain-text regulation tree parser"""
@@ -31,11 +31,10 @@ class TreeBuildTest(TestCase):
         text += "1. Commentary 1\n"
         text += "2. Commentary 2\n"
 
-        node201 = Node("\n", label=['200', '1'],
-                       title=u"§ 200.1 First section.", children=[
-                           Node(u"(a) First par\n", label=["200", "1", "a"]),
-                           Node(u"(b) Second par\n", label=["200", "1", "b"])
-                       ])
+        node201 = Node(
+            "\n", label=['200', '1'], title=u"§ 200.1 First section.",
+            children=[Node(u"(a) First par\n", label=["200", "1", "a"]),
+                      Node(u"(b) Second par\n", label=["200", "1", "b"])])
         node202 = Node("\nContent without sub pars\n", label=["200", "2"],
                        title=u"§ 200.2 Second section.")
         nodeA = Node(
@@ -65,18 +64,16 @@ class TreeBuildTest(TestCase):
                          Node('\n', label=['200', '2', 'a', '5',
                                            Node.INTERP_MARK],
                               node_type=Node.INTERP, title='2(a)(5) First par',
-                              children=[nodeI1, nodeI2])
-                     ])
+                              children=[nodeI1, nodeI2])])
             ]
         )
         nodeEP = Node('', label=['200', 'Subpart'], title='',
                       children=[node201, node202], node_type=Node.EMPTYPART)
 
-        res = build_whole_regtree(text)
         #   Convert to JSON so we can ignore some unicode issues
         enc = NodeEncoder(sort_keys=True)
         self.assertEqual(
-            enc.encode(build_whole_regtree(text)),
+            enc.encode(build.build_whole_regtree(text)),
             enc.encode(Node("\n", label=["200"], title="PART 200-Regulation Q",
                             children=[nodeEP, nodeA, nodeI]))
         )
@@ -98,11 +95,10 @@ class TreeBuildTest(TestCase):
         nodeEP = Node('', label=['200', 'Subpart'], title='',
                       children=[node200_1], node_type=Node.EMPTYPART)
 
-        res = build_whole_regtree(text)
         #   Convert to JSON so we can ignore some unicode issues
         enc = NodeEncoder(sort_keys=True)
         self.assertEqual(
-            enc.encode(build_whole_regtree(text)),
+            enc.encode(build.build_whole_regtree(text)),
             enc.encode(Node("\n", label=["200"], title="PART 200-Regulation Q",
                             children=[nodeEP, nodeA]))
         )
