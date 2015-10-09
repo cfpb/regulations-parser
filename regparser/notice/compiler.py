@@ -10,7 +10,7 @@ import logging
 from lxml import etree
 
 from regparser.grammar.tokens import Verb
-from regparser.tree.struct import Node, find, walk
+from regparser.tree.struct import Node, find
 from regparser.tree.xml_parser import interpretations
 from regparser.tree.xml_parser import tree_utils
 from regparser.utils import roman_nums
@@ -268,7 +268,8 @@ class RegulationTree(object):
             parent = self.get_parent(node)
 
         if parent is None:
-            logging.warning('No existing parent for {0}'.format(node.label_id()))
+            logging.warning(
+                'No existing parent for {0}'.format(node.label_id()))
             parent = self.create_empty_node(get_parent_label(node))
 
         prev_idx = [idx for idx, c in enumerate(parent.children)
@@ -372,12 +373,12 @@ class RegulationTree(object):
 
         existing = find(self.tree, node.label_id())
         if existing and is_reserved_node(existing):
-            logging.warning('Replacing reserved node: {0}'.format(node.label_id()))
+            logging.warning(
+                'Replacing reserved node: {0}'.format(node.label_id()))
             self.replace_node_and_subtree(node)
         else:
             subpart = find(self.tree, '-'.join(subpart_label))
             subpart.children = self.add_child(subpart.children, node)
-
 
     def replace_node_text(self, label, change):
         """ Replace just a node's text. """
@@ -397,7 +398,8 @@ class RegulationTree(object):
         node = find(self.tree, label)
         node.text = replace_first_sentence(node.text, change['node'].text)
 
-        if hasattr(node, 'tagged_text') and change['node'].tagged_text is not None:
+        if (hasattr(node, 'tagged_text')
+                and change['node'].tagged_text is not None):
             node.tagged_text = replace_first_sentence(
                 node.tagged_text, change['node'].tagged_text)
 
@@ -502,7 +504,7 @@ def one_change(reg, label, change):
     if 'node' in change:
         try:
             change['node'].source_xml = etree.fromstring(
-                    change['node'].source_xml)
+                change['node'].source_xml)
         except ValueError:
             pass
 
@@ -559,9 +561,9 @@ def compile_regulation(previous_tree, notice_changes):
     reg_part = previous_tree.label[0]
     labels = filter(lambda l: l.split('-')[0] == reg_part, labels)
 
-    next_pass = [(label, change)
-                 for label in labels
-                 for change in notice_changes[label]]
+    next_pass = [(l, change)
+                 for l in labels
+                 for change in notice_changes[l]]
     pass_len = len(next_pass) + 1
 
     reg.keep(l for l, change in next_pass if change['action'] == Verb.KEEP)

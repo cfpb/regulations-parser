@@ -181,20 +181,24 @@ def build_from_section(reg_part, section_xml):
     nodes = []
 
     section_no = section_xml.xpath('SECTNO')[0].text
-    section_no_without_marker = re.search('[0-9]+\.[0-9]+', section_no).group(0)
+    section_no_without_marker = re.search('[0-9]+\.[0-9]+',
+                                          section_no).group(0)
     subject_xml = section_xml.xpath('SUBJECT')
     if not subject_xml:
         subject_xml = section_xml.xpath('RESERVED')
     subject_text = subject_xml[0].text
 
     manual_hierarchy = []
-    if reg_part in PARAGRAPH_HIERARCHY and section_no_without_marker in PARAGRAPH_HIERARCHY[reg_part]:
-        manual_hierarchy = PARAGRAPH_HIERARCHY[reg_part][section_no_without_marker]
+    if (reg_part in PARAGRAPH_HIERARCHY
+            and section_no_without_marker in PARAGRAPH_HIERARCHY[reg_part]):
+        manual_hierarchy = PARAGRAPH_HIERARCHY[reg_part][
+            section_no_without_marker]
 
     # Collect paragraph markers and section text (intro text for the
     # section)
     i = 0
-    children = [ch for ch in section_xml.getchildren() if ch.tag in ['P', 'STARS']]
+    children = [ch for ch in section_xml.getchildren()
+                if ch.tag in ['P', 'STARS']]
     for ch in children:
         text = tree_utils.get_node_text(ch, add_spaces=True)
         tagged_text = tree_utils.get_node_text_tags_preserved(ch)
@@ -204,7 +208,7 @@ def build_from_section(reg_part, section_xml):
         # hierarchy mode, just constructed from the XML instead of
         # specified in configuration.
         # This presumes that every child in the section has DEPTH
-        # specified, if not, things will break in and around 
+        # specified, if not, things will break in and around
         # derive_depths below.
         if ch.get("depth") is not None:
             manual_hierarchy.append(int(ch.get("depth")))
@@ -212,25 +216,26 @@ def build_from_section(reg_part, section_xml):
         if ch.tag == 'STARS':
             nodes.append(Node(label=[mtypes.STARS_TAG]))
         elif not markers_list and manual_hierarchy:
-            # is this a bunch of definitions that don't have numbers next to them?
+            # is this a bunch of definitions that don't have numbers next to
+            # them?
             if len(nodes) > 0:
-                if (subject_text.find('Definitions.') > -1 or \
-                        nodes[-1].text.find('For the purposes of this section')):
-                    #TODO: create a grammar for definitions
+                if (subject_text.find('Definitions.') > -1
+                        or nodes[-1].text.find(
+                            'For the purposes of this section')):
+                    # TODO: create a grammar for definitions
                     if text.find('means') > -1:
                         def_marker = text.split('means')[0].strip().split()
-                        def_marker = ''.join([word[0].upper() + word[1:] 
-                            for word in def_marker])
+                        def_marker = ''.join([word[0].upper() + word[1:]
+                                              for word in def_marker])
                     elif text.find('shall have the same meaning') > -1:
                         def_marker = text.split('shall')[0].strip().split()
-                        def_marker = ''.join([word[0].upper() + word[1:] 
-                            for word in def_marker])
+                        def_marker = ''.join([word[0].upper() + word[1:]
+                                              for word in def_marker])
                     else:
                         def_marker = 'def{0}'.format(i)
                         i += 1
                     n = Node(text, label=[def_marker], source_xml=ch)
                     n.tagged_text = tagged_text
-                    #nodes[-1].children.append(n)
                     nodes.append(n)
                 else:
                     section_texts.append((text, tagged_text))
@@ -266,7 +271,7 @@ def build_from_section(reg_part, section_xml):
     # Use constraint programming to figure out possible depth assignments
     if not manual_hierarchy:
         depths = derive_depths(
-            [n.label[0] for n in nodes],
+            [node.label[0] for node in nodes],
             [rules.depth_type_order([mtypes.lower, mtypes.ints, mtypes.roman,
                                      mtypes.upper, mtypes.em_ints,
                                      mtypes.em_roman])])
@@ -299,21 +304,24 @@ def build_from_section(reg_part, section_xml):
                     node.marker = marker
                 last = m_stack.peek()
                 node.label = [l.replace('<E T="03">', '').replace('</E>', '')
-                                  for l in node.label]
+                              for l in node.label]
                 if len(last) == 0:
                     m_stack.push_last((1 + depth, node))
                 else:
                     m_stack.add(1 + depth, node)
         else:
-            logging.error('Manual hierarchy length does not match node list length!'
-                          ' ({0} nodes but {1} provided)'.format(len(nodes), len(depths)))
+            logging.error(
+                'Manual hierarchy length does not match node list length! '
+                '({0} nodes but {1} provided)'.format(len(nodes), len(depths)))
 
     elif nodes and not manual_hierarchy:
-        logging.warning('Could not determine depth when parsing {0}:\n{1}'.format(section_no_without_marker, [n.label[0] for n in nodes]))
+        logging.warning(
+            'Could not determine depth when parsing {0}:\n{1}'.format(
+                section_no_without_marker, [node.label[0] for node in nodes]))
         for node in nodes:
             last = m_stack.peek()
             node.label = [l.replace('<E T="03">', '').replace('</E>', '')
-                                  for l in node.label]
+                          for l in node.label]
             if len(last) == 0:
                 m_stack.push_last((3, node))
             else:
@@ -343,7 +351,8 @@ def build_from_section(reg_part, section_xml):
         section_text = ' '.join([section_xml.text] + plain_sect_texts)
         tagged_section_text = ' '.join([section_xml.text] + tagged_sect_texts)
 
-        sect_node = Node(section_text, label=[reg_part, section_number], title=section_title)
+        sect_node = Node(section_text, label=[reg_part, section_number],
+                         title=section_title)
         sect_node.tagged_text = tagged_section_text
 
         m_stack.add_to_bottom((1, sect_node))
