@@ -122,7 +122,7 @@ def is_title(xml_node):
                                force_start=True)))
 
 
-def process_inner_children(inner_stack, xml_node):
+def process_inner_children(inner_stack, xml_node, parent=None):
     """Process the following nodes as children of this interpretation. This
     is very similar to reg_text.py:build_from_section()"""
     # manual hierarchy should work here too
@@ -164,17 +164,21 @@ def process_inner_children(inner_stack, xml_node):
             n.tagged_text = text_with_tags
             nodes.append(n)
 
-        elif not first_marker and nodes and not manual_hierarchy:
+        elif not first_marker and not manual_hierarchy:
             logging.warning("Couldn't determine interp marker. Appending to "
                             "previous paragraph: %s", node_text)
                     
-            previous = nodes[-1]
+            if nodes:
+                previous = nodes[-1]
+            else:
+                previous = parent
+
             previous.text += "\n\n" + node_text
             if hasattr(previous, 'tagged_text'):
                 previous.tagged_text += "\n\n" + text_with_tags
             else:
                 previous.tagged_text = text_with_tags
-            
+
         else:
             collapsed = collapsed_markers_matches(node_text, text_with_tags)
 
@@ -310,7 +314,7 @@ def parse_from_xml(root, xml_nodes):
                         title=text.strip())
             inner_stack.add(2, node)
 
-            process_inner_children(inner_stack, ch)
+            process_inner_children(inner_stack, ch, parent=node)
 
             while inner_stack.size() > 1:
                 inner_stack.unwind()
