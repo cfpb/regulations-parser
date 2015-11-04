@@ -306,7 +306,8 @@ def build_from_section(reg_part, section_xml):
                     m_stack.add(1 + depth, node)
         else:
             logging.error('Manual hierarchy length does not match node list length!'
-                          ' ({0} nodes but {1} provided)'.format(len(nodes), len(depths)))
+                          ' ({0} nodes but {1} provided, {2})'.format(
+                              len(nodes), len(depths), [n.label[0] for n in nodes]))
 
     elif nodes and not manual_hierarchy:
         logging.warning('Could not determine depth when parsing {0}:\n{1}'.format(section_no_without_marker, [n.label[0] for n in nodes]))

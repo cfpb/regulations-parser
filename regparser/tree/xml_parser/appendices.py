@@ -176,6 +176,7 @@ class AppendixProcessor(object):
             # else:
             node = Node(mtext, node_type=Node.APPENDIX,
                         label=[initial_marker(mtext)[0]])
+            node.tagged_text = tagged_text
             self.nodes.append(node)
 
     def paragraph_no_marker(self, text):
