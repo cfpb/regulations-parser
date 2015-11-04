@@ -6,6 +6,10 @@ import logging
 import hashlib
 import codecs
 
+import sys
+reload(sys)
+sys.setdefaultencoding('UTF8')
+
 try:
     import requests_cache
     requests_cache.install_cache('fr_cache')
@@ -137,12 +141,12 @@ def generate_xml(filename, title, act_title, act_section, notice_doc_numbers,
     act_title_and_section = [act_title, act_section]
     #   First, the regulation tree
 
-    print filename, title, act_title_and_section
-
     reg_tree, builder = tree_and_builder(filename, title,
                                          checkpoint, writer_type='XML')
     layer_cache = LayerCacheAggregator()
     layers = builder.generate_layers(reg_tree, act_title_and_section, layer_cache)
+
+    print layers.keys()
 
     # builder.write_notices()
 

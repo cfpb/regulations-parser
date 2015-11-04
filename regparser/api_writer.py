@@ -2,6 +2,8 @@ import os
 import os.path
 import shutil
 import hashlib
+import re
+import pdb
 
 from git import Repo
 from git.exc import InvalidGitRepositoryError
@@ -192,7 +194,7 @@ class XMLWriteContent:
                 repl_target = repl_text.split(':')[1]
                 a = repl_target.encode('utf-8')
                 b = replacement.encode('utf-8')
-                replacement = '<ref target="{}">'.format(a) + b + '</ref>'
+                replacement = '<ref target="{}" reftype="term">'.format(a) + b + '</ref>'
                 replacement_texts.append(replacement)
 
         return replacement_offsets, replacement_texts
@@ -264,14 +266,69 @@ class XMLWriteContent:
 
         return [offset], [replacement_text]
 
+    @staticmethod
+    def apply_graphics(graphics_layer):
+
+        graphics_elements = []
+        # graphics is a special layer because it's not inlined
+        for graphic in graphics_layer:
+            graphic_elem = Element('graphic')
+            alt_text_elem = SubElement(graphic_elem, 'altText')
+            text_elem = SubElement(graphic_elem, 'text')
+            url_elem = SubElement(graphic_elem, 'url')
+
+            alt_text_elem.text = graphic['alt']
+            text_elem.text = graphic['text']
+            url_elem.text = graphic['url']
+            if 'thumb_url' in graphic:
+                thumb_url_elem = SubElement(graphic_elem, 'thumbUrl')
+                thumb_url_elem.text = graphic['thumb_url']
+
+            graphics_elements.append(graphic_elem)
+
+        return graphics_elements
 
     @staticmethod
-    def apply_keyterms():
+    def apply_keyterms(text, replacements):
         pass
 
     @staticmethod
-    def apply_formatting():
-        pass
+    def apply_formatting(replacements):
+
+        # format_elements = []
+        replacement_texts = []
+        replacement_offsets = []
+        for repl in replacements:
+            if 'dash_data' in repl:
+                text = repl['dash_data']['text'] + '<dash/>'
+                offset = repl['locations'][0]
+                replacement_offsets.append([offset, offset + len(text)])
+                replacement_texts.append(text)
+            elif 'table_data' in repl:
+                text = '<table><header>'
+                table_data = repl['table_data']
+                header = table_data['header']
+                if len(header) > 0:
+                    for header_row in header:
+                        text += '<columnHeaderRow>'
+                        for col in header_row:
+                            text += '<column colspan="{}" rowspan="{}">'.format(col['colspan'], col['rowspan'])
+                            text += col['text'] + '</column>'
+                        text += '</columnHeaderRow>'
+                text += '</header>'
+                rows = table_data['rows']
+                for row in rows:
+                    text += '<row>'
+                    for item in row:
+                        text += '<cell>' + item + '</cell>'
+                    text += '</row>'
+                text += '</table>'
+
+                offset = repl['locations'][0]
+                replacement_offsets.append([offset, offset + len(text)])
+                replacement_texts.append(text)
+
+        return replacement_offsets, replacement_texts
 
     def fdsys(self, reg_number, date='2012-01-01', orig_date='2012-01-01'):
         meta = self.layers['meta'][reg_number][0]
@@ -343,6 +400,8 @@ class XMLWriteContent:
             if root.node_type != "emptypart":
                 title = SubElement(elem, 'title')
                 title.text = root.title
+            if len(root.label) == 3:
+                elem.set('subpartLetter', root.label[-1])
             toc = XMLWriteContent.toc_to_xml(self.layers['toc'][root.label_id()])
             elem.append(toc)
             content = SubElement(elem, 'content')
@@ -437,15 +496,40 @@ class XMLWriteContent:
                 title = SubElement(elem, 'title')
                 title.text = root.title
             text = self.apply_layers(root)
+            if text.startswith('!'):
+                text = ''
             content = fromstring('<content>' + text + '</content>')
+            # graphics are special since they're not really inlined
+            if root.label_id() in self.layers['graphics']:
+                graphics = XMLWriteContent.apply_graphics(self.layers['graphics'][root.label_id()])
+                for graphic in graphics:
+                    content.append(graphic)
             elem.append(content)
         else:
-            elem = Element('paragraph', label=root.label_id(), marker=root.label[-1])
+            try:
+                marker_item = self.layers['paragraph-markers'][root.label_id()]
+                marker = marker_item[0]['text']
+            except KeyError:
+                marker = ''
+            elem = Element('paragraph', label=root.label_id(), marker=marker)
             if root.title:
                 title = SubElement(elem, 'title')
                 title.text = root.title
+            else:
+                if root.label_id() in self.layers['keyterms']:
+                    # keyterm is not an inline layer
+                    keyterm = self.layers['keyterms'][root.label_id()][0]['key_term']
+                    title = SubElement(elem, 'title', attrib={'type': 'keyterm'})
+                    title.text = keyterm
             text = self.apply_layers(root)
+            if text.startswith('!'):
+                text = ''
             content = fromstring('<content>' + text + '</content>')
+            # graphics are special since they're not really inlined
+            if root.label_id() in self.layers['graphics']:
+                graphics = XMLWriteContent.apply_graphics(self.layers['graphics'][root.label_id()])
+                for graphic in graphics:
+                    content.append(graphic)
             elem.append(content)
 
         if len(root.label) > 1 and ('Subpart' not in root.label):
@@ -476,6 +560,10 @@ class XMLWriteContent:
                     offsets, repls = XMLWriteContent.apply_definitions(text, replacements)
                 elif ident == 'external-citations':
                     offsets, repls = XMLWriteContent.apply_external_citations(text, replacements)
+                elif ident == 'formatting':
+                    offsets, repls = XMLWriteContent.apply_formatting(replacements)
+                #elif ident == 'graphics':
+                #    offsets, repls = XMLWriteContent.apply_graphics(text, replacements)
                 else:
                     offsets = []
                     repls = []
@@ -489,9 +577,14 @@ class XMLWriteContent:
             offsets_and_repls = sorted(offsets_and_repls, key=lambda x: x[0][0])
             all_offsets, all_replacements = zip(*offsets_and_repls)
 
+            # remove the table text
+            if re.search('\|*\|', text):
+                text = ''
+
             text = interpolate_string(text, all_offsets, all_replacements).strip()
 
         return text
+
 
 class Client:
     """A Client for writing regulation(s) and meta data."""
