@@ -1,5 +1,5 @@
-#vim: set encoding=utf-8
-from regparser.tree.appendix.carving import *
+# vim: set encoding=utf-8
+from regparser.tree.appendix import carving
 from unittest import TestCase
 
 
@@ -9,9 +9,9 @@ class DepthAppendixCarvingTest(TestCase):
         text = "Some \nAppendix C to Part 111 Other\n\n "
         text += "Thing Appendix A to Part 111"
         text += "\nAppendix B to Part 111"
-        self.assertEqual(6, find_appendix_start(text))
-        self.assertEqual(59, find_appendix_start(text[7:]))
-        self.assertEqual(None, find_appendix_start(text[7 + 60:]))
+        self.assertEqual(6, carving.find_appendix_start(text))
+        self.assertEqual(59, carving.find_appendix_start(text[7:]))
+        self.assertEqual(None, carving.find_appendix_start(text[7 + 60:]))
 
     def test_find_next_appendix_offsets(self):
         sect1 = "Some \n"
@@ -21,12 +21,12 @@ class DepthAppendixCarvingTest(TestCase):
         supp += "Interpretations about appendix Q"
         self.assertEqual(
             (len(sect1), len(sect1 + appa)),
-            find_next_appendix_offsets(sect1 + appa))
+            carving.find_next_appendix_offsets(sect1 + appa))
         self.assertEqual(
             (len(sect1), len(sect1 + appa)),
-            find_next_appendix_offsets(sect1 + appa + appb))
+            carving.find_next_appendix_offsets(sect1 + appa + appb))
         self.assertEqual(
-            (0, len(appa)), find_next_appendix_offsets(appa + supp))
+            (0, len(appa)), carving.find_next_appendix_offsets(appa + supp))
 
     def test_appendices(self):
         sect1 = "Some \n"
@@ -35,7 +35,7 @@ class DepthAppendixCarvingTest(TestCase):
         supp = "Supplement I The Interpretations\n\nAppendix Q\n"
         supp += "Interpretations about appendix Q"
 
-        apps = appendices(sect1 + appa + appb + supp)
+        apps = carving.appendices(sect1 + appa + appb + supp)
         self.assertEqual(2, len(apps))
         self.assertEqual((len(sect1), len(sect1+appa)), apps[0])
         self.assertEqual((len(sect1+appa), len(sect1+appa+appb)), apps[1])
@@ -43,10 +43,10 @@ class DepthAppendixCarvingTest(TestCase):
     def test_find_appendix_section_start(self):
         """Only find appendix sections that start a line"""
         text = "Some \nA-4--Section here\nB-99--Section C-3 here\nContent"
-        self.assertEqual(6, find_appendix_section_start(text, 'A'))
-        self.assertEqual(24, find_appendix_section_start(text, 'B'))
-        self.assertEqual(None, find_appendix_section_start(text, 'C'))
-        self.assertEqual(None, find_appendix_section_start(text, 'D'))
+        self.assertEqual(6, carving.find_appendix_section_start(text, 'A'))
+        self.assertEqual(24, carving.find_appendix_section_start(text, 'B'))
+        self.assertEqual(None, carving.find_appendix_section_start(text, 'C'))
+        self.assertEqual(None, carving.find_appendix_section_start(text, 'D'))
 
     def test_find_next_appendix_section_offsets(self):
         head = "More\n"
@@ -54,9 +54,9 @@ class DepthAppendixCarvingTest(TestCase):
         a8 = "A-8--A Title\nBody body\nbody body text\ntext text"
         self.assertEqual(
             (len(head), len(head + a5)),
-            find_next_appendix_section_offsets(head + a5 + a8, 'A'))
+            carving.find_next_appendix_section_offsets(head + a5 + a8, 'A'))
         self.assertEqual(
-            (0, len(a8)), find_next_appendix_section_offsets(a8, 'A'))
+            (0, len(a8)), carving.find_next_appendix_section_offsets(a8, 'A'))
 
     def test_appendix_sections(self):
         head = "More\n"
@@ -64,7 +64,7 @@ class DepthAppendixCarvingTest(TestCase):
         a8 = "A-8--A Title\nBody body\nbody body text\ntext text\n"
         a20 = "A-20--More content\nBody body"
         text = head + a5 + a8 + a20
-        offsets = appendix_sections(text, 'A')
+        offsets = carving.appendix_sections(text, 'A')
         self.assertEqual(3, len(offsets))
         self.assertEqual(a5, text[offsets[0][0]:offsets[0][1]])
         self.assertEqual(a8, text[offsets[1][0]:offsets[1][1]])
@@ -72,16 +72,20 @@ class DepthAppendixCarvingTest(TestCase):
 
     def test_get_appendix_letter(self):
         self.assertEqual(
-            "A", get_appendix_letter("Appendix A to Part 511", 511))
+            "A", carving.get_appendix_letter("Appendix A to Part 511", 511))
         self.assertEqual(
-            "ZQR", get_appendix_letter("Appendix ZQR to Part 10101", 10101))
+            "ZQR",
+            carving.get_appendix_letter("Appendix ZQR to Part 10101", 10101))
 
     def test_get_appendix_section_number(self):
         self.assertEqual(
-            "2", get_appendix_section_number("A-2--Title Stuff", 'A'))
+            "2", carving.get_appendix_section_number("A-2--Title Stuff", 'A'))
         self.assertEqual(
-            "50", get_appendix_section_number("QQ-50--Title Stuff", 'QQ'))
+            "50",
+            carving.get_appendix_section_number("QQ-50--Title Stuff", 'QQ'))
         self.assertEqual(
-            "21(b)", get_appendix_section_number(u"A-21(b)—A Model form", 'A'))
+            "21(b)",
+            carving.get_appendix_section_number(u"A-21(b)—A Model form", 'A'))
         self.assertEqual(
-            "21(B)", get_appendix_section_number(u"A-21(B)—A Model form", 'A'))
+            "21(B)",
+            carving.get_appendix_section_number(u"A-21(B)—A Model form", 'A'))

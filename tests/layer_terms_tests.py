@@ -102,32 +102,34 @@ class LayerTermTest(TestCase):
             u'the next one does']
 
         xml_defs = [
-                (u'(4) Thing means a thing that is defined',
-                    u'(4) <E T="03">Thing</E> means a thing that is defined',
-                    Ref('thing', 'eee', (4, 9))),
-                (u'(e) Well-meaning lawyers means people who do weird things',
-                    u'(e) <E T="03">Well-meaning lawyers</E> means people who do '
-                    + 'weird things',
-                    Ref('well-meaning lawyers', 'fff', (4, 24))),
-                (u'(e) Words have the same meaning as in a dictionary',
-                    u'(e) <E T="03">Words</E> have the same meaning as in a '
-                    + 'dictionary',
-                    Ref('words', 'ffg', (4, 9))),
-                (u'(e) Banana has the same meaning as bonono',
-                    u'(e) <E T="03">Banana</E> has the same meaning as bonono',
-                    Ref('banana', 'fgf', (4, 10))),
-                (u'(f) Huge billowy clouds means I want to take a nap',
-                    u'(f) <E T="03">Huge billowy clouds</E> means I want to take a '
-                    + 'nap',
-                    Ref('huge billowy clouds', 'ggg', (4, 23))),
-                (u'(v) Lawyers, in relation to coders, means something very different',
-                    u'(v) <E T="03">Lawyers</E>, in relation to coders, means something very different',
-                    Ref(u'lawyers', '', (4, 11))),
+            (u'(4) Thing means a thing that is defined',
+             u'(4) <E T="03">Thing</E> means a thing that is defined',
+             Ref('thing', 'eee', (4, 9))),
+            (u'(e) Well-meaning lawyers means people who do weird things',
+             u'(e) <E T="03">Well-meaning lawyers</E> means people who do '
+             u'weird things',
+             Ref('well-meaning lawyers', 'fff', (4, 24))),
+            (u'(e) Words have the same meaning as in a dictionary',
+             u'(e) <E T="03">Words</E> have the same meaning as in a '
+             u'dictionary',
+             Ref('words', 'ffg', (4, 9))),
+            (u'(e) Banana has the same meaning as bonono',
+             u'(e) <E T="03">Banana</E> has the same meaning as bonono',
+             Ref('banana', 'fgf', (4, 10))),
+            (u'(f) Huge billowy clouds means I want to take a nap',
+             u'(f) <E T="03">Huge billowy clouds</E> means I want to take a '
+             u'nap',
+             Ref('huge billowy clouds', 'ggg', (4, 23))),
+            (u'(v) Lawyers, in relation to coders, means something very '
+             u'different',
+             u'(v) <E T="03">Lawyers</E>, in relation to coders, means '
+             u'something very different',
+             Ref(u'lawyers', '', (4, 11))),
             ]
 
         xml_no_defs = [
             (u'(d) Term1 or term2 means stuff',
-             u'(d) <E T="03">Term1</E> or <E T="03">term2></E> means stuff'),]
+             u'(d) <E T="03">Term1</E> or <E T="03">term2></E> means stuff')]
 
         scope_term_defs = [
             ('For purposes of this section, the term blue means the color',

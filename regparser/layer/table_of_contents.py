@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from layer import Layer
 from regparser.tree.struct import Node
 

@@ -6,7 +6,8 @@ from unittest import TestCase
 
 from mock import patch
 
-from regparser.api_writer import *
+from regparser.api_writer import (
+    APIWriteContent, Client, FSWriteContent, GitWriteContent, Repo)
 from regparser.tree.struct import Node
 from regparser.notice.diff import Amendment, DesignateAmendment
 import settings

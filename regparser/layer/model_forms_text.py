@@ -2,7 +2,7 @@ import string
 
 from regparser.layer.key_terms import KeyTerms
 from regparser.layer.layer import Layer
-from regparser.tree.struct import Node
+from regparser.tree import struct
 
 
 class ModelFormText(Layer):
@@ -33,7 +33,7 @@ class ModelFormText(Layer):
         return False
 
     def pre_process(self):
-        #mark the nodes that are part of a model forms section
+        # mark the nodes that are part of a model forms section
 
         def per_node(node):
             if self.is_appendix(node):

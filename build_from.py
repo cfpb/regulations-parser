@@ -14,7 +14,9 @@ except ImportError:
     # HTTP requests rather than looking it up from the cache
     pass
 
-from regparser.builder import LayerCacheAggregator, tree_and_builder, Checkpointer, NullCheckpointer, Builder
+from regparser.builder import (
+    LayerCacheAggregator, tree_and_builder, Checkpointer, NullCheckpointer,
+    Builder)
 from regparser.diff.tree import changes_between
 from regparser.tree.struct import FrozenNode
 
@@ -78,13 +80,14 @@ def generate_diffs(reg_tree, act_title_and_section, builder, layer_cache):
         for rhs_version, rhs_tree in all_versions.iteritems():
             changes = checkpointer.checkpoint(
                 "-".join(["diff", lhs_version, rhs_version]),
-            lambda: dict(changes_between(lhs_tree, rhs_tree)))
+                lambda: dict(changes_between(lhs_tree, rhs_tree)))
             writer.diff(
                 label_id, lhs_version, rhs_version
             ).write(changes)
 
+
 def build_by_notice(filename, title, act_title, act_section,
-        notice_doc_numbers, doc_number=None, checkpoint=None):
+                    notice_doc_numbers, doc_number=None, checkpoint=None):
 
     with codecs.open(filename, 'r', 'utf-8') as f:
         reg = f.read()
@@ -101,7 +104,7 @@ def build_by_notice(filename, title, act_title, act_section,
         lambda: Builder.reg_tree(reg))
 
     title_part = reg_tree.label_id()
-    
+
     if doc_number is None:
         doc_number = Builder.determine_doc_number(reg, title, title_part)
 
@@ -152,7 +155,8 @@ if __name__ == "__main__":
               'the regulation has no electronic final rules on '
               'federalregister.gov, i.e. has not changed since before ~2000)'))
 
-    parser.add_argument('--last-notice', type=str, help='the last notice to be used')
+    parser.add_argument('--last-notice', type=str,
+                        help='the last notice to be used')
     parser.add_argument('--operation', action='store')
     parser.add_argument('--notices-to-apply', nargs='*', action='store')
 

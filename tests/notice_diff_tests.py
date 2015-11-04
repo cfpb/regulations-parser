@@ -1,10 +1,10 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from unittest import TestCase
 
 from lxml import etree
 
 from regparser.grammar import tokens
-from regparser.notice.diff import *
+from regparser.notice import diff
 
 
 class NoticeDiffTests(TestCase):
@@ -18,7 +18,7 @@ class NoticeDiffTests(TestCase):
             </CHILD>
         </ROOT>
         """.strip()
-        result = clear_between(etree.fromstring(xml), '[', ']')
+        result = diff.clear_between(etree.fromstring(xml), '[', ']')
         cleaned = u"""
         <ROOT>Some content
             <CHILD>Split
@@ -29,7 +29,8 @@ class NoticeDiffTests(TestCase):
 
     def test_remove_char(self):
         xml = u"""<ROOT> Some stuff▸, then a bit more◂.</ROOT>"""
-        result = remove_char(remove_char(etree.fromstring(xml), u'▸'), u'◂')
+        result = diff.remove_char(diff.remove_char(
+            etree.fromstring(xml), u'▸'), u'◂')
         cleaned = u"""<ROOT> Some stuff, then a bit more.</ROOT>"""
         self.assertEqual(cleaned, etree.tostring(result))
 
@@ -46,13 +47,13 @@ class NoticeDiffTests(TestCase):
             tokens.Paragraph(['666']),
             tokens.Paragraph(['777'])
         ]
-        amends = make_amendments(tokenized)
+        amends = diff.make_amendments(tokenized)
         self.assertEqual(amends,
-                         [Amendment(tokens.Verb.PUT, '222'),
-                          Amendment(tokens.Verb.PUT, '333'),
-                          Amendment(tokens.Verb.PUT, '444'),
-                          Amendment(tokens.Verb.DELETE, '555'),
-                          Amendment(tokens.Verb.MOVE, '666', '777')])
+                         [diff.Amendment(tokens.Verb.PUT, '222'),
+                          diff.Amendment(tokens.Verb.PUT, '333'),
+                          diff.Amendment(tokens.Verb.PUT, '444'),
+                          diff.Amendment(tokens.Verb.DELETE, '555'),
+                          diff.Amendment(tokens.Verb.MOVE, '666', '777')])
 
     def test_compress_context_simple(self):
         tokenized = [
@@ -68,7 +69,7 @@ class NoticeDiffTests(TestCase):
             #  12(g)(1)
             tokens.Paragraph([None, None, None, None, '1']),
         ]
-        converted, final_ctx = compress_context(tokenized, [])
+        converted, final_ctx = diff.compress_context(tokenized, [])
         self.assertEqual(converted, [
             tokens.Verb(tokens.Verb.PUT, active=True),
             tokens.Paragraph(['9876', 'Subpart:A', '12', 'f', '4']),
@@ -78,7 +79,7 @@ class NoticeDiffTests(TestCase):
 
     def test_compress_context_initial_context(self):
         tokenized = [tokens.Paragraph([None, None, None, 'q'])]
-        converted, _ = compress_context(tokenized, ['111', None, '12'])
+        converted, _ = diff.compress_context(tokenized, ['111', None, '12'])
         self.assertEqual(converted,
                          [tokens.Paragraph(['111', None, '12', 'q'])])
 
@@ -90,7 +91,7 @@ class NoticeDiffTests(TestCase):
             tokens.Context([None, 'Appendix:R']),
             tokens.Paragraph([None, 'Interpretations', None, None, '5'])
         ]
-        converted, _ = compress_context(tokenized, [])
+        converted, _ = diff.compress_context(tokenized, [])
         self.assertEqual(converted, [
             tokens.Paragraph(['123', 'Interpretations', '12', '(a)(2)(iii)',
                               '3', 'v']),
@@ -109,7 +110,7 @@ class NoticeDiffTests(TestCase):
                 tokens.Paragraph(['123', None, '23', 'a', '1']),
                 tokens.Paragraph([None, None, None, None, None, 'i']),
                 tokens.Paragraph([None, None, '23', 'b'])])]
-        converted = compress_context_in_tokenlists(tokenized)
+        converted = diff.compress_context_in_tokenlists(tokenized)
         self.assertEqual(converted, [
             tokens.Context(['123', 'Interpretations']),
             tokens.Paragraph(['123', None, '23', 'a']),
@@ -122,24 +123,25 @@ class NoticeDiffTests(TestCase):
 
     def test_resolve_confused_context(self):
         tokenized = [tokens.Context([None, None, '12', 'a', '2', 'iii'])]
-        converted = resolve_confused_context(tokenized,
-                                             ['123', 'Interpretations'])
+        converted = diff.resolve_confused_context(
+            tokenized, ['123', 'Interpretations'])
         self.assertEqual(
             converted, [tokens.Context([None, 'Interpretations', '12',
                                         '(a)(2)(iii)'])])
 
     def test_resolve_confused_context_appendix(self):
         tokenized = [tokens.Context([None, 'Appendix:A', '12'])]
-        converted = resolve_confused_context(tokenized,
-                                             ['123', 'Interpretations'])
+        converted = diff.resolve_confused_context(
+            tokenized, ['123', 'Interpretations'])
         self.assertEqual(
             converted, [tokens.Context([None, 'Interpretations', 'A',
                                         '(12)'])])
 
     def test_compress(self):
-        self.assertEqual([1, 2, 3], compress([1, 2, 3], []))
-        self.assertEqual([1, 6, 3], compress([1, 2, 3, 4, 5], [None, 6, None]))
-        self.assertEqual([2, 2, 5, 6], compress([1, 2], [2, None, 5, 6]))
+        self.assertEqual([1, 2, 3], diff.compress([1, 2, 3], []))
+        self.assertEqual([1, 6, 3],
+                         diff.compress([1, 2, 3, 4, 5], [None, 6, None]))
+        self.assertEqual([2, 2, 5, 6], diff.compress([1, 2], [2, None, 5, 6]))
 
     def test_separate_tokenlist(self):
         tokenized = [
@@ -151,7 +153,7 @@ class NoticeDiffTests(TestCase):
             tokens.Paragraph([None, '3']),
             tokens.TokenList([tokens.Paragraph([None, None, 'b'])])
         ]
-        converted = separate_tokenlist(tokenized)
+        converted = diff.separate_tokenlist(tokenized)
         self.assertEqual(converted, [
             tokens.Context(['1']),
             tokens.Verb(tokens.Verb.MOVE, active=True),
@@ -168,7 +170,7 @@ class NoticeDiffTests(TestCase):
             tokens.Context(['3'], certain=True),
             tokens.Context(['4'])
         ]
-        converted = context_to_paragraph(tokenized)
+        converted = diff.context_to_paragraph(tokenized)
         self.assertEqual(converted, [
             tokens.Context(['1']),
             tokens.Verb(tokens.Verb.PUT, active=True),
@@ -183,7 +185,7 @@ class NoticeDiffTests(TestCase):
             tokens.Context(['2']),
             tokens.Paragraph(['3'])
         ]
-        converted = context_to_paragraph(tokenized)
+        converted = diff.context_to_paragraph(tokenized)
         self.assertEqual(tokenized, converted)
 
         tokenized = [
@@ -191,7 +193,7 @@ class NoticeDiffTests(TestCase):
             tokens.Context(['2']),
             tokens.TokenList([tokens.Paragraph(['3'])])
         ]
-        converted = context_to_paragraph(tokenized)
+        converted = diff.context_to_paragraph(tokenized)
         self.assertEqual(tokenized, converted)
 
     def test_switch_passive(self):
@@ -200,7 +202,7 @@ class NoticeDiffTests(TestCase):
             tokens.Verb(tokens.Verb.PUT, active=True),
             tokens.Context(['2'])
         ]
-        converted = switch_passive(tokenized)
+        converted = diff.switch_passive(tokenized)
         self.assertEqual(tokenized, converted)
 
         tokenized = [
@@ -210,7 +212,7 @@ class NoticeDiffTests(TestCase):
             tokens.Context(['3']),
             tokens.Verb(tokens.Verb.MOVE, active=False),
         ]
-        converted = switch_passive(tokenized)
+        converted = diff.switch_passive(tokenized)
         self.assertEqual(converted, [
             tokens.Verb(tokens.Verb.PUT, active=True),
             tokens.Context(['1']),
@@ -225,7 +227,7 @@ class NoticeDiffTests(TestCase):
             tokens.Context(['2']),
             tokens.Context(['3']),
             tokens.Verb(tokens.Verb.PUT, active=False)]
-        converted = switch_passive(tokenized)
+        converted = diff.switch_passive(tokenized)
         self.assertEqual(converted, [
             tokens.Verb(tokens.Verb.MOVE, active=True),
             tokens.Context(['1']),
@@ -257,7 +259,7 @@ class NoticeDiffTests(TestCase):
 
         notice_xml = etree.fromstring(xml)
         amdpar_xml = notice_xml.xpath('//AMDPAR')[0]
-        section = find_section(amdpar_xml)
+        section = diff.find_section(amdpar_xml)
         self.assertEqual(section.tag, 'SECTION')
 
         sectno_xml = section.xpath('//SECTNO')[0]
@@ -282,7 +284,7 @@ class NoticeDiffTests(TestCase):
 
         notice_xml = etree.fromstring(xml)
         amdpar_xml = notice_xml.xpath('//AMDPAR')[0]
-        subpart = find_subpart(amdpar_xml)
+        subpart = diff.find_subpart(amdpar_xml)
         self.assertTrue(subpart is not None)
 
         headings = [s for s in subpart if s.tag == 'HD']
@@ -294,13 +296,13 @@ class NoticeDiffTests(TestCase):
                 self.noun = noun
 
         token = tokens.Verb(tokens.Verb.DESIGNATE, True)
-        self.assertTrue(is_designate_token(token))
+        self.assertTrue(diff.is_designate_token(token))
 
         token = tokens.Verb(tokens.Verb.MOVE, True)
-        self.assertFalse(is_designate_token(token))
+        self.assertFalse(diff.is_designate_token(token))
 
         token = Noun('TABLE')
-        self.assertFalse(is_designate_token(token))
+        self.assertFalse(diff.is_designate_token(token))
 
     def list_of_tokens(self):
         designate_token = tokens.Verb(tokens.Verb.DESIGNATE, True)
@@ -309,35 +311,35 @@ class NoticeDiffTests(TestCase):
 
     def test_contains_one_designate_token(self):
         tokenized = self.list_of_tokens()
-        self.assertTrue(contains_one_designate_token(tokenized))
+        self.assertTrue(diff.contains_one_designate_token(tokenized))
 
         designate_token_2 = tokens.Verb(tokens.Verb.DESIGNATE, True)
         tokenized.append(designate_token_2)
-        self.assertFalse(contains_one_designate_token(tokenized))
+        self.assertFalse(diff.contains_one_designate_token(tokenized))
 
     def test_contains_one_tokenlist(self):
         token_list = self.list_of_tokens()
 
         designate_token_2 = tokens.Verb(tokens.Verb.DESIGNATE, True)
         tokenized = [tokens.TokenList(token_list), designate_token_2]
-        self.assertTrue(contains_one_tokenlist(tokenized))
+        self.assertTrue(diff.contains_one_tokenlist(tokenized))
 
         tokenized = [tokens.TokenList(token_list),
                      designate_token_2, tokens.TokenList(token_list)]
-        self.assertFalse(contains_one_tokenlist(tokenized))
+        self.assertFalse(diff.contains_one_tokenlist(tokenized))
 
     def test_contains_one_context(self):
         tokenized = self.list_of_tokens()
         context = tokens.Context(['200', '1'])
         tokenized.append(context)
 
-        self.assertTrue(contains_one_context(tokenized))
+        self.assertTrue(diff.contains_one_context(tokenized))
 
         designate_token = tokens.Verb(tokens.Verb.DESIGNATE, True)
         tokenized.append(designate_token)
         tokenized.append(tokens.Context(['200', '2']))
 
-        self.assertFalse(contains_one_context(tokenized))
+        self.assertFalse(diff.contains_one_context(tokenized))
 
     def paragraph_token_list(self):
         paragraph_tokens = [
@@ -352,7 +354,7 @@ class NoticeDiffTests(TestCase):
 
         tokenized = [designate_token, token_list, context]
 
-        toks, subpart_added = deal_with_subpart_adds(tokenized)
+        toks, subpart_added = diff.deal_with_subpart_adds(tokenized)
         self.assertTrue(subpart_added)
 
         paragraph_found = False
@@ -363,8 +365,8 @@ class NoticeDiffTests(TestCase):
                 self.assertEqual(t.label, ['Subpart', 'A'])
                 paragraph_found = True
 
-        self.assertTrue(contains_one_tokenlist(toks))
-        self.assertTrue(contains_one_designate_token(toks))
+        self.assertTrue(diff.contains_one_tokenlist(toks))
+        self.assertTrue(diff.contains_one_designate_token(toks))
         self.assertTrue(paragraph_found)
 
     def test_deal_with_subpart_adds_no_subpart(self):
@@ -372,27 +374,29 @@ class NoticeDiffTests(TestCase):
         token_list = self.paragraph_token_list()
         tokenized = [designate_token, token_list]
 
-        toks, subpart_added = deal_with_subpart_adds(tokenized)
+        toks, subpart_added = diff.deal_with_subpart_adds(tokenized)
         self.assertFalse(subpart_added)
 
     def test_get_destination_normal(self):
         subpart_token = tokens.Paragraph(['205', 'Subpart', 'A'])
         tokenized = [subpart_token]
 
-        self.assertEqual(get_destination(tokenized, '205'), '205-Subpart-A')
+        self.assertEqual(diff.get_destination(tokenized, '205'),
+                         '205-Subpart-A')
 
     def test_get_destination_no_reg_part(self):
         subpart_token = tokens.Paragraph([None, 'Subpart', 'J'])
         tokenized = [subpart_token]
 
-        self.assertEqual(get_destination(tokenized, '205'), '205-Subpart-J')
+        self.assertEqual(diff.get_destination(tokenized, '205'),
+                         '205-Subpart-J')
 
     def test_handle_subpart_designate(self):
         token_list = self.paragraph_token_list()
         subpart_token = tokens.Paragraph([None, 'Subpart', 'J'])
         tokenized = [token_list, subpart_token]
 
-        amendment = handle_subpart_amendment(tokenized)
+        amendment = diff.handle_subpart_amendment(tokenized)
 
         self.assertEqual(amendment.action, tokens.Verb.DESIGNATE)
         labels = [['200', '1', 'a'], ['200', '1', 'b']]
@@ -403,7 +407,7 @@ class NoticeDiffTests(TestCase):
         token_list = self.paragraph_token_list()
         subpart_token = tokens.Paragraph([None, 'Subpart', 'J'])
         tokenized = [token_list, subpart_token]
-        amends = make_amendments(tokenized, subpart=True)
+        amends = diff.make_amendments(tokenized, subpart=True)
 
         amendment = amends[0]
         self.assertEqual(amendment.action, tokens.Verb.DESIGNATE)
@@ -412,14 +416,14 @@ class NoticeDiffTests(TestCase):
         self.assertEqual(amendment.destination, ['200', 'Subpart', 'J'])
 
     def test_new_subpart_added(self):
-        amended_label = Amendment('POST', '200-Subpart:B')
-        self.assertTrue(new_subpart_added(amended_label))
+        amended_label = diff.Amendment('POST', '200-Subpart:B')
+        self.assertTrue(diff.new_subpart_added(amended_label))
 
-        amended_label = Amendment('PUT', '200-Subpart:B')
-        self.assertFalse(new_subpart_added(amended_label))
+        amended_label = diff.Amendment('PUT', '200-Subpart:B')
+        self.assertFalse(diff.new_subpart_added(amended_label))
 
-        amended_label = Amendment('POST', '200-Subpart:B-a-3')
-        self.assertFalse(new_subpart_added(amended_label))
+        amended_label = diff.Amendment('POST', '200-Subpart:B-a-3')
+        self.assertFalse(diff.new_subpart_added(amended_label))
 
     def test_switch_context(self):
         initial_context = ['105', '2']
@@ -428,21 +432,21 @@ class NoticeDiffTests(TestCase):
             tokens.Paragraph(['203', '2', 'x']),
             tokens.Verb(tokens.Verb.DESIGNATE, True)]
 
-        self.assertEqual(switch_context(tokenized, initial_context), [])
+        self.assertEqual(diff.switch_context(tokenized, initial_context), [])
 
         tokenized = [
             tokens.Paragraph(['105', '4', 'j', 'iv']),
             tokens.Verb(tokens.Verb.DESIGNATE, True)]
 
         self.assertEqual(
-            switch_context(tokenized, initial_context), initial_context)
+            diff.switch_context(tokenized, initial_context), initial_context)
 
         tokenized = [
             tokens.Context(['', '4', 'j', 'iv']),
             tokens.Verb(tokens.Verb.DESIGNATE, True)]
 
         self.assertEqual(
-            switch_context(tokenized, initial_context), initial_context)
+            diff.switch_context(tokenized, initial_context), initial_context)
 
     def test_fix_section_node(self):
         xml = u"""
@@ -467,7 +471,7 @@ class NoticeDiffTests(TestCase):
         """
         amdpar = etree.fromstring(amdpar_xml)
         par = amdpar.xpath('//AMDPAR')[0]
-        section = fix_section_node(paragraphs, par)
+        section = diff.fix_section_node(paragraphs, par)
         self.assertNotEqual(None, section)
         section_paragraphs = [p for p in section if p.tag == 'P']
         self.assertEqual(2, len(section_paragraphs))
@@ -489,7 +493,7 @@ class NoticeDiffTests(TestCase):
             </REGTEXT>"""
 
         amdpar = etree.fromstring(amdpar_xml).xpath('//AMDPAR')[0]
-        section = find_section(amdpar)
+        section = diff.find_section(amdpar)
         self.assertNotEqual(None, section)
         paragraphs = [p for p in section if p.tag == 'P']
         self.assertEqual(paragraphs[0].text, '(b) paragraph 1')
@@ -509,7 +513,7 @@ class NoticeDiffTests(TestCase):
                 </SECTION>
             </REGTEXT></PART>"""
         amdpar = etree.fromstring(amdpar_xml).xpath('//AMDPAR')[0]
-        section = find_lost_section(amdpar)
+        section = diff.find_lost_section(amdpar)
         self.assertNotEqual(None, section)
 
     def test_find_section_lost(self):
@@ -527,7 +531,7 @@ class NoticeDiffTests(TestCase):
                 </SECTION>
             </REGTEXT></PART>"""
         amdpar = etree.fromstring(amdpar_xml).xpath('//AMDPAR')[0]
-        section = find_section(amdpar)
+        section = diff.find_section(amdpar)
         self.assertNotEqual(None, section)
 
     def test_remove_false_deletes(self):
@@ -536,7 +540,7 @@ class NoticeDiffTests(TestCase):
             tokens.Verb(tokens.Verb.DELETE, active=True)]
 
         text = "Remove the semi-colong at the end of paragraph 444"
-        new_tokenized = remove_false_deletes(tokenized, text)
+        new_tokenized = diff.remove_false_deletes(tokenized, text)
         self.assertEqual([], new_tokenized)
 
     def test_multiple_moves(self):
@@ -546,7 +550,7 @@ class NoticeDiffTests(TestCase):
             tokens.Verb(tokens.Verb.MOVE, active=False),
             tokens.TokenList([tokens.Paragraph(['444', '3']),
                               tokens.Paragraph(['444', '4'])])]
-        tokenized = multiple_moves(tokenized)
+        tokenized = diff.multiple_moves(tokenized)
         self.assertEqual(
             tokenized, [tokens.Verb(tokens.Verb.MOVE, active=True),
                         tokens.Paragraph(['444', '1']),
@@ -561,19 +565,20 @@ class NoticeDiffTests(TestCase):
                               tokens.Paragraph(['444', '2'])]),
             tokens.Verb(tokens.Verb.MOVE, active=False),
             tokens.TokenList([tokens.Paragraph(['444', '3'])])]
-        self.assertEqual(tokenized, multiple_moves(tokenized))
+        self.assertEqual(tokenized, diff.multiple_moves(tokenized))
 
         # Paragraphs on either side of a move
         tokenized = [tokens.Paragraph(['444', '1']),
                      tokens.Verb(tokens.Verb.MOVE, active=False),
                      tokens.Paragraph(['444', '3'])]
-        self.assertEqual(tokenized, multiple_moves(tokenized))
+        self.assertEqual(tokenized, diff.multiple_moves(tokenized))
 
     def test_parse_amdpar_newly_redesignated(self):
         text = "Paragraphs 3.ii, 3.iii, 4 and newly redesignated paragraph "
         text += "10 are revised."
         xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
-        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations', '2', '(a)'])
+        amends, _ = diff.parse_amdpar(xml,
+                                      ['1111', 'Interpretations', '2', '(a)'])
         self.assertEqual(4, len(amends))
         self.assertEqual(['1111', '2', 'a', 'Interp', '3', 'ii'],
                          amends[0].label)
@@ -593,7 +598,7 @@ class NoticeDiffTests(TestCase):
         text += u'<E T="03">3(b) Subheader,</E>'
         text += u"new paragraph 1.iv is added:"
         xml = etree.fromstring(u'<AMDPAR>%s</AMDPAR>' % text)
-        amends, _ = parse_amdpar(xml, ['1111'])
+        amends, _ = diff.parse_amdpar(xml, ['1111'])
         self.assertEqual(1, len(amends))
         self.assertEqual('POST', amends[0].action)
         self.assertEqual(['999', '3', 'b', 'Interp', '1', 'iv'],
@@ -602,7 +607,7 @@ class NoticeDiffTests(TestCase):
     def test_parse_amdpar_interp_heading(self):
         text = "ii. The heading for 35(b) blah blah is revised."
         xml = etree.fromstring(u'<AMDPAR>%s</AMDPAR>' % text)
-        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        amends, _ = diff.parse_amdpar(xml, ['1111', 'Interpretations'])
         self.assertEqual(1, len(amends))
         self.assertEqual('PUT', amends[0].action)
         self.assertEqual('[title]', amends[0].field)
@@ -611,7 +616,7 @@ class NoticeDiffTests(TestCase):
     def test_parse_amdpar_interp_context(self):
         text = "b. 35(b)(1) Some title and paragraphs 1, 2, and 3 are added."
         xml = etree.fromstring(u'<AMDPAR>%s</AMDPAR>' % text)
-        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        amends, _ = diff.parse_amdpar(xml, ['1111', 'Interpretations'])
         self.assertEqual(4, len(amends))
         for amd in amends:
             self.assertEqual('POST', amd.action)
@@ -628,7 +633,7 @@ class NoticeDiffTests(TestCase):
         text = "Paragraph 1 under 51(b) is redesignated as paragraph 2 "
         text += "under subheading 51(b)(1) and revised"
         xml = etree.fromstring(u'<AMDPAR>%s</AMDPAR>' % text)
-        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        amends, _ = diff.parse_amdpar(xml, ['1111', 'Interpretations'])
         self.assertEqual(2, len(amends))
         delete, add = amends
         self.assertEqual('DELETE', delete.action)
@@ -639,7 +644,7 @@ class NoticeDiffTests(TestCase):
     def test_parse_amdpar_interp_entries(self):
         text = "Entries for 12(c)(3)(ix)(A) and (B) are added."
         xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
-        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        amends, _ = diff.parse_amdpar(xml, ['1111', 'Interpretations'])
         self.assertEqual(2, len(amends))
         a, b = amends
         self.assertEqual('POST', a.action)
@@ -652,7 +657,7 @@ class NoticeDiffTests(TestCase):
     def test_parse_amdpar_and_and(self):
         text = "12(a) 'Titles and Paragraphs' and paragraph 3 are added"
         xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
-        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        amends, _ = diff.parse_amdpar(xml, ['1111', 'Interpretations'])
         self.assertEqual(2, len(amends))
         a, b = amends
         self.assertEqual('POST', a.action)
@@ -666,7 +671,7 @@ class NoticeDiffTests(TestCase):
         text = "Under <E>Appendix A - Some phrase and another</E>, paragraph "
         text += "3 is added"
         xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
-        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        amends, _ = diff.parse_amdpar(xml, ['1111', 'Interpretations'])
         self.assertEqual(1, len(amends))
         amend = amends[0]
         self.assertEqual('POST', amend.action)
@@ -676,7 +681,7 @@ class NoticeDiffTests(TestCase):
         text = "Under 45(a)(1) Title, paragraphs 1 and 2 are removed, and "
         text += "45(a)(1)(i) Deeper Title and paragraphs 1 and 2 are added"
         xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
-        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        amends, _ = diff.parse_amdpar(xml, ['1111', 'Interpretations'])
         self.assertEqual(5, len(amends))
         a11, a12, a1i, a1i1, a1i2 = amends
         self.assertEqual('DELETE', a11.action)
@@ -696,7 +701,7 @@ class NoticeDiffTests(TestCase):
     def test_parse_amdpar_add_field(self):
         text = "Adding introductory text to paragraph (c)"
         xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
-        amends, _ = parse_amdpar(xml, ['1111', None, '12'])
+        amends, _ = diff.parse_amdpar(xml, ['1111', None, '12'])
         self.assertEqual(1, len(amends))
         amd = amends[0]
         self.assertEqual(amd.action, tokens.Verb.PUT)
@@ -708,7 +713,7 @@ class NoticeDiffTests(TestCase):
         text += "2 is redesignated as paragraph 3 and revised, and new "
         text += "paragraph 2 is added."
         xml = etree.fromstring('<AMDPAR>%s</AMDPAR>' % text)
-        amends, _ = parse_amdpar(xml, ['1111', 'Interpretations'])
+        amends, _ = diff.parse_amdpar(xml, ['1111', 'Interpretations'])
         self.assertEqual(4, len(amends))
         a1, a2del, a3, a2add = amends
         self.assertEqual(a1.action, tokens.Verb.PUT)
@@ -723,29 +728,30 @@ class NoticeDiffTests(TestCase):
 
 class AmendmentTests(TestCase):
     def test_fix_label(self):
-        amd = Amendment('action', '1005-Interpretations')
+        amd = diff.Amendment('action', '1005-Interpretations')
         self.assertEqual(amd.label, ['1005', 'Interp'])
 
-        amd = Amendment('action', '1005-Interpretations-31-(b)(1)-3')
+        amd = diff.Amendment('action', '1005-Interpretations-31-(b)(1)-3')
         self.assertEqual(amd.label, ['1005', '31', 'b', '1', 'Interp', '3'])
 
-        amd = Amendment('action', '1005-Interpretations-31-(b)(1)-3[title]')
+        amd = diff.Amendment('action',
+                             '1005-Interpretations-31-(b)(1)-3[title]')
         self.assertEqual(amd.label, ['1005', '31', 'b', '1', 'Interp', '3'])
 
-        amd = Amendment('action', '1005-Interpretations-31-(c)-2-xi')
+        amd = diff.Amendment('action', '1005-Interpretations-31-(c)-2-xi')
         self.assertEqual(amd.label, ['1005', '31', 'c', 'Interp', '2', 'xi'])
 
-        amd = Amendment('action', '1005-Interpretations-31-()-2-xi')
+        amd = diff.Amendment('action', '1005-Interpretations-31-()-2-xi')
         self.assertEqual(amd.label, ['1005', '31', 'Interp', '2', 'xi'])
 
-        amd = Amendment('action', '1005-Interpretations-Appendix:A-2')
+        amd = diff.Amendment('action', '1005-Interpretations-Appendix:A-2')
         self.assertEqual(amd.label, ['1005', 'A', '2', 'Interp'])
 
-        amd = Amendment('action', '1005-Appendix:A-2')
+        amd = diff.Amendment('action', '1005-Appendix:A-2')
         self.assertEqual(amd.label, ['1005', 'A', '2'])
 
     def test_amendment_heading(self):
-        amendment = Amendment('PUT', '100-2-a[heading]')
+        amendment = diff.Amendment('PUT', '100-2-a[heading]')
         self.assertEqual(amendment.action, 'PUT')
         self.assertEqual(amendment.label, ['100', '2', 'a'])
         self.assertEqual(amendment.field, '[heading]')
@@ -753,7 +759,7 @@ class AmendmentTests(TestCase):
 
 class DesignateAmendmentTests(TestCase):
     def test_fix_interp_format(self):
-        amd = DesignateAmendment('action', [],
-                                 '1005-Interpretations-31-(b)(1)-3')
+        amd = diff.DesignateAmendment(
+            'action', [], '1005-Interpretations-31-(b)(1)-3')
         self.assertEqual(amd.destination,
                          ['1005', '31', 'b', '1', 'Interp', '3'])

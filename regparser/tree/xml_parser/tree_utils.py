@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from copy import deepcopy
 import HTMLParser
 from itertools import chain
@@ -6,7 +6,6 @@ from itertools import chain
 from pyparsing import Literal, Optional, Regex, Suppress
 
 from regparser.citations import remove_citation_overlaps
-from regparser.grammar.unified import any_depth_p
 from regparser.tree.depth import markers as mtypes
 from regparser.tree.paragraph import p_levels
 from regparser.tree.priority_stack import PriorityStack
@@ -62,7 +61,7 @@ for idx, level in enumerate(p_levels):
                            + Suppress(')'))
     _first_markers.append(marker)
 
-    
+
 # @profile
 def get_collapsed_markers(text):
     """Not all paragraph markers are at the beginning of of the text. This
@@ -91,7 +90,7 @@ def get_paragraph_markers(text):
     markers = []
     text = text.lstrip()
     for mtype in (mtypes.lower, mtypes.ints, mtypes.roman, mtypes.upper,
-                    mtypes.em_ints, mtypes.em_roman):
+                  mtypes.em_ints, mtypes.em_roman):
         for marker in mtype:
             if text.startswith('(' + marker + ')'):
                 markers.append(marker)
@@ -154,7 +153,7 @@ def get_node_text_tags_preserved(node):
 
     for c in node:
         if c.tag == 'E':
-            #xlmns non-sense makes me do this.
+            # xlmns non-sense makes me do this.
             e_tag = '<E T="03">%s</E>' % c.text
             node_text += e_tag
         if c.tail is not None:

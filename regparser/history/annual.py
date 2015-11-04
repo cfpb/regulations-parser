@@ -1,3 +1,4 @@
+import logging
 import re
 
 from lxml import etree

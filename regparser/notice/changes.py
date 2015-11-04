@@ -148,7 +148,7 @@ def match_labels_and_changes(amendments, section_node):
 
 def format_node(node, amendment):
     """ Format a node and add in amendment information. """
-    
+
     # Copy the node, remove it's children, and dump its XML to string
     node_no_kids = copy.deepcopy(node)
     node_no_kids.child_labels = [c.label_id() for c in node_no_kids.children]

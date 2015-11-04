@@ -1,12 +1,9 @@
-#vim: set encoding=utf-8
-from itertools import takewhile
+# vim: set encoding=utf-8
 import logging
-import re
-import string
 
 from regparser.citations import internal_citations, Label
 from regparser.layer.layer import Layer
-from regparser.tree.struct import Node, walk
+from regparser.tree.struct import walk
 
 
 class InternalCitationParser(Layer):

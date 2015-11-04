@@ -1,7 +1,8 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from unittest import TestCase
 
-from regparser.citations import *
+from regparser.citations import internal_citations, Label
+from regparser.tree.struct import Node
 
 
 def to_text(citation, original_text):

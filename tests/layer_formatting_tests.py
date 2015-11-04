@@ -130,6 +130,3 @@ class LayerFormattingTests(TestCase):
         self.assertEqual(result['locations'], [0])
         self.assertEqual(result['dash_data'],
                          {'text': 'This is an fp-dash'})
-        
-
-

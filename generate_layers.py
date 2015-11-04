@@ -1,5 +1,4 @@
 from regparser import api_stub
-import regparser.layer.table_of_contents
 from regparser.layer import external_citations
 from regparser.layer import internal_citations
 from regparser.layer import interpretations
@@ -52,9 +51,9 @@ def generate_key_terms(reg):
 
 if __name__ == "__main__":
     reg_json = api_stub.get_regulation_as_json('/tmp/xtree.json')
-    #generate_table_of_contents(reg_json)
-    #generate_internal_citations(reg_json)
-    #generate_external_citations(reg_json)
-    #generate_interpretations(reg_json)
-    #generate_terms(reg_json)
+    # generate_table_of_contents(reg_json)
+    # generate_internal_citations(reg_json)
+    # generate_external_citations(reg_json)
+    # generate_interpretations(reg_json)
+    # generate_terms(reg_json)
     generate_key_terms(reg_json)

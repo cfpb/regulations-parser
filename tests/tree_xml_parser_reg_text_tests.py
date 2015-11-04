@@ -6,6 +6,7 @@ from mock import patch
 
 from regparser.tree.xml_parser import reg_text
 
+
 class RegTextTest(TestCase):
     def test_build_from_section_intro_text(self):
         xml = u"""
@@ -16,7 +17,6 @@ class RegTextTest(TestCase):
                 <P>(a) something something</P>
             </SECTION>
         """
-        #from nose.tools import set_trace; set_trace();
         node = reg_text.build_from_section('8675', etree.fromstring(xml))[0]
         self.assertEqual(1, len(node.children))
         self.assertEqual(['8675', '309'], node.label)
@@ -424,7 +424,6 @@ class RegTextTest(TestCase):
         child = node.children[0]
         self.assertEqual('(aa) This is what things mean:', child.text.strip())
         self.assertEqual(['8675', '309', 'aa'], child.label)
-        
 
     def test_manual_hierarchy(self):
         xml = u"""
@@ -441,19 +440,18 @@ class RegTextTest(TestCase):
                 <P><E T="03">Term three</E> means the third term.</P>
             </SECTION>
         """
-        # [u'a', u'b', u'TermOne', u'TermTwo', u'1', u'i', u'ii', u'2', u'TermThree']
-        reg_text.PARAGRAPH_HIERARCHY['1234'] = {'1234.567': [
-                1,
-                1,
-                    2, 
-                    2,
-                        3, 
-                            4, 
-                            4, 
-                        3,
-                    2,
-                ]}
-        
+        reg_text.PARAGRAPH_HIERARCHY['1234'] = {
+            '1234.567': [int(num) for num in """
+                1
+                1
+                    2
+                    2
+                        3
+                            4
+                            4
+                        3
+                    2""".split()]}
+
         node = reg_text.build_from_section('1234', etree.fromstring(xml))[0]
         self.assertEqual(2, len(node.children))
 
@@ -468,7 +466,6 @@ class RegTextTest(TestCase):
         self.assertEqual(2, len(term_two.children))
         self.assertEqual(2, len(term_two.children[0].children))
         self.assertEqual(0, len(term_two.children[1].children))
-        
+
         # term three
         self.assertEqual(0, len(defs_b.children[2].children))
-        

@@ -55,6 +55,6 @@ class KeyTerms(Layer):
                 keyterm = eliminate_extras(keyterm)
                 layer_el = [{
                     "key_term": keyterm,
-                    #The first instance of the key term is right one.
+                    # The first instance of the key term is right one.
                     "locations": [0]}]
                 return layer_el

@@ -1,5 +1,3 @@
-import string
-
 from pyparsing import LineEnd, LineStart, SkipTo, Regex
 
 from regparser.grammar import atomic, unified
@@ -33,8 +31,7 @@ marker_par = (
 appendix = (
     atomic.appendix_marker.copy().leaveWhitespace()
     + Regex(r"[A-Z]+-?[0-9]*\b").setResultsName("appendix").setParseAction(
-                    lambda r: r[0].replace('-', '')
-                ).setResultsName("appendix")
+        lambda r: r[0].replace('-', '')).setResultsName("appendix")
     + SkipTo(LineEnd())
 )
 

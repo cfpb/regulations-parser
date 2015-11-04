@@ -1,4 +1,4 @@
-#:vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from copy import deepcopy
 import itertools
 import logging
@@ -132,7 +132,8 @@ def process_inner_children(inner_stack, xml_node, parent=None):
         part, section = part_and_section.split('.')
         part_and_section += '-Interp'
 
-        if part in PARAGRAPH_HIERARCHY and part_and_section in PARAGRAPH_HIERARCHY[part]:
+        if (part in PARAGRAPH_HIERARCHY
+                and part_and_section in PARAGRAPH_HIERARCHY[part]):
             manual_hierarchy = PARAGRAPH_HIERARCHY[part][part_and_section]
     except Exception:
         pass
@@ -140,20 +141,21 @@ def process_inner_children(inner_stack, xml_node, parent=None):
     children = itertools.takewhile(
         lambda x: not is_title(x), xml_node.itersiblings())
     nodes = []
-    for i, xml_node in enumerate(filter(lambda c: c.tag in ('P', 'STARS'), children)):
+    for i, xml_node in enumerate(filter(lambda c: c.tag in ('P', 'STARS'),
+                                        children)):
         node_text = tree_utils.get_node_text(xml_node, add_spaces=True)
         text_with_tags = tree_utils.get_node_text_tags_preserved(xml_node)
         first_marker = get_first_interp_marker(text_with_tags)
-        
+
         # If the node has a 'DEPTH' attribute, we're in manual
         # hierarchy mode, just constructed from the XML instead of
         # specified in configuration.
         # This presumes that every child in the section has DEPTH
-        # specified, if not, things will break in and around 
+        # specified, if not, things will break in and around
         # derive_depths below.
         if xml_node.get("depth") is not None:
             manual_hierarchy.append(int(xml_node.get("depth")))
-        
+
         if xml_node.tag == 'STARS':
             nodes.append(Node(label=[mtypes.STARS_TAG]))
         elif not first_marker and nodes and manual_hierarchy:
@@ -213,11 +215,11 @@ def process_inner_children(inner_stack, xml_node, parent=None):
     # use manual hierarchy if it's specified
     if not manual_hierarchy:
         depths = derive_depths(
-            [n.label[0] for n in nodes],
-            [rules.depth_type_order([(mtypes.ints, mtypes.em_ints),
-                                     (mtypes.lower, mtypes.roman, mtypes.upper),
-                                     mtypes.upper, mtypes.em_ints,
-                                     mtypes.em_roman])])
+            [node.label[0] for node in nodes],
+            [rules.depth_type_order([
+                (mtypes.ints, mtypes.em_ints),
+                (mtypes.lower, mtypes.roman, mtypes.upper),
+                mtypes.upper, mtypes.em_ints, mtypes.em_roman])])
 
     if not manual_hierarchy and depths:
         # Find the assignment which violates the least of our heuristics
@@ -240,26 +242,27 @@ def process_inner_children(inner_stack, xml_node, parent=None):
             for node, depth in zip(nodes, depths):
                 last = inner_stack.peek()
                 node.label = [l.replace('<E T="03">', '').replace('</E>', '')
-                                  for l in node.label]
+                              for l in node.label]
                 if len(last) == 0:
                     inner_stack.push_last((3 + depth, node))
                 else:
                     inner_stack.add(3 + depth, node)
         else:
-            logging.error('Manual hierarchy length does not match node list length!')
+            logging.error(
+                'Manual hierarchy length does not match node list length!')
 
     elif nodes and not manual_hierarchy:
-        logging.warning('Could not derive depth (interp):\n {}'.format([n.label[0] for n in nodes]))
+        logging.warning('Could not derive depth (interp):\n {}'.format(
+            [node.label[0] for node in nodes]))
         # just add nodes in sequential order then
         for node in nodes:
             last = inner_stack.peek()
             node.label = [l.replace('<E T="03">', '').replace('</E>', '')
-                                  for l in node.label]
+                          for l in node.label]
             if len(last) == 0:
                 inner_stack.push_last((3, node))
             else:
                 inner_stack.add(3, node)
-
 
 
 def missing_levels(last_label, label):

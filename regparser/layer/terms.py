@@ -5,14 +5,14 @@ import re
 
 import inflection
 try:
-    del inflection.PLURALS[inflection.PLURALS.index(('(?i)(p)erson$', '\\1eople'))]
+    del inflection.PLURALS[
+        inflection.PLURALS.index(('(?i)(p)erson$', '\\1eople'))]
 except ValueError:
     pass
 
 
 from regparser.citations import internal_citations, Label
 from regparser.grammar import terms as grammar
-from regparser.grammar.external_citations import uscode_exp as uscode
 from regparser.layer.layer import Layer
 from regparser.tree import struct
 from regparser.tree.priority_stack import PriorityStack
@@ -75,7 +75,7 @@ class Terms(Layer):
                 current_subpart[0] = None
             if (node.node_type in (struct.Node.REGTEXT, struct.Node.APPENDIX)
                     and len(node.label) == 2):
-                #Subparts
+                # Subparts
                 section = node.label[-1]
                 self.subpart_map[current_subpart[0]].append(section)
 
@@ -218,11 +218,12 @@ class Terms(Layer):
             cfr_part = None
 
         if settings.INCLUDE_DEFINITIONS_IN.get(cfr_part):
-            for included_term, context in settings.INCLUDE_DEFINITIONS_IN[cfr_part]:
+            for included_term, context in settings.INCLUDE_DEFINITIONS_IN[
+                    cfr_part]:
                 if context in node.text and included_term in node.text:
                     pos_start = node.text.index(included_term)
                     add_match(node, included_term.lower(),
-                            (pos_start, pos_start + len(included_term)))
+                              (pos_start, pos_start + len(included_term)))
 
         if stack and self.has_parent_definitions_indicator(stack):
             for match, _, _ in grammar.smart_quotes.scanString(node.text):
@@ -265,8 +266,8 @@ class Terms(Layer):
         """Search for the first instance of `needle` in the `haystack`
         excluding any overlaps from `exclusions`. Implicitly returns None if
         it can't be found"""
-        #TODO: This cannot under any circumstances return None because it's being
-        #TODO: used in an addition upstack.
+        # TODO: This cannot under any circumstances return None because it's
+        #       being used in an addition upstack.
         start = 0
         while start >= 0:
             start = haystack.find(needle, start)
@@ -302,7 +303,7 @@ class Terms(Layer):
 
         inclusions = self.included_offsets(node.label_id(), node.text)
         inclusions = self.per_regulation_includes(
-                inclusions, node.label, node.text)
+            inclusions, node.label, node.text)
 
         matches = self.calculate_offsets(node.text, term_list, exclusions)
         for term, ref, offsets in matches:
@@ -338,10 +339,12 @@ class Terms(Layer):
     def per_regulation_includes(self, inclusions, label, text):
         cfr_part = label[0]
         if settings.INCLUDE_DEFINITIONS_IN.get(cfr_part):
-            for included_term, context in settings.INCLUDE_DEFINITIONS_IN['ALL']:
+            for included_term, context in settings.INCLUDE_DEFINITIONS_IN[
+                    'ALL']:
                 inclusions.extend(
                     (match.start(), match.end()) for match in
-                    re.finditer(r'\b' + re.escape(include_term) + r'\b', text))
+                    re.finditer(
+                        r'\b' + re.escape(included_term) + r'\b', text))
         return inclusions
 
     def included_offsets(self, label, text):
@@ -352,11 +355,11 @@ class Terms(Layer):
         for included_term, context in settings.INCLUDE_DEFINITIONS_IN['ALL']:
             inclusions.extend(
                 (match.start(), match.end()) for match in
-                re.finditer(r'\b' + re.escape(include_term) + r'\b', text))
+                re.finditer(r'\b' + re.escape(included_term) + r'\b', text))
         return inclusions
 
     def calculate_offsets(self, text, applicable_terms, exclusions=[],
-            inclusions=[]):
+                          inclusions=[]):
         """Search for defined terms in this text, with a preference for all
         larger (i.e. containing) terms."""
 
@@ -365,7 +368,8 @@ class Terms(Layer):
         inclusions = list(inclusions)
 
         # add plurals to applicable terms
-        pluralized = [(inflection.pluralize(t[0]), t[1]) for t in applicable_terms]
+        pluralized = [(inflection.pluralize(t[0]), t[1])
+                      for t in applicable_terms]
         applicable_terms += pluralized
 
         #   longer terms first
