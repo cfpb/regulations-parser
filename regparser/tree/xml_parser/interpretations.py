@@ -169,7 +169,7 @@ def process_inner_children(inner_stack, xml_node, parent=None):
         elif not first_marker and not manual_hierarchy:
             logging.warning("Couldn't determine interp marker. Appending to "
                             "previous paragraph: %s", node_text)
-                    
+
             if nodes:
                 previous = nodes[-1]
             else:
