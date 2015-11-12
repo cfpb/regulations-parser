@@ -5,6 +5,7 @@ import tempfile
 from unittest import TestCase
 
 from mock import patch
+from lxml.etree import Element
 
 from regparser.api_writer import *
 from regparser.tree.struct import Node
@@ -194,6 +195,92 @@ class GitWriteContentTest(TestCase):
         commit = commit.parents[0]
         self.assertTrue('1111' in commit.message)
         self.assertEqual(0, len(commit.parents))
+
+
+class XMLWriteContentTestCase(TestCase):
+
+    def setUp(self):
+        settings.OUTPUT_DIR = tempfile.mkdtemp() + '/'
+
+    def test_add_analyses(self):
+        """ Test that we can add analysis with sections within the
+            primary section and footnotes. """
+        text = 'This is some text that will be analyzed.'
+        layers = {
+            'terms': {'referenced': {}},
+            'analyses': {
+                '1234-1': [{
+                    'publication_date': u'2015-11-17', 
+                    'reference': (u'2015-12345', u'1234-1')
+                }]
+            }
+        }
+        notices = [{
+            'document_number': '2015-12345',
+            'section_by_section': [{
+                'title': 'Section 1234.1',
+                'labels': ['1234-1'], 
+                'paragraphs': [
+                    'This paragraph is in the top-level section.',
+                ], 
+                'footnote_refs': [], 
+                'children': [{
+                    'children': [], 
+                    'footnote_refs': [
+                        {
+                            'offset': 16, 
+                            'paragraph': 0, 
+                            'reference': '1'
+                        },
+                        {
+                            'offset': 31, 
+                            'paragraph': 0, 
+                            'reference': '2'
+                        },
+                    ],
+                    'paragraphs': [
+                        'I am a paragraph in an analysis section, love me!', 
+                    ], 
+                    'title': '(a) Section of the Analysis'
+                }],
+            }],
+            'footnotes': {
+                '1': 'Paragraphs contain text.',
+                '2': 'Analysis analyzes things.'
+            },
+        }]
+        elm = Element('section')
+        elm.set('label', '1234-1')
+        writer = XMLWriteContent("foo", layers=layers, notices=notices)
+        writer.add_analyses(elm)
+
+        self.assertEqual(1, len(elm.xpath('./analysis')))
+        self.assertEqual(1,
+            len(elm.xpath('./analysis/analysisSection')))
+        self.assertEqual(1, 
+            len(elm.xpath('./analysis/analysisSection/title')))
+        self.assertEqual('Section 1234.1',
+            elm.xpath('./analysis/analysisSection/title')[0].text)
+
+        self.assertEqual(1,
+            len(elm.xpath('./analysis/analysisSection/analysisParagraph')))
+        self.assertTrue('top-level section' in 
+            elm.xpath('./analysis/analysisSection/analysisParagraph')[0].text)
+
+        self.assertEqual(1,
+            len(elm.xpath('./analysis/analysisSection/analysisSection')))
+        self.assertEqual(1, 
+            len(elm.xpath('./analysis/analysisSection/analysisSection/title')))
+        self.assertEqual('(a) Section of the Analysis',
+            elm.xpath('./analysis/analysisSection/analysisSection/title')[0].text)
+
+        self.assertEqual(1,
+            len(elm.xpath('./analysis/analysisSection/analysisSection/analysisParagraph')))
+        self.assertTrue('I am a paragraph' in 
+            elm.xpath('./analysis/analysisSection/analysisSection/analysisParagraph')[0].text)
+
+        self.assertEqual(2,
+            len(elm.xpath('./analysis/analysisSection/analysisSection/analysisParagraph/footnote')))
 
 
 class ClientTest(TestCase):

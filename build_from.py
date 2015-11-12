@@ -146,8 +146,6 @@ def generate_xml(filename, title, act_title, act_section, notice_doc_numbers,
     layer_cache = LayerCacheAggregator()
     layers = builder.generate_layers(reg_tree, act_title_and_section, layer_cache)
 
-    print layers.keys()
-
     # builder.write_notices()
 
     #   Always do at least the first reg

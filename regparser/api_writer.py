@@ -7,14 +7,15 @@ import pdb
 
 from git import Repo
 from git.exc import InvalidGitRepositoryError
+
 from lxml.etree import Element, SubElement
+from lxml.etree import tostring, fromstring
 
 import requests
 
 from regparser.tree.struct import Node, NodeEncoder
 from regparser.notice.encoder import AmendmentEncoder
 from regparser.tree.xml_parser.reg_text import get_markers
-from lxml.etree import tostring, fromstring
 
 from utils import set_of_random_letters, interpolate_string
 
@@ -135,39 +136,36 @@ class GitWriteContent:
 
 class XMLWriteContent:
 
-    def __init__(self, path, layers=None):
+    def __init__(self, path, layers=None, notices=None):
         self.path = path
         self.layers = layers
         self.layers['definitions'] = self.extract_definitions()
         self.appendix_sections = 1 # need to track these manually
+        self.notices = notices
 
         self.caps = [chr(i) for i in range(65, 65 + 26)]
 
-        path_parts = self.path.split('/')
-        dir_path = settings.OUTPUT_DIR + os.path.join(*path_parts[:-1])
-
+        self.full_path = os.path.join(settings.OUTPUT_DIR, path)
+        dir_path = os.path.dirname(self.full_path)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 
-        full_path = settings.OUTPUT_DIR + os.path.join(*path_parts)
-        self.full_path = full_path
-
     def write(self, tree):
         if isinstance(tree, Node):
-            print 'writing XML'
-            xml_head = '<?xml version="1.0" encoding="UTF-8"?>\n'
             xml_tree = self.to_xml(tree)
-            xml_string = xml_head + tostring(xml_tree, pretty_print=True)
+            xml_string = tostring(xml_tree, pretty_print=True,
+                    xml_declaration=True, encoding='UTF-8')
 
             with open(self.full_path, 'w') as f:
                 f.write(xml_string)
 
     def write_notice(self, notice):
-
+        # Relevant notice content will be writen to as part of the
+        # preamble to the reg tree when it's outputted. This function
+        # exists for API compatibility only.
         pass
 
     def extract_definitions(self):
-
         defs = self.layers['terms']['referenced']
         references = {}
         for _, defn in defs.items():
@@ -182,7 +180,6 @@ class XMLWriteContent:
 
     @staticmethod
     def apply_terms(text, replacements):
-
         replacement_texts = []
         replacement_offsets = []
         for repl in replacements:
@@ -201,7 +198,6 @@ class XMLWriteContent:
 
     @staticmethod
     def apply_paragraph_markers(text, replacements):
-
         replacement_texts = []
         replacement_offsets = []
         for i, repl in enumerate(replacements):
@@ -217,7 +213,6 @@ class XMLWriteContent:
 
     @staticmethod
     def apply_internal_citations(text, replacements):
-
         replacement_texts = []
         replacement_offsets = []
         for repl in replacements:
@@ -235,7 +230,6 @@ class XMLWriteContent:
 
     @staticmethod
     def apply_external_citations(text, replacements):
-
         replacement_texts = []
         replacement_offsets = []
         for repl in replacements:
@@ -256,7 +250,6 @@ class XMLWriteContent:
 
     @staticmethod
     def apply_definitions(text, replacement):
-
         offset = replacement['offset']
         term = replacement['term']
         hash_value = hashlib.sha1(term).hexdigest()
@@ -268,7 +261,6 @@ class XMLWriteContent:
 
     @staticmethod
     def apply_graphics(graphics_layer):
-
         graphics_elements = []
         # graphics is a special layer because it's not inlined
         for graphic in graphics_layer:
@@ -294,7 +286,6 @@ class XMLWriteContent:
 
     @staticmethod
     def apply_formatting(replacements):
-
         # format_elements = []
         replacement_texts = []
         replacement_offsets = []
@@ -330,6 +321,104 @@ class XMLWriteContent:
 
         return replacement_offsets, replacement_texts
 
+    def add_analyses(self, elm):
+        """
+        This method is not like the others above.
+
+        Anlayses are added to the end of the element they analyze. Given
+        an element, if analysis exists in the analyses layer for that
+        label, an analysis element will be created and appended to the
+        given element.
+        """
+
+        # If there's no analysis for this label, move on.
+        label = elm.get('label')
+        if label not in self.layers['analyses']:
+            return
+
+        # The analyses for this label.
+        analyses = self.layers['analyses'][label]
+
+        for a in analyses:
+            # NOTE: We'll let index errors percolate upwards because if 
+            # the index doesn't exist, and we can't find the notice 
+            # number or analysis within the notice, there's something 
+            # wrong with the analyses layer to this point.
+
+            a_version = a['reference'][0]
+            a_label = a['reference'][1]
+
+            # Look up the notice with the analysis attached
+            a_notice = [n for n in self.notices 
+                        if n['document_number'] == a_version][0]
+
+            # Lookup the analysis for this element
+            a_analysis = [a for a in a_notice['section_by_section'] 
+                        if a_label in a['labels']][0]
+
+            # We'll need to lookup footnotes in analysis paragraphs in
+            # notice['footnotes']. This function does that.
+            def resolve_footnotes(text, f_refs):
+                annotated_text = ''
+                position = 0
+                for r in f_refs:
+                    r_offset = r['offset']
+                    r_number = r['reference']
+
+                    # As above, let this KeyError fall through. If the
+                    # footnote can't be found, we've got bigger
+                    # problems.
+                    footnote = a_notice['footnotes'][r_number]
+                    
+                    # Create the footnote elm with the text and ref
+                    # number
+                    footnote_elm = Element('footnote')
+                    footnote_elm.set('ref', r_number)
+                    footnote_elm.text = footnote
+                    
+                    # Add the text to the offset plus the footnote to
+                    # the annotated string.
+                    annotated_text += text[position:r_offset] + \
+                            tostring(footnote_elm)
+
+                    # Advance our position
+                    position = r_offset
+
+                # Add the remainder of the text
+                annotated_text += text[position:]
+                return annotated_text
+
+            # Each analysis section will be need to be constructed the
+            # same way. So here's a recursive function to do it.
+            def analysis_section(parent_elm, child):
+                # Create the section element
+                section_elm = SubElement(parent_elm, 'analysisSection')
+
+                # Add the title element
+                title_elm = SubElement(section_elm, 'title')
+                title_elm.text = child['title']
+
+                # Add paragraphs
+                for p in child['paragraphs']:
+                    p_number = child['paragraphs'].index(p)
+                    p_footnotes = [f for f in child['footnote_refs'] 
+                                   if f['paragraph'] == p_number]
+                    text = resolve_footnotes(p, p_footnotes)
+
+                    p_elm = fromstring(
+                            '<analysisParagraph>' 
+                                + text +
+                            '</analysisParagraph>')
+                    section_elm.append(p_elm)
+
+                # Construct an analysis section for any children.
+                map(lambda c:  analysis_section(section_elm, c),
+                        child['children'])
+
+            # Construct the analysis element and its sections
+            analysis_elm = SubElement(elm, 'analysis')
+            analysis_section(analysis_elm, a_analysis)
+
     def fdsys(self, reg_number, date='2012-01-01', orig_date='2012-01-01'):
         meta = self.layers['meta'][reg_number][0]
         elem = Element('fdsys')
@@ -362,7 +451,6 @@ class XMLWriteContent:
         eff_date.text = meta['effective_date']
 
         return elem
-
 
     @staticmethod
     def toc_to_xml(toc):
@@ -410,6 +498,9 @@ class XMLWriteContent:
                 content.append(sub_elem)
         elif root.label[-1].isdigit() and len(root.label) == 2:
             elem = Element('section', sectionNum=root.label[-1], label=root.label_id())
+
+            self.apply_layers(root)
+
             subject = SubElement(elem, 'subject')
             subject.text = root.title
             if root.text.strip() != '' and len(root.children) == 0:
@@ -537,6 +628,10 @@ class XMLWriteContent:
             for child in root.children:
                 sub_elem = self.to_xml(child)
                 elem.append(sub_elem)
+
+            # Add any analysis that might exist for this node
+            self.add_analyses(elem)
+                
         return elem
 
     def apply_layers(self, node):
@@ -545,8 +640,9 @@ class XMLWriteContent:
         all_offsets = []
         all_replacements = []
         # import pdb; pdb.set_trace()
+        # print self.layers.items()
+        # print node.label_id()
         for ident, layer in self.layers.items():
-            # print node.label_id()
             if node.label_id() in layer:
                 # print 'applying layers'
                 replacements = layer[node.label_id()]
@@ -572,7 +668,6 @@ class XMLWriteContent:
                 all_replacements.extend(repls)
 
         if len(all_offsets) > 0 and len(all_replacements) > 0:
-
             offsets_and_repls = zip(all_offsets, all_replacements)
             offsets_and_repls = sorted(offsets_and_repls, key=lambda x: x[0][0])
             all_offsets, all_replacements = zip(*offsets_and_repls)
@@ -609,8 +704,9 @@ class Client:
             else:
                 raise ValueError('Unknown writer type specified!')
 
-    def reg_xml(self, label, doc_number, layers=None):
-        return self.writer_class("regulation/{}/{}.xml".format(label, doc_number), layers=layers)
+    def reg_xml(self, label, doc_number, layers=None, notices=None):
+        return self.writer_class("regulation/{}/{}.xml".format(label,
+            doc_number), layers=layers, notices=notices)
 
     def notice_xml(self, doc_number):
         return self.writer_class("notice/{}.xml".format(doc_number))
