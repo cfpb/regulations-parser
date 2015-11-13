@@ -146,6 +146,6 @@ class Formatting(Layer):
                     'text': node.text[:match.start()],
                 },
             })
-        
+
         if layer_el:
             return layer_el

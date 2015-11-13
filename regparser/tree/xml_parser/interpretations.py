@@ -1,4 +1,4 @@
-#:vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from copy import deepcopy
 import itertools
 import logging
@@ -15,33 +15,51 @@ from regparser.tree.xml_parser import tree_utils
 
 from settings import PARAGRAPH_HIERARCHY
 
+# digits
+# roman
+# upper
+# lower
+# emphasized digit
+_marker = r'(' \
+    + '([0-9]+)' \
+    + '|([ivxlcdm]+)' \
+    + '|([A-Z]+)' \
+    + '|([a-be-hjkn-uw-z]+)' \
+    + '|(<E[^>]*>[0-9]+)' \
+    + ')'
 
-_marker_regex = re.compile(
-    r'^\s*('                   # line start
-    + '([0-9]+)'               # digits
-    + '|([ivxlcdm]+)'          # roman
-    + '|([A-Z]+)'              # upper
-    + '|([a-be-hjkn-uw-z]+)'   # lower
-    + '|(<E[^>]*>[0-9]+)'      # emphasized digit
-    + r')\s*\..*', re.DOTALL)  # followed by a period and then anything
+
+_marker_period_regex = re.compile(
+    r'^\s*'                   # line start
+    + _marker
+    + r'\s*\..*', re.DOTALL)  # followed by a period and then anything
+
+
+_marker_parenthetical_regex = re.compile(
+    r'^\s*\('                   # line start followed by a (
+    + _marker
+    + r'\)\s*', re.DOTALL)  # followed by a closing ) and then anything
 
 
 _marker_stars_regex = re.compile(
-    r'^\s*('                   # line start
-    + '([0-9]+)'               # digits
-    + '|([ivxlcdm]+)'          # roman
-    + '|([A-Z]+)'              # upper
-    + '|(<E[^>]*>[0-9]+)'      # emphasized digit
-    + r')\s+\* \* \*\s*$', re.DOTALL)  # followed by stars
+    r'^\s*'                   # line start
+    + _marker
+    + r'\s+\* \* \*\s*$', re.DOTALL)  # followed by stars
 
 
 def get_first_interp_marker(text):
-    match = _marker_regex.match(text)
+    match = _marker_period_regex.match(text)
     if match:
         marker = text[:text.find('.')].strip()      # up to dot
         if '<' in marker:
             marker += '</E>'
         return marker
+
+    match = _marker_parenthetical_regex.match(text)
+    if match:
+        # Within the parenthesis only
+        return text[text.find('(')+1:text.find(')')].strip()
+
     match = _marker_stars_regex.match(text)
     if match:
         return text[:text.find('*')].strip()        # up to star
@@ -104,38 +122,64 @@ def is_title(xml_node):
                                force_start=True)))
 
 
-def process_inner_children(inner_stack, xml_node):
+def process_inner_children(inner_stack, xml_node, parent=None):
     """Process the following nodes as children of this interpretation. This
     is very similar to reg_text.py:build_from_section()"""
     # manual hierarchy should work here too
-    manual_hierarchy_flag = False
+    manual_hierarchy = []
     try:
         part_and_section = re.search('[0-9]+\.[0-9]+', xml_node.text).group(0)
         part, section = part_and_section.split('.')
         part_and_section += '-Interp'
 
-
-        if part in PARAGRAPH_HIERARCHY and part_and_section in PARAGRAPH_HIERARCHY[part]:
-            manual_hierarchy_flag = True
+        if (part in PARAGRAPH_HIERARCHY
+                and part_and_section in PARAGRAPH_HIERARCHY[part]):
+            manual_hierarchy = PARAGRAPH_HIERARCHY[part][part_and_section]
     except Exception:
         pass
 
     children = itertools.takewhile(
         lambda x: not is_title(x), xml_node.itersiblings())
     nodes = []
-    for i, xml_node in enumerate(filter(lambda c: c.tag in ('P', 'STARS'), children)):
+    for i, xml_node in enumerate(filter(lambda c: c.tag in ('P', 'STARS'),
+                                        children)):
         node_text = tree_utils.get_node_text(xml_node, add_spaces=True)
         text_with_tags = tree_utils.get_node_text_tags_preserved(xml_node)
         first_marker = get_first_interp_marker(text_with_tags)
+
+        # If the node has a 'DEPTH' attribute, we're in manual
+        # hierarchy mode, just constructed from the XML instead of
+        # specified in configuration.
+        # This presumes that every child in the section has DEPTH
+        # specified, if not, things will break in and around
+        # derive_depths below.
+        if xml_node.get("depth") is not None:
+            manual_hierarchy.append(int(xml_node.get("depth")))
+
         if xml_node.tag == 'STARS':
             nodes.append(Node(label=[mtypes.STARS_TAG]))
-        elif not first_marker and nodes:
+        elif not first_marker and nodes and manual_hierarchy:
             logging.warning("Couldn't determine interp marker. "
-                            "Appending node and hoping that manual hierarchy is specified")
+                            "Manual hierarchy is specified")
 
             n = Node(node_text, label=[str(i)], node_type=Node.INTERP)
             n.tagged_text = text_with_tags
             nodes.append(n)
+
+        elif not first_marker and not manual_hierarchy:
+            logging.warning("Couldn't determine interp marker. Appending to "
+                            "previous paragraph: %s", node_text)
+
+            if nodes:
+                previous = nodes[-1]
+            else:
+                previous = parent
+
+            previous.text += "\n\n" + node_text
+            if hasattr(previous, 'tagged_text'):
+                previous.tagged_text += "\n\n" + text_with_tags
+            else:
+                previous.tagged_text = text_with_tags
 
         else:
             collapsed = collapsed_markers_matches(node_text, text_with_tags)
@@ -169,15 +213,15 @@ def process_inner_children(inner_stack, xml_node):
 
     # Use constraint programming to figure out possible depth assignments
     # use manual hierarchy if it's specified
-    if not manual_hierarchy_flag:
+    if not manual_hierarchy:
         depths = derive_depths(
-            [n.label[0] for n in nodes],
-            [rules.depth_type_order([(mtypes.ints, mtypes.em_ints),
-                                     (mtypes.roman, mtypes.upper),
-                                     mtypes.upper, mtypes.em_ints,
-                                     mtypes.em_roman])])
+            [node.label[0] for node in nodes],
+            [rules.depth_type_order([
+                (mtypes.ints, mtypes.em_ints),
+                (mtypes.lower, mtypes.roman, mtypes.upper),
+                mtypes.upper, mtypes.em_ints, mtypes.em_roman])])
 
-    if not manual_hierarchy_flag and depths:
+    if not manual_hierarchy and depths:
         # Find the assignment which violates the least of our heuristics
         depths = heuristics.prefer_multiple_children(depths, 0.5)
         depths = sorted(depths, key=lambda d: d.weight, reverse=True)
@@ -191,33 +235,34 @@ def process_inner_children(inner_stack, xml_node):
                     inner_stack.push_last((3 + par.depth, node))
                 else:
                     inner_stack.add(3 + par.depth, node)
-    elif nodes and manual_hierarchy_flag:
+    elif nodes and manual_hierarchy:
         logging.warning('Using manual depth hierarchy.')
-        depths = PARAGRAPH_HIERARCHY[part][part_and_section]
+        depths = manual_hierarchy
         if len(nodes) == len(depths):
             for node, depth in zip(nodes, depths):
                 last = inner_stack.peek()
                 node.label = [l.replace('<E T="03">', '').replace('</E>', '')
-                                  for l in node.label]
+                              for l in node.label]
                 if len(last) == 0:
                     inner_stack.push_last((3 + depth, node))
                 else:
                     inner_stack.add(3 + depth, node)
         else:
-            logging.error('Manual hierarchy length does not match node list length!')
+            logging.error(
+                'Manual hierarchy length does not match node list length!')
 
-    elif nodes and not manual_hierarchy_flag:
-        logging.warning('Could not derive depth (interp):\n {}'.format([n.label[0] for n in nodes]))
+    elif nodes and not manual_hierarchy:
+        logging.warning('Could not derive depth (interp):\n {}'.format(
+            [node.label[0] for node in nodes]))
         # just add nodes in sequential order then
         for node in nodes:
             last = inner_stack.peek()
             node.label = [l.replace('<E T="03">', '').replace('</E>', '')
-                                  for l in node.label]
+                          for l in node.label]
             if len(last) == 0:
                 inner_stack.push_last((3, node))
             else:
                 inner_stack.add(3, node)
-
 
 
 def missing_levels(last_label, label):
@@ -272,7 +317,7 @@ def parse_from_xml(root, xml_nodes):
                         title=text.strip())
             inner_stack.add(2, node)
 
-            process_inner_children(inner_stack, ch)
+            process_inner_children(inner_stack, ch, parent=node)
 
             while inner_stack.size() > 1:
                 inner_stack.unwind()

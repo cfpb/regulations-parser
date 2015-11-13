@@ -11,7 +11,7 @@ def _is_appendix_amend(al):
     """Serves as a guard/filter to distinguish appendix amendments from
     amendments to other parts of the reg"""
     return (not isinstance(al, DesignateAmendment)
-            and not Node.INTERP_MARK in al.label
+            and Node.INTERP_MARK not in al.label
             and len(al.label) > 1
             and not al.label[1].isdigit())
 

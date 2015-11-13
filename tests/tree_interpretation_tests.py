@@ -1,9 +1,7 @@
-#vim: set encoding=utf-8
-from mock import patch
-
+# vim: set encoding=utf-8
 from regparser.citations import Label
-from regparser.tree import struct
-from regparser.tree.interpretation import *
+from regparser.tree import interpretation
+from regparser.tree.struct import Node
 from unittest import TestCase
 
 
@@ -17,7 +15,7 @@ class DepthInterpretationTreeTest(TestCase):
         sub5 = 'v. Five '
         sub6 = 'vi. Six'
         text = "1. This is some section\n" + sub1+sub2+sub3+sub4+sub5+sub6
-        tree = interpParser.build_tree(text, 1)
+        tree = interpretation.interpParser.build_tree(text, 1)
         self.assertTrue(1, len(tree.children))
         self.assertTrue(6, len(tree.children[0].children))
         self.assertEqual(sub1, tree.children[0].children[0].text)
@@ -31,7 +29,7 @@ class DepthInterpretationTreeTest(TestCase):
         """Make sure a bug with a label as part of a section number is
         fixed."""
         text = "1. some section referencing 2002.99"
-        tree = interpParser.build_tree(text, 1)
+        tree = interpretation.interpParser.build_tree(text, 1)
         self.assertTrue(1, tree.children)
         self.assertEqual(text, tree.children[0].text)
 
@@ -39,14 +37,14 @@ class DepthInterpretationTreeTest(TestCase):
         """Confirm a bug with a label as part of an appendix reference is
         fixed."""
         text = "1. some section referencing Appendix-2. Then more content"
-        tree = interpParser.build_tree(text, 1)
+        tree = interpretation.interpParser.build_tree(text, 1)
         self.assertTrue(1, len(tree.children))
         self.assertEqual(text, tree.children[0].text)
 
     def test_build_without_subs(self):
         title = "Something here"
         body = "\nAnd then more\nSome more\nAnd yet another line"
-        result = build(title + body, '100')
+        result = interpretation.build(title + body, '100')
         self.assertEqual(body, result.text)
         self.assertEqual(['100', Node.INTERP_MARK], result.label)
         self.assertEqual(title, result.title)
@@ -58,7 +56,8 @@ class DepthInterpretationTreeTest(TestCase):
         sec2 = "Section 199.11 Interps Vengence"
         app1 = "Appendix W - Whoa whoa whoa"
         app2 = "Appendix R - Redrum"
-        node = build("\n".join([title, sec1, sec2, app1, app2]), 199)
+        node = interpretation.build("\n".join([title, sec1, sec2, app1, app2]),
+                                    199)
         self.assertEqual(title, node.title)
         self.assertEqual(4, len(node.children))
         self.assertEqual(sec1, node.children[0].title)
@@ -69,7 +68,7 @@ class DepthInterpretationTreeTest(TestCase):
     def test_build_with_subs(self):
         text = "Something here\nSection 100.22\nmore more\nSection 100.5\n"
         text += "and more"
-        result = build(text, "100")
+        result = interpretation.build(text, "100")
         self.assertEqual("", result.text.strip())
         self.assertEqual(["100", "Interp"], result.label)
         self.assertEqual("Something here", result.title)
@@ -87,7 +86,7 @@ class DepthInterpretationTreeTest(TestCase):
 
     def test_build_interp_headers(self):
         text = "\nSection 876.2 Definitions\n\n2(r) Def1\n\n2(r)(4) SubSub"
-        result = build(text, "876")
+        result = interpretation.build(text, "876")
 
         self.assertEqual(['876', Node.INTERP_MARK], result.label)
         self.assertEqual(1, len(result.children))
@@ -106,7 +105,7 @@ class DepthInterpretationTreeTest(TestCase):
     def test_segment_tree_appendix(self):
         title = "Appendix Q - The Questions"
         body = "1. Regulation text 2. Some more i. With ii. Subparts"
-        node = segment_tree(title + "\n" + body, '100', ['100'])
+        node = interpretation.segment_tree(title + "\n" + body, '100', ['100'])
         self.assertEqual(title, node.title)
         self.assertEqual(['100', 'Q', Node.INTERP_MARK], node.label)
         self.assertEqual(2, len(node.children))
@@ -120,7 +119,7 @@ class DepthInterpretationTreeTest(TestCase):
         depth2iii = "iii. sections"
         depth2 = "2. Start of line with "
         text = title + "\n" + depth1 + depth2 + depth2i + depth2ii + depth2iii
-        a_tree = segment_tree(text, '111', ['111', '3', 'b'])
+        a_tree = interpretation.segment_tree(text, '111', ['111', '3', 'b'])
         self.assertEqual(['111', '3', 'b', Node.INTERP_MARK], a_tree.label)
         self.assertEqual('Paragraph 3(b)', a_tree.title)
         self.assertEqual("", a_tree.text.strip())
@@ -158,7 +157,7 @@ class DepthInterpretationTreeTest(TestCase):
         title = "Section 105.11 This is a section title"
         body = "1. Some contents\n2. Other data\ni. Hello hello"
         non_title = "\n" + body
-        result = segment_tree(title + non_title, '105', ['105'])
+        result = interpretation.segment_tree(title + non_title, '105', ['105'])
         self.assertEqual("\n", result.text)
         self.assertEqual(2, len(result.children))
 
@@ -182,7 +181,7 @@ class DepthInterpretationTreeTest(TestCase):
         title = "Section 105.11 This is a section title"
         body = "Body of the interpretation's section"
         non_title = "\n" + body
-        result = segment_tree(title + non_title, '105', ['105'])
+        result = interpretation.segment_tree(title + non_title, '105', ['105'])
         self.assertEqual(non_title, result.text)
         self.assertEqual(['105', '11', Node.INTERP_MARK], result.label)
         self.assertEqual(0, len(result.children))
@@ -192,7 +191,7 @@ class DepthInterpretationTreeTest(TestCase):
         title = "Section 105.11 This is a section title"
         body = "Body of the interpretation's section"
         non_title = "\n" + body
-        result = segment_tree(title + non_title, '105', ['105'])
+        result = interpretation.segment_tree(title + non_title, '105', ['105'])
         self.assertEqual(title, result.title)
 
     def test_segment_tree_with_comment(self):
@@ -200,7 +199,7 @@ class DepthInterpretationTreeTest(TestCase):
         text += "2. Ends with see comment 20(b)(2)-4.ii.\n"
         text += "3. Then three\ni. Sub bit\nA. More\n4. Four"
 
-        result = segment_tree(text, '28', ['28'])
+        result = interpretation.segment_tree(text, '28', ['28'])
         self.assertEqual(4, len(result.children))
 
     def test_segment_by_header(self):
@@ -209,12 +208,12 @@ class DepthInterpretationTreeTest(TestCase):
         s23 = "Paragraph 23(b)(4)(v)(Z)\nPar par\n"
         s25 = "Section 87.25 Title\nEven more info here\n"
         sb = "Appendix B-Some Title\nContent content\n"
-        self.assertEqual([
-            (len(text), len(text + s22)),
-            (len(text+s22), len(text+s22+s23)),
-            (len(text+s22+s23), len(text+s22+s23+s25)),
-            (len(text+s22+s23+s25), len(text+s22+s23+s25+sb))
-            ], segment_by_header(text + s22 + s23 + s25 + sb, 87))
+        self.assertEqual(
+            [(len(text), len(text + s22)),
+             (len(text+s22), len(text+s22+s23)),
+             (len(text+s22+s23), len(text+s22+s23+s25)),
+             (len(text+s22+s23+s25), len(text+s22+s23+s25+sb))],
+            interpretation.segment_by_header(text + s22 + s23 + s25 + sb, 87))
 
     def test_segment_by_header_ten(self):
         text = "Interp interp\n"
@@ -222,34 +221,41 @@ class DepthInterpretationTreeTest(TestCase):
         s10a1 = "10(a)(1) Some subcontent\nContent content\n"
         s10b = "10(b) Second level paragraph\nContennnnnt"
 
-        self.assertEqual(3, len(segment_by_header(text+s10a+s10a1+s10b, 0)))
+        self.assertEqual(
+            3, len(interpretation.segment_by_header(
+                text + s10a + s10a1 + s10b, 0)))
 
     def test_text_to_labels(self):
         text = u"9(c)(2)(iii) Charges not Covered by § 1026.6(b)(1) and "
         text += "(b)(2)"
-        self.assertEqual([['1111', '9', 'c', '2', 'iii', 'Interp']],
-                         text_to_labels(text, Label(part='1111',
-                                                    comment=True)))
+        self.assertEqual(
+            [['1111', '9', 'c', '2', 'iii', 'Interp']],
+            interpretation.text_to_labels(text,
+                                          Label(part='1111', comment=True)))
 
         text = "Paragraphs 4(b)(7) and (b)(8)."
-        self.assertEqual([['1111', '4', 'b', '7', 'Interp'],
-                          ['1111', '4', 'b', '8', 'Interp']],
-                         text_to_labels(text, Label(part='1111',
-                                                    comment=True)))
+        self.assertEqual(
+            [['1111', '4', 'b', '7', 'Interp'],
+             ['1111', '4', 'b', '8', 'Interp']],
+            interpretation.text_to_labels(text,
+                                          Label(part='1111', comment=True)))
 
         text = "Appendices G and H-Something"
-        self.assertEqual([['1111', 'G', 'Interp'], ['1111', 'H', 'Interp']],
-                         text_to_labels(text, Label(part='1111',
-                                                    comment=True)))
+        self.assertEqual(
+            [['1111', 'G', 'Interp'], ['1111', 'H', 'Interp']],
+            interpretation.text_to_labels(text,
+                                          Label(part='1111', comment=True)))
 
         text = "Paragraph 38(l)(7)(i)(A)(2)."
-        self.assertEqual([['1111', '38', 'l', '7', 'i', 'A', '2', 'Interp']],
-                         text_to_labels(text, Label(part='1111',
-                                                    comment=True)))
+        self.assertEqual(
+            [['1111', '38', 'l', '7', 'i', 'A', '2', 'Interp']],
+            interpretation.text_to_labels(text,
+                                          Label(part='1111', comment=True)))
 
     def test_merge_labels(self):
         labels = [['1021', 'A'], ['1021', 'B']]
-        self.assertEqual(['1021', 'A_B'], merge_labels(labels))
+        self.assertEqual(['1021', 'A_B'], interpretation.merge_labels(labels))
 
         labels = [['1021', 'A', '1'], ['1021', 'A', '2']]
-        self.assertEqual(['1021', 'A', '1_2'], merge_labels(labels))
+        self.assertEqual(['1021', 'A', '1_2'],
+                         interpretation.merge_labels(labels))

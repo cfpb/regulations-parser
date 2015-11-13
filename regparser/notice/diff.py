@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from itertools import takewhile
 import re
 from copy import copy
@@ -35,7 +35,7 @@ def fix_section_node(paragraphs, amdpar_xml):
     sections = [s for s in amdpar_xml.itersiblings(preceding=True)
                 if s.tag == 'SECTION']
 
-    #Let's only do this if we find one section tag.
+    # Let's only do this if we find one section tag.
     if len(sections) == 1:
         section = copy(sections[0])
         for paragraph in paragraphs:
@@ -53,7 +53,7 @@ def find_lost_section(amdpar_xml):
         candidate_reg_text = reg_text_siblings[0]
         amdpars = [a for a in candidate_reg_text if a.tag == 'AMDPAR']
         if len(amdpars) == 0:
-            #Only do this if there are not AMDPARS
+            # Only do this if there are not AMDPARS
             for c in candidate_reg_text:
                 if c.tag == 'SECTION':
                     return c
@@ -322,7 +322,7 @@ def and_token_resolution(tokenized):
     indicator is the presence of an "and" token afterwards. We'll likely
     want to expand this step in the future, but for now, we only catch a few
     cases"""
-    # compress "and" tokens 
+    # compress "and" tokens
     tokenized = zip(tokenized, tokenized[1:] + [None])
     tokenized = [l for l, r in tokenized
                  if l != r or not l.match(tokens.AndToken)]
@@ -367,7 +367,7 @@ def context_to_paragraph(tokenized):
         elif (isinstance(token, tokens.TokenList) and
                 any(isinstance(t, tokens.Paragraph) for t in token.tokens)):
             return tokenized
-    #copy
+    # copy
     converted = list(tokenized)
     verb_seen = False
     for i in range(len(converted)):
@@ -408,8 +408,8 @@ def deal_with_subpart_adds(tokenized):
     change the context to a Paragraph. Because it's not a context, it's
     part of the manipulation."""
 
-    #Ensure that we only have one of each: designate verb, a token list and
-    #a context
+    # Ensure that we only have one of each: designate verb, a token list and
+    # a context
     verb_exists = contains_one_designate_token(tokenized)
     list_exists = contains_one_tokenlist(tokenized)
     context_exists = contains_one_context(tokenized)
@@ -475,7 +475,7 @@ def compress_context_in_tokenlists(tokenized):
 
 def compress_context(tokenized, initial_context):
     """Add context to each of the paragraphs (removing context)"""
-    #copy
+    # copy
     context = list(initial_context)
     converted = []
     for token in tokenized:
@@ -514,7 +514,7 @@ def get_destination(tokenized, reg_part):
     destination = paragraphs[0]
 
     if destination.label[0] is None:
-        #Sometimes the destination label doesn't know the reg part.
+        # Sometimes the destination label doesn't know the reg part.
         destination.label[0] = reg_part
 
     destination = destination.label_text()
@@ -527,7 +527,7 @@ def handle_subpart_amendment(tokenized):
 
     token_lists = [t for t in tokenized if isinstance(t, tokens.TokenList)]
 
-    #There's only one token list of paragraphs, sections to be designated
+    # There's only one token list of paragraphs, sections to be designated
     tokens_to_be_designated = token_lists[0]
     labels_to_be_designated = [t.label_text() for t in tokens_to_be_designated]
     reg_part = tokens_to_be_designated.tokens[0].label[0]
@@ -673,7 +673,7 @@ def make_amendments(tokenized, subpart=False):
                     amends.append(Amendment(verb, token.label_text()))
     # Edits to intro text should always be PUTs
     for amend in amends:
-        if (not isinstance(amend, DesignateAmendment) 
+        if (not isinstance(amend, DesignateAmendment)
                 and amend.field == "[text]"
                 and amend.action == tokens.Verb.POST):
             amend.action = tokens.Verb.PUT

@@ -147,32 +147,23 @@ reissuance of the whole regulation (e.g. CFPB
 regulation E).
 
 
-### Run the parser
+### Run the parser (`build_from`)
 
 The syntax is
 
 ```bash
-$ python build_from.py regulation.ext title notice_doc_# act_title act_section
+$ python build_from.py regulation.xml title act_title act_section
 ```
 
 For example, to match the reissuance above:
 ```bash
-$ python build_from.py 725.xml 12 2013-1725 15 1693
+$ python build_from.py 725.xml 12 15 1693
 ```
 
-Here ```12``` is the CFR title number (in our case, for "Banks and
-Banking"), ```2013-1725``` is the last notice used to create this version
-(i.e. the last "final rule" which is currently in effect), ```15``` is the
-title of "the Act" and ```1693``` is the relevant section. Wherever the
-phrase "the Act" is used in the regulation, the external link parser will
-treat it as "15 U.S.C. 1693".  The final rule number is used to pull in
-section-by-section analyses and deduce which notices were used to create
-this version of the regulation. It also helps determine which notices to use
-when building additional versions of the regulation. To find the document
-number, use the [Federal Register](https://www.federalregister.gov/),
-finding the last, effective final rule for your version of the regulation
-and copying the document number from the meta data (currently in a table on
-the right side).
+Here ```12``` is the CFR title number (in our case, for "Banks and Banking"),
+```15``` is the title of "the Act" and ```1693``` is the relevant section.
+Wherever the phrase "the Act" is used in the regulation, the external link
+parser will treat it as "15 U.S.C. 1693".
 
 Running the command will generate four folders, ```regulation```,
 ```notice```, ``layer`` and possibly ``diff`` in the ```OUTPUT_DIR```
@@ -180,6 +171,19 @@ Running the command will generate four folders, ```regulation```,
 
 If you'd like to write the data to an api instead (most likely, one running
 regulations-core), you can set the ```API_BASE``` setting (described below).
+
+There are also some advanced flags which can be set when running the parser
+
+* `--no-generate-diffs` Avoids the default behavior of generating additional
+  versions of the regulation based on federal register rules. If this flag is
+  set, the parser will produce a single tree and set of layers
+* `--checkpoint CHECKPOINT_DIR` Defines a directory to store checkpoint
+  information. It's always safe to not provide this, though you may improve
+  performance when you do. See [Runtime](#runtime), below.
+* `--version-identifier DOC_NUMBER` If you are trying to parse a version of
+  the regulation issued before federalregister.gov has records (~2000), you
+  may need to explicitly provide a version number. This will just be an
+  identifier for the version; you may use "1997-annual", for example.
 
 ### Settings
 
@@ -324,15 +328,15 @@ that you may use it in a production setting.
 The parser first reads the file passed to it as a parameter and attempts to
 parse that into a structured tree of subparts, sections, paragraphs, etc.
 Following this, it will make a call to the Federal Register's API,
-retrieving a list of final rules (i.e. changes) that apply this is
+retrieving a list of final rules (i.e. changes) that apply to this
 regulation. It then writes/saves parsed versions of those notices.
 
 If this all worked well, we save the the parsed regulation and then generate
-an save all of the layers associated with it's version. We then generate
-additional, whole regulation trees and their associated layers for each
+and save all of the layers associated with its version. We then generate
+additional whole regulation trees and their associated layers for each
 final rule (i.e. each alteration to the regulation).
 
-At the very end, we take all versions of the regulation we've build and
+At the very end, we take all versions of the regulation we've built and
 compare each pair (both going forwards and backwards). These diffs are
 generated and then written to the API/filesystem/Git.
 
@@ -340,10 +344,10 @@ generated and then written to the API/filesystem/Git.
 
 The parser has three options for what it does with the parsed documents it
 creates. With no configuration, all of the objects it creates will be
-pretty-printed as json files and stored in subfolders of the current
+pretty-printed as JSON files and stored in subfolders of the current
 directory. Where the output is written can be configured via the
 `OUTPUT_DIR` setting. Spitting out JSON files this way is a good way to
-track how tweaks to the parser might have unexpected affects on the output
+track how tweaks to the parser might have unexpected effects on the output
 -- just diff two such directories.
 
 If the `API_BASE` setting is configured, the output will be written to an API
@@ -365,11 +369,13 @@ potential.
 Our sources of data, through human and technical error, often contain
 problems for our parser. Over the parser's development, we've created
 several not-always-exclusive solutions. We have found that, in most cases,
-the easiest fix is to download and edit a *local* version of the problematic XML. Only if there's some complication in that method should you progress to the more complex strategies.
+the easiest fix is to download and edit a *local* version of the problematic
+XML. Only if there's some complication in that method should you progress to
+the more complex strategies.
 
 All of the paths listed in `LOCAL_XML_PATHS` are checked when fetching
 regulation notices. The file/directory names in these folders should mirror
-those found on federalregister.gov, (e.g. articles/xml/201/131/725.xml). Any
+those found on federalregister.gov, (e.g. `articles/xml/201/131/725.xml`). Any
 changes you make to these documents (such as correcting XML tags, rewording
 amendment paragraphs, etc.) will be used as if they came from the Federal
 Register.
@@ -398,7 +404,7 @@ strategy is useful for certain appendix alterations.
 The most complicated segments of a regulation are their appendices, at least
 from a structural parsing perspective. This is because appendices are
 free-form, often with unique variations on sub-sections, headings, paragraph
-marker hierarchy, etc. Given all this, the parser does it's best job to
+marker hierarchy, etc. Given all this, the parser does its best to
 determine *an* ordering and *a* hierarchy for the subsections/paragraphs
 contained within an appendix.
 
@@ -419,7 +425,7 @@ indicating a new depth level, but is not always accurate.
 ### Markdown/Plaintext-ifying
 
 With some exceptions, we treat a plain-text version of the regulation as
-cannon. By this, we mean that the *words* of the regulation could for much
+canon. By this, we mean that the *words* of the regulation count for much
 more than their presentation in the source documents. This allows us to
 build better tables of content, export data in more formats, and the other
 niceties associated with separating data from presentation.
@@ -477,7 +483,7 @@ $ python build_from.py CFR-2012-title12-vol8-part1004.xml 12 15 1693 --checkpoin
 
 Let's say you are already in a good steady state, that you can parse the
 known versions of a regulation without problem. A new final rule is
-published in the federal regiseter affecting your regulation. To make this
+published in the federal register affecting your regulation. To make this
 concrete, we will use CFPB's regulation Z (12 CFR 1026), final rule
 2014-18838.
 
@@ -488,7 +494,7 @@ above, the parser first parses the file you give it, then it heads over to
 the federal register API, parses notices and rules found there, and then
 proceeds to compile additional versions of the regulation from them. So, as
 the parser is running (Z takes a long time), we can check its partial
-output. Notably, we can check the `notice/2014-18838` json file for
+output. Notably, we can check the `notice/2014-18838` JSON file for
 accuracy.
 
 In a browser, open https://www.federalregister.gov and search for the notice
@@ -496,10 +502,10 @@ in question (you can do this by using the 2014-18838 identifier). Scroll
 through the
 [page](https://www.federalregister.gov/articles/2014/08/15/2014-18838/truth-in-lending-regulation-z-annual-threshold-adjustments-card-act-hoepa-and-atrqm)
 to find the list of changes -- they will generally begin with "PART ..." and
-be offset from the rest of the text. In a text editor, look at the json file
+be offset from the rest of the text. In a text editor, look at the JSON file
 mentioned before.
 
-The json file, which describes our parsed notice has two relevant fields.
+The JSON file that describes our parsed notice has two relevant fields.
 The `amendments` field lists what *types* of changes are being made; it
 corresponds to AMDPAR tags (for reference). Looking at the web page, you
 should be able to map sentences like "Paragraph (b)(1)(ii)(A) and (B) are
@@ -520,7 +526,7 @@ include multiple `changes` if the amendment is about a paragraph with
 children (sub-paragraphs).
 
 Here we hit a problem, and have a few tip-offs. One of the entries in
-`amendmends` was not present in the `changes` field. Further, one of the
+`amendments` was not present in the `changes` field. Further, one of the
 `changes` entries was something like  "i. * * *". In addition, the
 "child_labels" of one of the entries doesn't make sense -- it contains
 children which should not be contained. The parser must have skipped over
@@ -528,7 +534,7 @@ some relevant information; we could try to deduce further but let's treat
 the parser as a black box and see if we can't spot a problem in the
 web-hosted rule, first. You see, federalregister.gov uses XSLTs to take the
 raw XML (which we parse) to convert it into XHTML. If *we* have a problem,
-they might as well.
+they might also.
 
 We'll zero in on where we know our problem begins (based on the information
 investigating `changes`). We might notice that the text of the problem

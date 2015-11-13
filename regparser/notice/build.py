@@ -1,13 +1,12 @@
 from copy import deepcopy
 from collections import defaultdict
+import logging
 import os
 from urlparse import urlparse
 
-import logging 
 
 from lxml import etree
 import requests
-import logging
 
 from regparser.notice.address import fetch_addresses
 from regparser.notice.build_appendix import parse_appendix_changes
@@ -28,12 +27,23 @@ import settings
 
 
 def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
-    """Given JSON from the federal register, create our notice structure"""
-    logging.info('building notice, title {0}, part {1}, notice {2}'.format(cfr_title, cfr_part, fr_notice['document_number']))
+    """ Given JSON from the federal register, create our notice structure """
+    logging.info('building notice, title {0}, part {1}, notice {2}'.format(
+        cfr_title, cfr_part, fr_notice['document_number']))
     cfr_parts = set(str(ref['part']) for ref in fr_notice['cfr_references'])
     cfr_parts.add(cfr_part)
+
     notice = {'cfr_title': cfr_title, 'cfr_parts': list(cfr_parts), 'cfr_part': cfr_part}
-    #   Copy over most fields
+    notice_number = fr_notice['document_number']
+
+    # Check for configured overrides of the FR JSON for this notice
+    if notice_number in settings.FR_NOTICE_OVERRIDES:
+        logging.warning("overriding FR for {}".format(notice_number))
+        notice_overrides = settings.FR_NOTICE_OVERRIDES[notice_number]
+        for k, v in notice_overrides.iteritems():
+            fr_notice[k] = v
+
+    # Copy over most fields
     for field in ['abstract', 'action', 'agency_names', 'comments_close_on',
                   'document_number', 'publication_date',
                   'regulation_id_numbers']:
@@ -60,10 +70,12 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
             fr_notice['full_text_xml_url'])
 
         if len(local_notices) > 0:
-            logging.warning("using local xml for %s", fr_notice['full_text_xml_url'])
+            logging.warning("using local xml for %s",
+                            fr_notice['full_text_xml_url'])
             return process_local_notices(local_notices, notice)
         else:
-            logging.warning("fetching notice %s", fr_notice['full_text_xml_url'])
+            logging.warning("fetching notice %s",
+                            fr_notice['full_text_xml_url'])
             notice_str = requests.get(fr_notice['full_text_xml_url']).content
             return [process_notice(notice, notice_str)]
     return [notice]
@@ -192,7 +204,7 @@ def create_xml_changes(amended_labels, section, notice_changes,
         for amendment in amendments:
             if amendment['action'] in ('POST', 'PUT'):
                 if (subpart_label and amendment['action'] == 'POST'
-                    and len(label.split('-')) == 2):
+                        and len(label.split('-')) == 2):
                     amendment['extras'] = {'subpart': subpart_label}
                 if 'field' in amendment:
                     nodes = changes.create_field_amendment(label, amendment)
@@ -383,6 +395,7 @@ def fetch_cfr_parts(notice_xml):
     cfr_elm = notice_xml.xpath('//CFR')[0]
     results = notice_cfr_p.parseString(cfr_elm.text)
     return list(results)
+
 
 def process_xml(notice, notice_xml):
     """Pull out relevant fields from the xml and add them to the notice"""

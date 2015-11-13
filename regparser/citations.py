@@ -198,7 +198,8 @@ def internal_citations(text, initial_label=None,
 
     single_citations(grammar.marker_appendix.scanString(text), False)
     single_citations(grammar.appendix_with_section.scanString(text), False)
-    single_citations(grammar.section_of_appendix_to_this_part.scanString(text), False)
+    single_citations(grammar.section_of_appendix_to_this_part.scanString(text),
+                     False)
     single_citations(grammar.marker_paragraph.scanString(text), False)
     single_citations(grammar.mps_paragraph.scanString(text), False)
     single_citations(grammar.m_section_paragraph.scanString(text), False)

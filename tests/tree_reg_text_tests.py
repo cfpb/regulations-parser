@@ -1,6 +1,6 @@
 # vim: set encoding=utf-8
 
-from regparser.tree.reg_text import *
+from regparser.tree import reg_text
 from regparser.tree.struct import Node
 from unittest import TestCase
 
@@ -12,7 +12,7 @@ class DepthRegTextTest(TestCase):
         empty_part = Node('', [], ['201', 'Subpart'], '',
                           node_type=Node.EMPTYPART)
         self.assertEqual(Node(text, [empty_part], ['201'], 'Regulation Title'),
-                         build_reg_text_tree(text, 201))
+                         reg_text.build_reg_text_tree(text, 201))
 
     def test_build_reg_text_empty_and_subpart(self):
         """ In some cases, we have a few sections before the first subpart. """
@@ -30,7 +30,7 @@ class DepthRegTextTest(TestCase):
 
         text = "\n".join((title, sect1_title, sect1, subpart_a, sect2_title,
                           sect2, subpart_b, sect4_title, sect4))
-        reg = build_reg_text_tree(text, 204)
+        reg = reg_text.build_reg_text_tree(text, 204)
         self.assertEqual(["204"], reg.label)
         self.assertEqual(title, reg.title)
         self.assertEqual("", reg.text.strip())
@@ -52,7 +52,7 @@ class DepthRegTextTest(TestCase):
         text = "\n".join((title, subpart_a, sect1_title, sect1, sect2_title,
                           sect2, subpart_b, sect4_title, sect4))
 
-        reg = build_reg_text_tree(text, 204)
+        reg = reg_text.build_reg_text_tree(text, 204)
         self.assertEqual(["204"], reg.label)
         self.assertEqual(title, reg.title)
         self.assertEqual("", reg.text.strip())
@@ -84,91 +84,86 @@ class DepthRegTextTest(TestCase):
 
     def test_find_next_section_start(self):
         text = u"\n\nSomething\n§ 205.3 thing\n\n§ 205.4 Something\n§ 203.19"
-        self.assertEqual(12, find_next_section_start(text, 205))
-        self.assertEqual(None, find_next_section_start(text, 204))
-        self.assertEqual(45, find_next_section_start(text, 203))
+        self.assertEqual(12, reg_text.find_next_section_start(text, 205))
+        self.assertEqual(None, reg_text.find_next_section_start(text, 204))
+        self.assertEqual(45, reg_text.find_next_section_start(text, 203))
 
     def test_find_next_subpart_start(self):
         text = u"\n\nSomething\nSubpart A—Procedures for Application\n\n"
-        self.assertEqual(12, find_next_subpart_start(text))
+        self.assertEqual(12, reg_text.find_next_subpart_start(text))
 
     def test_next_subpart_offsets(self):
         """ Should get the start and end of each offset. """
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection"
         text += u"\n\nSomething\nSubpart A—Procedures for Application\n\n"
         text += u"\n\nSomething else\nSubpart B—Model Forms for Application\n"
-        self.assertEqual((56, 111), next_subpart_offsets(text))
+        self.assertEqual((56, 111), reg_text.next_subpart_offsets(text))
 
         text = u"\n\nSomething\nSubpart A—Application\nAppendix A to Part 201"
-        self.assertEqual((12, 34), next_subpart_offsets(text))
+        self.assertEqual((12, 34), reg_text.next_subpart_offsets(text))
 
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection"
         text += u"\n\nSomething\nubpart A—Procedures for Application\n\n"
         text += u"\n\nSomething else\nSubpart B—Model Forms for Application\n"
-        self.assertEqual((110, 148), next_subpart_offsets(text))
+        self.assertEqual((110, 148), reg_text.next_subpart_offsets(text))
 
         text = u"ubpart A—First subpart\n"
         text += u"§ 201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa\n"
         text += u"\nSubpart B—Second subpart\n"
         text += u"§ 2015 dfds \n sdfds § 20132 saddsa \n\n sdsadsa\n"
-        self.assertEqual((72, 143), next_subpart_offsets(text))
+        self.assertEqual((72, 143), reg_text.next_subpart_offsets(text))
 
         text = u"Supplement I\n\nSomething else\n"
         text += u"Subpart B—Model Forms for Application\n\n"
-        self.assertEqual(None, next_subpart_offsets(text))
+        self.assertEqual(None, reg_text.next_subpart_offsets(text))
 
         text = u"Appendix Q to Part 201\n\nSomething else\n"
         text += u"Subpart B—Model Forms for Application\n"
-        self.assertEqual(None, next_subpart_offsets(text))
+        self.assertEqual(None, reg_text.next_subpart_offsets(text))
 
     def test_next_section_offsets(self):
         """Should get the start and end of each section, even if it is
         followed by an Appendix or a supplement"""
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection\n"
         text += u"§ 201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa"
-        self.assertEqual((2, 45), next_section_offsets(text, 201))
+        self.assertEqual((2, 45), reg_text.next_section_offsets(text, 201))
 
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection\n"
         text += u"201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa"
-        self.assertEqual((2, len(text)), next_section_offsets(text, 201))
+        self.assertEqual((2, len(text)),
+                         reg_text.next_section_offsets(text, 201))
 
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \nAppendix A to Part 201"
-        self.assertEqual((2, 29), next_section_offsets(text, 201))
+        self.assertEqual((2, 29), reg_text.next_section_offsets(text, 201))
 
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \nSupplement I"
-        self.assertEqual((2, 29), next_section_offsets(text, 201))
+        self.assertEqual((2, 29), reg_text.next_section_offsets(text, 201))
 
         text = u"Appendix A to Part 201\n\n§ 201.3 sdsa\nsdd dsdsadsa"
-        self.assertEqual(None, next_section_offsets(text, 201))
+        self.assertEqual(None, reg_text.next_section_offsets(text, 201))
 
         text = u"Supplement I\n\n§ 201.3 sdsa\nsdd dsdsadsa"
-        self.assertEqual(None, next_section_offsets(text, 201))
+        self.assertEqual(None, reg_text.next_section_offsets(text, 201))
 
     def test_sections(self):
         text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection\n"
         text += u"§ 201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa\n"
         text += u"Appendix A to Part 201 bssds \n sdsdsad \nsadad \ndsada"
-        self.assertEqual([(2, 45), (45, 93)], sections(text, 201))
-
-    #def test_sections_stop_at_subpart(self):
-    #    text = u"\n\n§ 201.3 sdsa\nsdd dsdsadsa \n asdsas\nSection\n"
-    #    text += u"§ 201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa\n"
-    #    text += u"Subpart J—Awesome subpart\n"
-    #    self.assertEqual([(2,45), (45,93)], sections(text, 201))
+        self.assertEqual([(2, 45), (45, 93)], reg_text.sections(text, 201))
 
     def test_subparts(self):
         text = u"Subpart A—First subpart\n"
         text += u"§ 201.20 dfds \n sdfds § 201.2 saddsa \n\n sdsadsa\n"
         text += u"\nSubpart B—Second subpart\n"
         text += u"§ 2015 dfds \n sdfds § 20132 saddsa \n\n sdsadsa\n"
-        self.assertEqual([(0, 73), (73, 144)], subparts(text))
+        self.assertEqual([(0, 73), (73, 144)], reg_text.subparts(text))
 
     def test_build_section_tree(self):
         """Should be just like build_paragraph tree, but with a label"""
         line1 = u"§ 201.20 Super Awesome Section"
         line2 = u"\nThis (a) is a good (1) test (2) of (3) some (b) body."
-        tree = build_section_tree(line1+line2, 201)
-        p_tree = regParser.build_tree(line2, label=['201', '20'])
+        tree = reg_text.build_section_tree(line1+line2, 201)
+        p_tree = reg_text.regParser.build_tree(line2, label=['201', '20'])
         self.assertEqual(p_tree.text, tree.text)
         self.assertEqual(p_tree.children, tree.children)
         self.assertEqual(['201', '20'], tree.label)
@@ -182,7 +177,7 @@ class DepthRegTextTest(TestCase):
         line2c = "\n(a) Par 1 references Q-5(a) of Appendix Q"
 
         for line2 in [line2a, line2b, line2c]:
-            tree = build_section_tree(line1+line2, 201)
+            tree = reg_text.build_section_tree(line1+line2, 201)
             self.assertEqual(tree.text, "\n")
             self.assertEqual(1, len(tree.children))
             child = tree.children[0]
@@ -194,7 +189,7 @@ class DepthRegTextTest(TestCase):
         line2 = "\n(a) a (b) b (c) see paragraph (a) or (b)(1) of "
         line2 += "this section"
 
-        tree = build_section_tree(line1+line2, 201)
+        tree = reg_text.build_section_tree(line1+line2, 201)
         self.assertEqual(tree.text, "\n")
         self.assertEqual(3, len(tree.children))
         child = tree.children[2]
@@ -206,7 +201,7 @@ class DepthRegTextTest(TestCase):
         line1 = u"§ 201.20 Super Awesome Section"
         line2 = "\n(a) references Model Forms A-30(a) through (b)"
 
-        tree = build_section_tree(line1+line2, 201)
+        tree = reg_text.build_section_tree(line1+line2, 201)
         self.assertEqual(tree.text, "\n")
         self.assertEqual(1, len(tree.children))
 
@@ -214,7 +209,7 @@ class DepthRegTextTest(TestCase):
         line1 = u"§ 201.20. Super Awesome Section"
         line2 = "\nContents contents"
 
-        tree = build_section_tree(line1+line2, 201)
+        tree = reg_text.build_section_tree(line1+line2, 201)
         self.assertEqual(line2, tree.text)
         self.assertEqual(['201', '20'], tree.label)
         self.assertEqual(line1, tree.title)
@@ -224,7 +219,7 @@ class DepthRegTextTest(TestCase):
         line1 = u"§ 201.20 Super Awesome Section"
         line2 = "\n(a)(1)(i) paragraphs (c)(2)(ii)(A)(1) and (B) content"
 
-        tree = build_section_tree(line1+line2, 201)
+        tree = reg_text.build_section_tree(line1+line2, 201)
         self.assertEqual(1, len(tree.children))
         self.assertEqual(['201', '20'], tree.label)
         tree = tree.children[0]
@@ -240,8 +235,8 @@ class DepthRegTextTest(TestCase):
     def test_build_subparts_tree_reserver(self):
         text = u"Subpart C—[Reserved]"
 
-        tree, _ = build_subparts_tree(text, 8888,
-                                      lambda p: build_subpart(text, 8888))
+        tree, _ = reg_text.build_subparts_tree(
+            text, 8888, lambda p: reg_text.build_subpart(text, 8888))
         self.assertEqual('', tree.text)
         self.assertEqual('subpart', tree.node_type)
         self.assertEqual(['8888', 'Subpart', 'C'], tree.label)

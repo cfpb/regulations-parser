@@ -1,7 +1,9 @@
-#vim: set encoding=utf-8
-from lxml import etree
-from regparser.notice.address import *
+# vim: set encoding=utf-8
 from unittest import TestCase
+
+from lxml import etree
+
+from regparser.notice import address
 
 
 class NoticeAddressTests(TestCase):
@@ -13,12 +15,12 @@ class NoticeAddressTests(TestCase):
                 <HD>ADDRESSES:</HD>
             </ADD>
         </ROOT>"""
-        self.assertEqual(None, fetch_addresses(etree.fromstring(xml)))
+        self.assertEqual(None, address.fetch_addresses(etree.fromstring(xml)))
         xml = """
         <ROOT>
             <CHILD />
         </ROOT>"""
-        self.assertEqual(None, fetch_addresses(etree.fromstring(xml)))
+        self.assertEqual(None, address.fetch_addresses(etree.fromstring(xml)))
 
     def test_fetch_addresses(self):
         xml = """
@@ -33,7 +35,7 @@ class NoticeAddressTests(TestCase):
                 <P>Followed by more instructions.</P>
             </ADD>
         </ROOT>"""
-        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+        self.assertEqual(address.fetch_addresses(etree.fromstring(xml)), {
             'intro': 'Here is some initial instruction.',
             'methods': [
                 ('Electronic', 'http://www.example.com. MSG'),
@@ -54,7 +56,7 @@ class NoticeAddressTests(TestCase):
                 <P>Followed by more instructions.</P>
             </ADD>
         </ROOT>"""
-        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+        self.assertEqual(address.fetch_addresses(etree.fromstring(xml)), {
             'methods': [('Mail', 'Some address here')],
             'instructions': ['Followed by more instructions.']
         })
@@ -68,7 +70,7 @@ class NoticeAddressTests(TestCase):
                 <P>or https://example.com</P>
             </ADD>
         </ROOT>"""
-        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+        self.assertEqual(address.fetch_addresses(etree.fromstring(xml)), {
             'methods': [('Mail', 'Something here')],
             'instructions': [
                 'Otherwise, visit http://example.com',
@@ -85,27 +87,27 @@ class NoticeAddressTests(TestCase):
                 <P>Then do those things</P>
             </ADD>
         </ROOT>"""
-        self.assertEqual(fetch_addresses(etree.fromstring(xml)), {
+        self.assertEqual(address.fetch_addresses(etree.fromstring(xml)), {
             'methods': [('Mail', 'Something something')],
             'instructions': ['Do these things', 'Then do those things']
         })
 
     def test_cleanup_address_p_bullet(self):
         xml = u"""<P>• Bullet: value</P>"""
-        self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
+        self.assertEqual(address.cleanup_address_p(etree.fromstring(xml)),
                          'Bullet: value')
 
     def test_cleanup_address_p_smushed_tag(self):
         xml = """<P>See<E T="03">This</E></P>"""
-        self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
+        self.assertEqual(address.cleanup_address_p(etree.fromstring(xml)),
                          'See This')
 
     def test_cleanup_address_p_without_contents(self):
         xml = """<P>See<E /> here!</P>"""
-        self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
+        self.assertEqual(address.cleanup_address_p(etree.fromstring(xml)),
                          'See here!')
 
     def test_cleanup_address_p_subchildren(self):
         xml = """<P>Oh<E T="03">yeah</E>man</P>"""
-        self.assertEqual(cleanup_address_p(etree.fromstring(xml)),
+        self.assertEqual(address.cleanup_address_p(etree.fromstring(xml)),
                          'Oh yeah man')

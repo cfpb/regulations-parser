@@ -1,7 +1,8 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from unittest import TestCase
 from regparser.layer import table_of_contents
 from regparser.tree.struct import Node
+
 
 class TocTest(TestCase):
 

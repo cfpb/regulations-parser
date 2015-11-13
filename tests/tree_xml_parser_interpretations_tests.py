@@ -1,7 +1,6 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from unittest import TestCase
 from lxml import etree
-from lxml import html
 
 from regparser.tree.xml_parser import interpretations, tree_utils
 
@@ -26,11 +25,6 @@ class InterpretationsTest(TestCase):
         marker = interpretations.get_first_interp_marker(text)
         self.assertEqual(marker, '<E T="03">1</E>')
 
-    def test_interpretation_markers_none(self):
-        text = '(iv) Kiwis and Mangos'
-        marker = interpretations.get_first_interp_marker(text)
-        self.assertEqual(marker, None)
-
     def test_interpretation_markers_stars_no_period(self):
         for marker in ('4 ', 'iv  ', 'A\t'):
             text = marker + '* * *'
@@ -40,6 +34,11 @@ class InterpretationsTest(TestCase):
             text = "33 * * * Some more stuff"
             found_marker = interpretations.get_first_interp_marker(text)
             self.assertEqual(None, found_marker)
+
+    def test_interpretation_markers_parenthesis(self):
+        text = u'(b) Some text here.'
+        found_marker = interpretations.get_first_interp_marker(text)
+        self.assertEqual("b", found_marker)
 
     def test_build_supplement_tree(self):
         """Integration test"""
@@ -332,6 +331,25 @@ class InterpretationsTest(TestCase):
                 <P>1. 111</P>
                 <P>i. iii</P>
                 <P>Howdy Howdy</P>
+            </ROOT>"""
+        node = etree.fromstring(xml).xpath('//HD')[0]
+        stack = tree_utils.NodeStack()
+        interpretations.process_inner_children(stack, node)
+        while stack.size() > 1:
+            stack.unwind()
+        i1 = stack.m_stack[0][0][1]
+        self.assertEqual(1, len(i1.children))
+        i1i = i1.children[0]
+        self.assertEqual(0, len(i1i.children))
+        self.assertEqual(i1i.text.strip(), "i. iii\n\nHowdy Howdy")
+
+    def test_process_inner_child_depth_spec(self):
+        xml = """
+            <ROOT>
+                <HD>Title</HD>
+                <P depth="1">1. 111</P>
+                <P depth="2">i. iii</P>
+                <P depth="1">Howdy Howdy</P>
             </ROOT>"""
         node = etree.fromstring(xml).xpath('//HD')[0]
         stack = tree_utils.NodeStack()

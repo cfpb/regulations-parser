@@ -14,7 +14,7 @@ class SectionBySection(Layer):
                     # Determine if this is non-empty
                     and (sxs['paragraphs']
                          or any(c for c in sxs['children']
-                                if not 'labels' in c))):
+                                if 'labels' not in c))):
                     search_results.append(sxs)
                 for child in sxs['children']:
                     per_sxs(child)

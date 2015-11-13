@@ -1,12 +1,11 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from unittest import TestCase
 
-from regparser.grammar import tokens
-from regparser.grammar.amdpar import *
+from regparser.grammar import amdpar, tokens
 
 
 def parse_text(text):
-    return [m[0] for m, _, _ in token_patterns.scanString(text)]
+    return [m[0] for m, _, _ in amdpar.token_patterns.scanString(text)]
 
 
 class GrammarAmdParTests(TestCase):
@@ -302,7 +301,7 @@ class GrammarAmdParTests(TestCase):
         text = "Section 105.32 is amended by"
         text += " removing and reserving paragraph (b)(2)"
 
-        result = [m[0] for m, _, _ in token_patterns.scanString(text)]
+        result = parse_text(text)
         reserve_token = tokens.Verb(tokens.Verb.RESERVE, active=True)
         self.assertTrue(reserve_token in result)
 
@@ -429,7 +428,7 @@ class GrammarAmdParTests(TestCase):
             self.assertEqual(2, len(result))
             heading, revised = result
             self.assertTrue(heading.match(
-                tokens.Paragraph, label=[None, 'Interpretations', '29', 
+                tokens.Paragraph, label=[None, 'Interpretations', '29',
                                          '(r)(6)'],
                 field=tokens.Paragraph.HEADING_FIELD))
             self.assertTrue(revised.match(tokens.Verb, verb=tokens.Verb.PUT))
@@ -492,11 +491,23 @@ class GrammarAmdParTests(TestCase):
         ])
 
     def test_example36(self):
-        text = u'In Appendix A to Part 1002 revise [label:1002-A-p1-2-d] to read:'
+        text = (u'In Appendix A to Part 1002 revise [label:1002-A-p1-2-d] to '
+                u'read:')
         result = parse_text(text)
         self.assertEqual(result, [
             tokens.Context(['1002', 'Appendix:A'], certain=True),
             tokens.Verb(tokens.Verb.PUT, active=True, and_prefix=False),
-            tokens.Paragraph([ '1002', 'Appendix:A', 'p1', '2', 'd' ], field = None )
+            tokens.Paragraph(['1002', 'Appendix:A', 'p1', '2', 'd'],
+                             field=None)
         ])
-        
+
+    def test_paragraph_of(self):
+        text = u"12. Paragraph (c)(1)(iv) of § 4.9 is revised"
+        result = parse_text(text)
+        self.assertEqual(2, len(result))
+        paragraph, verb = result
+
+        self.assertTrue(paragraph.match(
+            tokens.Paragraph, label=['4', None, '9', 'c', '1', 'iv']))
+        self.assertTrue(verb.match(
+            tokens.Verb, verb=tokens.Verb.PUT))

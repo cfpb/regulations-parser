@@ -1,11 +1,10 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from unittest import TestCase
 
 from lxml import etree
 from mock import patch
 
 from regparser.notice import build_interp
-from regparser.notice.diff import Amendment
 
 
 class NoticeBuildInterpTest(TestCase):

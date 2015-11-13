@@ -71,7 +71,7 @@ class GetterBase(object):
                 return {'a': 'b', 'source': 2}
         try_to_load.side_effect = response
 
-        setattr(settings, self.settings_key, 
+        setattr(settings, self.settings_key,
                 ['source1', 'return_none', 'source2'])
 
         overrides = self.content_obj()

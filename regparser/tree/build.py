@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 from regparser.tree.appendix.tree import trees_from as appendix_trees
 from regparser.tree.interpretation import build as build_interp_tree
 from regparser.tree.reg_text import build_reg_text_tree

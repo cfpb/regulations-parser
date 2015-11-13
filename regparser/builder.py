@@ -35,23 +35,24 @@ class Builder(object):
         self.checkpointer = checkpointer or NullCheckpointer()
         self.writer = api_writer.Client(writer_type=writer_type)
         self.notices_json = []
-        #self.notices = self.checkpointer.checkpoint('notice', lambda: fetch_notices(self.cfr_title, self.cfr_part, only_final=True))
         self.notices = []
         self.notice_doc_numbers = []
-        #self.eff_notices = group_by_eff_date(self.notices)
         self.eff_notices = []
 
     def fetch_notices_json(self):
-        self.notices_json = fetch_notice_json(self.cfr_title, self.cfr_part, only_final=True)
+        self.notices_json = fetch_notice_json(self.cfr_title, self.cfr_part,
+                                              only_final=True)
         self.notice_doc_numbers = [notice_json['document_number']
                                    for notice_json in self.notices_json]
 
     def build_single_notice(self, notice_json, checkpoint=True):
-        logging.info('building notice {0} from {1}'.format(notice_json['document_number'], notice_json['full_text_xml_url']))
+        logging.info('building notice {0} from {1}'.format(
+            notice_json['document_number'], notice_json['full_text_xml_url']))
         if checkpoint:
             notice = self.checkpointer.checkpoint(
                 'notice-' + notice_json['document_number'],
-                lambda: build_notice(self.cfr_title, self.cfr_part, notice_json)
+                lambda: build_notice(self.cfr_title, self.cfr_part,
+                                     notice_json)
             )
         else:
             notice = build_notice(self.cfr_title, self.cfr_part, notice_json)
@@ -93,9 +94,6 @@ class Builder(object):
         elif output_type == 'xml':
             pass
 
-            # for notice in self.notices:
-            #     del notice['meta']
-            #     self.writer.notice(notice['document_number']).write_notice(notice)
 
     def write_regulation(self, reg_tree, output_type='json', layers=None):
         if output_type == 'json':
@@ -393,9 +391,10 @@ class NullCheckpointer(object):
         return fn()
 
 
-def tree_and_builder(filename, title, checkpoint_path=None, writer_type=None):
+def tree_and_builder(filename, title, checkpoint_path=None, writer_type=None, doc_number=None):
     """Reads the regulation file and parses it. Returns the resulting tree as
-    well as a Builder object for further manipulation"""
+    well as a Builder object for further manipulation. Looks up the doc_number
+    if it's not provided"""
     if checkpoint_path is None:
         checkpointer = NullCheckpointer()
     else:
@@ -409,9 +408,10 @@ def tree_and_builder(filename, title, checkpoint_path=None, writer_type=None):
     reg_tree = checkpointer.checkpoint("init-tree-" + file_digest,
                                        lambda: Builder.reg_tree(reg_text))
     title_part = reg_tree.label_id()
-    doc_number = checkpointer.checkpoint(
-        "doc-number-" + file_digest,
-        lambda: Builder.determine_doc_number(reg_text, title, title_part))
+    if doc_number is None:
+        doc_number = checkpointer.checkpoint(
+            "doc-number-" + file_digest,
+            lambda: Builder.determine_doc_number(reg_text, title, title_part))
     if not doc_number:
         raise ValueError("Could not determine document number")
 

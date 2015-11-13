@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import patch
 
-from regparser.federalregister import *
+from regparser import federalregister
 
 
 class FederalRegisterTest(TestCase):
@@ -15,7 +15,7 @@ class FederalRegisterTest(TestCase):
 
         build_note.return_value = ['NOTICE!']
 
-        notices = fetch_notices(23, 1222)
+        notices = federalregister.fetch_notices(23, 1222)
 
         params = requests.get.call_args[1]['params']
         self.assertTrue(23 in params.values())

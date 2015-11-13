@@ -1,4 +1,4 @@
-#vim: set encoding=utf-8
+# vim: set encoding=utf-8
 import logging
 from itertools import takewhile
 import re
@@ -15,7 +15,7 @@ from regparser.layer.key_terms import KeyTerms
 from regparser.tree.depth import markers
 from regparser.tree.depth.derive import derive_depths
 from regparser.tree.paragraph import p_levels
-from regparser.tree.struct import Node, find
+from regparser.tree.struct import Node
 from regparser.tree.xml_parser import tree_utils
 from regparser.tree.xml_parser.interpretations import build_supplement_tree
 from regparser.tree.xml_parser.interpretations import get_app_title
@@ -93,7 +93,7 @@ class AppendixProcessor(object):
             lvl, parent = pair
             return (not parent.title
                     or not title_label_pair(parent.title,
-                                self.appendix_letter, self.part))
+                                            self.appendix_letter, self.part))
 
         #   Check if this SOURCE level matches a previous
         for lvl, parent in takewhile(not_known_depth_header,
@@ -106,7 +106,7 @@ class AppendixProcessor(object):
         for lvl, parent in self.m_stack.lineage_with_level():
             if parent.title:
                 pair = title_label_pair(parent.title,
-                        self.appendix_letter, self.part)
+                                        self.appendix_letter, self.part)
                 if pair:
                     return pair[1]
                 else:
@@ -119,7 +119,6 @@ class AppendixProcessor(object):
         obviously labeled (e.g. A-3 or Part III) and others are headers
         without a specific label (we give them the h + # id)"""
         source = xml_node.attrib.get('SOURCE')
-
 
         pair = title_label_pair(text, self.appendix_letter, self.part)
 
@@ -141,7 +140,7 @@ class AppendixProcessor(object):
         self.m_stack.add(self.depth, n)
 
     def insert_dashes(self, xml_node, text):
-        """ If paragraph has a SOURCE attribute with a value of FP-DASH 
+        """ If paragraph has a SOURCE attribute with a value of FP-DASH
             it fills out with dashes, like Foo_____. """
         mtext = text
         if xml_node.get('SOURCE') == 'FP-DASH':
@@ -149,10 +148,6 @@ class AppendixProcessor(object):
         return mtext
 
     def process_sequence(self, root):
-
-        # import pdb
-        # pdb.set_trace()
-
         for child in root.getchildren():
             text = tree_utils.get_node_text(child, add_spaces=True).strip()
             text = self.insert_dashes(child, text)
@@ -162,7 +157,6 @@ class AppendixProcessor(object):
         self.depth += 1
         self.end_group()
         self.depth = old_depth
-
 
     def paragraph_with_marker(self, text, tagged_text):
         """The paragraph has a marker, like (a) or a. etc."""
@@ -180,15 +174,20 @@ class AppendixProcessor(object):
         for mtext in split_paragraph_text(mtext):
             if keyterm:     # still need the original text
                 mtext = mtext.replace(';'*len(keyterm), keyterm)
+            # label_candidate = [initial_marker(mtext)[0]]
+            # existing_node = None
+            # for node in self.nodes:
+            #     if node.label == label_candidate:
+            #         existing_node = node
+            # if existing_node:
+            #     self.paragraph_counter += 1
+            #     node = Node(mtext, node_type=Node.APPENDIX,
+            #                 label=['dup{}'.format(self.paragraph_counter),
+            #                        initial_marker(mtext)[0]])
+            # else:
             node = Node(mtext, node_type=Node.APPENDIX,
-                                label=[initial_marker(mtext)[0]])
-            # if len(self.nodes) > 1:
-            #     prev_node = self.nodes[-1]
-            #     prev_node_text = prev_node.text
-            #     prev_node_label = prev_node.label[-1]
-            #     if prev_node_text.strip().endswith(':'):
-            #         node = Node(mtext, node_type=Node.APPENDIX,
-            #                     label=[prev_node_label, initial_marker(mtext)[0]])
+                        label=[initial_marker(mtext)[0]])
+            node.tagged_text = tagged_text
             self.nodes.append(node)
 
     def paragraph_no_marker(self, text):
@@ -255,7 +254,8 @@ class AppendixProcessor(object):
             if markers:
                 results = derive_depths(markers)
                 if not results or results == []:
-                    logging.warning('Could not derive depth from {}'.format(markers))
+                    logging.warning(
+                        'Could not derive depth from {}'.format(markers))
                     depths = []
                 else:
                     depths = list(reversed(
@@ -266,9 +266,11 @@ class AppendixProcessor(object):
             self.depth += 1
             while nodes:
                 node = nodes.pop()
-                if AppendixProcessor.filler_regex.match(node.label[-1]) or depths == []:
-                    # Not a marker paragraph, or a marker paragraph that isn't actually
-                    # part of a hierarchy (e.g. Appendix C to 1024, notice 2013-28210)
+                if (AppendixProcessor.filler_regex.match(node.label[-1])
+                        or depths == []):
+                    # Not a marker paragraph, or a marker paragraph that isn't
+                    # actually part of a hierarchy (e.g. Appendix C to 1024,
+                    # notice 2013-28210)
                     self.m_stack.add(self.depth, node)
                 else:
                     depth = depths.pop()
@@ -297,9 +299,9 @@ class AppendixProcessor(object):
         def is_subhead(tag, text):
             initial = initial_marker(text)
             return ((tag == 'HD' and (not initial or '.' in initial[1]))
-                    or (tag in ('P', 'FP') 
+                    or (tag in ('P', 'FP')
                         and title_label_pair(text, self.appendix_letter,
-                            self.part)))
+                                             self.part)))
 
         for child in appendix.getchildren():
             text = tree_utils.get_node_text(child, add_spaces=True).strip()
@@ -319,7 +321,6 @@ class AppendixProcessor(object):
                 old_depth = self.depth
                 self.end_group()
                 self.depth = old_depth
-                # import pdb; pdb.set_trace();
                 self.process_sequence(child)
             elif child.tag in ('P', 'FP'):
                 text = self.insert_dashes(child, text)
@@ -346,6 +347,7 @@ _first_paren_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*(\(' + lvl[0] + '\))')
 _first_period_markers = [re.compile(ur'[\)\.|,|;|-|—]\s*(' + lvl[0] + '\.)')
 
                          for lvl in p_levels]
+
 
 def split_paragraph_text(text):
     """Split text into a root node and its children (if the text contains
@@ -386,7 +388,9 @@ def parsed_title(text, appendix_letter):
                         + Optional(grammar.paren_upper | grammar.paren_lower)
                         + Optional(grammar.paren_digit))
     part_roman_parser = Marker("part") + grammar.aI
-    parser = LineStart() + (digit_str_parser | part_roman_parser | grammar.roman_upper)
+    parser = LineStart() + (digit_str_parser
+                            | part_roman_parser
+                            | grammar.roman_upper)
 
     for match, _, _ in parser.scanString(text):
         return match
@@ -401,22 +405,24 @@ def title_label_pair(text, appendix_letter, reg_part):
         has_parens = (match.paren_upper or match.paren_lower
                       or match.paren_digit or match.markerless_upper)
         if has_parens:
-            pair =(''.join(match), 2)
+            pair = (''.join(match), 2)
         elif match.a1:
             pair = (match.a1, 2)
         elif match.aI:
             pair = (match.aI, 2)
-        elif match.roman_upper:
+        elif match.roman_upper and reg_part in text:
             pair = (match.roman_upper, 2)
 
         if pair is not None and \
                 reg_part in APPENDIX_IGNORE_SUBHEADER_LABEL and \
-                pair[0] in APPENDIX_IGNORE_SUBHEADER_LABEL[reg_part][appendix_letter]:
+                pair[0] in APPENDIX_IGNORE_SUBHEADER_LABEL[reg_part][
+                    appendix_letter]:
             logging.warning("Ignoring subheader label %s of appendix %s",
                             pair[0], appendix_letter)
             pair = None
 
     return pair
+
 
 def initial_marker(text):
     parser = (grammar.paren_upper | grammar.paren_lower | grammar.paren_digit
