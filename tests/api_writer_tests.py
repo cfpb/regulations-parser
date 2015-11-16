@@ -8,7 +8,8 @@ from mock import patch
 from lxml.etree import Element
 
 from regparser.api_writer import (
-    APIWriteContent, Client, FSWriteContent, GitWriteContent, Repo)
+    APIWriteContent, Client, FSWriteContent, GitWriteContent, Repo, 
+    XMLWriteContent)
 from regparser.tree.struct import Node
 from regparser.notice.diff import Amendment, DesignateAmendment
 import settings

@@ -339,85 +339,86 @@ class XMLWriteContent:
         # The analyses for this label.
         analyses = self.layers['analyses'][label]
 
-        for a in analyses:
+        # We'll need to lookup footnotes in analysis paragraphs in
+        # notice['footnotes']. This function does that.
+        def resolve_footnotes(text, f_refs):
+            annotated_text = ''
+            position = 0
+            for ref in f_refs:
+                ref_offset = ref['offset']
+                ref_number = ref['reference']
+
+                # As above, let this KeyError fall through. If the
+                # footnote can't be found, we've got bigger
+                # problems.
+                footnote = analysis_notice['footnotes'][ref_number]
+                
+                # Create the footnote elm with the text and ref
+                # number
+                footnote_elm = Element('footnote')
+                footnote_elm.set('ref', ref_number)
+                footnote_elm.text = footnote
+                
+                # Add the text to the offset plus the footnote to
+                # the annotated string.
+                annotated_text += text[position:ref_offset] + \
+                        tostring(footnote_elm)
+
+                # Advance our position
+                position = ref_offset
+
+            # Add the remainder of the text
+            annotated_text += text[position:]
+            return annotated_text
+
+        # Each analysis section will be need to be constructed the
+        # same way. So here's a recursive function to do it.
+        def analysis_section(parent_elm, child):
+            # Create the section element
+            section_elm = SubElement(parent_elm, 'analysisSection')
+
+            # Add the title element
+            title_elm = SubElement(section_elm, 'title')
+            title_elm.text = child['title']
+
+            # Add paragraphs
+            for paragraph in child['paragraphs']:
+                paragraph_number = child['paragraphs'].index(paragraph)
+                paragraph_footnotes = [fn 
+                        for fn in child['footnote_refs'] 
+                            if fn['paragraph'] == paragraph_number]
+                text = resolve_footnotes(paragraph, paragraph_footnotes)
+
+                paragraph_elm = fromstring(
+                        '<analysisParagraph>' 
+                            + text +
+                        '</analysisParagraph>')
+                section_elm.append(paragraph_elm)
+
+            # Construct an analysis section for any children.
+            map(lambda c:  analysis_section(section_elm, c),
+                    child['children'])
+
+        for analysis_ref in analyses:
             # NOTE: We'll let index errors percolate upwards because if 
             # the index doesn't exist, and we can't find the notice 
             # number or analysis within the notice, there's something 
             # wrong with the analyses layer to this point.
-
-            a_version = a['reference'][0]
-            a_label = a['reference'][1]
+            analysis_version = analysis_ref['reference'][0]
+            analysis_label = analysis_ref['reference'][1]
 
             # Look up the notice with the analysis attached
-            a_notice = [n for n in self.notices 
-                        if n['document_number'] == a_version][0]
+            analysis_notice = [n for n in self.notices 
+                        if n['document_number'] == analysis_version][0]
 
             # Lookup the analysis for this element
-            a_analysis = [a for a in a_notice['section_by_section'] 
-                        if a_label in a['labels']][0]
-
-            # We'll need to lookup footnotes in analysis paragraphs in
-            # notice['footnotes']. This function does that.
-            def resolve_footnotes(text, f_refs):
-                annotated_text = ''
-                position = 0
-                for r in f_refs:
-                    r_offset = r['offset']
-                    r_number = r['reference']
-
-                    # As above, let this KeyError fall through. If the
-                    # footnote can't be found, we've got bigger
-                    # problems.
-                    footnote = a_notice['footnotes'][r_number]
-                    
-                    # Create the footnote elm with the text and ref
-                    # number
-                    footnote_elm = Element('footnote')
-                    footnote_elm.set('ref', r_number)
-                    footnote_elm.text = footnote
-                    
-                    # Add the text to the offset plus the footnote to
-                    # the annotated string.
-                    annotated_text += text[position:r_offset] + \
-                            tostring(footnote_elm)
-
-                    # Advance our position
-                    position = r_offset
-
-                # Add the remainder of the text
-                annotated_text += text[position:]
-                return annotated_text
-
-            # Each analysis section will be need to be constructed the
-            # same way. So here's a recursive function to do it.
-            def analysis_section(parent_elm, child):
-                # Create the section element
-                section_elm = SubElement(parent_elm, 'analysisSection')
-
-                # Add the title element
-                title_elm = SubElement(section_elm, 'title')
-                title_elm.text = child['title']
-
-                # Add paragraphs
-                for p in child['paragraphs']:
-                    p_number = child['paragraphs'].index(p)
-                    p_footnotes = [f for f in child['footnote_refs'] 
-                                   if f['paragraph'] == p_number]
-                    text = resolve_footnotes(p, p_footnotes)
-
-                    p_elm = fromstring(
-                            '<analysisParagraph>' 
-                                + text +
-                            '</analysisParagraph>')
-                    section_elm.append(p_elm)
-
-                # Construct an analysis section for any children.
-                map(lambda c:  analysis_section(section_elm, c),
-                        child['children'])
+            analysis = [a 
+                    for a in analysis_notice['section_by_section'] 
+                        if analysis_label in a['labels']][0]
 
             # Construct the analysis element and its sections
             analysis_elm = SubElement(elm, 'analysis')
-            analysis_section(analysis_elm, a_analysis)
+            analysis_section(analysis_elm, analysis)
 
     def fdsys(self, reg_number, date='2012-01-01', orig_date='2012-01-01'):
         meta = self.layers['meta'][reg_number][0]
