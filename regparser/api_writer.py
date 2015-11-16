@@ -498,9 +498,6 @@ class XMLWriteContent:
                 content.append(sub_elem)
         elif root.label[-1].isdigit() and len(root.label) == 2:
             elem = Element('section', sectionNum=root.label[-1], label=root.label_id())
-
-            self.apply_layers(root)
-
             subject = SubElement(elem, 'subject')
             subject.text = root.title
             if root.text.strip() != '' and len(root.children) == 0:
