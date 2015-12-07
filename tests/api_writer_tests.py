@@ -483,8 +483,12 @@ class XMLWriteContentTestCase(TestCase):
                 }]
             }
         }
+        notices = [
+            {'document_number': '2015-12345', 'fr_url': 'http://foo'},
+            {'document_number': '2015-23456', 'fr_url': 'http://bar'},
+        ]
         writer = XMLWriteContent("a/path", '2015-12345', 
-                                 layers=layers, notices={})
+                                 layers=layers, notices=notices)
         expected_result = etree.fromstring('''
             <preamble>
               <agency>Bureau of Consumer Financial Protection</agency>
@@ -494,6 +498,7 @@ class XMLWriteContentTestCase(TestCase):
               </cfr>
               <documentNumber>2015-12345</documentNumber>
               <effectiveDate>2015-01-01</effectiveDate>
+              <federalRegisterURL>http://foo</federalRegisterURL>
             </preamble>
         ''', etree.XMLParser(remove_blank_text=True))
         result = writer.preamble('1000')

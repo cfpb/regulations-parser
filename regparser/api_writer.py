@@ -145,6 +145,8 @@ class XMLWriteContent:
         self.layers['definitions'] = self.extract_definitions()
         self.appendix_sections = 1 # need to track these manually
         self.notices = notices
+        self.notice = next((n  for n in notices 
+                            if n['document_number'] == doc_number), None)
 
         self.caps = [chr(i) for i in range(65, 65 + 26)]
 
@@ -455,6 +457,8 @@ class XMLWriteContent:
         doc_number_elm.text = self.doc_number
         eff_date = SubElement(elem, 'effectiveDate')
         eff_date.text = meta['effective_date']
+        fr_url_elm = SubElement(elem, 'federalRegisterURL')
+        fr_url_elm.text = self.notice['fr_url']
 
         return elem
 
