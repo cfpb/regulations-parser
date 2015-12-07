@@ -239,7 +239,8 @@ class XMLWriteContentTestCase(TestCase):
 
         # extract_definitions is called in __init__ to create 
         # layers['definitions'] 
-        writer = XMLWriteContent("a/path", layers=layers, notices={})
+        writer = XMLWriteContent("a/path", '2015-12345', 
+                                 layers=layers, notices={})
         self.assertEqual(expected_definitions, 
                          writer.layers['definitions'])
 
@@ -408,10 +409,9 @@ class XMLWriteContentTestCase(TestCase):
         }]
         elm = etree.Element('section')
         elm.set('label', '1234-1')
-        writer = XMLWriteContent("a/path", layers=layers, notices=notices)
+        writer = XMLWriteContent("a/path", '2015-12345', 
+                                 layers=layers, notices=notices)
         writer.add_analyses(elm)
-
-        print etree.tostring(elm, pretty_print=True)
 
         self.assertEqual(1, len(elm.xpath('./analysis')))
         self.assertEqual(1,
@@ -454,7 +454,8 @@ class XMLWriteContentTestCase(TestCase):
                 }]
             }
         }
-        writer = XMLWriteContent("a/path", layers=layers, notices={})
+        writer = XMLWriteContent("a/path", '2015-12345', 
+                                 layers=layers, notices={})
         expected_result = etree.fromstring('''
             <fdsys>
               <cfrTitleNum>12</cfrTitleNum>
@@ -482,7 +483,8 @@ class XMLWriteContentTestCase(TestCase):
                 }]
             }
         }
-        writer = XMLWriteContent("a/path", layers=layers, notices={})
+        writer = XMLWriteContent("a/path", '2015-12345', 
+                                 layers=layers, notices={})
         expected_result = etree.fromstring('''
             <preamble>
               <agency>Bureau of Consumer Financial Protection</agency>
@@ -490,6 +492,7 @@ class XMLWriteContentTestCase(TestCase):
                 <title>12</title>
                 <section>1000</section>
               </cfr>
+              <documentNumber>2015-12345</documentNumber>
               <effectiveDate>2015-01-01</effectiveDate>
             </preamble>
         ''', etree.XMLParser(remove_blank_text=True))
