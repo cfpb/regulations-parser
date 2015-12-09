@@ -141,8 +141,8 @@ class Client:
         return self.writer_class(
             "layer/%s/%s/%s" % (layer_name, label, doc_number))
 
-    def notice(self, doc_number):
-        return self.writer_class("notice/%s" % doc_number)
+    def notice(self, label, doc_number):
+        return self.writer_class("notice/%s/%s" % (label, doc_number))
 
     def diff(self, label, old_version, new_version):
         return self.writer_class("diff/%s/%s/%s" % (label, old_version,
