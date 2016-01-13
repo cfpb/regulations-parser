@@ -130,12 +130,10 @@ class Builder(object):
         return layers
 
     def write_layers(self, layers):
-
         for ident, layer in layers.items():
             self.writer.layer(ident, self.cfr_part, self.doc_number).write(layer)
 
     def gen_and_write_layers(self, reg_tree, act_info, cache, notices=None):
-
         layers = self.generate_layers(reg_tree, act_info, cache, notices)
         self.write_layers(layers)
 

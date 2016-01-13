@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import os.path
 import shutil
@@ -136,12 +138,15 @@ class GitWriteContent:
 
 class XMLWriteContent:
 
-    def __init__(self, path, layers=None, notices=None):
+    def __init__(self, path, doc_number, layers=None, notices=None):
         self.path = path
+        self.doc_number = doc_number
         self.layers = layers
         self.layers['definitions'] = self.extract_definitions()
         self.appendix_sections = 1 # need to track these manually
         self.notices = notices
+        self.notice = next((n  for n in notices 
+                            if n['document_number'] == doc_number), None)
 
         self.caps = [chr(i) for i in range(65, 65 + 26)]
 
@@ -448,8 +453,12 @@ class XMLWriteContent:
         title.text = str(meta['cfr_title_number'])
         section = SubElement(cfr, 'section')
         section.text = reg_number
+        doc_number_elm = SubElement(elem, 'documentNumber')
+        doc_number_elm.text = self.doc_number
         eff_date = SubElement(elem, 'effectiveDate')
         eff_date.text = meta['effective_date']
+        fr_url_elm = SubElement(elem, 'federalRegisterURL')
+        fr_url_elm.text = self.notice['fr_url']
 
         return elem
 
@@ -711,7 +720,7 @@ class Client:
 
     def reg_xml(self, label, doc_number, layers=None, notices=None):
         return self.writer_class("regulation/{}/{}.xml".format(label,
-            doc_number), layers=layers, notices=notices)
+            doc_number), doc_number, layers=layers, notices=notices)
 
     def notice_xml(self, doc_number):
         return self.writer_class("notice/{}.xml".format(doc_number))

@@ -1,11 +1,19 @@
+# -*- coding: utf-8 -*-
+
 import json
 import os
 import shutil
 import tempfile
 from unittest import TestCase
 
+# Some Python 3-friendly imports
+try:
+    import builtins
+except ImportError:
+    import __builtin__ as builtins
+
 from mock import patch
-from lxml.etree import Element
+import lxml.etree as etree
 
 from regparser.api_writer import (
     APIWriteContent, Client, FSWriteContent, GitWriteContent, Repo, 
@@ -52,7 +60,7 @@ class FSWriteContentTest(TestCase):
 
     def test_write_encoding(self):
         writer = FSWriteContent("replace/it")
-        writer.write(Node("Content"))
+        writer.write()
 
         wrote = json.loads(open(settings.OUTPUT_DIR + '/replace/it').read())
         self.assertEqual(wrote['text'], 'Content')
@@ -204,6 +212,154 @@ class XMLWriteContentTestCase(TestCase):
     def setUp(self):
         settings.OUTPUT_DIR = tempfile.mkdtemp() + '/'
 
+    @patch.object(builtins, 'open')
+    def test_write(self, mock_open):
+        layers = {'terms': {'referenced': {}},}
+        # writer = XMLWriteContent("a/path", layers=layers, notices={})
+        # writer.write(Node("Content", label="1000"))
+        # print mock_open.call_args
+        # print args, kwargs
+        
+    def test_write_notice(self):
+        # XXX: There's nothing to test here (yet?)
+        pass
+
+    def test_extract_definitions(self):
+        layers = {
+            'terms': {'referenced': {
+                u'my defined term:1000-1-a': {
+                    'position': (0, 15),
+                    'term': u'my defined term',
+                    'reference': '1000-1-a',
+                },
+            }},
+        }
+        expected_definitions = {'1000-1-a': 
+            {'term': u'my defined term', 'offset': (0, 15)}}
+
+        # extract_definitions is called in __init__ to create 
+        # layers['definitions'] 
+        writer = XMLWriteContent("a/path", '2015-12345', 
+                                 layers=layers, notices={})
+        self.assertEqual(expected_definitions, 
+                         writer.layers['definitions'])
+
+    def test_apply_terms(self):
+        text="my defined term is my favorite of all the defined term" \
+             "because it is mine"
+        replacements = [{
+            'ref': u'my defined term:1000-1-a',
+            'offsets': [(0, 15)]
+        },]
+        expected_result = ([(0, 15)], 
+            ['<ref target="1000-1-a" reftype="term">my defined term</ref>'])
+        result = XMLWriteContent.apply_terms(text, replacements)
+        self.assertEqual(expected_result, result)
+
+    def test_apply_paragraph_markers(self):
+        text = "(a) This is a paragraph with a marker"
+        replacements = [{'text': u'(a)', 'locations': [0]}]
+        expected_result = ([[0, 3]], [''])
+        result = XMLWriteContent.apply_paragraph_markers(text, replacements)
+        self.assertEqual(expected_result, result)
+
+    def test_apply_internal_citations(self):
+        text = "Now I'm going to cite 1000.1 right here."
+        replacements = [{'citation': [u'1000', u'1'], 
+                         'offsets': [(22, 28)]}]
+        expected_result = ([(22, 28)], 
+            ['<ref target="1000-1" reftype="internal">1000.1</ref>'])
+        result = XMLWriteContent.apply_internal_citations(text, replacements)
+        self.assertEqual(expected_result, result)
+    
+    def test_apply_external_citations(self):
+        text = "Pub. L. 111-203, 124 Stat. 1376"
+        replacements = [{'citation': [u'124', 'Stat.', u'1376'], 
+                         'citation_type': 'STATUTES_AT_LARGE', 
+                         'offsets': [[17, 31]]},]
+        expected_result = ([[17, 31]], 
+                ['<ref target="STATUTES_AT_LARGE:124-Stat.-1376" '
+                 'reftype="external">124 Stat. 1376</ref>'])
+        result = XMLWriteContent.apply_external_citations(text, replacements)
+        self.assertEqual(expected_result, result)
+
+    def test_apply_definitions(self):
+        text="my defined term is my favorite of all the defined term" \
+             "because it is mine"
+        replacement = {
+            'term': u'my defined term',
+            'offset': (0, 15)
+        }
+        expected_result = ([(0, 15)], 
+                ['<def term="my defined term" '
+                 'id="5bd44682146382a20d2ac0b5c1143b0ab273e8f8">'
+                 'my defined term</def>'])
+        result = XMLWriteContent.apply_definitions(text, replacement)
+        self.assertEqual(expected_result, result)
+
+    def test_apply_graphics(self):
+        # XXX: This needs to be implemented
+        self.assertTrue(False)
+
+    def test_apply_keyterms(self):
+        # XXX: The actual class method needs to be implemented.
+        pass
+
+    def test_apply_formatting(self):
+        # Test a table
+        replacements = [{
+            'text': '|Header row|\n|---|\n||', 
+            'locations': [0], 
+            'table_data': {'header': [[{'text': 'Header row', 
+                                        'rowspan': 1, 
+                                        'colspan': 1},]], 
+                           'rows': [['', '']]},
+        }]
+        expected_result = ([[0, 155]], 
+                ['<table><header><columnHeaderRow><column colspan="1" '
+                 'rowspan="1">Header row</column></columnHeaderRow>'
+                 '</header><row><cell></cell><cell></cell></row></table>'])
+        result = XMLWriteContent.apply_formatting(replacements)
+        self.assertEqual(expected_result, result)
+
+        # Test dashes
+        replacements = [{'text': u'Model form field_____', 
+                         'dash_data': {'text': u'Model form field'},
+                         'locations': [0]}]
+        expected_result = ([[0, 23]], [u'Model form field<dash/>'])
+        result = XMLWriteContent.apply_formatting(replacements)
+        self.assertEqual(expected_result, result)
+
+        # Test fences
+        # XXX: Actual fences need to be implemented
+        replacements = [{
+            'fence_data': {
+                'lines': ['Note:', 'Some note content right here.'], 
+                'type': 'note'
+            }, 
+            'locations': [0],
+            'text': '```note\nNote:\nSome note content right here.\n```'
+        }]
+        # expected_result = 
+        result = XMLWriteContent.apply_formatting(replacements)
+        # self.assertEqual(expected_result, result)
+        self.assertTrue(False)
+
+        # Test subscripts
+        # XXX: Actual subscripts need to be implemented
+        replacements = [{
+            'locations': [0], 
+            'subscript_data': {
+                "subscript": 'n', 
+                'variable': 'Val'
+            }, 
+            'text': 'Val_{n}'
+        }]
+        # expected_result = 
+        result = XMLWriteContent.apply_formatting(replacements)
+        # self.assertEqual(expected_result, result)
+        self.assertTrue(False)
+
     def test_add_analyses(self):
         """ Test that we can add analysis with sections within the
             primary section and footnotes. """
@@ -251,9 +407,10 @@ class XMLWriteContentTestCase(TestCase):
                 '2': 'Analysis analyzes things.'
             },
         }]
-        elm = Element('section')
+        elm = etree.Element('section')
         elm.set('label', '1234-1')
-        writer = XMLWriteContent("foo", layers=layers, notices=notices)
+        writer = XMLWriteContent("a/path", '2015-12345', 
+                                 layers=layers, notices=notices)
         writer.add_analyses(elm)
 
         self.assertEqual(1, len(elm.xpath('./analysis')))
@@ -284,6 +441,111 @@ class XMLWriteContentTestCase(TestCase):
         self.assertEqual(2,
             len(elm.xpath('./analysis/analysisSection/analysisSection/analysisParagraph/footnote')))
 
+    def test_fdsys(self):
+        layers = {
+            'terms': {'referenced': {}},
+            'meta': {
+                '1000': [{
+                    'cfr_title_number': 12, 
+                    'effective_date': u'2015-01-01', 
+                    'reg_letter': u'D', 
+                    'cfr_title_text': 'Banks and Banking', 
+                    'statutory_name': u'TEST REGULATIONS FOR TESTING'
+                }]
+            }
+        }
+        writer = XMLWriteContent("a/path", '2015-12345', 
+                                 layers=layers, notices={})
+        expected_result = etree.fromstring('''
+            <fdsys>
+              <cfrTitleNum>12</cfrTitleNum>
+              <cfrTitleText>Banks and Banking</cfrTitleText>
+              <volume>8</volume>
+              <date>2015-01-01</date>
+              <originalDate>2015-01-01</originalDate>
+              <title>TEST REGULATIONS FOR TESTING</title>
+            </fdsys>
+        ''', etree.XMLParser(remove_blank_text=True))
+        result = writer.fdsys('1000', date='2015-01-01', orig_date='2015-01-01')
+        self.assertEqual(etree.tostring(expected_result),
+                etree.tostring(result))
+
+    def test_preamble(self):
+        layers = {
+            'terms': {'referenced': {}},
+            'meta': {
+                '1000': [{
+                    'cfr_title_number': 12, 
+                    'effective_date': u'2015-01-01', 
+                    'reg_letter': u'D', 
+                    'cfr_title_text': 'Banks and Banking', 
+                    'statutory_name': u'TEST REGULATIONS FOR TESTING'
+                }]
+            }
+        }
+        notices = [
+            {'document_number': '2015-12345', 'fr_url': 'http://foo'},
+            {'document_number': '2015-23456', 'fr_url': 'http://bar'},
+        ]
+        writer = XMLWriteContent("a/path", '2015-12345', 
+                                 layers=layers, notices=notices)
+        expected_result = etree.fromstring('''
+            <preamble>
+              <agency>Bureau of Consumer Financial Protection</agency>
+              <cfr>
+                <title>12</title>
+                <section>1000</section>
+              </cfr>
+              <documentNumber>2015-12345</documentNumber>
+              <effectiveDate>2015-01-01</effectiveDate>
+              <federalRegisterURL>http://foo</federalRegisterURL>
+            </preamble>
+        ''', etree.XMLParser(remove_blank_text=True))
+        result = writer.preamble('1000')
+        self.assertEqual(etree.tostring(expected_result),
+                etree.tostring(result))
+
+    def test_toc_to_xml(self):
+        toc = [
+            {'index': [u'1000', u'1'], 
+             'title': u'\xa7 1000.1 Authority, etc.'}, 
+            {'index': [u'1000', u'2'], 
+             'title': u'\xa7 1000.2 Definitions.'}, 
+            {'index': [u'1000', u'A'], 
+             'title': u'Appendix A to Part 1000'}
+        ]
+        expected_result = etree.fromstring('''
+            <tableOfContents>
+              <tocSecEntry target="1000-1">
+                <sectionNum>1</sectionNum>
+                <sectionSubject>&#167; 1000.1 Authority, etc.</sectionSubject>
+              </tocSecEntry>
+              <tocSecEntry target="1000-2">
+                <sectionNum>2</sectionNum>
+                <sectionSubject>&#167; 1000.2 Definitions.</sectionSubject>
+              </tocSecEntry>
+              <tocAppEntry target="1000-A">
+                <appendixLetter>A</appendixLetter>
+                <appendixSubject>Appendix A to Part 1000</appendixSubject>
+              </tocAppEntry>
+            </tableOfContents>
+        ''', etree.XMLParser(remove_blank_text=True))
+        result = XMLWriteContent.toc_to_xml(toc)
+        self.assertEqual(etree.tostring(expected_result),
+                etree.tostring(result))
+    
+    def test_is_interp_appendix(self):
+        # XXX: This needs to be implemented
+        self.assertTrue(False)
+
+    def test_to_xml(self):
+        # XXX: This test needs to be implemented
+        self.assertTrue(False)
+
+    def test_apply_layers(self):
+        # XXX: This test needs to be implemented
+        self.assertTrue(False)
+        
 
 class ClientTest(TestCase):
 
