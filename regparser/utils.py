@@ -35,6 +35,7 @@ def flatten(list_of_lists):
     return sum(list_of_lists, [])
 
 letters = [chr(i) for i in range(97, 97 + 26)]
+ucase_letters = [chr(i) for i in range(97, 97 + 26)]
 
 
 def random_letters(length):
