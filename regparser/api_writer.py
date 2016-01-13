@@ -31,7 +31,7 @@ class AmendmentNodeEncoder(AmendmentEncoder, NodeEncoder):
 class FSWriteContent:
     """This writer places the contents in the file system """
 
-    def __init__(self, path):
+    def __init__(self, path, doc_number, layers=None, notices=None):
         self.path = path
 
     def write(self, python_obj):
@@ -52,7 +52,7 @@ class FSWriteContent:
 
 class APIWriteContent:
     """This writer writes the contents to the specified API"""
-    def __init__(self, path):
+    def __init__(self, path, doc_number, layers=None, notices=None):
         self.path = path
 
     def write(self, python_obj):
@@ -65,7 +65,7 @@ class APIWriteContent:
 
 class GitWriteContent:
     """This writer places the content in a git repo on the file system"""
-    def __init__(self, path):
+    def __init__(self, path, doc_number, layers=None, notices=None):
         self.path = path
 
     def folder_name(self, node):
@@ -142,26 +142,30 @@ class XMLWriteContent:
         self.path = path
         self.doc_number = doc_number
         self.layers = layers
-        self.layers['definitions'] = self.extract_definitions()
-        self.appendix_sections = 1 # need to track these manually
         self.notices = notices
         self.notice = next((n  for n in notices 
                             if n['document_number'] == doc_number), None)
-
+        self.appendix_sections = 1 # need to track these manually
         self.caps = [chr(i) for i in range(65, 65 + 26)]
 
-        self.full_path = os.path.join(settings.OUTPUT_DIR, path)
-        dir_path = os.path.dirname(self.full_path)
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
 
-    def write(self, tree):
-        if isinstance(tree, Node):
-            xml_tree = self.to_xml(tree)
+    def write(self, python_object):
+        if isinstance(python_object, Node):
+            self.layers['definitions'] = self.extract_definitions()
+
+            full_path = os.path.join(settings.OUTPUT_DIR, self.path)
+            dir_path = os.path.dirname(full_path)
+            if not os.path.exists(dir_path):
+                os.makedirs(dir_path)
+            
+            xml_tree = self.to_xml(python_object)
             xml_string = tostring(xml_tree, pretty_print=True,
                     xml_declaration=True, encoding='UTF-8')
 
-            with open(self.full_path, 'w') as f:
+            xml_string = tostring(xml_tree, pretty_print=True,
+                    xml_declaration=True, encoding='UTF-8')
+
+            with open(full_path, 'w') as f:
                 f.write(xml_string)
 
     def write_notice(self, notice):
@@ -711,23 +715,20 @@ class Client:
             else:
                 raise ValueError('Unknown writer type specified!')
 
-    def reg_xml(self, label, doc_number, layers=None, notices=None):
-        return self.writer_class("regulation/{}/{}.xml".format(label,
+    def regulation(self, label, doc_number, layers=[], notices={}):
+        return self.writer_class("regulation/{}/{}".format(label,
             doc_number), doc_number, layers=layers, notices=notices)
-
-    def notice_xml(self, doc_number):
-        return self.writer_class("notice/{}.xml".format(doc_number))
-
-    def regulation(self, label, doc_number):
-        return self.writer_class("regulation/%s/%s" % (label, doc_number))
 
     def layer(self, layer_name, label, doc_number):
         return self.writer_class(
-            "layer/%s/%s/%s" % (layer_name, label, doc_number))
+            "layer/{}/{}/{}".format(layer_name, label, doc_number),
+            doc_number)
 
-    def notice(self, doc_number):
-        return self.writer_class("notice/%s" % doc_number)
+    def notice(self, label, doc_number):
+        return self.writer_class("notice/{}/{}.xml".format(label,
+            doc_number), doc_number)
 
     def diff(self, label, old_version, new_version):
-        return self.writer_class("diff/%s/%s/%s" % (label, old_version,
-                                                    new_version))
+        return self.writer_class(
+            "diff/{}/{}/{}".format(label, old_version, new_version),
+            old_version)

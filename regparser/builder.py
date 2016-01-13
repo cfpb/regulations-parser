@@ -86,21 +86,15 @@ class Builder(object):
             self.notices.extend(notice_group)
 
     def write_notices(self, output_type='json'):
-        if output_type == 'json':
-            for notice in self.notices:
-                #  No need to carry this around
-                del notice['meta']
-                self.writer.notice(notice['document_number']).write(notice)
-        elif output_type == 'xml':
-            pass
-
+        for notice in self.notices:
+            #  No need to carry this around
+            del notice['meta']
+            self.writer.notice(
+                self.cfr_part, notice['document_number']).write(notice)
 
     def write_regulation(self, reg_tree, output_type='json', layers=None):
-        if output_type == 'json':
-            self.writer.regulation(self.cfr_part, self.doc_number).write(reg_tree)
-        elif output_type == 'xml':
-            self.writer.reg_xml(self.cfr_part, self.doc_number,
-                    notices=self.notices, layers=layers).write(reg_tree)
+        self.writer.regulation(self.cfr_part, self.doc_number, 
+            notices=self.notices, layers=layers).write(reg_tree)
 
     def generate_layers(self, reg_tree, act_info, cache, notices=None):
         layers = {}
