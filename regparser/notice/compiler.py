@@ -44,7 +44,8 @@ def make_label_sortable(label, roman=False):
         return (int(label),)
     if roman:
         romans = list(itertools.islice(roman_nums(), 0, 50))
-        return (1 + romans.index(label),)
+        if label in romans:
+            return (1 + romans.index(label),)
 
     # segment the label piece into component parts
     # e.g. 45Ai33b becomes (45, 'A', 'i', 33, 'b')
@@ -390,7 +391,8 @@ class RegulationTree(object):
         """ Replace just a node's title. """
 
         node = find(self.tree, label)
-        node.title = change['node'].title
+        if change['node'] is not None and node is not None:
+            node.title = change['node'].title
 
     def replace_node_heading(self, label, change):
         """ A node's heading is it's keyterm. We handle this here, but not
