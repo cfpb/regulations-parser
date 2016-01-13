@@ -622,11 +622,8 @@ class XMLWriteContent:
             text = self.apply_layers(root)
             if text.startswith('!'):
                 text = ''
-            try:
-                content = fromstring('<content>' + text + '</content>')
-            except Exception as ex:
-                import pdb
-                pdb.set_trace()
+            content = fromstring('<content>' + text + '</content>')
+
             # graphics are special since they're not really inlined
             if root.label_id() in self.layers['graphics']:
                 graphics = XMLWriteContent.apply_graphics(self.layers['graphics'][root.label_id()])
