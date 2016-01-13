@@ -19,10 +19,10 @@ from regparser.tree.struct import Node, NodeEncoder
 from regparser.notice.encoder import AmendmentEncoder
 from regparser.tree.xml_parser.reg_text import get_markers
 
-from utils import set_of_random_letters, interpolate_string
+from utils import set_of_random_letters, interpolate_string, ucase_letters
 
 import settings
-
+import logging
 
 class AmendmentNodeEncoder(AmendmentEncoder, NodeEncoder):
     pass
@@ -300,7 +300,7 @@ class XMLWriteContent:
         replacement_offsets = []
         for repl in replacements:
             if 'dash_data' in repl:
-                text = repl['dash_data']['text'] + '<dash/>'
+                text = '<dash>' + repl['dash_data']['text'] + '</dash>'
                 offset = repl['locations'][0]
                 replacement_offsets.append([offset, offset + len(text)])
                 replacement_texts.append(text)
@@ -473,7 +473,7 @@ class XMLWriteContent:
             index = item['index']
             title = item['title']
             target = '-'.join(index)
-            if index[-1].isdigit():
+            if index[-1].isdigit() and not index[1].isalpha():
                 toc_section = SubElement(toc_elem, 'tocSecEntry', target=target)
                 toc_secnum = SubElement(toc_section, 'sectionNum')
                 toc_secnum.text = str(index[-1])
@@ -578,7 +578,7 @@ class XMLWriteContent:
                 elem = Element('interpSection', label=root.label_id())
             title = SubElement(elem, 'title')
             title.text = root.title
-            if '[Reserved]' in root.title:
+            if root.title is not None and '[Reserved]' in root.title:
                 reserved = SubElement(elem, 'reserved')
         elif root.node_type == 'interp' and len(root.label) >= 3 and root.label[-1] == 'Interp'\
                 and root.label[1] in self.caps:
@@ -627,6 +627,7 @@ class XMLWriteContent:
             if text.startswith('!'):
                 text = ''
             content = fromstring('<content>' + text + '</content>')
+
             # graphics are special since they're not really inlined
             if root.label_id() in self.layers['graphics']:
                 graphics = XMLWriteContent.apply_graphics(self.layers['graphics'][root.label_id()])
@@ -641,7 +642,10 @@ class XMLWriteContent:
                 elem.append(sub_elem)
 
             # Add any analysis that might exist for this node
-            self.add_analyses(elem)
+            try:
+                self.add_analyses(elem)
+            except Exception as ex:
+                print 'Could not create analyses for {}'.format(root.label)
                 
         return elem
 
