@@ -22,6 +22,8 @@ from regparser.notice.build import build_notice
 from regparser.tree import struct
 # from regparser.tree.build import build_whole_regtree
 from regparser.tree.xml_parser import reg_text
+from regparser.diff.tree import changes_between
+from regparser.tree.struct import FrozenNode
 
 
 class Builder(object):
@@ -85,14 +87,37 @@ class Builder(object):
         for notice_group in self.eff_notices.values():
             self.notices.extend(notice_group)
 
-    def write_notices(self, output_type='json'):
+    def write_notices(self):
         for notice in self.notices:
             #  No need to carry this around
             del notice['meta']
             self.writer.notice(
                 self.cfr_part, notice['document_number']).write(notice)
 
-    def write_regulation(self, reg_tree, output_type='json', layers=None):
+    def write_notice(self, doc_number, old_tree=None, reg_tree=None,
+            layers=None):
+        """ Write a single notice out. For the XMLWriter, we need to
+            include the reg_tree for the notice. """
+        # Get the notice by doc number
+        notice = next((n  for n in self.notices 
+                       if n['document_number'] == doc_number), None)
+
+        # We can optionall write out the diffs with the notice if we're
+        # given the old tree.
+        changes={}
+        if old_tree is not None and reg_tree is not None:
+            # FrozenNode and Node are not API-compatible. This is
+            # troublesome.
+            changes = dict(changes_between(
+                FrozenNode.from_node(old_tree),
+                FrozenNode.from_node(reg_tree))) 
+
+        # Write the notice
+        writer = self.writer.notice(self.cfr_part, self.doc_number, 
+            notices=self.notices, layers=layers)
+        writer.write(notice, changes=changes, reg_tree=reg_tree)
+
+    def write_regulation(self, reg_tree, layers=None):
         self.writer.regulation(self.cfr_part, self.doc_number, 
             notices=self.notices, layers=layers).write(reg_tree)
 

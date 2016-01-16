@@ -5,7 +5,6 @@ import os.path
 import shutil
 import hashlib
 import re
-import pdb
 
 from git import Repo
 from git.exc import InvalidGitRepositoryError
@@ -15,7 +14,7 @@ from lxml.etree import tostring, fromstring
 
 import requests
 
-from regparser.tree.struct import Node, NodeEncoder
+from regparser.tree.struct import Node, NodeEncoder, find
 from regparser.notice.encoder import AmendmentEncoder
 from regparser.tree.xml_parser.reg_text import get_markers
 
@@ -34,7 +33,7 @@ class FSWriteContent:
     def __init__(self, path, doc_number, layers=None, notices=None):
         self.path = path
 
-    def write(self, python_obj):
+    def write(self, python_obj, **kwargs):
         """Write the object as json to disk"""
         path_parts = self.path.split('/')
         dir_path = settings.OUTPUT_DIR + os.path.join(*path_parts[:-1])
@@ -55,7 +54,7 @@ class APIWriteContent:
     def __init__(self, path, doc_number, layers=None, notices=None):
         self.path = path
 
-    def write(self, python_obj):
+    def write(self, python_obj, **kwargs):
         """Write the object (as json) to the API"""
         requests.post(
             settings.API_BASE + self.path,
@@ -103,7 +102,7 @@ class GitWriteContent:
             shutil.rmtree(child_path, ignore_errors=True)
             self.write_tree(child_path, child)
 
-    def write(self, python_object):
+    def write(self, python_object, **kwargs):
         if "regulation" in self.path:
             path_parts = self.path.split('/')
             dir_path = settings.GIT_OUTPUT_DIR + os.path.join(*path_parts[:-1])
@@ -138,8 +137,10 @@ class GitWriteContent:
 
 class XMLWriteContent:
 
-    def __init__(self, path, doc_number, layers=None, notices=None):
+    def __init__(self, path, doc_number, layers=None, notices=[]):
         self.path = path
+        if not self.path.endswith('.xml'):
+            self.path = path + '.xml'
         self.doc_number = doc_number
         self.layers = layers
         self.notices = notices
@@ -149,30 +150,87 @@ class XMLWriteContent:
         self.caps = [chr(i) for i in range(65, 65 + 26)]
 
 
-    def write(self, python_object):
+    def write(self, python_object, **kwargs):
+        """ Write the given python object based on its type. Node
+            objects are handled as regulation trees, dicts as notices. """
         if isinstance(python_object, Node):
-            self.layers['definitions'] = self.extract_definitions()
+            self.write_regulation(python_object)
 
-            full_path = os.path.join(settings.OUTPUT_DIR, self.path)
-            dir_path = os.path.dirname(full_path)
-            if not os.path.exists(dir_path):
-                os.makedirs(dir_path)
+        if isinstance(python_object, dict):
+            self.write_notice(python_object, **kwargs)
+
+    def write_regulation(self, reg_tree):
+        """ Write a regulation tree. """
+        self.layers['definitions'] = self.extract_definitions()
+
+        full_path = os.path.join(settings.OUTPUT_DIR, self.path)
+        dir_path = os.path.dirname(full_path)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        
+        xml_tree = self.to_xml(reg_tree)
+        xml_string = tostring(xml_tree, pretty_print=True,
+                xml_declaration=True, encoding='UTF-8')
+
+        with open(full_path, 'w') as f:
+            f.write(xml_string)
+
+    def write_notice(self, notice, changes={}, reg_tree=None):
+        """ Write a notice. """
+        if reg_tree is None:
+            raise RuntimeError("to write notices to XML, both a "
+                               "changeset and a reg tree are required.")
+
+        full_path = os.path.join(settings.OUTPUT_DIR, self.path)
+        dir_path = os.path.dirname(full_path)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
             
-            xml_tree = self.to_xml(python_object)
-            xml_string = tostring(xml_tree, pretty_print=True,
-                    xml_declaration=True, encoding='UTF-8')
+        # Create a notice root element
+        notice_string = '<notice xmlns="eregs" ' \
+                     'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' \
+                     'xsi:schemaLocation="eregs ../../eregs.xsd"></notice>'
+        notice_elm = fromstring(notice_string)
 
-            xml_string = tostring(xml_tree, pretty_print=True,
-                    xml_declaration=True, encoding='UTF-8')
+        # Get the preamble
+        preamble_elm = self.preamble(reg_tree.label_id())
+        notice_elm.append(preamble_elm)
 
-            with open(full_path, 'w') as f:
-                f.write(xml_string)
+        # Because analysis kept in-line in RegML, and because the
+        # diffing functionality that generated our `changes` doesn't
+        # take analysis into account, we need to do so here. Analyzed
+        # labels are included as "modified" in the changes dict.
+        for label in self.layers['analyses']:
+            if label not in changes:
+                changes[label] = {'op': 'modified'}
 
-    def write_notice(self, notice):
-        # Relevant notice content will be writen to as part of the
-        # preamble to the reg tree when it's outputted. This function
-        # exists for API compatibility only.
-        pass
+        # Get the changeset
+        changeset_elm = Element('changeset')
+        for label, change in changes.items():
+            # For each change, generate a change element with the label
+            # and operation as attributes.
+            change_elm = SubElement(changeset_elm, 'change')
+            change_elm.set('operation', change['op'])
+            change_elm.set('label', label)
+
+            # If the change is added/modified, we also need to include
+            # the added/modified node.
+            if change['op'] in ('added', 'modified'):
+                # Lookup the new label in the regulation tree
+                changed_node = find(reg_tree, label)
+
+                # Append it to as XML to the change element
+                content_elm = self.to_xml(changed_node)
+                change_elm.append(content_elm)
+        
+        notice_elm.append(changeset_elm)
+
+        xml_string = tostring(notice_elm, pretty_print=True,
+                xml_declaration=True, encoding='UTF-8')
+
+        # Write the file
+        with open(full_path, 'w') as f:
+            f.write(xml_string)
 
     def extract_definitions(self):
         defs = self.layers['terms']['referenced']
@@ -330,24 +388,9 @@ class XMLWriteContent:
 
         return replacement_offsets, replacement_texts
 
-    def add_analyses(self, elm):
-        """
-        This method is not like the others above.
-
-        Anlayses are added to the end of the element they analyze. Given
-        an element, if analysis exists in the analyses layer for that
-        label, an analysis element will be created and appended to the
-        given element.
-        """
-
-        # If there's no analysis for this label, move on.
-        label = elm.get('label')
-        if label not in self.layers['analyses']:
-            return
-
-        # The analyses for this label.
-        analyses = self.layers['analyses'][label]
-
+    def build_analysis(self, analysis_ref):
+        """ Build and return an analysis element for the given analysis
+            reference. """
         # We'll need to lookup footnotes in analysis paragraphs in
         # notice['footnotes']. This function does that.
         def resolve_footnotes(text, f_refs):
@@ -376,7 +419,7 @@ class XMLWriteContent:
                 # Advance our position
                 position = ref_offset
 
-            # Add the remainder of the text
+            # Add the remainder of the texf
             annotated_text += text[position:]
             return annotated_text
 
@@ -408,26 +451,49 @@ class XMLWriteContent:
             map(lambda c:  analysis_section(section_elm, c),
                     child['children'])
 
+        # NOTE: We'll let index errors percolate upwards because if 
+        # the index doesn't exist, and we can't find the notice 
+        # number or analysis within the notice, there's something 
+        # wrong with the analyses layer to this point.
+        analysis_version = analysis_ref['reference'][0]
+        analysis_label = analysis_ref['reference'][1]
+
+        # Look up the notice with the analysis attached
+        analysis_notice = [n for n in self.notices 
+                    if n['document_number'] == analysis_version][0]
+
+        # Lookup the analysis for this element
+        analysis = [a 
+                for a in analysis_notice['section_by_section'] 
+                    if analysis_label in a['labels']][0]
+
+        # Construct the analysis element and its sections
+        analysis_elm = Element('analysis')
+        analysis_section(analysis_elm, analysis)
+
+        return analysis_elm
+
+    def add_analyses(self, elm):
+        """
+        This method is not like the others above.
+
+        Anlayses are added to the end of the element they analyze. Given
+        an element, if analysis exists in the analyses layer for that
+        label, an analysis element will be created and appended to the
+        given element.
+        """
+
+        # If there's no analysis for this label, move on.
+        label = elm.get('label')
+        if label not in self.layers['analyses']:
+            return
+
+        # The analyses for this label.
+        analyses = self.layers['analyses'][label]
+
         for analysis_ref in analyses:
-            # NOTE: We'll let index errors percolate upwards because if 
-            # the index doesn't exist, and we can't find the notice 
-            # number or analysis within the notice, there's something 
-            # wrong with the analyses layer to this point.
-            analysis_version = analysis_ref['reference'][0]
-            analysis_label = analysis_ref['reference'][1]
-
-            # Look up the notice with the analysis attached
-            analysis_notice = [n for n in self.notices 
-                        if n['document_number'] == analysis_version][0]
-
-            # Lookup the analysis for this element
-            analysis = [a 
-                    for a in analysis_notice['section_by_section'] 
-                        if analysis_label in a['labels']][0]
-
-            # Construct the analysis element and its sections
-            analysis_elm = SubElement(elm, 'analysis')
-            analysis_section(analysis_elm, analysis)
+            analysis_elm = self.build_analysis(analysis_ref)
+            elm.append(analysis_elm)
 
     def fdsys(self, reg_number, date='2012-01-01', orig_date='2012-01-01'):
         meta = self.layers['meta'][reg_number][0]
@@ -728,9 +794,9 @@ class Client:
             "layer/{}/{}/{}".format(layer_name, label, doc_number),
             doc_number)
 
-    def notice(self, label, doc_number):
+    def notice(self, label, doc_number, layers=None, notices={}):
         return self.writer_class("notice/{}/{}.xml".format(label,
-            doc_number), doc_number)
+            doc_number), doc_number, layers=layers, notices=notices)
 
     def diff(self, label, old_version, new_version):
         return self.writer_class(
