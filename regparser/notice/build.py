@@ -331,11 +331,11 @@ def process_amendments(notice, notice_xml):
 
             create_xmlless_changes(other_labels, notice_changes)
 
-            for cfr_part, rel_labels in labels_by_part.iteritems():
-            # labels_for_part = {part: labels
-            #                    for part, labels in labels_by_part.iteritems()
-            #                    if part == default_cfr_part}
-            # for cfr_part, rel_labels in labels_for_part.iteritems():
+            # for cfr_part, rel_labels in labels_by_part.iteritems():
+            labels_for_part = {part: labels
+                               for part, labels in labels_by_part.iteritems()
+                               if part == default_cfr_part}
+            for cfr_part, rel_labels in labels_for_part.iteritems():
                 section_xml = find_section(par)
                 if section_xml is not None:
                     subparts = aXp.parent.xpath('.//SUBPART/HD')
