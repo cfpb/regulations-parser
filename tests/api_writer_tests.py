@@ -280,7 +280,7 @@ class XMLWriteContentTestCase(TestCase):
         xml_string = file_handle.write.call_args[0][0]
         notice_xml = etree.fromstring(xml_string)
 
-        # Introspect out changes
+        # Introspect our changes
         changes = notice_xml.findall('.//{eregs}change')
         self.assertEqual(len(changes), 4)
         self.assertEqual(2, 
