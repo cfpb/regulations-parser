@@ -12,7 +12,7 @@ try:
 except ImportError:
     import __builtin__ as builtins
 
-from mock import patch
+from mock import patch, mock_open
 import lxml.etree as etree
 
 from regparser.api_writer import (
@@ -212,18 +212,85 @@ class XMLWriteContentTestCase(TestCase):
     def setUp(self):
         settings.OUTPUT_DIR = tempfile.mkdtemp() + '/'
 
-    @patch.object(builtins, 'open')
-    def test_write(self, mock_open):
-        layers = {'terms': {'referenced': {}},}
-        # writer = XMLWriteContent("a/path", layers=layers, notices={})
-        # writer.write(Node("Content", label="1000"))
-        # print mock_open.call_args
-        # print args, kwargs
-        
-    def test_write_notice(self):
-        # XXX: There's nothing to test here (yet?)
-        pass
+    @patch('regparser.api_writer.XMLWriteContent.write_notice')
+    @patch('regparser.api_writer.XMLWriteContent.write_regulation')
+    def test_write(self, write_regulation, write_notice):
+        # layers = {'terms': {'referenced': {}},}
+        writer = XMLWriteContent("a/path", '2015-12345', layers={}, notices={})
 
+        # It should try to call write_regulation for this
+        reg_tree = Node("Content", label=['1000'])
+        writer.write(reg_tree)
+        self.assertTrue(write_regulation.called)
+        self.assertIn(reg_tree, write_regulation.call_args[0])
+
+        # It should try to call write_regulation for this
+        notice = {'document_number': '2015-12345'}
+        writer.write(notice)
+        self.assertTrue(write_notice.called)
+        self.assertIn(notice, write_notice.call_args[0])
+        
+    def test_write_regulation(self):
+        # XXX: This test needs to be implemented
+        self.assertTrue(False)
+        
+    @patch('regparser.api_writer.XMLWriteContent.add_analyses')
+    @patch('regparser.api_writer.XMLWriteContent.preamble')
+    def test_write_notice(self, mock_preamble, mock_add_analyses):
+        changes = {'1234-2': {'op': 'modified'},
+                   '1234-3': {'op': 'deleted'},
+                   '1234-4': {'op': 'added'}}
+        reg_tree = Node("I'm the root", label=['1234'], children=[
+            Node("I'll get analysis", label=['1234', '1']),
+            Node("I will be modified", label=['1234', '2']),
+            Node("I will be deleted", label=['1234', '3']),
+            Node("I will be added", label=['1234', '4'])
+        ])
+
+        # Ensure we have some analysis just to include
+        layers = {'analyses': {'1234-1': [{}]}}
+        mock_add_analyses.return_value = etree.fromstring("""
+            <paragraph label="1234-1">
+              <analysis>
+                This is some analysis
+              </analysis>
+            </paragraph >
+        """)  # noqa
+
+        # A preamble
+        mock_preamble.return_value = etree.fromstring("""
+            <preamble>
+                This is the preamble
+            </preamble>
+        """)  # noqa        
+
+        writer = XMLWriteContent("a/path", '2015-12345', layers=layers, notices={})
+
+        # Without reg_tree
+        with self.assertRaises(RuntimeError):
+            writer.write_notice({})
+
+        # Write a notice file
+        mock_file = mock_open()
+        with patch.object(builtins, 'open', mock_file, create=True):
+            writer.write_notice({}, changes=changes, reg_tree=reg_tree)
+
+        # Get the resulting XML
+        file_handle = mock_file()
+        xml_string = file_handle.write.call_args[0][0]
+        notice_xml = etree.fromstring(xml_string)
+
+        # Introspect out changes
+        changes = notice_xml.findall('.//{eregs}change')
+        self.assertEqual(len(changes), 4)
+        self.assertEqual(2, 
+            len([c for c in changes if c.get('operation') == 'modified']))
+        self.assertEqual(1, 
+            len([c for c in changes if c.get('operation') == 'deleted']))
+        self.assertEqual(1, 
+            len([c for c in changes if c.get('operation') == 'added']))
+
+            
     def test_extract_definitions(self):
         layers = {
             'terms': {'referenced': {
@@ -241,8 +308,8 @@ class XMLWriteContentTestCase(TestCase):
         # layers['definitions'] 
         writer = XMLWriteContent("a/path", '2015-12345', 
                                  layers=layers, notices={})
-        self.assertEqual(expected_definitions, 
-                         writer.layers['definitions'])
+        definitions = writer.extract_definitions()
+        self.assertEqual(expected_definitions, definitions)
 
     def test_apply_terms(self):
         text="my defined term is my favorite of all the defined term" \
@@ -326,7 +393,7 @@ class XMLWriteContentTestCase(TestCase):
         replacements = [{'text': u'Model form field_____', 
                          'dash_data': {'text': u'Model form field'},
                          'locations': [0]}]
-        expected_result = ([[0, 23]], [u'Model form field<dash/>'])
+        expected_result = ([[0, 29]], [u'<dash>Model form field</dash>'])
         result = XMLWriteContent.apply_formatting(replacements)
         self.assertEqual(expected_result, result)
 
@@ -412,7 +479,7 @@ class XMLWriteContentTestCase(TestCase):
         writer = XMLWriteContent("a/path", '2015-12345', 
                                  layers=layers, notices=notices)
         writer.add_analyses(elm)
-
+        
         self.assertEqual(1, len(elm.xpath('./analysis')))
         self.assertEqual(1,
             len(elm.xpath('./analysis/analysisSection')))
