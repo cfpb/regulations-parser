@@ -149,7 +149,6 @@ class XMLWriteContent:
         self.appendix_sections = 1 # need to track these manually
         self.caps = [chr(i) for i in range(65, 65 + 26)]
 
-
     def write(self, python_object, **kwargs):
         """ Write the given python object based on its type. Node
             objects are handled as regulation trees, dicts as notices. """
@@ -222,7 +221,7 @@ class XMLWriteContent:
                 # Append it to as XML to the change element
                 content_elm = self.to_xml(changed_node)
                 change_elm.append(content_elm)
-        
+
         notice_elm.append(changeset_elm)
 
         xml_string = tostring(notice_elm, pretty_print=True,
