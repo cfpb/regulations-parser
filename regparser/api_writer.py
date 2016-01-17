@@ -387,40 +387,41 @@ class XMLWriteContent:
 
         return replacement_offsets, replacement_texts
 
+    def resolve_footnotes(text, f_refs):
+        """ Look up a footnote ref and insert the footnote as an XML
+            element at the approprite location in the text. """
+        annotated_text = ''
+        position = 0
+        for ref in f_refs:
+            ref_offset = ref['offset']
+            ref_number = ref['reference']
+
+            # As above, let this KeyError fall through. If the
+            # footnote can't be found, we've got bigger
+            # problems.
+            footnote = analysis_notice['footnotes'][ref_number]
+            
+            # Create the footnote elm with the text and ref
+            # number
+            footnote_elm = Element('footnote')
+            footnote_elm.set('ref', ref_number)
+            footnote_elm.text = footnote
+            
+            # Add the text to the offset plus the footnote to
+            # the annotated string.
+            annotated_text += text[position:ref_offset] + \
+                    tostring(footnote_elm)
+
+            # Advance our position
+            position = ref_offset
+
+        # Add the remainder of the texf
+        annotated_text += text[position:]
+        return annotated_text
+
     def build_analysis(self, analysis_ref):
         """ Build and return an analysis element for the given analysis
             reference. """
-        # We'll need to lookup footnotes in analysis paragraphs in
-        # notice['footnotes']. This function does that.
-        def resolve_footnotes(text, f_refs):
-            annotated_text = ''
-            position = 0
-            for ref in f_refs:
-                ref_offset = ref['offset']
-                ref_number = ref['reference']
-
-                # As above, let this KeyError fall through. If the
-                # footnote can't be found, we've got bigger
-                # problems.
-                footnote = analysis_notice['footnotes'][ref_number]
-                
-                # Create the footnote elm with the text and ref
-                # number
-                footnote_elm = Element('footnote')
-                footnote_elm.set('ref', ref_number)
-                footnote_elm.text = footnote
-                
-                # Add the text to the offset plus the footnote to
-                # the annotated string.
-                annotated_text += text[position:ref_offset] + \
-                        tostring(footnote_elm)
-
-                # Advance our position
-                position = ref_offset
-
-            # Add the remainder of the texf
-            annotated_text += text[position:]
-            return annotated_text
 
         # Each analysis section will be need to be constructed the
         # same way. So here's a recursive function to do it.
@@ -438,7 +439,7 @@ class XMLWriteContent:
                 paragraph_footnotes = [fn 
                         for fn in child['footnote_refs'] 
                             if fn['paragraph'] == paragraph_number]
-                text = resolve_footnotes(paragraph, paragraph_footnotes)
+                text = self.resolve_footnotes(paragraph, paragraph_footnotes)
 
                 paragraph_elm = fromstring(
                         '<analysisParagraph>' 
