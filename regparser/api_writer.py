@@ -601,7 +601,7 @@ class XMLWriteContent:
             preamble = self.preamble(root.label_id())
             elem.append(preamble)
             part_num = root.label_id()
-            part = SubElement(elem, 'part', partNumber=part_num)
+            part = SubElement(elem, 'part', label=part_num)
             toc = XMLWriteContent.toc_to_xml(self.layers['toc'][part_num])
             part.append(toc)
             content = SubElement(part, 'content')
