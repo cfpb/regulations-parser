@@ -191,7 +191,10 @@ class XMLWriteContent:
                      'xsi:schemaLocation="eregs ../../eregs.xsd"></notice>'
         notice_elm = fromstring(notice_string)
 
-        # Get the preamble
+        # Get the fdsys and preamble
+        print(self.layers)
+        fdsys_elm = self.fdsys(reg_tree.label_id())
+        notice_elm.append(fdsys_elm)
         preamble_elm = self.preamble(reg_tree.label_id())
         notice_elm.append(preamble_elm)
 

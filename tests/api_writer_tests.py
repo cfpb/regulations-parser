@@ -235,8 +235,9 @@ class XMLWriteContentTestCase(TestCase):
         self.assertTrue(False)
         
     @patch('regparser.api_writer.XMLWriteContent.add_analyses')
+    @patch('regparser.api_writer.XMLWriteContent.fdsys')
     @patch('regparser.api_writer.XMLWriteContent.preamble')
-    def test_write_notice(self, mock_preamble, mock_add_analyses):
+    def test_write_notice(self, mock_preamble, mock_fdsys, mock_add_analyses):
         changes = {'1234-2': {'op': 'modified'},
                    '1234-3': {'op': 'deleted'},
                    '1234-4': {'op': 'added'}}
@@ -249,6 +250,7 @@ class XMLWriteContentTestCase(TestCase):
 
         # Ensure we have some analysis just to include
         layers = {'analyses': {'1234-1': [{}]}}
+        
         mock_add_analyses.return_value = etree.fromstring("""
             <paragraph label="1234-1">
               <analysis>
@@ -256,6 +258,13 @@ class XMLWriteContentTestCase(TestCase):
               </analysis>
             </paragraph >
         """)  # noqa
+
+        # An FDSYS 
+        mock_fdsys.return_value = etree.fromstring("""
+            <fdsys>
+                This is an fdsys 
+            </fdsys>
+        """)  # noqa        
 
         # A preamble
         mock_preamble.return_value = etree.fromstring("""
@@ -290,7 +299,6 @@ class XMLWriteContentTestCase(TestCase):
         self.assertEqual(1, 
             len([c for c in changes if c.get('operation') == 'added']))
 
-            
     def test_extract_definitions(self):
         layers = {
             'terms': {'referenced': {
