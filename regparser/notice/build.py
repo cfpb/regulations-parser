@@ -66,7 +66,7 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
         notice['meta'][key] = fr_notice[key]
 
     if fr_notice['full_text_xml_url'] and do_process_xml:
-        local_notices = _check_local_version_list(
+        local_notices = check_local_version_list(
             fr_notice['full_text_xml_url'])
 
         if len(local_notices) > 0:
@@ -129,7 +129,7 @@ def process_notice(partial_notice, notice_str):
     return notice
 
 
-def _check_local_version_list(url):
+def check_local_version_list(url):
     """Use any local copies (potentially with modifications of the FR XML)"""
     parsed_url = urlparse(url)
     path = parsed_url.path.replace('/', os.sep)
