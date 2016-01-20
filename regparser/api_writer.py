@@ -23,6 +23,8 @@ from utils import set_of_random_letters, interpolate_string, ucase_letters
 import settings
 import logging
 
+logger = logging.getLogger()
+
 class AmendmentNodeEncoder(AmendmentEncoder, NodeEncoder):
     pass
 
@@ -172,6 +174,7 @@ class XMLWriteContent:
                 xml_declaration=True, encoding='UTF-8')
 
         with open(full_path, 'w') as f:
+            logger.info("Writing regulation to {}".format(full_path))
             f.write(xml_string)
 
     def write_notice(self, notice, changes={}, reg_tree=None):
@@ -231,6 +234,7 @@ class XMLWriteContent:
 
         # Write the file
         with open(full_path, 'w') as f:
+            logger.info("Writing notice to {}".format(full_path))
             f.write(xml_string)
 
     def extract_definitions(self):
