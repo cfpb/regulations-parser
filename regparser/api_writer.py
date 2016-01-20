@@ -192,7 +192,6 @@ class XMLWriteContent:
         notice_elm = fromstring(notice_string)
 
         # Get the fdsys and preamble
-        print(self.layers)
         fdsys_elm = self.fdsys(reg_tree.label_id())
         notice_elm.append(fdsys_elm)
         preamble_elm = self.preamble(reg_tree.label_id())
