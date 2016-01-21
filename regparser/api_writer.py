@@ -11,6 +11,8 @@ from git.exc import InvalidGitRepositoryError
 
 from lxml.etree import Element, SubElement
 from lxml.etree import tostring, fromstring
+from lxml.etree import XMLSyntaxError
+from xml.sax.saxutils import escape
 
 import requests
 
@@ -669,7 +671,11 @@ class XMLWriteContent:
             text = self.apply_layers(root)
             if text.startswith('!'):
                 text = ''
-            content = fromstring('<content>' + text + '</content>')
+            try:
+                content = fromstring('<content>' + text + '</content>')
+            except XMLSyntaxError:
+                content = fromstring('<content>MISSING CONTENT</content>')
+                    
             # graphics are special since they're not really inlined
             if root.label_id() in self.layers['graphics']:
                 graphics = XMLWriteContent.apply_graphics(self.layers['graphics'][root.label_id()])
@@ -695,7 +701,10 @@ class XMLWriteContent:
             text = self.apply_layers(root)
             if text.startswith('!'):
                 text = ''
-            content = fromstring('<content>' + text + '</content>')
+            try:
+                content = fromstring('<content>' + escape(text) + '</content>')
+            except XMLSyntaxError:
+                content = fromstring('<content>MISSING CONTENT</content>')
 
             # graphics are special since they're not really inlined
             if root.label_id() in self.layers['graphics']:
