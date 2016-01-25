@@ -224,8 +224,8 @@ class ClientTest(TestCase):
 
     def test_notice(self):
         client = Client()
-        reg_writer = client.notice("docdoc")
-        self.assertEqual("notice/docdoc", reg_writer.path)
+        reg_writer = client.notice("111", "docdoc")
+        self.assertEqual("notice/111/docdoc", reg_writer.path)
 
     def test_diff(self):
         client = Client()

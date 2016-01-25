@@ -89,7 +89,8 @@ class Builder(object):
         for notice in self.notices:
             #  No need to carry this around
             del notice['meta']
-            self.writer.notice(notice['document_number']).write(notice)
+            self.writer.notice(
+                self.cfr_part, notice['document_number']).write(notice)
 
     def write_regulation(self, reg_tree):
         self.writer.regulation(self.cfr_part, self.doc_number).write(reg_tree)
