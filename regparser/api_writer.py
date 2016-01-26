@@ -193,7 +193,7 @@ class XMLWriteContent:
         # Create a notice root element
         notice_string = '<notice xmlns="eregs" ' \
                      'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' \
-                     'xsi:schemaLocation="eregs ../../eregs.xsd"></notice>'
+                     'xsi:schemaLocation="eregs http://cfpb.github.io/regulations-schema/src/eregs.xsd"></notice>'
         notice_elm = fromstring(notice_string)
 
         # Get the fdsys and preamble
@@ -598,7 +598,7 @@ class XMLWriteContent:
         elif len(root.label) == 1:
             reg_string = '<regulation xmlns="eregs" ' \
                          'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' \
-                         'xsi:schemaLocation="eregs ../../eregs.xsd"></regulation>'
+                         'xsi:schemaLocation="eregs http://cfpb.github.io/regulations-schema/src/eregs.xsd"></regulation>'
             elem = fromstring(reg_string)
             title = root.title
             fdsys = self.fdsys(root.label_id())
