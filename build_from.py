@@ -44,7 +44,7 @@ def parse_regulation(args):
     builder.write_notices()
 
     #   Always do at least the first reg
-    logger.info("Version %s", builder.doc_number)
+    logger.info("Version", builder.doc_number)
     builder.write_regulation(reg_tree)
     layer_cache = LayerCacheAggregator()
 
@@ -150,7 +150,7 @@ def generate_xml(filename, title, act_title, act_section, notice_doc_numbers,
     layers = builder.generate_layers(reg_tree, act_title_and_section, layer_cache)
 
     # Always do at least the first reg
-    logger.info("Version %s", builder.doc_number)
+    logger.info("Version", builder.doc_number)
     builder.write_regulation(reg_tree, layers=layers)
     all_versions = {doc_number: FrozenNode.from_node(reg_tree)}
 
