@@ -454,7 +454,7 @@ class XMLWriteContentTestCase(TestCase):
                 'title': 'Section 1234.1',
                 'labels': ['1234-1'], 
                 'paragraphs': [
-                    'This paragraph is in the top-level section.',
+                    'This paragraph is in the <EM>top-level</EM> section.',
                 ], 
                 'footnote_refs': [], 
                 'children': [{

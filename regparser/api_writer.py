@@ -10,7 +10,7 @@ from git import Repo
 from git.exc import InvalidGitRepositoryError
 
 from lxml.etree import Element, SubElement
-from lxml.etree import tostring, fromstring
+from lxml.etree import tostring, fromstring, strip_tags
 from lxml.etree import XMLSyntaxError
 from xml.sax.saxutils import escape
 
@@ -395,7 +395,7 @@ class XMLWriteContent:
 
         return replacement_offsets, replacement_texts
 
-    def resolve_footnotes(text, f_refs):
+    def resolve_footnotes(self, notice, text, f_refs):
         """ Look up a footnote ref and insert the footnote as an XML
             element at the approprite location in the text. """
         annotated_text = ''
@@ -407,7 +407,7 @@ class XMLWriteContent:
             # As above, let this KeyError fall through. If the
             # footnote can't be found, we've got bigger
             # problems.
-            footnote = analysis_notice['footnotes'][ref_number]
+            footnote = notice['footnotes'][ref_number]
             
             # Create the footnote elm with the text and ref
             # number
@@ -433,7 +433,7 @@ class XMLWriteContent:
 
         # Each analysis section will be need to be constructed the
         # same way. So here's a recursive function to do it.
-        def analysis_section(parent_elm, child):
+        def analysis_section(notice, parent_elm, child):
             # Create the section element
             section_elm = SubElement(parent_elm, 'analysisSection')
 
@@ -447,16 +447,20 @@ class XMLWriteContent:
                 paragraph_footnotes = [fn 
                         for fn in child['footnote_refs'] 
                             if fn['paragraph'] == paragraph_number]
-                text = self.resolve_footnotes(paragraph, paragraph_footnotes)
-
+                text = self.resolve_footnotes(notice, paragraph, 
+                                              paragraph_footnotes)
                 paragraph_elm = fromstring(
                         '<analysisParagraph>' 
                             + text +
                         '</analysisParagraph>')
+
+                # Make sure to strip out elements that don't belong
+                strip_tags(paragraph_elm, 'EM')
+
                 section_elm.append(paragraph_elm)
 
             # Construct an analysis section for any children.
-            map(lambda c:  analysis_section(section_elm, c),
+            map(lambda c:  analysis_section(notice, section_elm, c),
                     child['children'])
 
         # NOTE: We'll let index errors percolate upwards because if 
@@ -477,7 +481,7 @@ class XMLWriteContent:
 
         # Construct the analysis element and its sections
         analysis_elm = Element('analysis')
-        analysis_section(analysis_elm, analysis)
+        analysis_section(analysis_notice, analysis_elm, analysis)
 
         return analysis_elm
 
