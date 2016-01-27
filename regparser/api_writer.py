@@ -12,7 +12,6 @@ from git.exc import InvalidGitRepositoryError
 from lxml.etree import Element, SubElement
 from lxml.etree import tostring, fromstring, strip_tags
 from lxml.etree import XMLSyntaxError
-from xml.sax.saxutils import escape
 
 import requests
 
@@ -709,7 +708,7 @@ class XMLWriteContent:
             if text.startswith('!'):
                 text = ''
             try:
-                content = fromstring('<content>' + escape(text) + '</content>')
+                content = fromstring('<content>' + text + '</content>')
             except XMLSyntaxError:
                 content = fromstring('<content>MISSING CONTENT</content>')
 
