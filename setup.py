@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(
     name='regulations-parser',
@@ -15,7 +15,7 @@ setup(
     long_description=open('README.md').read() 
             if os.path.exists('README.md') else '',
 
-    packages=['regparser', ],
+    packages=find_packages(),
     include_package_data=True,
     install_requires=[
         'lxml',
