@@ -644,7 +644,7 @@ class XMLWriteContent:
             title.text = root.title
         elif root.node_type == 'interp'and root.label[1] in self.caps and len(root.label) <= 3:
             # import pdb; pdb.set_trace()
-            elem = Element('interpAppendix', appendixLetter=root.label[1], label=root.label_id())
+            elem = Element('interpSection', label=root.label_id())
             title = SubElement(elem, 'title')
             title.text = root.title
         elif root.node_type == 'interp' and len(root.label) == 3 and \
@@ -660,9 +660,10 @@ class XMLWriteContent:
         elif root.node_type == 'interp' and len(root.label) >= 3 and root.label[-1] == 'Interp'\
                 and root.label[1] in self.caps:
             # this is the case for hyphenated appendices like MS-1 in reg X
-            elem = Element('interpAppSection', appendixLetter=root.label[1], label=root.label_id())
+            elem = Element('interpParagraph', label=root.label_id())
             title = SubElement(elem, 'title')
             title.text = root.title
+            content = SubElement(elem, 'content')
         elif root.node_type == 'interp': # and \
                 #((len(root.label) > 3 and root.label[-1] != 'Interp') or \
                 # (len(root.label) == 3 and root.label[1] == 'Interp')):
