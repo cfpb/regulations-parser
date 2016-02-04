@@ -32,7 +32,7 @@ class FSWriteContentTest(TestCase):
         settings.OUTPUT_DIR = ''
 
     def test_write_new_dir(self):
-        writer = FSWriteContent("a/path/to/something")
+        writer = FSWriteContent("a/path/to/something", '1234-56789')
         writer.write({"testing": ["body", 1, 2]})
 
         wrote = json.loads(open(settings.OUTPUT_DIR
@@ -41,7 +41,7 @@ class FSWriteContentTest(TestCase):
 
     def test_write_existing_dir(self):
         os.mkdir(settings.OUTPUT_DIR + 'existing')
-        writer = FSWriteContent("existing/thing")
+        writer = FSWriteContent("existing/thing", '1234-56789')
         writer.write({"testing": ["body", 1, 2]})
 
         wrote = json.loads(open(settings.OUTPUT_DIR
@@ -49,18 +49,18 @@ class FSWriteContentTest(TestCase):
         self.assertEqual(wrote, {'testing': ['body', 1, 2]})
 
     def test_write_overwrite(self):
-        writer = FSWriteContent("replace/it")
+        writer = FSWriteContent("replace/it", '1234-56789')
         writer.write({"testing": ["body", 1, 2]})
 
-        writer = FSWriteContent("replace/it")
+        writer = FSWriteContent("replace/it", '1234-56789')
         writer.write({"key": "value"})
 
         wrote = json.loads(open(settings.OUTPUT_DIR + '/replace/it').read())
         self.assertEqual(wrote, {'key': 'value'})
 
     def test_write_encoding(self):
-        writer = FSWriteContent("replace/it")
-        writer.write()
+        writer = FSWriteContent("replace/it", '1234-56789')
+        writer.write({'text': 'Content'})
 
         wrote = json.loads(open(settings.OUTPUT_DIR + '/replace/it').read())
         self.assertEqual(wrote['text'], 'Content')
@@ -89,7 +89,7 @@ class APIWriteContentTest(TestCase):
 
     @patch('regparser.api_writer.requests')
     def test_write(self, requests):
-        writer = APIWriteContent("a/path")
+        writer = APIWriteContent("a/path", '1234-56789')
         data = {"testing": ["body", 1, 2]}
         writer.write(data)
 
@@ -142,7 +142,7 @@ class GitWriteContentTest(TestCase):
         tree = Node('Root text', label=['1111'], title='Regulation Joe',
                     children=[sub, app, i])
 
-        writer = GitWriteContent("/regulation/1111/v1v1")
+        writer = GitWriteContent("/regulation/1111/v1v1", '1234-56789')
         writer.write(tree)
 
         dir_path = settings.GIT_OUTPUT_DIR + "regulation" + os.path.sep
@@ -429,8 +429,8 @@ class XMLWriteContentTestCase(TestCase):
             'locations': [0],
             'text': '```note\nNote:\nNote content.\n```'
         }]
-        expected_result = ([[0, 64]], 
-            ['<callout><line>Note:</line>\n<line>Note content.</line></callout>'])
+        expected_result = ([[0, 76]], 
+            ['<callout type="note"><line>Note:</line>\n<line>Note content.</line></callout>'])
         result = XMLWriteContent.apply_formatting(replacements)
         self.assertEqual(expected_result, result)
 
@@ -719,8 +719,8 @@ class ClientTest(TestCase):
 
     def test_notice(self):
         client = Client()
-        reg_writer = client.notice("docdoc")
-        self.assertEqual("notice/docdoc", reg_writer.path)
+        reg_writer = client.notice("docdoc", '1234-56789')
+        self.assertEqual("notice/docdoc/1234-56789", reg_writer.path)
 
     def test_diff(self):
         client = Client()

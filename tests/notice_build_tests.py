@@ -493,9 +493,9 @@ class NoticeBuildTest(TestCase):
         notice = {'cfr_parts': ['105', '106'], 'cfr_part': '105'}
         build.process_amendments(notice, notice_xml)
 
-        self.assertEqual(2, len(notice['changes']))
+        self.assertEqual(1, len(notice['changes']))
         self.assertTrue('105-1-a' in notice['changes'])
-        self.assertTrue('106-3-b' in notice['changes'])
+        self.assertTrue('106-3-b' not in notice['changes'])
 
     def test_process_amendments_context(self):
         """Context should carry over between REGTEXTs"""

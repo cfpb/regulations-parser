@@ -393,7 +393,8 @@ class XMLWriteContent:
             elif 'fence_data' in repl:
                 lines = '\n'.join(['<line>{}</line>'.format(l) 
                                    for l in repl['fence_data']['lines']])
-                text = '<callout>{}</callout>'.format(lines)
+                text = '<callout type="{}">{}</callout>'.format(
+                    repl['fence_data']['type'], lines)
                 
             offset = repl['locations'][0]
             replacement_offsets.append([offset, offset + len(text)])
@@ -853,7 +854,7 @@ class Client:
             doc_number)
 
     def notice(self, label, doc_number, layers=None, notices={}):
-        return self.writer_class("notice/{}/{}.xml".format(label,
+        return self.writer_class("notice/{}/{}".format(label,
             doc_number), doc_number, layers=layers, notices=notices)
 
     def diff(self, label, old_version, new_version):
