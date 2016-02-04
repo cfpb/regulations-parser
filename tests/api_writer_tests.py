@@ -682,6 +682,8 @@ class XMLWriteContentTestCase(TestCase):
         self.assertNotEqual(interp_para.find('title'), None)
         self.assertEqual(interp_para_sub_para.find('title').get('type'), 
                 'keyterm')
+        self.assertTrue('A Keyterm.' not in
+                interp_para_sub_para.find('content').text)
 
         # Check that paragraph markers are correct
         self.assertEqual(interp_para.get('marker'), None)

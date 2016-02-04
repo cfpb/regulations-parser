@@ -697,6 +697,11 @@ class XMLWriteContent:
             if target is not None:
                 elem.set('target', target)
 
+            # Apply layers 
+            text = self.apply_layers(root)
+            if text.startswith('!'):
+                text = ''
+
             # If there's a title or a keyterm, add it to the element
             if root.title:
                 title = SubElement(elem, 'title')
@@ -707,6 +712,10 @@ class XMLWriteContent:
                 title = SubElement(elem, 'title', attrib={'type': 'keyterm'})
                 title.text = keyterm
 
+                # The text probably still contains the keyterm. Remove
+                # it.
+                text = text.replace(keyterm, '').strip()
+
             # If this paragraph has a marker in the markers layer, add
             # it to the element
             try:
@@ -715,11 +724,6 @@ class XMLWriteContent:
                 elem.set('marker', marker)
             except KeyError:
                 pass
-
-            # Apply layers 
-            text = self.apply_layers(root)
-            if text.startswith('!'):
-                text = ''
 
             try:
                 content = fromstring('<content>' + text + '</content>')
