@@ -32,46 +32,21 @@ class Node(object):
         self.tagged_text = tagged_text
 
     def __repr__(self):
-        return (("Node( text = %s, children = %s, label = %s, title = %s, "
-                + "node_type = %s)") % (repr(self.text), repr(self.children),
-                repr(self.label), repr(self.title), repr(self.node_type)))
+        return (("Node(text=%s, label=%s, title=%s, marker=%s, "
+                + "node_type=%s, children=%s)") % (
+                    repr(self.text), 
+                    repr(self.label), 
+                    repr(self.title), 
+                    repr(self.marker), 
+                    repr(self.node_type),
+                    repr(self.children)
+                ))
 
     def __cmp__(self, other):
         return cmp(repr(self), repr(other))
 
     def label_id(self):
         return '-'.join(self.label)
-
-    def to_xml(self):
-
-        # if self.children == []:
-        #     elem = Element('paragraph')
-        #     sub_elem1 = SubElement(elem, 'title')
-        #     sub_elem2 = SubElement(elem, 'content')
-        #     sub_elem2.text = self.text
-        if self.label[-1] == 'Subpart':
-            elem = Element('subpart')
-            sub_elem = SubElement(elem, 'title')
-            sub_elem.text = self.title
-            for child in self.children:
-                sub_elem = child.to_xml()
-                elem.append(sub_elem)
-        elif self.label[-1].isdigit():
-            elem = Element('section', sectionNum=self.label[-1])
-            sub_elem = SubElement(elem, 'subject')
-            sub_elem.text = self.title
-            for child in self.children:
-                sub_elem = child.to_xml()
-                elem.append(sub_elem)
-        else:
-            elem = Element('paragraph')
-            sub_elem1 = SubElement(elem, 'title')
-            sub_elem2 = SubElement(elem, 'content')
-            sub_elem2.text = self.text
-            for child in self.children:
-                sub_elem = child.to_xml()
-                elem.append(sub_elem)
-        return elem
 
 
 class NodeEncoder(JSONEncoder):
