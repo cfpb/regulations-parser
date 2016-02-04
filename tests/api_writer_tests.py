@@ -170,7 +170,7 @@ class GitWriteContentTest(TestCase):
         p3c.text = '(c) Moved!'
         p3c.label = ['1111', '3', 'c']
 
-        writer = GitWriteContent("/regulation/1111/v2v2")
+        writer = GitWriteContent("/regulation/1111/v2v2", '1234-56789')
         writer.write(tree)
 
         dir_path = settings.GIT_OUTPUT_DIR + "regulation" + os.path.sep
