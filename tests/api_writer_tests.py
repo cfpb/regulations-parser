@@ -668,7 +668,6 @@ class XMLWriteContentTestCase(TestCase):
                                  layers=layers, notices=notices)
 
         elm = writer.to_xml(interp_nodes)
-        print etree.tostring(elm, pretty_print=True)
 
         interp_para = elm.find(
             './/interpParagraph[@label="1111-1-a-Interp"]')
