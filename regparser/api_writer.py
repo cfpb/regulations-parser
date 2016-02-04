@@ -359,15 +359,12 @@ class XMLWriteContent:
 
     @staticmethod
     def apply_formatting(replacements):
-        # format_elements = []
         replacement_texts = []
         replacement_offsets = []
         for repl in replacements:
             if 'dash_data' in repl:
                 text = '<dash>' + repl['dash_data']['text'] + '</dash>'
-                offset = repl['locations'][0]
-                replacement_offsets.append([offset, offset + len(text)])
-                replacement_texts.append(text)
+
             elif 'table_data' in repl:
                 text = '<table><header>'
                 table_data = repl['table_data']
@@ -388,10 +385,20 @@ class XMLWriteContent:
                     text += '</row>'
                 text += '</table>'
 
-                offset = repl['locations'][0]
-                replacement_offsets.append([offset, offset + len(text)])
-                replacement_texts.append(text)
-
+            elif 'subscript_data' in repl:
+                text = '<variable>{variable}<subscript>{subscript}</subscript></variable>'.format(
+                    variable=repl['subscript_data']['variable'], 
+                    subscript=repl['subscript_data']['subscript'])
+                
+            elif 'fence_data' in repl:
+                lines = '\n'.join(['<line>{}</line>'.format(l) 
+                                   for l in repl['fence_data']['lines']])
+                text = '<callout>{}</callout>'.format(lines)
+                
+            offset = repl['locations'][0]
+            replacement_offsets.append([offset, offset + len(text)])
+            replacement_texts.append(text)
+            
         return replacement_offsets, replacement_texts
 
     def resolve_footnotes(self, notice, text, f_refs):

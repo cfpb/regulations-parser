@@ -405,23 +405,7 @@ class XMLWriteContentTestCase(TestCase):
         result = XMLWriteContent.apply_formatting(replacements)
         self.assertEqual(expected_result, result)
 
-        # Test fences
-        # XXX: Actual fences need to be implemented
-        replacements = [{
-            'fence_data': {
-                'lines': ['Note:', 'Some note content right here.'], 
-                'type': 'note'
-            }, 
-            'locations': [0],
-            'text': '```note\nNote:\nSome note content right here.\n```'
-        }]
-        # expected_result = 
-        result = XMLWriteContent.apply_formatting(replacements)
-        # self.assertEqual(expected_result, result)
-        self.assertTrue(False)
-
         # Test subscripts
-        # XXX: Actual subscripts need to be implemented
         replacements = [{
             'locations': [0], 
             'subscript_data': {
@@ -430,10 +414,25 @@ class XMLWriteContentTestCase(TestCase):
             }, 
             'text': 'Val_{n}'
         }]
-        # expected_result = 
+        expected_result = ([[0, 48]],
+                [u'<variable>Val<subscript>n</subscript></variable>'])
         result = XMLWriteContent.apply_formatting(replacements)
-        # self.assertEqual(expected_result, result)
-        self.assertTrue(False)
+        self.assertEqual(expected_result, result)
+
+        # Test fences
+        # XXX: Actual fences need to be implemented
+        replacements = [{
+            'fence_data': {
+                'lines': ['Note:', 'Note content.'], 
+                'type': 'note'
+            }, 
+            'locations': [0],
+            'text': '```note\nNote:\nNote content.\n```'
+        }]
+        expected_result = ([[0, 64]], 
+            ['<callout><line>Note:</line>\n<line>Note content.</line></callout>'])
+        result = XMLWriteContent.apply_formatting(replacements)
+        self.assertEqual(expected_result, result)
 
     def test_add_analyses(self):
         """ Test that we can add analysis with sections within the
