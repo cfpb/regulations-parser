@@ -587,6 +587,7 @@ class XMLWriteContent:
             for child in root.children:
                 sub_elem = self.to_xml(child)
                 content.append(sub_elem)
+
         elif root.label[-1].isdigit() and len(root.label) == 2:
             elem = Element('section', sectionNum=root.label[-1], label=root.label_id())
             subject = SubElement(elem, 'subject')
@@ -598,6 +599,7 @@ class XMLWriteContent:
                 par_content.text = root.text.strip()
             elif '[Reserved]' in root.title:
                 reserved = SubElement(elem, 'reserved')
+
         elif len(root.label) == 1:
             reg_string = '<regulation xmlns="eregs" ' \
                          'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' \
@@ -616,6 +618,7 @@ class XMLWriteContent:
             for child in root.children:
                 sub_elem = self.to_xml(child)
                 content.append(sub_elem)
+
         elif root.node_type == 'appendix' and len(root.label) == 2:
             # reset the section counter
             self.appendix_sections = 1
@@ -627,6 +630,7 @@ class XMLWriteContent:
                 elem.append(toc)
             if '[Reserved]' in root.title:
                 reserved = SubElement(elem, 'reserved')
+
         elif root.node_type == 'appendix' and len(root.label) == 3:
             elem = Element('appendixSection', appendixSecNum=str(self.appendix_sections),
                            label=root.label_id())
@@ -638,15 +642,17 @@ class XMLWriteContent:
                 paragraph = SubElement(elem, 'paragraph', marker='', label=label)
                 par_content = SubElement(paragraph, 'content')
                 par_content.text = root.text.strip()
+
         elif root.node_type == 'interp' and len(root.label) == 2:
             elem = Element('interpretations', label=root.label_id())
             title = SubElement(elem, 'title')
             title.text = root.title
+
         elif root.node_type == 'interp'and root.label[1] in self.caps and len(root.label) <= 3:
-            # import pdb; pdb.set_trace()
             elem = Element('interpSection', label=root.label_id())
             title = SubElement(elem, 'title')
             title.text = root.title
+
         elif root.node_type == 'interp' and len(root.label) == 3 and \
                 (root.label[1].isdigit() or root.label[1] == 'Interp'):
             if root.label[1].isdigit():
@@ -657,6 +663,7 @@ class XMLWriteContent:
             title.text = root.title
             if root.title is not None and '[Reserved]' in root.title:
                 reserved = SubElement(elem, 'reserved')
+
         elif root.node_type == 'interp' and len(root.label) >= 3 and root.label[-1] == 'Interp'\
                 and root.label[1] in self.caps:
             # this is the case for hyphenated appendices like MS-1 in reg X
@@ -664,20 +671,48 @@ class XMLWriteContent:
             title = SubElement(elem, 'title')
             title.text = root.title
             content = SubElement(elem, 'content')
-        elif root.node_type == 'interp': # and \
-                #((len(root.label) > 3 and root.label[-1] != 'Interp') or \
-                # (len(root.label) == 3 and root.label[1] == 'Interp')):
+
+        elif root.node_type == 'interp':
             # fall-through for all other interp nodes, which should be paragraphs
-            target = [item for item in root.label if item != 'Interp']
-            target = '-'.join(target)
             label = root.label_id()
-            elem = Element('interpParagraph', label=label, target=target)
+            elem = Element('interpParagraph', label=label)
+
+            # Look through the interpretations layer to see if this
+            # label is the reference for any other. That other label is
+            # our target. 
+            target = None
+            for interp_target, references in \
+                    self.layers['interpretations'].items():
+                if root.label_id() in [r['reference'] for r in references]:
+                    target = interp_target
+                    break
+            if target is not None:
+                elem.set('target', target)
+
+            # If there's a title or a keyterm, add it to the element
             if root.title:
                 title = SubElement(elem, 'title')
                 title.text = root.title
+            elif root.label_id() in self.layers['keyterms']:
+                # keyterm is not an inline layer
+                keyterm = self.layers['keyterms'][root.label_id()][0]['key_term']
+                title = SubElement(elem, 'title', attrib={'type': 'keyterm'})
+                title.text = keyterm
+
+            # If this paragraph has a marker in the markers layer, add
+            # it to the element
+            try:
+                marker_item = self.layers['paragraph-markers'][root.label_id()]
+                marker = marker_item[0]['text']
+                elem.set('marker', marker)
+            except KeyError:
+                pass
+
+            # Apply layers 
             text = self.apply_layers(root)
             if text.startswith('!'):
                 text = ''
+
             try:
                 content = fromstring('<content>' + text + '</content>')
             except XMLSyntaxError:
@@ -689,6 +724,7 @@ class XMLWriteContent:
                 for graphic in graphics:
                     content.append(graphic)
             elem.append(content)
+
         else:
             try:
                 marker_item = self.layers['paragraph-markers'][root.label_id()]
@@ -739,12 +775,8 @@ class XMLWriteContent:
         replacement_hashes = {}
         all_offsets = []
         all_replacements = []
-        # import pdb; pdb.set_trace()
-        # print self.layers.items()
-        # print node.label_id()
         for ident, layer in self.layers.items():
             if node.label_id() in layer:
-                # print 'applying layers'
                 replacements = layer[node.label_id()]
                 if ident == 'terms':
                     offsets, repls = XMLWriteContent.apply_terms(text, replacements)

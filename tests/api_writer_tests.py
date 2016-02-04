@@ -617,6 +617,78 @@ class XMLWriteContentTestCase(TestCase):
         # XXX: This test needs to be implemented
         self.assertTrue(False)
 
+    def test_to_xml_interp(self):
+        """ Test that interpretations get formatted correctly """
+        interp_nodes = Node(
+            text=u'', 
+            children=[
+                Node(text=u'Interp for section',
+                     children=[
+                        Node(text=u'Interp targetting reg paragraph',
+                             children=[
+                                 Node(text=u'1. A Keyterm. Interp sub paragraph.', 
+                                     children=[], 
+                                     label=[u'1111', u'1', 'a', u'Interp', u'1'], 
+                                     title=None, 
+                                     node_type=u'interp'),
+                             ],
+                             label=[u'1111', u'1', 'a', u'Interp'], 
+                             title=u'1111.1 (a) Interp', 
+                             node_type=u'interp'),
+                     ],
+                     label=[u'1111', u'1', u'Interp'], 
+                     title=u'1111.1 Interp', 
+                     node_type=u'interp'),
+             ], 
+            label=[u'1111', u'Interp'], 
+            title=u'Interpretations', 
+            node_type=u'interp')
+
+        layers = {
+            'terms': {'referenced': {}},
+            'graphics': {},
+            'keyterms': {
+                u'1111-1-a-Interp-1': [{'locations': [0], 
+                    'key_term': u'A Keyterm.'}],
+            },
+            'interpretations': {
+                u'1111-1-a': [{'reference': u'1111-1-a-Interp'}],
+            },
+            'paragraph-markers': {
+                u'1111-1-a-Interp-1': [{
+                    "text": "1.",
+                    "locations": [0]
+                }],
+            },
+        }
+        notices = [{
+            'document_number': '2015-12345',
+        }]
+
+        writer = XMLWriteContent("a/path", '2015-12345', 
+                                 layers=layers, notices=notices)
+
+        elm = writer.to_xml(interp_nodes)
+        print etree.tostring(elm, pretty_print=True)
+
+        interp_para = elm.find(
+            './/interpParagraph[@label="1111-1-a-Interp"]')
+        interp_para_sub_para = elm.find(
+            './/interpParagraph[@label="1111-1-a-Interp-1"]')
+
+        # Check that paragraph targets are correct.
+        self.assertEqual(interp_para.get('target'), '1111-1-a')
+        self.assertEqual(interp_para_sub_para.get('target'), None)
+
+        # Check that title keyterm is correct
+        self.assertNotEqual(interp_para.find('title'), None)
+        self.assertEqual(interp_para_sub_para.find('title').get('type'), 
+                'keyterm')
+
+        # Check that paragraph markers are correct
+        self.assertEqual(interp_para.get('marker'), None)
+        self.assertEqual(interp_para_sub_para.get('marker'), '1.')
+
     def test_apply_layers(self):
         # XXX: This test needs to be implemented
         self.assertTrue(False)
