@@ -379,7 +379,7 @@ class XMLWriteContentTestCase(TestCase):
     def test_apply_keyterms(self):
         text = "(a) A Keyterm. Some other text."
         replacements = [{'locations': [0], 'key_term': u'A Keyterm.'}]
-        expected_result = ([(4, 10)], [''])
+        expected_result = ([(4, 14)], [''])
         result = XMLWriteContent.apply_keyterms(text, replacements)
         self.assertEqual(expected_result, result)
 

@@ -360,7 +360,7 @@ class XMLWriteContent:
         # The keyterm belongs in the title of the element not the body.
         # Remove it.
         keyterm = replacements[0]['key_term']
-        offset = (text.index(keyterm), len(keyterm))
+        offset = (text.index(keyterm), text.index(keyterm) + len(keyterm))
         return [offset], ['']
 
     @staticmethod
