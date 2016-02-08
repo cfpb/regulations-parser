@@ -377,8 +377,11 @@ class XMLWriteContentTestCase(TestCase):
         self.assertTrue(False)
 
     def test_apply_keyterms(self):
-        # XXX: The actual class method needs to be implemented.
-        pass
+        text = "(a) A Keyterm. Some other text."
+        replacements = [{'locations': [0], 'key_term': u'A Keyterm.'}]
+        expected_result = ([(4, 10)], [''])
+        result = XMLWriteContent.apply_keyterms(text, replacements)
+        self.assertEqual(expected_result, result)
 
     def test_apply_formatting(self):
         # Test a table
@@ -616,6 +619,48 @@ class XMLWriteContentTestCase(TestCase):
         # XXX: This test needs to be implemented
         self.assertTrue(False)
 
+    def test_to_xml_title_text_node(self):
+        """ Test that a node with title and text gets formatted
+            correctly """
+        node = Node(
+            text=u'A Section', 
+            children=[
+                Node(text=u'Paragraph text with title',
+                     children=[
+                        Node(text=u'Regular paragraph',
+                             children=[],
+                             label=[u'1111', u'1', 'a'], 
+                             title=u'',
+                             node_type=u'regtext'),
+                     ],
+                     label=[u'1111', u'1', 'a'], 
+                     title=u'1. A Title', 
+                     node_type=u'regtext'),
+            ], 
+            label=[u'1111', u'1'], 
+            title=u'A Title', 
+            node_type=u'regtext')
+        layers = {
+            'terms': {'referenced': {}},
+            'graphics': {},
+            'keyterms': {
+                u'1111-1': [{'locations': [0], 
+                    'key_term': u'A Title.'}],
+            },
+            'paragraph-markers': {
+                u'1111-1-a-Interp-1': [{
+                    "text": "1.",
+                    "locations": [0]
+                }],
+            },
+        }
+        notices = [{
+            'document_number': '2015-12345',
+        }]
+        writer = XMLWriteContent("a/path", '2015-12345', 
+                                 layers=layers, notices=notices)
+        elm = writer.to_xml(node)
+
     def test_to_xml_interp(self):
         """ Test that interpretations get formatted correctly """
         interp_nodes = Node(
@@ -625,9 +670,14 @@ class XMLWriteContentTestCase(TestCase):
                      children=[
                         Node(text=u'Interp targetting reg paragraph',
                              children=[
-                                 Node(text=u'1. A Keyterm. Interp sub paragraph.', 
+                                 Node(text=u'A Keyterm. Interp sub paragraph.', 
                                      children=[], 
                                      label=[u'1111', u'1', 'a', u'Interp', u'1'], 
+                                     title=None, 
+                                     node_type=u'interp'),
+                                 Node(text=u'Lone Keyterm. Or not.', 
+                                     children=[], 
+                                     label=[u'1111', u'1', 'a', u'Interp', u'2'], 
                                      title=None, 
                                      node_type=u'interp'),
                              ],
@@ -644,20 +694,24 @@ class XMLWriteContentTestCase(TestCase):
             node_type=u'interp')
 
         layers = {
-            'terms': {'referenced': {}},
+            'terms': {
+                "1111-1-a-Interp-2":[{
+                    "offsets":[[0, 12]], "ref":"lone keyterm:1111-1-a"
+                }],
+                'referenced': {}},
             'graphics': {},
             'keyterms': {
                 u'1111-1-a-Interp-1': [{'locations': [0], 
                     'key_term': u'A Keyterm.'}],
+                u'1111-1-a-Interp-2': [{'locations': [0], 
+                    'key_term': u'Lone Keyterm.'}],
             },
             'interpretations': {
                 u'1111-1-a': [{'reference': u'1111-1-a-Interp'}],
             },
             'paragraph-markers': {
-                u'1111-1-a-Interp-1': [{
-                    "text": "1.",
-                    "locations": [0]
-                }],
+                u'1111-1-a-Interp-1': [{"text": "1.", "locations": [0]}],
+                u'1111-1-a-Interp-2': [{"text": "2.", "locations": [0]}],
             },
         }
         notices = [{
@@ -671,23 +725,31 @@ class XMLWriteContentTestCase(TestCase):
 
         interp_para = elm.find(
             './/interpParagraph[@label="1111-1-a-Interp"]')
-        interp_para_sub_para = elm.find(
-            './/interpParagraph[@label="1111-1-a-Interp-1"]')
+        interp_sub_paras = interp_para.findall(
+            'interpParagraph')
 
         # Check that paragraph targets are correct.
         self.assertEqual(interp_para.get('target'), '1111-1-a')
-        self.assertEqual(interp_para_sub_para.get('target'), None)
+        self.assertEqual(interp_sub_paras[0].get('target'), None)
 
         # Check that title keyterm is correct
         self.assertNotEqual(interp_para.find('title'), None)
-        self.assertEqual(interp_para_sub_para.find('title').get('type'), 
+        self.assertEqual(interp_sub_paras[0].find('title').get('type'), 
                 'keyterm')
         self.assertTrue('A Keyterm.' not in
-                interp_para_sub_para.find('content').text)
+                interp_sub_paras[0].find('content').text)
+
+        # For the second sub para there should be a <ref> in <title> and 
+        # nothing in content
+        self.assertEqual(interp_sub_paras[1].find('title').get('type'), 
+                'keyterm')
+        self.assertTrue(interp_sub_paras[1].find('content').text is None)
+        # self.assertTrue(len(interp_sub_paras[1].find('content')) is 0)
 
         # Check that paragraph markers are correct
         self.assertEqual(interp_para.get('marker'), None)
-        self.assertEqual(interp_para_sub_para.get('marker'), '1.')
+        self.assertEqual(interp_sub_paras[0].get('marker'), '1.')
+        self.assertEqual(interp_sub_paras[1].get('marker'), '2.')
 
     def test_apply_layers(self):
         # XXX: This test needs to be implemented

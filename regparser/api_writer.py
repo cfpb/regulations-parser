@@ -172,7 +172,7 @@ class XMLWriteContent:
         
         xml_tree = self.to_xml(reg_tree)
         xml_string = tostring(xml_tree, pretty_print=True,
-                xml_declaration=True, encoding='UTF-8')
+                xml_declaration=True)
 
         with open(full_path, 'w') as f:
             logger.info("Writing regulation to {}".format(full_path))
@@ -355,7 +355,13 @@ class XMLWriteContent:
 
     @staticmethod
     def apply_keyterms(text, replacements):
-        pass
+        """ Remove keyterm text from the text. It will need to be put in
+            the title at some other point in processing."""
+        # The keyterm belongs in the title of the element not the body.
+        # Remove it.
+        keyterm = replacements[0]['key_term']
+        offset = (text.index(keyterm), len(keyterm))
+        return [offset], ['']
 
     @staticmethod
     def apply_formatting(replacements):
@@ -661,6 +667,18 @@ class XMLWriteContent:
             title = SubElement(elem, 'title')
             title.text = root.title
 
+            # Look through the interpretations layer to see if this
+            # label is the reference for any other. That other label is
+            # our target. 
+            target = None
+            for interp_target, references in \
+                    self.layers['interpretations'].items():
+                if root.label_id() in [r['reference'] for r in references]:
+                    target = interp_target
+                    break
+            if target is not None:
+                elem.set('target', target)
+
         elif root.node_type == 'interp' and len(root.label) == 3 and \
                 (root.label[1].isdigit() or root.label[1] == 'Interp'):
             if root.label[1].isdigit():
@@ -671,6 +689,18 @@ class XMLWriteContent:
             title.text = root.title
             if root.title is not None and '[Reserved]' in root.title:
                 reserved = SubElement(elem, 'reserved')
+
+            # Look through the interpretations layer to see if this
+            # label is the reference for any other. That other label is
+            # our target. 
+            target = None
+            for interp_target, references in \
+                    self.layers['interpretations'].items():
+                if root.label_id() in [r['reference'] for r in references]:
+                    target = interp_target
+                    break
+            if target is not None:
+                elem.set('target', target)
 
         elif root.node_type == 'interp' and len(root.label) >= 3 and root.label[-1] == 'Interp'\
                 and root.label[1] in self.caps:
@@ -697,8 +727,9 @@ class XMLWriteContent:
             if target is not None:
                 elem.set('target', target)
 
-            # Apply layers 
-            text = self.apply_layers(root)
+            # Get the text
+            text = root.text
+            text = self.apply_layers(text, root.label_id())
             if text.startswith('!'):
                 text = ''
 
@@ -711,10 +742,6 @@ class XMLWriteContent:
                 keyterm = self.layers['keyterms'][root.label_id()][0]['key_term']
                 title = SubElement(elem, 'title', attrib={'type': 'keyterm'})
                 title.text = keyterm
-
-                # The text probably still contains the keyterm. Remove
-                # it.
-                text = text.replace(keyterm, '').strip()
 
             # If this paragraph has a marker in the markers layer, add
             # it to the element
@@ -753,7 +780,7 @@ class XMLWriteContent:
                     keyterm = self.layers['keyterms'][root.label_id()][0]['key_term']
                     title = SubElement(elem, 'title', attrib={'type': 'keyterm'})
                     title.text = keyterm
-            text = self.apply_layers(root)
+            text = self.apply_layers(root.text, root.label_id())
             if text.startswith('!'):
                 text = ''
             try:
@@ -782,14 +809,13 @@ class XMLWriteContent:
                 
         return elem
 
-    def apply_layers(self, node):
-        text = node.text
+    def apply_layers(self, text, label_id):
         replacement_hashes = {}
         all_offsets = []
         all_replacements = []
         for ident, layer in self.layers.items():
-            if node.label_id() in layer:
-                replacements = layer[node.label_id()]
+            if label_id in layer:
+                replacements = layer[label_id]
                 if ident == 'terms':
                     offsets, repls = XMLWriteContent.apply_terms(text, replacements)
                 elif ident == 'paragraph-markers':
@@ -802,6 +828,8 @@ class XMLWriteContent:
                     offsets, repls = XMLWriteContent.apply_external_citations(text, replacements)
                 elif ident == 'formatting':
                     offsets, repls = XMLWriteContent.apply_formatting(replacements)
+                elif ident == 'keyterms':
+                    offsets, repls = XMLWriteContent.apply_keyterms(text, replacements)
                 #elif ident == 'graphics':
                 #    offsets, repls = XMLWriteContent.apply_graphics(text, replacements)
                 else:
