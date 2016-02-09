@@ -172,7 +172,7 @@ class XMLWriteContent:
         
         xml_tree = self.to_xml(reg_tree)
         xml_string = tostring(xml_tree, pretty_print=True,
-                xml_declaration=True)
+                xml_declaration=True, encoding='UTF-8')
 
         with open(full_path, 'w') as f:
             logger.info("Writing regulation to {}".format(full_path))
@@ -433,7 +433,7 @@ class XMLWriteContent:
             # Add the text to the offset plus the footnote to
             # the annotated string.
             annotated_text += text[position:ref_offset] + \
-                    tostring(footnote_elm)
+                    tostring(footnote_elm, encoding='UTF-8')
 
             # Advance our position
             position = ref_offset
