@@ -360,8 +360,10 @@ class XMLWriteContent:
         # The keyterm belongs in the title of the element not the body.
         # Remove it.
         keyterm = replacements[0]['key_term']
-        offset = (text.index(keyterm), text.index(keyterm) + len(keyterm))
-        return [offset], ['']
+        if keyterm in text:
+            offset = (text.index(keyterm), text.index(keyterm) + len(keyterm))
+            return [offset], ['']
+        return [], []
 
     @staticmethod
     def apply_formatting(replacements):
