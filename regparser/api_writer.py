@@ -327,7 +327,7 @@ class XMLWriteContent:
         term = replacement['term']
         hash_value = hashlib.sha1(term).hexdigest()
         replacement_text = text[offset[0]:offset[1]]
-        replacement_text = '<def term="{}" id="{}">'.format(term, hash_value) + \
+        replacement_text = '<def term="{}">'.format(term) + \
                            replacement_text.encode('utf-8') + '</def>'
 
         return [offset], [replacement_text]
