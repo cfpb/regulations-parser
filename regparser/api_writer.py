@@ -178,7 +178,8 @@ class XMLWriteContent:
             logger.info("Writing regulation to {}".format(full_path))
             f.write(xml_string)
 
-    def write_notice(self, notice, changes={}, reg_tree=None):
+    def write_notice(self, notice, changes={}, reg_tree=None,
+            left_doc_number=''):
         """ Write a notice. """
         if reg_tree is None:
             raise RuntimeError("to write notices to XML, both a "
@@ -211,6 +212,8 @@ class XMLWriteContent:
 
         # Get the changeset
         changeset_elm = Element('changeset')
+        changeset_elm.set('leftDocumentNumber', left_doc_number)
+        changeset_elm.set('rightDocumentNumber', self.doc_number)
         for label, change in changes.items():
             # For each change, generate a change element with the label
             # and operation as attributes.

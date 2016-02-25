@@ -282,7 +282,8 @@ class XMLWriteContentTestCase(TestCase):
         # Write a notice file
         mock_file = mock_open()
         with patch.object(builtins, 'open', mock_file, create=True):
-            writer.write_notice({}, changes=changes, reg_tree=reg_tree)
+            writer.write_notice({}, changes=changes, reg_tree=reg_tree,
+                    left_doc_number='2015-01234')
 
         # Get the resulting XML
         file_handle = mock_file()
@@ -290,6 +291,12 @@ class XMLWriteContentTestCase(TestCase):
         notice_xml = etree.fromstring(xml_string)
 
         # Introspect our changes
+        changeset = notice_xml.find('.//{eregs}changeset')
+        self.assertEqual('2015-01234',
+                         changeset.get('leftDocumentNumber'))
+        self.assertEqual('2015-12345',
+                         changeset.get('rightDocumentNumber'))
+
         changes = notice_xml.findall('.//{eregs}change')
         self.assertEqual(len(changes), 4)
         self.assertEqual(2, 
@@ -366,8 +373,7 @@ class XMLWriteContentTestCase(TestCase):
             'offset': (0, 15)
         }
         expected_result = ([(0, 15)], 
-                ['<def term="my defined term" '
-                 'id="5bd44682146382a20d2ac0b5c1143b0ab273e8f8">'
+                ['<def term="my defined term">'
                  'my defined term</def>'])
         result = XMLWriteContent.apply_definitions(text, replacement)
         self.assertEqual(expected_result, result)

@@ -95,7 +95,7 @@ class Builder(object):
                 self.cfr_part, notice['document_number']).write(notice)
 
     def write_notice(self, doc_number, old_tree=None, reg_tree=None,
-            layers=None):
+            layers=None, last_version=''):
         """ Write a single notice out. For the XMLWriter, we need to
             include the reg_tree for the notice. """
         # Get the notice by doc number
@@ -115,7 +115,8 @@ class Builder(object):
         # Write the notice
         writer = self.writer.notice(self.cfr_part, self.doc_number, 
             notices=self.notices, layers=layers)
-        writer.write(notice, changes=changes, reg_tree=reg_tree)
+        writer.write(notice, changes=changes, reg_tree=reg_tree,
+                left_doc_number=last_version)
 
     def write_regulation(self, reg_tree, layers=None):
         self.writer.regulation(self.cfr_part, self.doc_number, 
