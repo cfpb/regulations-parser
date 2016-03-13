@@ -234,10 +234,10 @@ class XMLWriteContentTestCase(TestCase):
         # XXX: This test needs to be implemented
         self.assertTrue(False)
         
-    @patch('regparser.api_writer.XMLWriteContent.add_analyses')
+    @patch('regparser.api_writer.XMLWriteContent.build_analysis')
     @patch('regparser.api_writer.XMLWriteContent.fdsys')
     @patch('regparser.api_writer.XMLWriteContent.preamble')
-    def test_write_notice(self, mock_preamble, mock_fdsys, mock_add_analyses):
+    def test_write_notice(self, mock_preamble, mock_fdsys, mock_build_analysis):
         changes = {'1234-2': {'op': 'modified'},
                    '1234-3': {'op': 'deleted'},
                    '1234-4': {'op': 'added'}}
@@ -245,33 +245,36 @@ class XMLWriteContentTestCase(TestCase):
             Node("I'll get analysis", label=['1234', '1']),
             Node("I will be modified", label=['1234', '2']),
             Node("I will be deleted", label=['1234', '3']),
-            Node("I will be added", label=['1234', '4'])
+            Node("I will be added", label=['1234', '4']),
         ])
 
         # Ensure we have some analysis just to include
         layers = {'analyses': {'1234-1': [{}]}}
         
-        mock_add_analyses.return_value = etree.fromstring("""
-            <paragraph label="1234-1">
-              <analysis>
-                This is some analysis
-              </analysis>
-            </paragraph >
-        """)  # noqa
+        # mock_add_analyses.return_value = etree.fromstring("""
+        #       <analysis label="1234-1-Analysis">
+        #         This is some analysis
+        #       </analysis>
+        # """)
+        mock_build_analysis.return_value = etree.fromstring("""
+          <analysis label="1234-1-Analysis">
+            This is some analysis
+          </analysis>
+        """)
 
         # An FDSYS 
         mock_fdsys.return_value = etree.fromstring("""
             <fdsys>
                 This is an fdsys 
             </fdsys>
-        """)  # noqa        
+        """)
 
         # A preamble
         mock_preamble.return_value = etree.fromstring("""
             <preamble>
                 This is the preamble
             </preamble>
-        """)  # noqa        
+        """)
 
         writer = XMLWriteContent("a/path", '2015-12345', layers=layers, notices={})
 
@@ -288,6 +291,7 @@ class XMLWriteContentTestCase(TestCase):
         # Get the resulting XML
         file_handle = mock_file()
         xml_string = file_handle.write.call_args[0][0]
+        print xml_string
         notice_xml = etree.fromstring(xml_string)
 
         # Introspect our changes
@@ -453,7 +457,7 @@ class XMLWriteContentTestCase(TestCase):
                 '1234-1': [{
                     'publication_date': u'2015-11-17', 
                     'reference': (u'2015-12345', u'1234-1')
-                }]
+                }],
             }
         }
         notices = [{
@@ -524,6 +528,54 @@ class XMLWriteContentTestCase(TestCase):
         self.assertEqual(2,
             len(elm.xpath('./analysis/analysisSection/analysisSection/analysisParagraph/footnote')))
 
+    def test_add_analyses_from_child(self):
+        """ Test that we can add analysis with sections within the
+            primary section and footnotes. """
+        text = 'This is some text that will be analyzed.'
+        layers = {
+            'terms': {'referenced': {}},
+            'analyses': {
+                '1234-2': [{
+                    'publication_date': u'2015-11-17', 
+                    'reference': (u'2015-12345', u'1234-2')
+                }]
+            }
+        }
+        notices = [{
+            'document_number': '2015-12345',
+            'section_by_section': [{
+                'title': 'Regulation 1234',
+                'paragraphs': [],
+                'footnote_refs': [],
+                'children':[{
+                    'title': 'Not important',
+                    'paragraphs': [],
+                    'footnote_refs': [],
+                    'children': [],
+                }, {
+                    'title': 'Section 1234.2',
+                    'labels': ['1234-2'], 
+                    'paragraphs': [
+                        'This is a paragraph.',
+                    ], 
+                    'footnote_refs': [], 
+                    'children': [],
+                }],
+            }],
+            'footnotes': {
+                '1': 'Paragraphs contain text.',
+                '2': 'Analysis analyzes things.'
+            },
+        }]
+        elm = etree.Element('section')
+        elm.set('label', '1234-2')
+        writer = XMLWriteContent("a/path", '2015-12345', 
+                                 layers=layers, notices=notices)
+        writer.add_analyses(elm)
+        print etree.tostring(elm, pretty_print=True)
+        
+        self.assertEqual(1, len(elm.xpath('./analysis')))
+        
     def test_fdsys(self):
         layers = {
             'terms': {'referenced': {}},

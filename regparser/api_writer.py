@@ -231,6 +231,27 @@ class XMLWriteContent:
                 content_elm = self.to_xml(changed_node)
                 change_elm.append(content_elm)
 
+        # Now add in any section-by-section analysis this notice
+        # contains.
+        # XXX: This is a slightly brute-force attempt, and may result in
+        # some duplication across notices. The diffing doesn't take
+        # analysis into account.
+        for label in self.layers['analyses']:
+            # The analyses for this label
+            analyses = self.layers['analyses'][label]
+            for analysis_ref in analyses:
+                analysis_label = label + '-Analysis'
+                # If the analysis is not already in the changeset, add it.
+                if len(changeset_elm.findall('.//*[@label="' + analysis_label + '"]')) > 0:
+                    continue
+
+                analysis_elm = self.build_analysis(analysis_ref)
+                analysis_elm.set('label', analysis_label)
+                change_elm = SubElement(changeset_elm, 'change')
+                change_elm.set('operation', 'added')
+                change_elm.set('label', analysis_elm.get('label'))
+                change_elm.append(analysis_elm)
+
         notice_elm.append(changeset_elm)
 
         xml_string = tostring(notice_elm, pretty_print=True,
@@ -493,9 +514,20 @@ class XMLWriteContent:
                     if n['document_number'] == analysis_version][0]
 
         # Lookup the analysis for this element
-        analysis = [a 
-                for a in analysis_notice['section_by_section'] 
-                    if analysis_label in a['labels']][0]
+        def lookup_analysis(node, label):
+            # If the node has no labels and has children, dig into them
+            # instead.
+            if 'labels' in node.keys() and label in node['labels']:
+                return node
+            for child in node['children']:
+                match = lookup_analysis(child, label)
+                if match is not None:
+                    return match
+
+        analysis = next(a for a in 
+                        (lookup_analysis(a, analysis_label) 
+                         for a in analysis_notice['section_by_section'])
+                        if a is not None)
 
         # Construct the analysis element and its sections
         analysis_elm = Element('analysis')
@@ -523,6 +555,7 @@ class XMLWriteContent:
 
         for analysis_ref in analyses:
             analysis_elm = self.build_analysis(analysis_ref)
+            analysis_elm.set('label', label + '-Analysis')
             elm.append(analysis_elm)
 
     def fdsys(self, reg_number, date='2012-01-01', orig_date='2012-01-01'):
@@ -594,13 +627,14 @@ class XMLWriteContent:
         process_content = False
 
         if 'Subpart' in root.label:
-            elem = Element('subpart')
+            elem = Element('subpart', label=root.label_id())
             if root.node_type != "emptypart":
                 title = SubElement(elem, 'title')
                 title.text = root.title
             if len(root.label) == 3:
                 elem.set('subpartLetter', root.label[-1])
             toc = XMLWriteContent.toc_to_xml(self.layers['toc'][root.label_id()])
+            toc.set('label', root.label_id() + '-TOC')
             elem.append(toc)
             content = SubElement(elem, 'content')
             for child in root.children:
