@@ -250,16 +250,10 @@ class XMLWriteContentTestCase(TestCase):
 
         # Ensure we have some analysis just to include
         layers = {'analyses': {'1234-1': [{}]}}
-        
-        # mock_add_analyses.return_value = etree.fromstring("""
-        #       <analysis label="1234-1-Analysis">
-        #         This is some analysis
-        #       </analysis>
-        # """)
         mock_build_analysis.return_value = etree.fromstring("""
-          <analysis label="1234-1-Analysis">
+          <analysisSection target="1234-1" notice="2015-12345" date="">
             This is some analysis
-          </analysis>
+          </analysisSection>
         """)
 
         # An FDSYS 
@@ -291,7 +285,6 @@ class XMLWriteContentTestCase(TestCase):
         # Get the resulting XML
         file_handle = mock_file()
         xml_string = file_handle.write.call_args[0][0]
-        print xml_string
         notice_xml = etree.fromstring(xml_string)
 
         # Introspect our changes
@@ -309,6 +302,9 @@ class XMLWriteContentTestCase(TestCase):
             len([c for c in changes if c.get('operation') == 'deleted']))
         self.assertEqual(1, 
             len([c for c in changes if c.get('operation') == 'added']))
+
+        self.assertEqual(1,
+                len(notice_xml.findall('./{eregs}analysis')))
 
     def test_extract_definitions(self):
         layers = {
@@ -494,12 +490,11 @@ class XMLWriteContentTestCase(TestCase):
                 '2': 'Analysis analyzes things.'
             },
         }]
-        elm = etree.Element('section')
-        elm.set('label', '1234-1')
+        elm = etree.Element('regulation')
         writer = XMLWriteContent("a/path", '2015-12345', 
                                  layers=layers, notices=notices)
         writer.add_analyses(elm)
-        
+
         self.assertEqual(1, len(elm.xpath('./analysis')))
         self.assertEqual(1,
             len(elm.xpath('./analysis/analysisSection')))
@@ -528,54 +523,11 @@ class XMLWriteContentTestCase(TestCase):
         self.assertEqual(2,
             len(elm.xpath('./analysis/analysisSection/analysisSection/analysisParagraph/footnote')))
 
-    def test_add_analyses_from_child(self):
-        """ Test that we can add analysis with sections within the
-            primary section and footnotes. """
-        text = 'This is some text that will be analyzed.'
-        layers = {
-            'terms': {'referenced': {}},
-            'analyses': {
-                '1234-2': [{
-                    'publication_date': u'2015-11-17', 
-                    'reference': (u'2015-12345', u'1234-2')
-                }]
-            }
-        }
-        notices = [{
-            'document_number': '2015-12345',
-            'section_by_section': [{
-                'title': 'Regulation 1234',
-                'paragraphs': [],
-                'footnote_refs': [],
-                'children':[{
-                    'title': 'Not important',
-                    'paragraphs': [],
-                    'footnote_refs': [],
-                    'children': [],
-                }, {
-                    'title': 'Section 1234.2',
-                    'labels': ['1234-2'], 
-                    'paragraphs': [
-                        'This is a paragraph.',
-                    ], 
-                    'footnote_refs': [], 
-                    'children': [],
-                }],
-            }],
-            'footnotes': {
-                '1': 'Paragraphs contain text.',
-                '2': 'Analysis analyzes things.'
-            },
-        }]
-        elm = etree.Element('section')
-        elm.set('label', '1234-2')
-        writer = XMLWriteContent("a/path", '2015-12345', 
-                                 layers=layers, notices=notices)
-        writer.add_analyses(elm)
-        print etree.tostring(elm, pretty_print=True)
-        
-        self.assertEqual(1, len(elm.xpath('./analysis')))
-        
+        section = elm.find('./analysis/analysisSection')
+        self.assertEqual('1234-1', section.get('target'))
+        self.assertEqual('2015-12345', section.get('notice'))
+        self.assertEqual('2015-11-17', section.get('date'))
+
     def test_fdsys(self):
         layers = {
             'terms': {'referenced': {}},

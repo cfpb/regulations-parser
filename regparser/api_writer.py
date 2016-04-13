@@ -231,26 +231,7 @@ class XMLWriteContent:
                 content_elm = self.to_xml(changed_node)
                 change_elm.append(content_elm)
 
-        # Now add in any section-by-section analysis this notice
-        # contains.
-        # XXX: This is a slightly brute-force attempt, and may result in
-        # some duplication across notices. The diffing doesn't take
-        # analysis into account.
-        for label in self.layers['analyses']:
-            # The analyses for this label
-            analyses = self.layers['analyses'][label]
-            for analysis_ref in analyses:
-                analysis_label = label + '-Analysis'
-                # If the analysis is not already in the changeset, add it.
-                if len(changeset_elm.findall('.//*[@label="' + analysis_label + '"]')) > 0:
-                    continue
-
-                analysis_elm = self.build_analysis(analysis_ref)
-                analysis_elm.set('label', analysis_label)
-                change_elm = SubElement(changeset_elm, 'change')
-                change_elm.set('operation', 'added')
-                change_elm.set('label', analysis_elm.get('label'))
-                change_elm.append(analysis_elm)
+        self.add_analyses(notice_elm)
 
         notice_elm.append(changeset_elm)
 
@@ -472,9 +453,9 @@ class XMLWriteContent:
 
         # Each analysis section will be need to be constructed the
         # same way. So here's a recursive function to do it.
-        def analysis_section(notice, parent_elm, child):
+        def analysis_section(notice, child):
             # Create the section element
-            section_elm = SubElement(parent_elm, 'analysisSection')
+            section_elm = Element('analysisSection')
 
             # Add the title element
             title_elm = SubElement(section_elm, 'title')
@@ -499,19 +480,22 @@ class XMLWriteContent:
                 section_elm.append(paragraph_elm)
 
             # Construct an analysis section for any children.
-            map(lambda c:  analysis_section(notice, section_elm, c),
+            map(lambda c:  section_elm.append(analysis_section(notice, c)),
                     child['children'])
+
+            return section_elm
 
         # NOTE: We'll let index errors percolate upwards because if 
         # the index doesn't exist, and we can't find the notice 
         # number or analysis within the notice, there's something 
         # wrong with the analyses layer to this point.
-        analysis_version = analysis_ref['reference'][0]
-        analysis_label = analysis_ref['reference'][1]
+        analysis_doc_number = analysis_ref['reference'][0]
+        analysis_target = analysis_ref['reference'][1]
+        analysis_date = analysis_ref['publication_date']
 
         # Look up the notice with the analysis attached
         analysis_notice = [n for n in self.notices 
-                    if n['document_number'] == analysis_version][0]
+                    if n['document_number'] == analysis_doc_number][0]
 
         # Lookup the analysis for this element
         def lookup_analysis(node, label):
@@ -525,38 +509,29 @@ class XMLWriteContent:
                     return match
 
         analysis = next(a for a in 
-                        (lookup_analysis(a, analysis_label) 
+                        (lookup_analysis(a, analysis_target) 
                          for a in analysis_notice['section_by_section'])
                         if a is not None)
 
         # Construct the analysis element and its sections
-        analysis_elm = Element('analysis')
-        analysis_section(analysis_notice, analysis_elm, analysis)
-
-        return analysis_elm
+        analysis_section_elm = analysis_section(analysis_notice, analysis)
+        analysis_section_elm.set('target', analysis_target)
+        analysis_section_elm.set('notice', analysis_doc_number)
+        analysis_section_elm.set('date', analysis_date)
+        
+        return analysis_section_elm
 
     def add_analyses(self, elm):
         """
-        This method is not like the others above.
-
-        Anlayses are added to the end of the element they analyze. Given
-        an element, if analysis exists in the analyses layer for that
-        label, an analysis element will be created and appended to the
-        given element.
+        Anlayses are added to the end of the regulation or notice.
         """
 
-        # If there's no analysis for this label, move on.
-        label = elm.get('label')
-        if label not in self.layers['analyses']:
-            return
+        analysis_elm = SubElement(elm, 'analysis')
 
-        # The analyses for this label.
-        analyses = self.layers['analyses'][label]
-
-        for analysis_ref in analyses:
-            analysis_elm = self.build_analysis(analysis_ref)
-            analysis_elm.set('label', label + '-Analysis')
-            elm.append(analysis_elm)
+        for label, analyses in self.layers['analyses'].items():
+            for analysis_ref in analyses:
+                analysis_section_elm = self.build_analysis(analysis_ref)
+                analysis_elm.append(analysis_section_elm)
 
     def fdsys(self, reg_number, date='2012-01-01', orig_date='2012-01-01'):
         meta = self.layers['meta'][reg_number][0]
@@ -671,6 +646,12 @@ class XMLWriteContent:
             for child in root.children:
                 sub_elem = self.to_xml(child)
                 content.append(sub_elem)
+
+            # Add any analysis that might exist for this version
+            try:
+                self.add_analyses(elem)
+            except Exception as ex:
+                print 'Could not create analyses for {}'.format(root.label)
 
         elif root.node_type == 'appendix' and len(root.label) == 2:
             # reset the section counter
@@ -839,12 +820,6 @@ class XMLWriteContent:
             for child in root.children:
                 sub_elem = self.to_xml(child)
                 elem.append(sub_elem)
-
-            # Add any analysis that might exist for this node
-            try:
-                self.add_analyses(elem)
-            except Exception as ex:
-                print 'Could not create analyses for {}'.format(root.label)
                 
         return elem
 
