@@ -72,6 +72,9 @@ OVERRIDES_SOURCES = [
     'regcontent.overrides'
 ]
 
+# list of fr notice overrides
+FR_NOTICE_OVERRIDES = {'ALL': []}
+
 # list of iterable[(xpath, replacement-xml)] modules, which will be loaded
 # in regparser.content.Macros
 MACROS_SOURCES = [

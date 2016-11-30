@@ -22,18 +22,21 @@ from regparser.notice.build import build_notice
 from regparser.tree import struct
 # from regparser.tree.build import build_whole_regtree
 from regparser.tree.xml_parser import reg_text
+from regparser.diff.tree import changes_between
+from regparser.tree.struct import FrozenNode
 
 
 class Builder(object):
     """Methods used to build all versions of a single regulation, their
     layers, etc. It is largely glue code"""
 
-    def __init__(self, cfr_title, cfr_part, doc_number, checkpointer=None):
+    def __init__(self, cfr_title, cfr_part, doc_number, checkpointer=None,
+                 writer_type=None):
         self.cfr_title = cfr_title
         self.cfr_part = cfr_part
         self.doc_number = doc_number
         self.checkpointer = checkpointer or NullCheckpointer()
-        self.writer = api_writer.Client()
+        self.writer = api_writer.Client(writer_type=writer_type)
         self.notices_json = []
         self.notices = []
         self.notice_doc_numbers = []
@@ -92,10 +95,40 @@ class Builder(object):
             self.writer.notice(
                 self.cfr_part, notice['document_number']).write(notice)
 
-    def write_regulation(self, reg_tree):
-        self.writer.regulation(self.cfr_part, self.doc_number).write(reg_tree)
+    def write_notice(self, doc_number, old_tree=None, reg_tree=None,
+                     layers=None, last_version=''):
+        """ Write a single notice out. For the XMLWriter, we need to
+            include the reg_tree for the notice. """
+        # Get the notice by doc number
+        notice = next((n for n in self.notices
+                       if n['document_number'] == doc_number), None)
 
-    def gen_and_write_layers(self, reg_tree, act_info, cache, notices=None):
+        # We can optionall write out the diffs with the notice if we're
+        # given the old tree.
+        changes = {}
+        if old_tree is not None and reg_tree is not None:
+            # FrozenNode and Node are not API-compatible. This is
+            # troublesome.
+            changes = dict(changes_between(
+                FrozenNode.from_node(old_tree),
+                FrozenNode.from_node(reg_tree)))
+
+        # Write the notice
+        writer = self.writer.notice(self.cfr_part,
+                                    self.doc_number,
+                                    notices=self.notices,
+                                    layers=layers)
+        writer.write(notice, changes=changes, reg_tree=reg_tree,
+                     left_doc_number=last_version)
+
+    def write_regulation(self, reg_tree, layers=None):
+        self.writer.regulation(self.cfr_part,
+                               self.doc_number,
+                               notices=self.notices,
+                               layers=layers).write(reg_tree)
+
+    def generate_layers(self, reg_tree, act_info, cache, notices=None):
+        layers = {}
         if notices is None:
             notices = applicable_notices(self.notices, self.doc_number)
         for ident, layer_class in (
@@ -117,8 +150,18 @@ class Builder(object):
                 lambda: layer_class(
                     reg_tree, self.cfr_title, self.doc_number, notices,
                     act_info).build(cache.cache_for(ident)))
-            self.writer.layer(ident, self.cfr_part, self.doc_number).write(
-                layer)
+            layers[ident] = layer
+
+        return layers
+
+    def write_layers(self, layers):
+        for ident, layer in layers.items():
+            self.writer.layer(ident, self.cfr_part,
+                              self.doc_number).write(layer)
+
+    def gen_and_write_layers(self, reg_tree, act_info, cache, notices=None):
+        layers = self.generate_layers(reg_tree, act_info, cache, notices)
+        self.write_layers(layers)
 
     def revision_generator(self, reg_tree):
         """Given an initial regulation tree, this will emit (and checkpoint)
@@ -372,7 +415,8 @@ class NullCheckpointer(object):
         return fn()
 
 
-def tree_and_builder(filename, title, checkpoint_path=None, doc_number=None):
+def tree_and_builder(filename, title, checkpoint_path=None,
+                     writer_type=None, doc_number=None):
     """Reads the regulation file and parses it. Returns the resulting tree as
     well as a Builder object for further manipulation. Looks up the doc_number
     if it's not provided"""
@@ -401,7 +445,8 @@ def tree_and_builder(filename, title, checkpoint_path=None, doc_number=None):
     builder = Builder(cfr_title=title,
                       cfr_part=title_part,
                       doc_number=doc_number,
-                      checkpointer=checkpointer)
+                      checkpointer=checkpointer,
+                      writer_type=writer_type)
     builder.fetch_notices_json()
     builder.build_notices()
 

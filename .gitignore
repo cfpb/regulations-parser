@@ -85,3 +85,5 @@ regulations-configs
 # docs output
 docs/_build
 *.p
+*.egg-info
+.coverage

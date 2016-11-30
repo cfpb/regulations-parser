@@ -59,41 +59,41 @@ class BuilderTests(TestCase):
                 Node("See paragraph (b)", label=["1234", "1", "a"]),
                 Node("This is b", label=["1234", "1", "b"])])])
         b.gen_and_write_layers(tree, [], cache, [])
-        arg = write.call_args_list[3][0][0]
+        arg = write.call_args_list[9][0][0]
         self.assertEqual(['1234-1-a'], arg.keys())
         cache.replace_using(tree)
 
         write.reset_mock()
         tree.children[0].children[1].text = "References paragraph (a)"
         b.gen_and_write_layers(tree, [], cache, [])
-        arg = write.call_args_list[3][0][0]
+        arg = write.call_args_list[9][0][0]
         self.assertEqual(['1234-1-a'], arg.keys())
 
         write.reset_mock()
         tree.children[0].children[0].text = "Contains no references"
         b.gen_and_write_layers(tree, [], cache, [])
-        arg = write.call_args_list[3][0][0]
+        arg = write.call_args_list[9][0][0]
         self.assertEqual(['1234-1-a'], arg.keys())
 
         write.reset_mock()
         notice = {'document_number': '111-222'}
         cache.invalidate_by_notice(notice)
         b.gen_and_write_layers(tree, [], cache, [])
-        arg = write.call_args_list[3][0][0]
+        arg = write.call_args_list[9][0][0]
         self.assertEqual(['1234-1-a'], arg.keys())
 
         write.reset_mock()
         notice['changes'] = {'1234-1-b': 'some change'}
         cache.invalidate_by_notice(notice)
         b.gen_and_write_layers(tree, [], cache, [])
-        arg = write.call_args_list[3][0][0]
+        arg = write.call_args_list[9][0][0]
         self.assertEqual(['1234-1-a', '1234-1-b'], list(sorted(arg.keys())))
 
         write.reset_mock()
         notice['changes'] = {'1234-Subpart-A': 'some change'}
         cache.invalidate_by_notice(notice)
         b.gen_and_write_layers(tree, [], cache, [])
-        arg = write.call_args_list[3][0][0]
+        arg = write.call_args_list[9][0][0]
         self.assertEqual(['1234-1-b'], list(sorted(arg.keys())))
 
     def test_determine_doc_number_fr(self):

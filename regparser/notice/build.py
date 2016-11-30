@@ -33,7 +33,9 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     cfr_parts = set(str(ref['part']) for ref in fr_notice['cfr_references'])
     cfr_parts.add(cfr_part)
 
-    notice = {'cfr_title': cfr_title, 'cfr_parts': list(cfr_parts)}
+    notice = {'cfr_title': cfr_title,
+              'cfr_parts': list(cfr_parts),
+              'cfr_part': cfr_part}
     notice_number = fr_notice['document_number']
 
     # Check for configured overrides of the FR JSON for this notice
@@ -331,7 +333,11 @@ def process_amendments(notice, notice_xml):
 
             create_xmlless_changes(other_labels, notice_changes)
 
-            for cfr_part, rel_labels in labels_by_part.iteritems():
+            # for cfr_part, rel_labels in labels_by_part.iteritems():
+            labels_for_part = {part: labels
+                               for part, labels in labels_by_part.iteritems()
+                               if part == default_cfr_part}
+            for cfr_part, rel_labels in labels_for_part.iteritems():
                 section_xml = find_section(par)
                 if section_xml is not None:
                     subparts = aXp.parent.xpath('.//SUBPART/HD')
@@ -357,8 +363,8 @@ def process_amendments(notice, notice_xml):
             amends.extend(designate_labels)
             amends.extend(other_labels)
 
-            if other_labels:    # Carry cfr_part through amendments
-                default_cfr_part = other_labels[-1].label[0]
+            # if other_labels:    # Carry cfr_part through amendments
+            #    default_cfr_part = other_labels[-1].label[0]
 
     if amends:
         notice['amendments'] = amends

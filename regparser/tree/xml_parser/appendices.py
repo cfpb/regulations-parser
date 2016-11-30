@@ -35,6 +35,7 @@ def remove_toc(appendix, letter):
             #  compare the parsed results.
             fingerprint = tuple(parsed)
             #  Hit the real content
+
             if fingerprint in fingerprints and node.tag == 'HD':
                 for el in potential_toc:
                     el.getparent().remove(el)
@@ -147,6 +148,18 @@ class AppendixProcessor(object):
         if xml_node.get('SOURCE') == 'FP-DASH':
             mtext = mtext + '_____'
         return mtext
+
+    def process_sequence(self, root):
+        for child in root.getchildren():
+            text = tree_utils.get_node_text(child, add_spaces=True).strip()
+            text = self.insert_dashes(child, text)
+            self.paragraph_with_marker(
+                text, tree_utils.get_node_text_tags_preserved(child))
+
+        old_depth = self.depth
+        self.depth += 1
+        self.end_group()
+        self.depth = old_depth
 
     def paragraph_with_marker(self, text, tagged_text):
         """The paragraph has a marker, like (a) or a. etc."""
@@ -307,6 +320,11 @@ class AppendixProcessor(object):
                 self.paragraph_with_marker(
                     text,
                     tree_utils.get_node_text_tags_preserved(child))
+            elif child.tag == 'SEQUENCE':
+                old_depth = self.depth
+                self.end_group()
+                self.depth = old_depth
+                self.process_sequence(child)
             elif child.tag in ('P', 'FP'):
                 text = self.insert_dashes(child, text)
                 self.paragraph_no_marker(text)

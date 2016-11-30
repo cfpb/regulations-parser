@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
-
 import argparse
 import logging
 import hashlib
 import codecs
+
+import sys
+reload(sys)
+sys.setdefaultencoding('UTF8')
 
 try:
     import requests_cache
@@ -40,7 +43,7 @@ def parse_regulation(args):
     builder.write_notices()
 
     #   Always do at least the first reg
-    logger.info("Version %s", builder.doc_number)
+    logger.info("Version", builder.doc_number)
     builder.write_regulation(reg_tree)
     layer_cache = LayerCacheAggregator()
 
@@ -133,6 +136,40 @@ def build_by_notice(filename, title, act_title, act_section,
     if args.generate_diffs:
         generate_diffs(reg_tree, act_title_and_section, builder, layer_cache)
 
+
+def generate_xml(filename, title, act_title, act_section, notice_doc_numbers,
+                 doc_number=None, checkpoint=None):
+
+    act_title_and_section = [act_title, act_section]
+    #   First, the regulation tree
+
+    reg_tree, builder = tree_and_builder(filename, title,
+                                         checkpoint, writer_type='XML')
+    layer_cache = LayerCacheAggregator()
+    layers = builder.generate_layers(reg_tree, act_title_and_section,
+                                     layer_cache)
+
+    # Always do at least the first reg
+    logger.info("Version", builder.doc_number)
+    builder.write_regulation(reg_tree, layers=layers)
+    all_versions = {doc_number: FrozenNode.from_node(reg_tree)}
+
+    for last_notice, old, new_tree, notices in builder.revision_generator(
+            reg_tree):
+        version = last_notice['document_number']
+        logger.info("Version %s", version)
+        all_versions[version] = FrozenNode.from_node(new_tree)
+        builder.doc_number = version
+        layers = builder.generate_layers(new_tree, act_title_and_section,
+                                         layer_cache, notices)
+        builder.write_regulation(new_tree, layers=layers)
+        builder.write_notice(version, old_tree=old, reg_tree=new_tree,
+                             layers=layers)
+        layer_cache.invalidate_by_notice(last_notice)
+        layer_cache.replace_using(new_tree)
+        del last_notice, old, new_tree, notices     # free some memory
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Regulation parser')
     parser.add_argument('filename',
@@ -165,6 +202,13 @@ if __name__ == "__main__":
     if args.operation == 'build_by_notice':
         build_by_notice(args.filename, args.title, args.act_title,
                         args.act_section, args.notices_to_apply,
-                        args.last_notice, args.checkpoint)
+                        args.last_notice, args.checkpoint_dir)
+
+    elif args.operation == 'generate_xml':
+
+        generate_xml(args.filename, args.title, args.act_title,
+                     args.act_section, args.notices_to_apply,
+                     args.last_notice, args.checkpoint_dir)
+
     else:
         parse_regulation(args)
