@@ -117,9 +117,10 @@ def overwrite_marker(origin, new_label):
             origin.text = origin.text.replace(marker, new_marker, 1)
     elif origin.node_type == Node.INTERP:
         marker = interpretations.get_first_interp_marker(origin.text)
-        marker = marker + '.'
-        new_marker = new_label + '.'
-        origin.text = origin.text.replace(marker, new_marker, 1)
+        if marker is not None:
+            marker = marker + '.'
+            new_marker = new_label + '.'
+            origin.text = origin.text.replace(marker, new_marker, 1)
 
     return origin
 
