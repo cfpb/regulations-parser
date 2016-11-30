@@ -141,8 +141,8 @@ class NoticeBuildTest(TestCase):
                 <P>Following Content</P>
             </SUPLINF>
         </ROOT>"""
-        notice = {'cfr_parts': ['9292'], 'cfr_part': '9292', 
-                  'meta': {'start_page': 100}, 
+        notice = {'cfr_parts': ['9292'], 'cfr_part': '9292',
+                  'meta': {'start_page': 100},
                   'document_number': '1999-12345'}
         self.assertEqual(build.process_xml(notice, etree.fromstring(xml)), {
             'cfr_parts': ['9292'],
@@ -177,7 +177,7 @@ class NoticeBuildTest(TestCase):
                 <P>Following Content</P>
             </SUPLINF>
         </ROOT>"""
-        notice = {'cfr_parts': ['9292'], 'cfr_part': '9292', 
+        notice = {'cfr_parts': ['9292'], 'cfr_part': '9292',
                   'meta': {'start_page': 210},
                   'document_number': '1999-12345'}
         self.assertEqual(build.process_xml(notice, etree.fromstring(xml)), {
@@ -205,7 +205,7 @@ class NoticeBuildTest(TestCase):
         </ROOT>"""
         xml = etree.fromstring(xml)
 
-        notice = {'cfr_parts': ['902'], 'cfr_part': '902', 
+        notice = {'cfr_parts': ['902'], 'cfr_part': '902',
                   'meta': {'start_page': 10},
                   'document_number': '1999-12345',
                   'effective_on': '2002-02-02'}
@@ -219,7 +219,7 @@ class NoticeBuildTest(TestCase):
         # Uses the date found in the XML
         self.assertEqual('2002-01-01', notice['effective_on'])
 
-        notice = {'cfr_parts': ['902'], 'cfr_part': '902', 
+        notice = {'cfr_parts': ['902'], 'cfr_part': '902',
                   'meta': {'start_page': 10},
                   'document_number': '1999-12345', 'effective_on': None}
         notice = build.process_xml(notice, xml)

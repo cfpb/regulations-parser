@@ -1,6 +1,5 @@
 from collections import defaultdict
 from json import JSONEncoder
-from lxml.etree import Element, SubElement
 
 import logging
 import hashlib
@@ -34,13 +33,13 @@ class Node(object):
     def __repr__(self):
         return (("Node(text=%s, label=%s, title=%s, marker=%s, "
                 + "node_type=%s, children=%s)") % (
-                    repr(self.text), 
-                    repr(self.label), 
-                    repr(self.title), 
-                    repr(self.marker), 
+                    repr(self.text),
+                    repr(self.label),
+                    repr(self.title),
+                    repr(self.marker),
                     repr(self.node_type),
                     repr(self.children)
-                ))
+        ))
 
     def __cmp__(self, other):
         return cmp(repr(self), repr(other))

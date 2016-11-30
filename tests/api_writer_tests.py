@@ -238,7 +238,8 @@ class XMLWriteContentTestCase(TestCase):
     @patch('regparser.api_writer.XMLWriteContent.build_analysis')
     @patch('regparser.api_writer.XMLWriteContent.fdsys')
     @patch('regparser.api_writer.XMLWriteContent.preamble')
-    def test_write_notice(self, mock_preamble, mock_fdsys, mock_build_analysis):
+    def test_write_notice(self, mock_preamble, mock_fdsys,
+                          mock_build_analysis):
         changes = {'1234-2': {'op': 'modified'},
                    '1234-3': {'op': 'deleted'},
                    '1234-4': {'op': 'added'}}
@@ -271,7 +272,10 @@ class XMLWriteContentTestCase(TestCase):
             </preamble>
         """)
 
-        writer = XMLWriteContent("a/path", '2015-12345', layers=layers, notices={})
+        writer = XMLWriteContent("a/path",
+                                 '2015-12345',
+                                 layers=layers,
+                                 notices={})
 
         # Without reg_tree
         with self.assertRaises(RuntimeError):
@@ -281,7 +285,7 @@ class XMLWriteContentTestCase(TestCase):
         mock_file = mock_open()
         with patch.object(builtins, 'open', mock_file, create=True):
             writer.write_notice({}, changes=changes, reg_tree=reg_tree,
-                    left_doc_number='2015-01234')
+                                left_doc_number='2015-01234')
 
         # Get the resulting XML
         file_handle = mock_file()
@@ -297,15 +301,15 @@ class XMLWriteContentTestCase(TestCase):
 
         changes = notice_xml.findall('.//{eregs}change')
         self.assertEqual(len(changes), 4)
-        self.assertEqual(2,
-            len([c for c in changes if c.get('operation') == 'modified']))
-        self.assertEqual(1,
-            len([c for c in changes if c.get('operation') == 'deleted']))
-        self.assertEqual(1,
-            len([c for c in changes if c.get('operation') == 'added']))
+        self.assertEqual(
+            2, len([c for c in changes if c.get('operation') == 'modified']))
+        self.assertEqual(
+            1, len([c for c in changes if c.get('operation') == 'deleted']))
+        self.assertEqual(
+            1, len([c for c in changes if c.get('operation') == 'added']))
 
-        self.assertEqual(1,
-                len(notice_xml.findall('./{eregs}analysis')))
+        self.assertEqual(
+            1, len(notice_xml.findall('./{eregs}analysis')))
 
     def test_extract_definitions(self):
         layers = {
@@ -317,8 +321,9 @@ class XMLWriteContentTestCase(TestCase):
                 },
             }},
         }
-        expected_definitions = {'1000-1-a':
-            {'term': u'my defined term', 'offset': (0, 15)}}
+        expected_definitions = {
+            '1000-1-a': {'term': u'my defined term', 'offset': (0, 15)}
+        }
 
         # extract_definitions is called in __init__ to create
         # layers['definitions']
@@ -328,14 +333,16 @@ class XMLWriteContentTestCase(TestCase):
         self.assertEqual(expected_definitions, definitions)
 
     def test_apply_terms(self):
-        text="my defined term is my favorite of all the defined term" \
-             "because it is mine"
+        text = "my defined term is my favorite of all the defined term" \
+            "because it is mine"
         replacements = [{
             'ref': u'my defined term:1000-1-a',
             'offsets': [(0, 15)]
-        },]
-        expected_result = ([(0, 15)],
-            ['<ref target="1000-1-a" reftype="term">my defined term</ref>'])
+        }]
+        expected_result = (
+            [(0, 15)],
+            ['<ref target="1000-1-a" reftype="term">my defined term</ref>']
+        )
         result = XMLWriteContent.apply_terms(text, replacements)
         self.assertEqual(expected_result, result)
 
@@ -350,32 +357,39 @@ class XMLWriteContentTestCase(TestCase):
         text = "Now I'm going to cite 1000.1 right here."
         replacements = [{'citation': [u'1000', u'1'],
                          'offsets': [(22, 28)]}]
-        expected_result = ([(22, 28)],
-            ['<ref target="1000-1" reftype="internal">1000.1</ref>'])
+        expected_result = (
+            [(22, 28)],
+            ['<ref target="1000-1" reftype="internal">1000.1</ref>']
+        )
         result = XMLWriteContent.apply_internal_citations(text, replacements)
         self.assertEqual(expected_result, result)
 
     def test_apply_external_citations(self):
         text = "Pub. L. 111-203, 124 Stat. 1376"
-        replacements = [{'citation': [u'124', 'Stat.', u'1376'],
-                         'citation_type': 'STATUTES_AT_LARGE',
-                         'offsets': [[17, 31]]},]
-        expected_result = ([[17, 31]],
-                ['<ref target="STATUTES_AT_LARGE:124-Stat.-1376" '
-                 'reftype="external">124 Stat. 1376</ref>'])
+        replacements = [{
+            'citation': [u'124', 'Stat.', u'1376'],
+            'citation_type': 'STATUTES_AT_LARGE',
+            'offsets': [[17, 31]]
+        }]
+        expected_result = (
+            [[17, 31]],
+            ['<ref target="STATUTES_AT_LARGE:124-Stat.-1376" '
+             'reftype="external">124 Stat. 1376</ref>']
+        )
         result = XMLWriteContent.apply_external_citations(text, replacements)
         self.assertEqual(expected_result, result)
 
     def test_apply_definitions(self):
-        text="my defined term is my favorite of all the defined term" \
-             "because it is mine"
+        text = "my defined term is my favorite of all the defined term" \
+            "because it is mine"
         replacement = {
             'term': u'my defined term',
             'offset': (0, 15)
         }
-        expected_result = ([(0, 15)],
-                ['<def term="my defined term">'
-                 'my defined term</def>'])
+        expected_result = (
+            [(0, 15)],
+            ['<def term="my defined term">my defined term</def>']
+        )
         result = XMLWriteContent.apply_definitions(text, replacement)
         self.assertEqual(expected_result, result)
 
@@ -398,13 +412,15 @@ class XMLWriteContentTestCase(TestCase):
             'locations': [0],
             'table_data': {'header': [[{'text': 'Header row',
                                         'rowspan': 1,
-                                        'colspan': 1},]],
+                                        'colspan': 1}]],
                            'rows': [['', '']]},
         }]
-        expected_result = ([[0, 155]],
-                ['<table><header><columnHeaderRow><column colspan="1" '
-                 'rowspan="1">Header row</column></columnHeaderRow>'
-                 '</header><row><cell></cell><cell></cell></row></table>'])
+        expected_result = (
+            [[0, 155]],
+            ['<table><header><columnHeaderRow><column colspan="1" '
+             'rowspan="1">Header row</column></columnHeaderRow>'
+             '</header><row><cell></cell><cell></cell></row></table>']
+        )
         result = XMLWriteContent.apply_formatting(replacements)
         self.assertEqual(expected_result, result)
 
@@ -425,8 +441,10 @@ class XMLWriteContentTestCase(TestCase):
             },
             'text': 'Val_{n}'
         }]
-        expected_result = ([[0, 48]],
-                [u'<variable>Val<subscript>n</subscript></variable>'])
+        expected_result = (
+            [[0, 48]],
+            [u'<variable>Val<subscript>n</subscript></variable>']
+        )
         result = XMLWriteContent.apply_formatting(replacements)
         self.assertEqual(expected_result, result)
 
@@ -440,15 +458,17 @@ class XMLWriteContentTestCase(TestCase):
             'locations': [0],
             'text': '```note\nNote:\nNote content.\n```'
         }]
-        expected_result = ([[0, 76]],
-            ['<callout type="note"><line>Note:</line>\n<line>Note content.</line></callout>'])
+        expected_result = (
+            [[0, 76]],
+            ['<callout type="note"><line>Note:</line>\n'
+             '<line>Note content.</line></callout>']
+        )
         result = XMLWriteContent.apply_formatting(replacements)
         self.assertEqual(expected_result, result)
 
     def test_add_analyses(self):
         """ Test that we can add analysis with sections within the
             primary section and footnotes. """
-        text = 'This is some text that will be analyzed.'
         layers = {
             'terms': {'referenced': {}},
             'analyses': {
@@ -498,32 +518,41 @@ class XMLWriteContentTestCase(TestCase):
         writer.add_analyses(elm)
 
         self.assertEqual(1, len(elm.xpath('./analysis')))
-        self.assertEqual(1,
-            len(elm.xpath('./analysis/analysisSection')))
-        self.assertEqual(1,
-            len(elm.xpath('./analysis/analysisSection/title')))
-        self.assertEqual('Section 1234.1',
+        self.assertEqual(
+            1, len(elm.xpath('./analysis/analysisSection')))
+        self.assertEqual(
+            1, len(elm.xpath('./analysis/analysisSection/title')))
+        self.assertEqual(
+            'Section 1234.1',
             elm.xpath('./analysis/analysisSection/title')[0].text)
 
-        self.assertEqual(1,
+        self.assertEqual(
+            1,
             len(elm.xpath('./analysis/analysisSection/analysisParagraph')))
-        self.assertTrue('top-level section' in
+        self.assertTrue(
+            'top-level section' in
             elm.xpath('./analysis/analysisSection/analysisParagraph')[0].text)
 
-        self.assertEqual(1,
+        self.assertEqual(
+            1,
             len(elm.xpath('./analysis/analysisSection/analysisSection')))
-        self.assertEqual(1,
-            len(elm.xpath('./analysis/analysisSection/analysisSection/title')))
-        self.assertEqual('(a) Section of the Analysis',
-            elm.xpath('./analysis/analysisSection/analysisSection/title')[0].text)
+        self.assertEqual(
+            1,
+            len(elm.xpath('./analysis/analysisSection/analysisSection/title')))  # noqa
+        self.assertEqual(
+            '(a) Section of the Analysis',
+            elm.xpath('./analysis/analysisSection/analysisSection/title')[0].text)  # noqa
 
-        self.assertEqual(1,
-            len(elm.xpath('./analysis/analysisSection/analysisSection/analysisParagraph')))
-        self.assertTrue('I am a paragraph' in
-            elm.xpath('./analysis/analysisSection/analysisSection/analysisParagraph')[0].text)
+        self.assertEqual(
+            1,
+            len(elm.xpath('./analysis/analysisSection/analysisSection/analysisParagraph')))  # noqa
+        self.assertTrue(
+            'I am a paragraph' in
+            elm.xpath('./analysis/analysisSection/analysisSection/analysisParagraph')[0].text)  # noqa
 
-        self.assertEqual(2,
-            len(elm.xpath('./analysis/analysisSection/analysisSection/analysisParagraph/footnote')))
+        self.assertEqual(
+            2,
+            len(elm.xpath('./analysis/analysisSection/analysisSection/analysisParagraph/footnote')))  # noqa
 
         section = elm.find('./analysis/analysisSection')
         self.assertEqual('1234-1', section.get('target'))
@@ -555,9 +584,11 @@ class XMLWriteContentTestCase(TestCase):
               <title>TEST REGULATIONS FOR TESTING</title>
             </fdsys>
         ''', etree.XMLParser(remove_blank_text=True))
-        result = writer.fdsys('1000', date='2015-01-01', orig_date='2015-01-01')
+        result = writer.fdsys('1000',
+                              date='2015-01-01',
+                              orig_date='2015-01-01')
         self.assertEqual(etree.tostring(expected_result),
-                etree.tostring(result))
+                         etree.tostring(result))
 
     def test_preamble(self):
         layers = {
@@ -592,7 +623,7 @@ class XMLWriteContentTestCase(TestCase):
         ''', etree.XMLParser(remove_blank_text=True))
         result = writer.preamble('1000')
         self.assertEqual(etree.tostring(expected_result),
-                etree.tostring(result))
+                         etree.tostring(result))
 
     def test_toc_to_xml(self):
         toc = [
@@ -621,7 +652,7 @@ class XMLWriteContentTestCase(TestCase):
         ''', etree.XMLParser(remove_blank_text=True))
         result = XMLWriteContent.toc_to_xml(toc)
         self.assertEqual(etree.tostring(expected_result),
-                etree.tostring(result))
+                         etree.tostring(result))
 
     def test_is_interp_appendix(self):
         # XXX: This needs to be implemented
@@ -641,11 +672,11 @@ class XMLWriteContentTestCase(TestCase):
             children=[
                 Node(text=u'Paragraph text with title',
                      children=[
-                        Node(text=u'Regular paragraph',
-                             children=[],
-                             label=[u'1111', u'1', 'a'],
-                             title=u'',
-                             node_type=u'regtext'),
+                         Node(text=u'Regular paragraph',
+                              children=[],
+                              label=[u'1111', u'1', 'a'],
+                              title=u'',
+                              node_type=u'regtext'),
                      ],
                      label=[u'1111', u'1', 'a'],
                      title=u'1. A Title',
@@ -659,7 +690,7 @@ class XMLWriteContentTestCase(TestCase):
             'graphics': {},
             'keyterms': {
                 u'1111-1': [{'locations': [0],
-                    'key_term': u'A Title.'}],
+                             'key_term': u'A Title.'}],
             },
             'paragraph-markers': {
                 u'1111-1-a-Interp-1': [{
@@ -673,7 +704,7 @@ class XMLWriteContentTestCase(TestCase):
         }]
         writer = XMLWriteContent("a/path", '2015-12345',
                                  layers=layers, notices=notices)
-        elm = writer.to_xml(node)
+        writer.to_xml(node)
 
     def test_to_xml_interp(self):
         """ Test that interpretations get formatted correctly """
@@ -682,43 +713,51 @@ class XMLWriteContentTestCase(TestCase):
             children=[
                 Node(text=u'Interp for section',
                      children=[
-                        Node(text=u'Interp targetting reg paragraph',
-                             children=[
-                                 Node(text=u'A Keyterm. Interp sub paragraph.',
-                                     children=[],
-                                     label=[u'1111', u'1', 'a', u'Interp', u'1'],
-                                     title=None,
-                                     node_type=u'interp'),
-                                 Node(text=u'Lone Keyterm. Or not.',
-                                     children=[],
-                                     label=[u'1111', u'1', 'a', u'Interp', u'2'],
-                                     title=None,
-                                     node_type=u'interp'),
-                             ],
-                             label=[u'1111', u'1', 'a', u'Interp'],
-                             title=u'1111.1 (a) Interp',
-                             node_type=u'interp'),
+                         Node(text=u'Interp targetting reg paragraph',
+                              children=[
+                                  Node(text=u'A Keyterm. Interp sp.',
+                                       children=[],
+                                       label=[u'1111',
+                                              u'1',
+                                              'a',
+                                              u'Interp',
+                                              u'1'],
+                                       title=None,
+                                       node_type=u'interp'),
+                                  Node(text=u'Lone Keyterm. Or not.',
+                                       children=[],
+                                       label=[u'1111',
+                                              u'1',
+                                              'a',
+                                              u'Interp',
+                                              u'2'],
+                                       title=None,
+                                       node_type=u'interp'),
+                              ],
+                              label=[u'1111', u'1', 'a', u'Interp'],
+                              title=u'1111.1 (a) Interp',
+                              node_type=u'interp'),
                      ],
                      label=[u'1111', u'1', u'Interp'],
                      title=u'1111.1 Interp',
                      node_type=u'interp'),
-             ],
+            ],
             label=[u'1111', u'Interp'],
             title=u'Interpretations',
             node_type=u'interp')
 
         layers = {
             'terms': {
-                "1111-1-a-Interp-2":[{
-                    "offsets":[[0, 12]], "ref":"lone keyterm:1111-1-a"
+                "1111-1-a-Interp-2": [{
+                    "offsets": [[0, 12]], "ref": "lone keyterm:1111-1-a"
                 }],
                 'referenced': {}},
             'graphics': {},
             'keyterms': {
                 u'1111-1-a-Interp-1': [{'locations': [0],
-                    'key_term': u'A Keyterm.'}],
+                                        'key_term': u'A Keyterm.'}],
                 u'1111-1-a-Interp-2': [{'locations': [0],
-                    'key_term': u'Lone Keyterm.'}],
+                                        'key_term': u'Lone Keyterm.'}],
             },
             'interpretations': {
                 u'1111-1-a': [{'reference': u'1111-1-a-Interp'}],
@@ -749,14 +788,14 @@ class XMLWriteContentTestCase(TestCase):
         # Check that title keyterm is correct
         self.assertNotEqual(interp_para.find('title'), None)
         self.assertEqual(interp_sub_paras[0].find('title').get('type'),
-                'keyterm')
+                         'keyterm')
         self.assertTrue('A Keyterm.' not in
-                interp_sub_paras[0].find('content').text)
+                        interp_sub_paras[0].find('content').text)
 
         # For the second sub para there should be a <ref> in <title> and
         # nothing in content
         self.assertEqual(interp_sub_paras[1].find('title').get('type'),
-                'keyterm')
+                         'keyterm')
         self.assertTrue(interp_sub_paras[1].find('content').text is None)
         # self.assertTrue(len(interp_sub_paras[1].find('content')) is 0)
 

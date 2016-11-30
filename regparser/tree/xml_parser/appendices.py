@@ -22,6 +22,7 @@ from regparser.tree.xml_parser.interpretations import get_app_title
 
 from settings import APPENDIX_IGNORE_SUBHEADER_LABEL
 
+
 def remove_toc(appendix, letter):
     """The TOC at the top of certain appendices gives us trouble since it
     looks a *lot* like a sequence of headers. Remove it if present"""
@@ -34,6 +35,7 @@ def remove_toc(appendix, letter):
             #  compare the parsed results.
             fingerprint = tuple(parsed)
             #  Hit the real content
+
             if fingerprint in fingerprints and node.tag == 'HD':
                 for el in potential_toc:
                     el.getparent().remove(el)
@@ -151,7 +153,8 @@ class AppendixProcessor(object):
         for child in root.getchildren():
             text = tree_utils.get_node_text(child, add_spaces=True).strip()
             text = self.insert_dashes(child, text)
-            self.paragraph_with_marker(text, tree_utils.get_node_text_tags_preserved(child))
+            self.paragraph_with_marker(
+                text, tree_utils.get_node_text_tags_preserved(child))
 
         old_depth = self.depth
         self.depth += 1

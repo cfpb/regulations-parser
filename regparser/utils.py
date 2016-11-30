@@ -1,5 +1,6 @@
 from random import choice
 
+
 def roman_nums():
     """Generator for roman numerals."""
     mapping = [
@@ -64,6 +65,9 @@ def interpolate_string(text, offsets, values):
         end = offset[1]
         fragment = text[current_pos:start].encode('utf-8')
         current_pos = end
-        result = (result.decode('utf-8') + fragment.decode('utf-8') + values[i].decode('utf-8')).encode('utf-8')
-    result = (result.encode('utf-8') + text[current_pos:].encode('utf-8')).decode('utf-8')
+        result = (result.decode('utf-8') +
+                  fragment.decode('utf-8') +
+                  values[i].decode('utf-8')).encode('utf-8')
+    result = (result.encode('utf-8') +
+              text[current_pos:].encode('utf-8')).decode('utf-8')
     return result

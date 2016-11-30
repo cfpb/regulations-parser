@@ -12,7 +12,7 @@ setup(
     license='CC0',
     version='0.1.0',
     description='eCFR Parser for eRegulations',
-    long_description=open('README.md').read() 
+    long_description=open('README.md').read()
             if os.path.exists('README.md') else '',
 
     packages=find_packages(),

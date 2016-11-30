@@ -33,7 +33,9 @@ def build_notice(cfr_title, cfr_part, fr_notice, do_process_xml=True):
     cfr_parts = set(str(ref['part']) for ref in fr_notice['cfr_references'])
     cfr_parts.add(cfr_part)
 
-    notice = {'cfr_title': cfr_title, 'cfr_parts': list(cfr_parts), 'cfr_part': cfr_part}
+    notice = {'cfr_title': cfr_title,
+              'cfr_parts': list(cfr_parts),
+              'cfr_part': cfr_part}
     notice_number = fr_notice['document_number']
 
     # Check for configured overrides of the FR JSON for this notice

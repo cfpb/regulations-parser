@@ -30,7 +30,8 @@ class Builder(object):
     """Methods used to build all versions of a single regulation, their
     layers, etc. It is largely glue code"""
 
-    def __init__(self, cfr_title, cfr_part, doc_number, checkpointer=None, writer_type=None):
+    def __init__(self, cfr_title, cfr_part, doc_number, checkpointer=None,
+                 writer_type=None):
         self.cfr_title = cfr_title
         self.cfr_part = cfr_part
         self.doc_number = doc_number
@@ -95,32 +96,36 @@ class Builder(object):
                 self.cfr_part, notice['document_number']).write(notice)
 
     def write_notice(self, doc_number, old_tree=None, reg_tree=None,
-            layers=None, last_version=''):
+                     layers=None, last_version=''):
         """ Write a single notice out. For the XMLWriter, we need to
             include the reg_tree for the notice. """
         # Get the notice by doc number
-        notice = next((n  for n in self.notices 
+        notice = next((n for n in self.notices
                        if n['document_number'] == doc_number), None)
 
         # We can optionall write out the diffs with the notice if we're
         # given the old tree.
-        changes={}
+        changes = {}
         if old_tree is not None and reg_tree is not None:
             # FrozenNode and Node are not API-compatible. This is
             # troublesome.
             changes = dict(changes_between(
                 FrozenNode.from_node(old_tree),
-                FrozenNode.from_node(reg_tree))) 
+                FrozenNode.from_node(reg_tree)))
 
         # Write the notice
-        writer = self.writer.notice(self.cfr_part, self.doc_number, 
-            notices=self.notices, layers=layers)
+        writer = self.writer.notice(self.cfr_part,
+                                    self.doc_number,
+                                    notices=self.notices,
+                                    layers=layers)
         writer.write(notice, changes=changes, reg_tree=reg_tree,
-                left_doc_number=last_version)
+                     left_doc_number=last_version)
 
     def write_regulation(self, reg_tree, layers=None):
-        self.writer.regulation(self.cfr_part, self.doc_number, 
-            notices=self.notices, layers=layers).write(reg_tree)
+        self.writer.regulation(self.cfr_part,
+                               self.doc_number,
+                               notices=self.notices,
+                               layers=layers).write(reg_tree)
 
     def generate_layers(self, reg_tree, act_info, cache, notices=None):
         layers = {}
@@ -151,7 +156,8 @@ class Builder(object):
 
     def write_layers(self, layers):
         for ident, layer in layers.items():
-            self.writer.layer(ident, self.cfr_part, self.doc_number).write(layer)
+            self.writer.layer(ident, self.cfr_part,
+                              self.doc_number).write(layer)
 
     def gen_and_write_layers(self, reg_tree, act_info, cache, notices=None):
         layers = self.generate_layers(reg_tree, act_info, cache, notices)
@@ -409,7 +415,8 @@ class NullCheckpointer(object):
         return fn()
 
 
-def tree_and_builder(filename, title, checkpoint_path=None, writer_type=None, doc_number=None):
+def tree_and_builder(filename, title, checkpoint_path=None,
+                     writer_type=None, doc_number=None):
     """Reads the regulation file and parses it. Returns the resulting tree as
     well as a Builder object for further manipulation. Looks up the doc_number
     if it's not provided"""
