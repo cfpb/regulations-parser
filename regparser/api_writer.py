@@ -238,6 +238,7 @@ class XMLWriteContent:
         # Write the file
         with open(full_path, 'w') as f:
             logger.info("Writing notice to {}".format(full_path))
+            print("Writing notice to {}".format(full_path))
             f.write(xml_string)
 
     def extract_definitions(self):
@@ -482,8 +483,12 @@ class XMLWriteContent:
                 section_elm.append(paragraph_elm)
 
             # Construct an analysis section for any children.
-            map(lambda c:  section_elm.append(analysis_section(notice, c)),
-                child['children'])
+            try:
+                map(lambda c:  section_elm.append(analysis_section(notice, c)),
+                    child['children'])
+            except:
+                print("Failed to write analysis for", child['title'])
+                pass
 
             return section_elm
 

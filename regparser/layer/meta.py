@@ -22,6 +22,8 @@ class Meta(Layer):
             match = re.search('part \d+[^\w]*([^\(]*)', node.title, re.I)
             if match:
                 layer['statutory_name'] = match.group(1).strip()
+            else:
+                layer['statutory_name'] = node.title
             match = re.search('\(regulation (\w+)\)', node.title, re.I)
             if match:
                 layer['reg_letter'] = match.group(1)

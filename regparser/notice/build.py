@@ -308,11 +308,11 @@ def process_amendments(notice, notice_xml):
         else:
             amdpars_by_parent.append(AmdparByParent(parent, par))
 
-    default_cfr_part = notice['cfr_parts'][0]
+    default_cfr_part = notice['cfr_part']
     for aXp in amdpars_by_parent:
         amended_labels = []
         designate_labels, other_labels = [], []
-        context = [aXp.parent.get('PART') or default_cfr_part]
+        context = [default_cfr_part]
         for par in aXp.amdpars:
             als, context = parse_amdpar(par, context)
             amended_labels.extend(als)
@@ -337,6 +337,7 @@ def process_amendments(notice, notice_xml):
             labels_for_part = {part: labels
                                for part, labels in labels_by_part.iteritems()
                                if part == default_cfr_part}
+            print(labels_for_part)
             for cfr_part, rel_labels in labels_for_part.iteritems():
                 section_xml = find_section(par)
                 if section_xml is not None:
